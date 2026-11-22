@@ -22,7 +22,7 @@ class CorrectiveDocBuilderTest extends TestCase
 {
     private const CUSTOMER = ['name' => 'Odběratel s.r.o.', 'country' => 'cz', 'companyId' => '12345678'];
 
-    /** @return array<string, mixed> hlavička původní faktury jako z DB (join vat_reg_country) */
+    /** @return array<string, mixed> hlavička původní faktury jako z DB (+ `vat_registration_ref` ze služby) */
     private static function head(array $overrides = []): array
     {
         return array_merge([
@@ -30,7 +30,7 @@ class CorrectiveDocBuilderTest extends TestCase
             'doc_text' => 'Konzultace březen', 'partner' => 5, 'partner_address' => 9,
             'issue_date' => new \DateTimeImmutable('2026-03-01'), 'due_date' => new \DateTimeImmutable('2026-03-15'),
             'accounting_date' => new \DateTimeImmutable('2026-03-01'), 'vat_duzp' => new \DateTimeImmutable('2026-03-10'),
-            'vat_registration' => 1, 'vat_reg_country' => 'cz', 'vat_mode' => 1, 'vat_calc_source' => 0, 'vat_place' => 0,
+            'vat_registration' => 1, 'vat_registration_ref' => 1, 'vat_mode' => 1, 'vat_calc_source' => 0, 'vat_place' => 0,
             'vat_recap_source' => 1, 'cs_mode' => 2,
             'doc_currency' => 'czk', 'exchange_rate' => '1.000000', 'payment_method' => 1, 'bank_account' => 4,
             'payment_reference' => '2600123', 'specific_symbol' => '77', 'constant_symbol' => '0308',
@@ -52,7 +52,7 @@ class CorrectiveDocBuilderTest extends TestCase
             ['id' => 1, 'row_kind' => 1, 'order_pos' => 1, 'description' => 'Konzultace', 'quantity' => '2.0000',
              'unit_price' => '500.0000', 'total_price' => '1000.00', 'price_calc_mode' => 0,
              'item' => 18, 'item_code' => 'KONZ', 'item_name' => 'Konzultace IT', 'unit' => 4, 'unit_code' => 'hr', 'unit_shortcut' => 'h',
-             'dimensions' => ['costCenter' => 'V01']] + $base,
+             'dimensions' => ['costCenter' => 5]] + $base,
             // z celkové ceny
             ['id' => 2, 'row_kind' => 1, 'order_pos' => 2, 'description' => 'Doprava', 'quantity' => '3.0000',
              'unit_price' => '300.0000', 'total_price' => '900.00', 'price_calc_mode' => 1] + $base,
@@ -98,28 +98,27 @@ class CorrectiveDocBuilderTest extends TestCase
 
     public function testHeaderTakesOverOriginalAndLeavesOutNumbersTextsAndTotals(): void
     {
-        $c = CorrectiveDocBuilder::build(self::head(), self::rows(), self::CUSTOMER, ['costCenter' => 'S01'], '2026-04-20');
+        $c = CorrectiveDocBuilder::build(self::head(), self::rows(), self::CUSTOMER, ['costCenter' => 3], '2026-04-20');
         $this->assertValidCanonical($c);
 
         $this->assertSame('invoiceIssued', $c['docType']);
         $this->assertSame('supplier', $c['selfParty']);
-        $this->assertSame(self::CUSTOMER, $c['customer']);
+        $this->assertSame(['ref' => 5] + self::CUSTOMER, $c['customer'], 'partner referencí id (#166 D30)');
         $this->assertSame(['issueDate' => '2026-04-20'], $c['dates'], 'jen datum vystavení, ostatní doplní dokument');
         $this->assertSame('CZK', $c['currency']);
         $this->assertSame(1.0, $c['exchangeRate']);
-        $this->assertSame(['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz', 'calcSource' => 'header'], $c['vat']);
-        $this->assertSame(['method' => 'bankTransfer'], $c['payment']);
-        $this->assertSame(['costCenter' => 'S01'], $c['dimensions']);
+        $this->assertSame(['mode' => 'fromBase', 'place' => 'domestic', 'registration' => 1, 'calcSource' => 'header'], $c['vat']);
+        $this->assertSame(['method' => 'bankTransfer', 'ownBankAccount' => 4], $c['payment']);
+        $this->assertSame(['costCenter' => 3], $c['dimensions']);
+        $this->assertSame(3, $c['numberSeries']);
         $this->assertSame(['kind' => 'correctiveDoc'], $c['source']);
         $this->assertSame(
-            ['originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-10', 'reason' => null],
+            ['originalDoc' => 77, 'originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-10', 'reason' => null],
             $c['correction'],
-            'důvod prázdný — doplní uživatel',
+            'odkaz referencí id, důvod prázdný — doplní uživatel',
         );
-        $this->assertSame(['userAction' => 'useExisting:77'], $c['_resolve']['correction']);
-        $this->assertSame(['userAction' => 'useExisting:5'], $c['_resolve']['customer']);
-        $this->assertSame([['index' => 0, 'item' => ['userAction' => 'useExisting:18']]], $c['_resolve']['rows']);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 3, 'importOwnBankAccount' => 4], $c['applyOptions']);
+        $this->assertArrayNotHasKey('_resolve', $c, 'generátor volby neposílá');
+        $this->assertSame(['targetDocState' => 10], $c['applyOptions']);
 
         foreach (['totals', 'vatRecap', 'docText', 'notes', 'docNumber', 'attachments'] as $key) {
             $this->assertArrayNotHasKey($key, $c, $key);
@@ -157,12 +156,12 @@ class CorrectiveDocBuilderTest extends TestCase
         $this->assertSame(500.0, $unit['unitPrice']);
         $this->assertSame('fromUnitPrice', $unit['priceCalcMode']);
         $this->assertArrayNotHasKey('totalPrice', $unit);
-        $this->assertSame(['ourCode' => 'KONZ', 'name' => 'Konzultace IT'], $unit['item']);
-        $this->assertSame('hr', $unit['unit'], 'systémový kód jednotky má přednost před zkratkou');
+        $this->assertSame(['ref' => 18, 'name' => 'Konzultace IT'], $unit['item']);
+        $this->assertSame('hr', $unit['unit'], 'systémový kód jednotky (#166 D37)');
         $this->assertSame(['code' => 'cz-110'], $unit['vat'], 'sazbu určí applier k datu původního plnění');
         $this->assertSame('sale.services', $unit['operation']);
         $this->assertSame('Konzultace', $unit['description']);
-        $this->assertSame(['costCenter' => 'V01'], $unit['dimensions']);
+        $this->assertSame(['costCenter' => 5], $unit['dimensions']);
 
         // z celkové ceny: záporné množství i celková cena, jednotková kladná
         $this->assertSame(-3.0, $total['quantity']);
@@ -197,15 +196,14 @@ class CorrectiveDocBuilderTest extends TestCase
 
     public function testOptionalHeaderPartsAreLeftOutWhenMissing(): void
     {
-        $head = self::head(['partner' => null, 'bank_account' => null, 'vat_registration' => null, 'vat_reg_country' => null, 'vat_mode' => 0, 'exchange_rate' => null, 'vat_duzp' => null]);
+        $head = self::head(['partner' => null, 'bank_account' => null, 'vat_registration' => null, 'vat_registration_ref' => null, 'vat_mode' => 0, 'exchange_rate' => null, 'vat_duzp' => null]);
         $c = CorrectiveDocBuilder::build($head, [self::rows()[0]], null, [], '2026-04-20');
 
         $this->assertArrayNotHasKey('customer', $c, 'bez partnera zastaví validátor applieru, builder nic nevymýšlí');
-        $this->assertArrayNotHasKey('customer', $c['_resolve']);
         $this->assertArrayNotHasKey('exchangeRate', $c);
         $this->assertArrayNotHasKey('dimensions', $c);
         $this->assertSame(['mode' => 'none', 'place' => 'domestic', 'calcSource' => 'header'], $c['vat']);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 3], $c['applyOptions']);
+        $this->assertSame(['method' => 'bankTransfer'], $c['payment']);
         $this->assertSame('2026-03-01', $c['correction']['originalTaxPointDate'], 'bez DUZP datum vystavení');
     }
 

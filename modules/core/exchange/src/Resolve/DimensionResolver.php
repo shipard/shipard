@@ -11,15 +11,16 @@ use Shipard\Core\Database\TableDefinition;
 /**
  * Přeloží hodnotu dimenze deníku z výměnného formátu (objekt `dimensions`,
  * #110 T2) na id záznamu cílové tabulky: klíč = id dimenze
- * (`journalDimensions` v economy.accounting), hodnota = přirozený klíč
- * cílové tabulky (`exchangeKey` v její definici, #166 D8 — středisko kód,
- * zakázka číslo, majetek inventární číslo). Hledá obecný
- * {@see ReferenceResolver}.
+ * (`journalDimensions` v economy.accounting), hodnota = reference na záznam
+ * cílové tabulky (#166 D30; přirozený klíč říká `exchangeKey` v její
+ * definici, D8 — středisko kód, zakázka číslo, majetek inventární číslo).
+ * Hledá obecný {@see ReferenceResolver}.
  *
- * Bez fuzzy hledání a bez userAction — klíč je autoritativní. Nenalezeno
- * nebo nejednoznačné → null (applier hlásí chybu `dimension_not_found`,
- * doklad se neuloží). Záznam v koši (docState 90) se nepočítá, archivovaný
- * ano — historický doklad smí nést středisko, které už neplatí.
+ * Bez fuzzy hledání a bez userAction — reference je autoritativní.
+ * Nenalezeno, nejednoznačné i špatný tvar je {@see ReferenceException}
+ * (applier z ní udělá chybu s kódem resolveru, doklad se neuloží). Záznam
+ * v koši (docState 90) se nepočítá, archivovaný ano — historický doklad smí
+ * nést středisko, které už neplatí.
  */
 final class DimensionResolver
 {
@@ -50,17 +51,19 @@ final class DimensionResolver
         return $this->dimensions->get($dimensionId)?->name ?? $dimensionId;
     }
 
-    public function resolve(string $dimensionId, string $value): ?int
+    /**
+     * Id záznamu cílové tabulky dimenze podle reference (#166 D30):
+     * `42`, `"@STR1"`, `"@sloupec:hodnota"`.
+     *
+     * @throws ReferenceException neznámá dimenze nebo tabulka bez klíče
+     *         (`reference_table_unknown`), špatný tvar, nenalezeno, nejednoznačné
+     */
+    public function resolve(string $dimensionId, mixed $value): int
     {
         $dimension = $this->dimensions->get($dimensionId);
-        $value = trim($value);
-        if ($dimension === null || $value === '' || !$this->references->hasKey($dimension->table)) {
-            return null;
+        if ($dimension === null) {
+            throw ReferenceException::tableUnknown($dimensionId);
         }
-        try {
-            return $this->references->resolveByKey($dimension->table, $value);
-        } catch (ReferenceException) {
-            return null;
-        }
+        return $this->references->resolve($dimension->table, $value);
     }
 }

@@ -19,12 +19,15 @@ use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
  * `docs_core_heads` (+ řádky, rekapitulace DPH) → `shpd.docs.document.v1`.
  * Inverze `DocumentApplier::transform()` / `transformRows()`.
  *
- * Reference externě: partner jako Party blok (identifikátory + adresa +
- * banka z denormalizovaných `partner_bank_*`), položky řádků přes
- * `ourCode`, účty přes číslo, jednotky přes `system_code`, řada přes
- * `numberSeriesCode`, vlastní bankovní účet přes kód číselníku
- * (`applyOptions.importOwnBankAccount` jako string), pokladna přes kód
- * číselníku (`cashDesk`, #59 D12 — u pokladního dokladu a prodejky určuje
+ * Každý odkaz na záznam je reference přirozeným klíčem (#166 D30, D34):
+ * partner jako objekt s `ref` (`"@<person_id>"`) a daty (identifikátory +
+ * adresa + banka z denormalizovaných `partner_bank_*` — v importním módu
+ * z nich vzniká dobový snapshot), položka řádku `{ref: "@<kód>", name}`,
+ * účet `"@<číslo>"`, řada `numberSeries`, vlastní bankovní účet
+ * `payment.ownBankAccount`, registrace DPH `vat.registration`, dimenze,
+ * původní doklad opravného dokladu `correction.originalDoc`. Jednotka je
+ * holý `system_code`. Záznam bez hodnoty klíče = varování a pole se
+ * vynechá. Pokladna (`cashDesk`, #59 D12 — u pokladního dokladu a prodejky určuje
  * řadu, u faktury placené hotově jde do `cash_desk` hlavičky).
  *
  * Číslo dokladu se zachovává režimem `applyOptions.importNumber`;
@@ -195,19 +198,21 @@ final class DocumentExporter implements RecordExporter
 
     private function selectSql(): string
     {
-        return 'SELECT [h.*], [ns.doc_number_code], [vr.country] AS [vat_reg_country], [ba.code] AS [own_bank_code],'
-            . ' [cd.code] AS [cash_desk_code]'
+        return 'SELECT [h.*], [ns.doc_number_code], [ns.code] AS [series_code], [ns.cash_desk] AS [series_cash_desk],'
+            . ' [vr.code] AS [vat_reg_code], [ba.code] AS [own_bank_code],'
+            . ' [cd.code] AS [cash_desk_code], [od.doc_number] AS [corrected_ref_number]'
             . ' FROM [docs_core_heads] AS [h]'
             . ' LEFT JOIN [docs_core_number_series] AS [ns] ON [ns.id] = [h.number_series]'
             . ' LEFT JOIN [economy_codebooks_vat_registrations] AS [vr] ON [vr.id] = [h.vat_registration]'
             . ' LEFT JOIN [economy_codebooks_bank_accounts] AS [ba] ON [ba.id] = [h.bank_account]'
-            . ' LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]';
+            . ' LEFT JOIN [economy_codebooks_cash_desks] AS [cd] ON [cd.id] = [h.cash_desk]'
+            . ' LEFT JOIN [docs_core_heads] AS [od] ON [od.id] = [h.corrected_doc]';
     }
 
     /**
      * Pořadí = pořadí seedu. Opravné doklady (#92 task B U5) až za běžnými
-     * doklady téhož typu — odkaz na původní doklad se po seedu obnovuje
-     * dohledáním podle čísla, takže původní doklad musí být v sadě dřív
+     * doklady téhož typu — odkaz na původní doklad je reference číslem
+     * (`correction.originalDoc`), takže původní doklad musí být v sadě dřív
      * (i v jiné řadě, jejíž kód řadí před řadu původního dokladu).
      */
     private function orderSql(): string
@@ -312,21 +317,34 @@ final class DocumentExporter implements RecordExporter
             // 80 bez čísla schema/validátor nepovolí (jen s importNumber).
             $applyOptions['targetDocState'] = 10;
         }
-        $seriesCode = V::str($h['doc_number_code'] ?? null);
-        if ($seriesCode !== null) {
-            $applyOptions['numberSeriesCode'] = $seriesCode;
+        // Reference přirozeným klíčem (#166 D30). Záznam bez hodnoty klíče
+        // = varování a pole se vynechá.
+        // Řada: u typu vázaného na pokladnu ji určuje pokladna — nevyváží se.
+        $seriesRef = null;
+        if (V::int($h['number_series'] ?? null) !== null && V::int($h['series_cash_desk'] ?? null) === null) {
+            $seriesRef = self::keyReference($h['series_code'] ?? null);
+            if ($seriesRef === null) {
+                $this->warnings[] = "docs {$label}: číselná řada #{$h['number_series']} nemá kód — nelze přenést (doplní ho ds-upgrade)";
+            }
         }
-        $ownBank = V::str($h['own_bank_code'] ?? null);
-        if ($ownBank !== null) {
-            $applyOptions['importOwnBankAccount'] = $ownBank;
-        } elseif (V::int($h['bank_account'] ?? null) !== null) {
+        $ownBankRef = self::keyReference($h['own_bank_code'] ?? null);
+        if ($ownBankRef === null && V::int($h['bank_account'] ?? null) !== null) {
             $this->warnings[] = "docs {$label}: vlastní bankovní účet #{$h['bank_account']} nemá kód v číselníku — nelze přenést";
         }
-        $cashDeskCode = V::str($h['cash_desk_code'] ?? null);
-        if ($cashDeskCode === null && V::int($h['cash_desk'] ?? null) !== null) {
+        $cashDeskRef = self::keyReference($h['cash_desk_code'] ?? null);
+        if ($cashDeskRef === null && V::int($h['cash_desk'] ?? null) !== null) {
             // Kód je v číselníku povinný — chybí jen u osiřelé vazby; u
             // pokladního dokladu / prodejky by seed skončil validační chybou.
             $this->warnings[] = "docs {$label}: pokladna #{$h['cash_desk']} není v číselníku — nelze přenést";
+        }
+        $vatRegistrationRef = self::keyReference($h['vat_reg_code'] ?? null);
+        if ($vatRegistrationRef === null && V::int($h['vat_registration'] ?? null) !== null) {
+            $this->warnings[] = "docs {$label}: registrace DPH #{$h['vat_registration']} nemá kód — nelze přenést (doplní ho ds-upgrade)";
+        }
+        // Původní doklad opravného dokladu — jen když odkaz existuje.
+        $originalDocRef = self::keyReference($h['corrected_ref_number'] ?? null);
+        if ($originalDocRef === null && V::int($h['corrected_doc'] ?? null) !== null) {
+            $this->warnings[] = "docs {$label}: původní doklad #{$h['corrected_doc']} nemá číslo — odkaz nelze přenést";
         }
 
         $canonical = [
@@ -340,10 +358,11 @@ final class DocumentExporter implements RecordExporter
             'docNumber'     => V::str($h['partner_doc_number'] ?? null),
             'docText'       => V::str($h['doc_text'] ?? null),
             'selfParty'     => $selfParty,
-            // Pokladna kódem (#59 D12): u pokladního dokladu a prodejky
-            // povinná (určuje vázanou řadu), u faktury placené hotově jde do
+            // Pokladna (#59 D12): u pokladního dokladu a prodejky povinná
+            // (určuje vázanou řadu), u faktury placené hotově jde do
             // `cash_desk` hlavičky. Doklad bez pokladny klíč nenese (prune).
-            'cashDesk'      => $cashDeskCode,
+            'cashDesk'      => $cashDeskRef,
+            'numberSeries'  => $seriesRef,
             // Směr jen u pokladního dokladu (1 příjem / 2 výdej); prodejka
             // má směr pevně a faktura žádný — tam `cash_dir` zůstává 0.
             'cashDirection' => $docTypeCode === 'cash' ? ($cashDir ?: null) : null,
@@ -373,7 +392,7 @@ final class DocumentExporter implements RecordExporter
             'vat'           => [
                 'mode'                => self::VAT_MODE_NAMES[(int) ($h['vat_mode'] ?? 1)] ?? null,
                 'place'               => self::VAT_PLACE_NAMES[(int) ($h['vat_place'] ?? 0)] ?? null,
-                'registrationCountry' => V::countryLower($h['vat_reg_country'] ?? null),
+                'registration'        => $vatRegistrationRef,
                 // Autorita rekapitulace a metoda výpočtu — bez nich by
                 // round-trip (dump → seed) změnil doklad s převzatou
                 // rekapitulací na přepočítaný a přepsal částky z dokladu.
@@ -394,6 +413,7 @@ final class DocumentExporter implements RecordExporter
             ],
             'payment'       => [
                 'method'           => self::PAYMENT_METHOD_NAMES[(int) ($h['payment_method'] ?? 1)] ?? null,
+                'ownBankAccount'   => $ownBankRef,
                 'paymentReference' => V::str($h['payment_reference'] ?? null),
                 'specificSymbol'   => V::str($h['specific_symbol'] ?? null),
                 'constantSymbol'   => V::str($h['constant_symbol'] ?? null),
@@ -403,11 +423,12 @@ final class DocumentExporter implements RecordExporter
                 'onDocument' => V::str($h['doc_notice'] ?? null),
             ],
             'dimensions'    => $this->dimensionValues($h, true, $label),
-            // Opravný daňový doklad (#92 D10, task B U5): číslo, datum plnění
-            // a důvod ze sloupců; odkaz se nevyváží — po seedu ho applier obnoví
-            // dohledáním podle čísla (původní doklad je v dumpu dřív, viz
-            // orderSql). Samé null = jen příznak (viz doplnění po prune).
+            // Opravný daňový doklad (#92 D10, task B U5): odkaz na původní
+            // doklad referencí číslem (původní doklad je v dumpu dřív, viz
+            // orderSql), číslo, datum plnění a důvod ze sloupců. Samé null =
+            // jen příznak (viz doplnění po prune).
             'correction'    => !empty($h['corrective']) ? [
+                'originalDoc'          => $originalDocRef,
                 'originalDocNumber'    => V::str($h['corrected_doc_number'] ?? null),
                 'originalTaxPointDate' => V::date($h['corrected_doc_date'] ?? null),
                 'reason'               => V::str($h['correction_reason'] ?? null),
@@ -449,6 +470,13 @@ final class DocumentExporter implements RecordExporter
         return new ExportedRecord($id, $slug, $pruned);
     }
 
+    /** Reference přirozeným klíčem (`"@klíč"`); prázdný klíč = null. */
+    private static function keyReference(mixed $key): ?string
+    {
+        $key = V::str($key);
+        return $key !== null ? '@' . $key : null;
+    }
+
     /** Název módu zaokrouhlení pro export: výchozí `cent` a kód bez názvu se nevypisují. */
     private static function nonDefaultMode(?string $name): ?string
     {
@@ -459,7 +487,7 @@ final class DocumentExporter implements RecordExporter
 
     /**
      * Objekt `dimensions` hlavičky (`headColumn`) / řádku (`rowColumn`):
-     * id dimenze → přirozený klíč záznamu. Prázdné hodnoty se vynechají
+     * id dimenze → reference přirozeným klíčem. Prázdné hodnoty se vynechají
      * (prune), nepřenositelná dimenze s hodnotou se zaznamená do varování.
      *
      * @param array<string, mixed> $record
@@ -478,7 +506,7 @@ final class DocumentExporter implements RecordExporter
                 $this->warnings[] = "docs {$label}: dimenze {$dimension->name} #{$recordId} nemá klíč {$this->references->keyColumn($dimension->table)} — nepřenáší se";
                 continue;
             }
-            $out[$dimension->id] = $key;
+            $out[$dimension->id] = '@' . $key;
         }
         foreach ($this->unportableDimensions as $dimension) {
             if (V::int($record[$head ? $dimension->headColumn : $dimension->rowColumn] ?? null) !== null) {
@@ -507,7 +535,7 @@ final class DocumentExporter implements RecordExporter
             return $this->partyCache[$personId];
         }
 
-        return $this->partyCache[$personId] = CanonicalParty::fromPerson($this->db, $personId);
+        return $this->partyCache[$personId] = CanonicalParty::withReference($this->db, $personId, keyReference: true);
     }
 
     // ── rows / recap ────────────────────────────────────────────────────────
@@ -540,16 +568,24 @@ final class DocumentExporter implements RecordExporter
                 $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} má partnera, formát ho nenese";
             }
             $accSide = V::int($r['acc_side'] ?? null);
-            $itemCode = V::str($r['item_code'] ?? null);
+            $itemRef = self::keyReference($r['item_code'] ?? null);
+            if ($itemRef === null && V::int($r['item'] ?? null) !== null) {
+                $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} — položka #{$r['item']} nemá kód, nelze přenést";
+            }
+            // Pokyn bere jen systémový kód jednotky (#166 D37).
+            $unitCode = V::str($r['unit_code'] ?? null);
+            if ($unitCode === null && V::int($r['unit'] ?? null) !== null) {
+                $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} — jednotka #{$r['unit']} nemá systémový kód, nelze přenést";
+            }
             $out[] = V::prune([
                 'rowKind'        => self::ROW_KIND_NAMES[(int) ($r['row_kind'] ?? 1)] ?? 'item',
                 'operation'      => V::str($r['operation'] ?? null),
                 'orderPos'       => V::int($r['order_pos'] ?? null),
-                'item'           => $itemCode !== null ? [
-                    'ourCode' => $itemCode,
-                    'name'    => V::str($r['item_name'] ?? null),
+                'item'           => $itemRef !== null ? [
+                    'ref'  => $itemRef,
+                    'name' => V::str($r['item_name'] ?? null),
                 ] : null,
-                'unit'           => V::str($r['unit_code'] ?? null) ?? V::str($r['unit_shortcut'] ?? null),
+                'unit'           => $unitCode,
                 'quantity'       => V::float($r['quantity'] ?? null),
                 'unitPrice'      => V::float($r['unit_price'] ?? null),
                 'totalPrice'     => V::float($r['total_price'] ?? null),
@@ -571,7 +607,7 @@ final class DocumentExporter implements RecordExporter
                     'vatTotal'  => V::float($r['vat_total'] ?? null),
                 ],
                 'description'      => V::str($r['description'] ?? null),
-                'account'          => V::str($r['account_number'] ?? null),
+                'account'          => self::keyReference($r['account_number'] ?? null),
                 'accSide'          => $accSide === null ? null : ($accSide === 1 ? 'credit' : 'debit'),
                 'paymentReference' => V::str($r['payment_reference'] ?? null),
                 'specificSymbol'   => V::str($r['specific_symbol'] ?? null),

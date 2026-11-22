@@ -51,6 +51,9 @@ final class DocumentValidator
     public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): array
     {
         $issues = [];
+        // Strana a položka jen referencí → objekt s `ref` (volající mimo
+        // applier, např. kontrola sady před seedem, posílá tvar ze souboru).
+        $canonical = CanonicalReferences::expand($canonical);
 
         $this->checkCommonRequired($canonical, $issues);
         $this->checkPerDocType($canonical, $issues);
@@ -61,6 +64,9 @@ final class DocumentValidator
             $this->checkVatRecapArithmetic($canonical, $issues);
         }
         $this->checkPartnerDocNumber($canonical, $issues);
+        if (!$mode->derives()) {
+            $this->checkProposalSignals($canonical, $issues);
+        }
         $this->checkImportRequiresInstruction($canonical, $mode, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);
@@ -72,6 +78,51 @@ final class DocumentValidator
         }
 
         return $issues;
+    }
+
+    /**
+     * Signály návrhu (#166 D39): `rows[].item.ourCode`, účet řádku holým
+     * číslem a `vat.registrationCountry` nesou uložené návrhy z pošty a čte
+     * je jen návrh. Pokyn je odmítá chybou `signal_not_allowed` s radou,
+     * které pole použít — tiché ignorování by uložilo jiný doklad, než jaký
+     * odesílatel zamýšlel. Dočasné: po převodu uložených návrhů pole zmizí.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkProposalSignals(array $canonical, array &$issues): void
+    {
+        $signal = static fn (string $path, string $message): array => [
+            'severity' => 'error',
+            'path'     => $path,
+            'code'     => 'signal_not_allowed',
+            'message'  => $message,
+        ];
+        $country = $canonical['vat']['registrationCountry'] ?? null;
+        if (is_string($country) && trim($country) !== '') {
+            $issues[] = $signal(
+                'vat.registrationCountry',
+                'Země registrace DPH je údaj návrhu — v pokynu urči registraci polem vat.registration (např. "@' . strtolower(trim($country)) . '").',
+            );
+        }
+        foreach (is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [] as $i => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $ourCode = is_array($row['item'] ?? null) ? ($row['item']['ourCode'] ?? null) : null;
+            if (is_string($ourCode) && trim($ourCode) !== '') {
+                $issues[] = $signal(
+                    "rows.{$i}.item.ourCode",
+                    'Kód položky je údaj návrhu — v pokynu urči položku referencí rows[].item.ref (např. "@' . trim($ourCode) . '").',
+                );
+            }
+            $account = $row['account'] ?? null;
+            if (CanonicalReferences::isAccountSignal($account)) {
+                $issues[] = $signal(
+                    "rows.{$i}.account",
+                    'Účet holým číslem je údaj návrhu — v pokynu ho urči referencí (např. "@' . $account . '").',
+                );
+            }
+        }
     }
 
     /**
@@ -274,9 +325,8 @@ final class DocumentValidator
      */
     private function checkCashDesk(array $canonical, array &$issues): void
     {
-        $code = $canonical['cashDesk'] ?? null;
-        if (!is_string($code) || trim($code) === '') {
-            $issues[] = $this->required('cashDesk', 'Kód pokladny je povinný — řada dokladu je vázaná na pokladnu.');
+        if (!CanonicalReferences::isSet($canonical['cashDesk'] ?? null)) {
+            $issues[] = $this->required('cashDesk', 'Pokladna je povinná — řada dokladu je vázaná na pokladnu.');
         }
     }
 

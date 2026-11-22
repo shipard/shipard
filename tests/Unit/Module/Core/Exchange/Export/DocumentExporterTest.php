@@ -42,7 +42,8 @@ class DocumentExporterTest extends TestCase
             'docState' => 40, 'docStateMain' => 4, 'doc_state_changed_at' => null,
             'accounting_state' => 1, 'accounting_messages' => null,
             // joins
-            'doc_number_code' => '1', 'vat_reg_country' => 'cz', 'own_bank_code' => 'MAIN',
+            'doc_number_code' => '1', 'series_code' => 'invni', 'series_cash_desk' => null,
+            'vat_reg_code' => 'cz', 'own_bank_code' => 'MAIN', 'corrected_ref_number' => null,
         ], $overrides);
     }
 
@@ -75,6 +76,10 @@ class DocumentExporterTest extends TestCase
             }
             return null;
         });
+        // Reference strany přirozeným klíčem (`CanonicalParty::withReference`).
+        $db->method('fetchSingle')->willReturnCallback(
+            static fn (string $sql): ?string => str_contains($sql, '[person_id] FROM [base_persons_persons]') ? 'F00005' : null,
+        );
         $db->method('fetchAll')->willReturnCallback(function (string $sql) use ($rows, $recap): array {
             $data = match (true) {
                 str_contains($sql, 'FROM [docs_core_rows]')      => $rows,
@@ -159,8 +164,8 @@ class DocumentExporterTest extends TestCase
 
         $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'work_order' => 8, 'asset' => 7]))->data;
 
-        $this->assertSame(['costCenter' => 'S01'], $c['dimensions']);
-        $this->assertSame(['costCenter' => 'V01'], $c['rows'][0]['dimensions']);
+        $this->assertSame(['costCenter' => '@S01'], $c['dimensions']);
+        $this->assertSame(['costCenter' => '@V01'], $c['rows'][0]['dimensions']);
         $warnings = $exporter->getWarnings();
         $this->assertCount(2, $warnings, implode("\n", $warnings));
         $all = implode("\n", $warnings);
@@ -211,8 +216,8 @@ class DocumentExporterTest extends TestCase
 
         $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'asset' => 7]))->data;
 
-        $this->assertSame(['costCenter' => 'S01'], $c['dimensions']);
-        $this->assertSame(['costCenter' => 'V01'], $c['rows'][0]['dimensions']);
+        $this->assertSame(['costCenter' => '@S01'], $c['dimensions']);
+        $this->assertSame(['costCenter' => '@V01'], $c['rows'][0]['dimensions']);
         $this->assertArrayNotHasKey('dimensions', $c['rows'][1]);
         $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
 
@@ -247,8 +252,8 @@ class DocumentExporterTest extends TestCase
 
         $with = new DocumentExporter($this->db(rows: $rows), $config, ['economy_work_orders_heads'], $tables);
         $c = $with->exportDocument($this->headRow(['work_order' => 8]))->data;
-        $this->assertSame(['workOrder' => 'S0001'], $c['dimensions'], 'hlavička číslem zakázky');
-        $this->assertSame(['workOrder' => 'S0001'], $c['rows'][0]['dimensions'], 'řádek číslem zakázky');
+        $this->assertSame(['workOrder' => '@S0001'], $c['dimensions'], 'hlavička číslem zakázky');
+        $this->assertSame(['workOrder' => '@S0001'], $c['rows'][0]['dimensions'], 'řádek číslem zakázky');
         $this->assertSame([], $with->getWarnings());
     }
 
@@ -291,8 +296,8 @@ class DocumentExporterTest extends TestCase
         $this->assertSame([100], array_map(static fn($r) => $r->id, $records), 'doklad zaúčtování majetku vynechán');
         $row = $records[0]->data['rows'][0];
         $this->assertSame('purchase.asset', $row['operation']);
-        $this->assertSame('042100', $row['account'], 'řádek pořízení nese účet přímo');
-        $this->assertSame(['asset' => 'MA0001'], $row['dimensions'], 'karta inventárním číslem');
+        $this->assertSame('@042100', $row['account'], 'řádek pořízení nese účet přímo');
+        $this->assertSame(['asset' => '@MA0001'], $row['dimensions'], 'karta inventárním číslem');
         $this->assertArrayNotHasKey('dimensions', $records[0]->data, 'hlavička bez karty');
         $warnings = $exporter->getWarnings();
         $this->assertCount(1, $warnings, implode("\n", $warnings));
@@ -329,6 +334,8 @@ class DocumentExporterTest extends TestCase
         $this->assertSame(['kind' => 'aiExtraction', 'extractedAt' => '2026-06-01T08:00:00'], $c['source']);
 
         $supplier = $c['supplier'];
+        $this->assertSame('@F00005', $supplier['ref'], 'strana = objekt s referencí přirozeným klíčem a daty (#166 D34)');
+        $this->assertSame('ref', array_key_first($supplier));
         $this->assertSame('Dodavatel a.s.', $supplier['name']);
         $this->assertSame('cz', $supplier['country']);
         $this->assertSame('87654321', $supplier['companyId']);
@@ -346,20 +353,21 @@ class DocumentExporterTest extends TestCase
         $this->assertSame('CZK', $c['currency']);
         $this->assertSame(
             [
-                'mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz',
+                'mode' => 'fromBase', 'place' => 'domestic', 'registration' => '@cz',
                 'recapSource' => 'computed', 'calcSource' => 'header', 'controlStatementMode' => 'auto',
             ],
             $c['vat'],
             'autorita rekapitulace i metoda výpočtu musí přežít round-trip',
         );
-        $this->assertSame(['method' => 'bankTransfer', 'paymentReference' => '2026031', 'constantSymbol' => '0308'], $c['payment']);
+        $this->assertSame(['method' => 'bankTransfer', 'ownBankAccount' => '@MAIN', 'paymentReference' => '2026031', 'constantSymbol' => '0308'], $c['payment']);
+        $this->assertSame('@invni', $c['numberSeries']);
         $this->assertSame(['internal' => 'interní'], $c['notes']);
 
         $row = $c['rows'][0];
         $this->assertSame('item', $row['rowKind']);
         $this->assertSame('purchase.services', $row['operation']);
         $this->assertSame(1, $row['orderPos']);
-        $this->assertSame(['ourCode' => 'K-001', 'name' => 'Konzultace IT'], $row['item']);
+        $this->assertSame(['ref' => '@K-001', 'name' => 'Konzultace IT'], $row['item']);
         $this->assertSame('hour', $row['unit']);
         $this->assertSame(1.0, $row['quantity']);
         $this->assertSame(1500.0, $row['unitPrice']);
@@ -377,10 +385,8 @@ class DocumentExporterTest extends TestCase
         );
 
         $this->assertSame([
-            'targetDocState'       => 40,
-            'importNumber'         => ['docNumber' => 'FP-2026-0007', 'sequenceNumber' => 7],
-            'numberSeriesCode'     => '1',
-            'importOwnBankAccount' => 'MAIN',
+            'targetDocState' => 40,
+            'importNumber'   => ['docNumber' => 'FP-2026-0007', 'sequenceNumber' => 7],
         ], $c['applyOptions']);
 
         $this->assertSame([], $exporter->getWarnings());
@@ -405,7 +411,7 @@ class DocumentExporterTest extends TestCase
     /**
      * Opravný daňový doklad (#92 D10, task B U5): blok `correction` jen
      * u dokladu s příznakem — číslo, datum plnění a důvod ze sloupců; odkaz
-     * se nevyváží (po seedu ho obnoví dohledání podle čísla).
+     * referencí číslem původního dokladu, jen když existuje (#166 D30).
      */
     public function testCorrectionBlockExportedOnlyForCorrectiveDocument(): void
     {
@@ -416,12 +422,19 @@ class DocumentExporterTest extends TestCase
         $c = $exporter->exportDocument($this->headRow([
             'doc_type' => 'invno', 'corrective' => 1, 'corrected_doc' => 77,
             'corrected_doc_number' => 'FV26-00123', 'corrected_doc_date' => new \DateTimeImmutable('2026-03-15'),
-            'correction_reason' => 'Sleva za vadu',
+            'correction_reason' => 'Sleva za vadu', 'corrected_ref_number' => 'FV26-00123',
         ]))->data;
         $this->assertSame(
-            ['originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-15', 'reason' => 'Sleva za vadu'],
+            ['originalDoc' => '@FV26-00123', 'originalDocNumber' => 'FV26-00123', 'originalTaxPointDate' => '2026-03-15', 'reason' => 'Sleva za vadu'],
             $c['correction'],
         );
+
+        // Bez odkazu (souhrnný opravný doklad) zůstává jen číslo jako text.
+        $text = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'invno', 'corrective' => 1, 'corrected_doc' => null,
+            'corrected_doc_number' => 'FV26-00123 až 00130', 'correction_reason' => 'Bonus',
+        ]))->data;
+        $this->assertSame(['originalDocNumber' => 'FV26-00123 až 00130', 'reason' => 'Bonus'], $text['correction']);
         $this->assertSame('invoiceIssued', $c['docType']);
 
         $schema = new SchemaValidator(SchemaLoader::default());
@@ -549,7 +562,8 @@ class DocumentExporterTest extends TestCase
         ]));
 
         $this->assertSame('koncept invni', $c->slug);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesCode' => '1'], $c->data['applyOptions']);
+        $this->assertSame(['targetDocState' => 10], $c->data['applyOptions']);
+        $this->assertSame('@invni', $c->data['numberSeries']);
         $this->assertArrayNotHasKey('supplier', $c->data);
     }
 
@@ -591,7 +605,7 @@ class DocumentExporterTest extends TestCase
 
         $this->assertSame('accountingDocument', $c['docType']);
         $this->assertArrayNotHasKey('selfParty', $c);
-        $this->assertSame('518100', $c['rows'][0]['account']);
+        $this->assertSame('@518100', $c['rows'][0]['account']);
         $this->assertSame('credit', $c['rows'][0]['accSide']);
         $this->assertSame('fromTotal', $c['rows'][0]['priceCalcMode']);
         $this->assertArrayNotHasKey('item', $c['rows'][0]);
@@ -609,18 +623,19 @@ class DocumentExporterTest extends TestCase
         return (int) $index;
     }
 
-    /** Prodejka: kód pokladny, bez směru, my dodavatel; applier `numberSeriesCode` u vázaných typů ignoruje. */
+    /** Prodejka: pokladna referencí, bez směru, my dodavatel; řadu vázaného typu určuje pokladna — nevyváží se. */
     public function testCashRegisterDocumentCarriesCashDeskWithoutDirection(): void
     {
         $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));
         $c = $exporter->exportDocument($this->headRow([
             'doc_type' => 'cashreg', 'doc_number' => '14POK2600001', 'sequence_number' => 1, 'doc_number_code' => 'POK',
+            'series_code' => 'cashreg-POK', 'series_cash_desk' => 2,
             'cash_desk' => 2, 'cash_dir' => 0, 'cash_desk_code' => 'POK', 'payment_method' => 0,
             'bank_account' => null, 'own_bank_code' => null,
         ]))->data;
 
         $this->assertSame('cashRegisterDocument', $c['docType']);
-        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertSame('@POK', $c['cashDesk']);
         $this->assertArrayNotHasKey('cashDirection', $c, 'prodejka má směr pevně — klíč nenese');
         $this->assertSame('supplier', $c['selfParty']);
         $this->assertArrayNotHasKey('supplier', $c);
@@ -628,10 +643,10 @@ class DocumentExporterTest extends TestCase
         $this->assertSame('cash', $c['payment']['method']);
         $this->assertSame($this->keyIndex($c, 'selfParty') + 1, $this->keyIndex($c, 'cashDesk'), 'cashDesk hned za selfParty');
         $this->assertSame([
-            'targetDocState'   => 40,
-            'importNumber'     => ['docNumber' => '14POK2600001', 'sequenceNumber' => 1],
-            'numberSeriesCode' => 'POK',
+            'targetDocState' => 40,
+            'importNumber'   => ['docNumber' => '14POK2600001', 'sequenceNumber' => 1],
         ], $c['applyOptions']);
+        $this->assertArrayNotHasKey('numberSeries', $c, 'řadu určuje pokladna');
         $this->assertSame([], $exporter->getWarnings());
 
         $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
@@ -645,12 +660,13 @@ class DocumentExporterTest extends TestCase
         $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));
         $c = $exporter->exportDocument($this->headRow([
             'doc_type' => 'cash', 'doc_number' => '31POK2600002', 'sequence_number' => 2, 'doc_number_code' => 'POK',
+            'series_code' => 'cash-POK', 'series_cash_desk' => 2,
             'cash_desk' => 2, 'cash_dir' => 2, 'cash_desk_code' => 'POK', 'payment_method' => 0,
             'bank_account' => null, 'own_bank_code' => null,
         ]))->data;
 
         $this->assertSame('cashDocument', $c['docType']);
-        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertSame('@POK', $c['cashDesk']);
         $this->assertSame(2, $c['cashDirection']);
         $this->assertSame('customer', $c['selfParty']);
         $this->assertArrayNotHasKey('customer', $c);
@@ -670,6 +686,7 @@ class DocumentExporterTest extends TestCase
     {
         $c = (new DocumentExporter($this->db()))->exportDocument($this->headRow([
             'doc_type' => 'cash', 'doc_number' => '31POK2600001', 'sequence_number' => 1, 'doc_number_code' => 'POK',
+            'series_code' => 'cash-POK', 'series_cash_desk' => 2,
             'cash_desk' => 2, 'cash_dir' => 1, 'cash_desk_code' => 'POK', 'payment_method' => 0,
         ]))->data;
 
@@ -690,7 +707,7 @@ class DocumentExporterTest extends TestCase
         ]))->data;
 
         $this->assertSame('invoiceIssued', $c['docType']);
-        $this->assertSame('POK', $c['cashDesk']);
+        $this->assertSame('@POK', $c['cashDesk']);
         $this->assertArrayNotHasKey('cashDirection', $c);
         $this->assertSame('cash', $c['payment']['method']);
         $this->assertSame($this->keyIndex($c, 'selfParty') + 1, $this->keyIndex($c, 'cashDesk'));
@@ -723,9 +740,27 @@ class DocumentExporterTest extends TestCase
         $exporter = new DocumentExporter($this->db());
         $c = $exporter->exportDocument($this->headRow(['own_bank_code' => null]))->data;
 
-        $this->assertArrayNotHasKey('importOwnBankAccount', $c['applyOptions']);
+        $this->assertArrayNotHasKey('ownBankAccount', $c['payment']);
         $this->assertCount(1, $exporter->getWarnings());
         $this->assertStringContainsString('nemá kód', $exporter->getWarnings()[0]);
+    }
+
+    /** U5 (#166): záznam bez hodnoty přirozeného klíče = varování a pole se vynechá. */
+    public function testRecordWithoutNaturalKeyIsLeftOutWithWarning(): void
+    {
+        $row = ['item_code' => null, 'unit_code' => null] + $this->itemRowRow();
+        $exporter = new DocumentExporter($this->db(rows: [$row]));
+        $c = $exporter->exportDocument($this->headRow(['series_code' => null, 'vat_reg_code' => null]))->data;
+
+        $this->assertArrayNotHasKey('numberSeries', $c);
+        $this->assertArrayNotHasKey('registration', $c['vat']);
+        $this->assertArrayNotHasKey('item', $c['rows'][0]);
+        $this->assertArrayNotHasKey('unit', $c['rows'][0], 'pokyn bere jen systémový kód jednotky — zkratka se nevyváží');
+        $warnings = implode("\n", $exporter->getWarnings());
+        $this->assertCount(4, $exporter->getWarnings(), $warnings);
+        foreach (['číselná řada #2 nemá kód', 'registrace DPH #1 nemá kód', 'položka #11 nemá kód', 'jednotka #3 nemá systémový kód'] as $text) {
+            $this->assertStringContainsString($text, $warnings);
+        }
     }
 
     public function testExportAllOrdersByNaturalKeysAndSkipsTrash(): void

@@ -93,19 +93,11 @@ class InvoiceBuilderTest extends TestCase
                 return $this->language;
             }
 
-            protected function costCenterCode(int $costCenterId): ?string
-            {
-                return $costCenterId === 1 ? 'S01' : null;
-            }
 
-            protected function itemCode(int $itemId): ?string
-            {
-                return $itemId === 42 ? 'NAJEM' : null;
-            }
 
-            protected function unitShortcut(?int $unitId): ?string
+            protected function unitCode(?int $unitId): ?string
             {
-                return $unitId === 4 ? 'měs' : null;
+                return $unitId === 4 ? 'month' : null;
             }
 
             protected function defaultBankAccount(): ?int
@@ -138,17 +130,19 @@ class InvoiceBuilderTest extends TestCase
         $this->assertSame('invoiceIssued', $c['docType']);
         $this->assertSame('supplier', $c['selfParty']);
         $this->assertSame('MP toner, spol. s r.o.', $c['customer']['name']);
-        $this->assertSame('useExisting:2', $c['_resolve']['customer']['userAction']);
+        $this->assertSame(2, $c['customer']['ref'], 'zákazník referencí id (#166 D30)');
+        $this->assertArrayNotHasKey('_resolve', $c, 'generátor volby neposílá');
         $this->assertSame('CZK', $c['currency']);
         $this->assertSame(
             ['issueDate' => '2026-10-01', 'accountingDate' => '2026-10-01', 'taxPointDate' => '2026-10-01', 'dueDate' => '2026-10-15', 'periodFrom' => '2026-10-01', 'periodTo' => '2026-10-31'],
             $c['dates'],
         );
         $this->assertSame('fromBase', $c['vat']['mode']);
-        $this->assertSame(['method' => 'bankTransfer', 'paymentReference' => '20260001'], $c['payment']);
-        $this->assertSame(['workOrder' => 'S260001', 'costCenter' => 'S01'], $c['dimensions']);
+        $this->assertSame(['method' => 'bankTransfer', 'ownBankAccount' => 3, 'paymentReference' => '20260001'], $c['payment']);
+        $this->assertSame(['workOrder' => 6, 'costCenter' => 1], $c['dimensions'], 'dimenze referencí id');
         $this->assertSame(['kind' => 'workOrder'], $c['source']);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 1, 'importOwnBankAccount' => 3], $c['applyOptions']);
+        $this->assertSame(1, $c['numberSeries']);
+        $this->assertSame(['targetDocState' => 10], $c['applyOptions']);
         $this->assertSame('Nájem kanceláře říjen 2026', $c['docText']);
         $this->assertSame('cs', $built->language);
         $this->assertSame('2026-10-01', $built->billingDate);
@@ -163,12 +157,11 @@ class InvoiceBuilderTest extends TestCase
         // Řádek 2 platil do 30. 9., řádek 3 od 1. 10. — říjen má novou cenu.
         $this->assertSame([1, 3, 4], array_column($built->rows, 'id'));
         $this->assertSame([1, 2, 3], array_column($rows, 'orderPos'));
-        $this->assertSame(['ourCode' => 'NAJEM', 'name' => 'Nájem kanceláře'], $rows[0]['item']);
+        $this->assertSame(['ref' => 42, 'name' => 'Nájem kanceláře'], $rows[0]['item']);
         $this->assertSame('sale.services', $rows[0]['operation']);
-        $this->assertSame('měs', $rows[0]['unit']);
+        $this->assertSame('month', $rows[0]['unit'], 'systémový kód jednotky (#166 D37)');
         $this->assertSame(12000.0, $rows[0]['unitPrice']);
         $this->assertSame(['code' => 'cz-110'], $rows[0]['vat']);
-        $this->assertSame([['index' => 0, 'item' => ['userAction' => 'useExisting:42']]], $built->canonical['_resolve']['rows']);
         $this->assertArrayNotHasKey('item', $rows[1]);
         $this->assertArrayNotHasKey('operation', $rows[1]);
         $this->assertSame(2500.0, $rows[1]['unitPrice']);
@@ -196,9 +189,10 @@ class InvoiceBuilderTest extends TestCase
         $this->assertSame('2026-09-30', $c['dates']['issueDate']);
         $this->assertSame('2026-10-10', $c['dates']['dueDate']);
         $this->assertSame('fromTotal', $c['vat']['mode']);
-        $this->assertSame(['method' => 'cash'], $c['payment']);
-        $this->assertSame(['workOrder' => 'S260001'], $c['dimensions']);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 2, 'importOwnBankAccount' => 9], $c['applyOptions']);
+        $this->assertSame(['method' => 'cash', 'ownBankAccount' => 9], $c['payment']);
+        $this->assertSame(['workOrder' => 6], $c['dimensions']);
+        $this->assertSame(2, $c['numberSeries']);
+        $this->assertSame(['targetDocState' => 10], $c['applyOptions']);
         $this->assertSame('Záloha na nájem — 3. čtvrtletí 2026', $c['docText']);
         // Konec září: řádek 2 ještě platí, řádek 3 ne.
         $this->assertSame([1, 2, 4], array_column($built->rows, 'id'));
@@ -223,12 +217,12 @@ class InvoiceBuilderTest extends TestCase
     public function testBankAccountFallsBackToDefaultAndMayBeAbsent(): void
     {
         $built = $this->builder(defaultBank: null)->build($this->workOrder(), self::KIND, $this->october(), self::ROWS);
-        $this->assertSame(['targetDocState' => 10, 'numberSeriesId' => 1], $built->canonical['applyOptions']);
+        $this->assertArrayNotHasKey('ownBankAccount', $built->canonical['payment']);
 
         $kind = self::KIND + [];
         $kind['inv_bank_account'] = 5;
         $built = $this->builder(defaultBank: 3)->build($this->workOrder(), $kind, $this->october(), self::ROWS);
-        $this->assertSame(5, $built->canonical['applyOptions']['importOwnBankAccount']);
+        $this->assertSame(5, $built->canonical['payment']['ownBankAccount']);
     }
 
     public function testMissingPrescriptionPartsAreReportedAsBuildReasons(): void

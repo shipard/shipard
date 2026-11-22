@@ -23,7 +23,9 @@ use Shipard\Module\Docs\Core\DefaultBankAccountResolver;
  *    (DefaultBankAccountResolver, Q5);
  *  - datum vystavení = účetní datum = DUZP = den fakturace období (D6),
  *    splatnost = + dny; `periodFrom` / `periodTo` = období;
- *  - partner = zákazník zakázky jako kanonická strana + pin `useExisting`;
+ *  - partner = zákazník zakázky jako kanonická strana s referencí `ref`
+ *    (id); stejně id nesou řada, vlastní účet, položky řádků a dimenze
+ *    (#166 D30 — generátor zná záznamy z nastavení, `_resolve` neposílá);
  *  - text dokladu z `inv_doc_text` s `{období}` v jazyce dokumentu
  *    zákazníka (DocumentLanguageResolver, PeriodLabel), prázdný = „název
  *    období“ (Q6);
@@ -94,39 +96,29 @@ class InvoiceBuilder
         $dueDate = (new \DateTimeImmutable($billingDate))->modify('+' . $settings->dueDays . ' days')->format('Y-m-d');
 
         $canonicalRows = [];
-        $rowResolve = [];
         foreach ($validRows as $i => $row) {
             $canonicalRows[] = $this->canonicalRow($row, $i + 1, $settings->vatMode !== 0);
-            $itemId = (int) ($row['item'] ?? 0);
-            if ($itemId > 0) {
-                $rowResolve[] = ['index' => $i, 'item' => ['userAction' => "useExisting:{$itemId}"]];
-            }
         }
 
         $payment = ['method' => DocumentApplier::canonicalPaymentMethod($settings->paymentMethod)];
+        $bankAccount = $settings->bankAccount ?? $this->defaultBankAccount();
+        if ($bankAccount !== null) {
+            $payment['ownBankAccount'] = $bankAccount;
+        }
         $paymentReference = trim((string) ($workOrder['payment_reference'] ?? ''));
         if ($paymentReference !== '') {
             $payment['paymentReference'] = $paymentReference;
         }
 
+        // Dimenze referencí id (#166 D30).
         $dimensions = [];
-        $number = trim((string) ($workOrder['number'] ?? ''));
-        if ($number !== '') {
-            $dimensions[self::DIMENSION_WORK_ORDER] = $number;
+        $workOrderId = (int) ($workOrder['id'] ?? 0);
+        if ($workOrderId > 0) {
+            $dimensions[self::DIMENSION_WORK_ORDER] = $workOrderId;
         }
         $costCenterId = (int) ($workOrder['cost_center'] ?? 0);
-        $costCenterCode = $costCenterId > 0 ? $this->costCenterCode($costCenterId) : null;
-        if ($costCenterCode !== null) {
-            $dimensions[self::DIMENSION_COST_CENTER] = $costCenterCode;
-        }
-
-        $applyOptions = [
-            'targetDocState' => 10,
-            'numberSeriesId' => $settings->numberSeries,
-        ];
-        $bankAccount = $settings->bankAccount ?? $this->defaultBankAccount();
-        if ($bankAccount !== null) {
-            $applyOptions['importOwnBankAccount'] = $bankAccount;
+        if ($costCenterId > 0) {
+            $dimensions[self::DIMENSION_COST_CENTER] = $costCenterId;
         }
 
         $currency = strtoupper(trim((string) ($workOrder['currency'] ?? '')));
@@ -137,7 +129,8 @@ class InvoiceBuilder
             'docType'       => DocumentApplier::canonicalDocType($settings->docType),
             'docText'       => $docText,
             'selfParty'     => 'supplier',
-            'customer'      => $party,
+            'numberSeries'  => $settings->numberSeries,
+            'customer'      => ['ref' => $customerId] + $party,
             'dates'         => [
                 'issueDate'      => $billingDate,
                 'accountingDate' => $billingDate,
@@ -150,11 +143,7 @@ class InvoiceBuilder
             'payment'       => $payment,
             'source'        => ['kind' => self::SOURCE_KIND],
             'rows'          => $canonicalRows,
-            '_resolve'      => [
-                'customer' => ['userAction' => "useExisting:{$customerId}"],
-                'rows'     => $rowResolve,
-            ],
-            'applyOptions'  => $applyOptions,
+            'applyOptions'  => ['targetDocState' => 10],
         ];
         if ($currency !== '') {
             $canonical['currency'] = $currency;
@@ -206,14 +195,15 @@ class InvoiceBuilder
         if ($operation !== '') {
             $out['operation'] = $operation;
         }
-        $unit = $this->unitShortcut(isset($row['unit']) ? (int) $row['unit'] : null);
+        // Pokyn bere jen systémový kód jednotky (#166 D37); jednotka bez
+        // něj se nepřenese.
+        $unit = $this->unitCode(isset($row['unit']) ? (int) $row['unit'] : null);
         if ($unit !== null) {
             $out['unit'] = $unit;
         }
         $itemId = (int) ($row['item'] ?? 0);
         if ($itemId > 0) {
-            $code = $this->itemCode($itemId);
-            $out['item'] = ['ourCode' => $code, 'name' => $out['description'] !== '' ? $out['description'] : null];
+            $out['item'] = ['ref' => $itemId, 'name' => $out['description'] !== '' ? $out['description'] : null];
         }
         $vatCode = trim((string) ($row['vat_code'] ?? ''));
         if ($withVat && $vatCode !== '') {
@@ -242,29 +232,14 @@ class InvoiceBuilder
         return is_string($value) && $value !== '' ? $value : null;
     }
 
-    protected function costCenterCode(int $costCenterId): ?string
-    {
-        $value = $this->db->fetchSingle('SELECT [code] FROM [economy_codebooks_cost_centers] WHERE [id] = %i', $costCenterId);
-        return is_string($value) && $value !== '' ? $value : null;
-    }
-
-    protected function itemCode(int $itemId): ?string
-    {
-        $value = $this->db->fetchSingle('SELECT [code] FROM [economy_items] WHERE [id] = %i', $itemId);
-        return is_string($value) && $value !== '' ? $value : null;
-    }
-
-    protected function unitShortcut(?int $unitId): ?string
+    protected function unitCode(?int $unitId): ?string
     {
         if ($unitId === null || $unitId <= 0) {
             return null;
         }
         if (!array_key_exists($unitId, $this->unitCache)) {
-            $row = $this->db->fetch('SELECT [shortcut], [name] FROM [core_units] WHERE [id] = %i', $unitId);
-            $row = $row === null ? null : (is_array($row) ? $row : $row->toArray());
-            $shortcut = trim((string) ($row['shortcut'] ?? ''));
-            $name = trim((string) ($row['name'] ?? ''));
-            $this->unitCache[$unitId] = $shortcut !== '' ? $shortcut : ($name !== '' ? $name : null);
+            $code = $this->db->fetchSingle('SELECT [system_code] FROM [core_units] WHERE [id] = %i', $unitId);
+            $this->unitCache[$unitId] = is_string($code) && $code !== '' ? $code : null;
         }
         return $this->unitCache[$unitId];
     }

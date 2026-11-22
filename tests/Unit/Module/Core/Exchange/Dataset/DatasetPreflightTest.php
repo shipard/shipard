@@ -48,10 +48,10 @@ class DatasetPreflightTest extends TestCase
     {
         return [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceReceived',
-            'selfParty' => 'customer', 'supplier' => ['name' => 'Acme s.r.o.', 'companyId' => '12345678'],
+            'selfParty' => 'customer', 'supplier' => ['ref' => '@F00001', 'name' => 'Acme s.r.o.', 'companyId' => '12345678'],
             'dates' => ['issueDate' => '2026-06-01', 'accountingDate' => '2026-06-01'],
-            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registrationCountry' => 'cz'],
-            'rows' => [['rowKind' => 'item', 'item' => ['ourCode' => 'K-001', 'name' => 'Konzultace'], 'unit' => 'h',
+            'currency' => 'CZK', 'vat' => ['mode' => 'fromBase', 'place' => 'domestic', 'registration' => '@cz'],
+            'rows' => [['rowKind' => 'item', 'item' => ['ref' => '@K-001', 'name' => 'Konzultace'], 'unit' => 'hour',
                         'quantity' => 1.0, 'unitPrice' => 100.0, 'totalPrice' => 100.0, 'vat' => ['code' => 'cz-110', 'pct' => 21.0]]],
             'applyOptions' => ['targetDocState' => 10],
         ];

@@ -26,6 +26,24 @@ class UnitResolverTest extends TestCase
         $this->assertSame('alias', $r->matchedBy);
     }
 
+    /** #166 D37: pokyn bere jen přesný systémový kód — bez aliasů, zkratek a úprav hodnoty. */
+    public function testSystemCodeOnlySkipsAliasesAndShortcuts(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->exactly(2))
+            ->method('fetch')
+            ->willReturnCallback(function (string $sql, string $code): ?Row {
+                $this->assertStringContainsString('[system_code] = %s', $sql);
+                return $code === 'hr' ? new Row(['id' => 7]) : null;
+            });
+        $resolver = new UnitResolver($db);
+
+        $exact = $resolver->resolve('hr', systemCodeOnly: true);
+        $this->assertSame([ResolveStatus::Matched, 7, 'systemCode'], [$exact->status, $exact->matchedId, $exact->matchedBy]);
+        $this->assertSame(ResolveStatus::NotFound, $resolver->resolve('h', systemCodeOnly: true)->status, 'alias „h“ zná jen návrh');
+        $this->assertSame(ResolveStatus::NotFound, $resolver->resolve('', systemCodeOnly: true)->status);
+    }
+
     public function testDirectSystemCodeMatchesWithoutAlias(): void
     {
         $db = $this->createMock(Connection::class);

@@ -75,10 +75,29 @@ class UnitResolver
         private readonly Connection $db,
     ) {}
 
-    public function resolve(?string $unit): ResolveResult
+    /**
+     * @param bool $systemCodeOnly Pokyn (#166 D37): jen přesný systémový kód
+     *        jednotky — bez zkratek, aliasů a názvů, hodnota se neupravuje.
+     */
+    public function resolve(?string $unit, bool $systemCodeOnly = false): ResolveResult
     {
         if ($unit === null) {
             return ResolveResult::notFound();
+        }
+        if ($systemCodeOnly) {
+            if ($unit === '') {
+                return ResolveResult::notFound();
+            }
+            $row = $this->db->fetch(
+                'SELECT [id] FROM [core_units]
+                 WHERE [system_code] = %s AND [docState] IN (%i, %i, %i)
+                 LIMIT 1',
+                $unit,
+                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+            );
+            return $row !== null
+                ? ResolveResult::matched((int) $row['id'], 'systemCode')
+                : ResolveResult::notFound();
         }
         $token = trim($unit);
         if ($token === '') {

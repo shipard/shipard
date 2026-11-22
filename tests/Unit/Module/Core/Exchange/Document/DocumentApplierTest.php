@@ -26,6 +26,7 @@ use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
 use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
@@ -54,6 +55,8 @@ class TestableDocumentApplier extends DocumentApplier
 
 class DocumentApplierTest extends TestCase
 {
+    use ReferenceFixture;
+
     /**
      * Výchozí config: typy dokladů (směr obchodu pro snapshot partnera
      * v import módu jde přes DocDocument::resolveTradeDir, příznak
@@ -119,6 +122,7 @@ class DocumentApplierTest extends TestCase
         ?array $contentTags = null,
         ?DimensionResolver $dimension = null,
         ?DocumentValidator $validator = null,
+        ?ReferenceResolver $references = null,
     ): DocumentApplier {
         $db ??= $this->createMock(Connection::class);
         $party ??= $this->createMock(PartyResolver::class);
@@ -153,6 +157,7 @@ class DocumentApplierTest extends TestCase
             personsGateway: $persons,
             itemsGateway: $items,
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
+            references: $references,
             documentValidator: $validator ?? new DocumentValidator(),
             partyResolver: $party,
             itemResolver: $item,
@@ -272,7 +277,7 @@ class DocumentApplierTest extends TestCase
 
     public function testDimensionsAreWrittenToHeadAndRowColumns(): void
     {
-        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], ['costCenter' => 'V01']);
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => '@S01'], ['costCenter' => '@V01']);
 
         $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
         $this->assertSame(3, $saved['cost_center']);
@@ -281,26 +286,37 @@ class DocumentApplierTest extends TestCase
         $this->assertArrayNotHasKey('cost_center', $saved['rows'][1] ?? []);
         $this->assertArrayNotHasKey('asset', $saved);
         $this->assertSame(
-            ['value' => 'V01', 'status' => 'matched', 'matchedId' => 5],
+            ['value' => '@V01', 'status' => 'matched', 'matchedId' => 5],
             $result->canonical['_resolve']['rows'][0]['dimensions']['costCenter'],
         );
     }
 
     public function testUnknownDimensionValueFailsValidationWithRowPath(): void
     {
-        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], ['costCenter' => 'S99']);
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => '@S01'], ['costCenter' => '@S99']);
 
         $this->assertFalse($result->success);
         $this->assertSame('validation_failed', $result->errorCode);
         $this->assertNull($saved, 'doklad se neuloží');
         $issues = array_values(array_filter(
             $result->canonical['_resolve']['issues'] ?? [],
-            static fn (array $issue): bool => $issue['code'] === 'dimension_not_found',
+            static fn (array $issue): bool => $issue['code'] === 'reference_not_found',
         ));
         $this->assertCount(1, $issues);
         $this->assertSame('rows.0.dimensions.costCenter', $issues[0]['path']);
         $this->assertSame('error', $issues[0]['severity']);
         $this->assertStringContainsString('S99', $issues[0]['message']);
+        $this->assertStringStartsWith('Středisko: ', $issues[0]['message']);
+    }
+
+    /** #166 D30: hodnota dimenze je reference — holý klíč bez „@“ je chyba tvaru. */
+    public function testBareDimensionKeyIsAnInvalidReference(): void
+    {
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], null);
+
+        $this->assertFalse($result->success);
+        $this->assertNull($saved);
+        $this->assertContains('reference_invalid', array_column($result->canonical['_resolve']['issues'] ?? [], 'code'));
     }
 
     public function testUnknownDimensionIdFailsValidation(): void
@@ -321,7 +337,7 @@ class DocumentApplierTest extends TestCase
         $this->assertArrayNotHasKey('cost_center', $saved);
 
         // DS bez resolveru (bez dimenzí s klíčem): objekt se ignoruje.
-        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], null, withResolver: false);
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => '@S01'], null, withResolver: false);
         $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
         $this->assertArrayNotHasKey('cost_center', $saved);
     }
@@ -1658,8 +1674,7 @@ class DocumentApplierTest extends TestCase
             'selfParty' => 'customer',
             'dates'     => ['issueDate' => '2024-06-01'],
             'applyOptions' => [
-                'importNumber'        => ['docNumber' => '2024-0042', 'sequenceNumber' => 42],
-                'importOwnBankAccount' => 17,
+                'importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42],
             ],
         ];
 
@@ -1669,6 +1684,22 @@ class DocumentApplierTest extends TestCase
             ['docNumber' => '2024-0042', 'sequenceNumber' => 42],
             $data['_importNumber'],
         );
+        $this->assertArrayNotHasKey('bank_account', $data);
+    }
+
+    /** Vlastní účet (`payment.ownBankAccount`) dohledá apply před transakcí — transform ho bere z plánu. */
+    public function testTransformTakesOwnBankAccountFromPlan(): void
+    {
+        $data = $this->invokeTransformWithPlan($this->buildApplier(), [
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'dates'     => ['issueDate' => '2024-06-01'],
+        ], [
+            'resolvedSupplier' => null, 'resolvedCustomer' => 5, 'resolvedSupplierBank' => null,
+            'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [], 'resolvedRowVatCodes' => [],
+            'ownBankAccountId' => 17,
+        ]);
+
         $this->assertSame(17, $data['bank_account']);
     }
 
@@ -2775,30 +2806,12 @@ class DocumentApplierTest extends TestCase
         return null;
     }
 
-    // ── resolveNumberSeriesFor(): code selection + error path ───────────────
+    // ── Číselná řada: reference `numberSeries`, jinak výchozí řada typu ─────
 
-    private function invokeResolveSeries(DocumentApplier $applier, string $docType, ?string $seriesCode): ?int
+    private function invokeResolveSeries(DocumentApplier $applier, string $docType): ?int
     {
         $ref = new \ReflectionMethod($applier, 'resolveNumberSeriesFor');
-        return $ref->invoke($applier, $docType, $seriesCode);
-    }
-
-    public function testResolveNumberSeriesByCodeMatches(): void
-    {
-        $captured = null;
-        $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturnCallback(function (...$args) use (&$captured) {
-            $captured = $args;
-            return new Row(['id' => 55]);
-        });
-        $applier = $this->buildApplier(db: $db);
-
-        // kód 5 u invni → konkrétní řada (např. „Ostatní závazky")
-        $this->assertSame(55, $this->invokeResolveSeries($applier, 'invni', '5'));
-        // SQL filtruje podle doc_number_code a váže docType i kód
-        $this->assertStringContainsString('doc_number_code', (string) $captured[0]);
-        $this->assertContains('invni', $captured);
-        $this->assertContains('5', $captured);
+        return $ref->invoke($applier, $docType);
     }
 
     private function invokeResolveSeriesById(DocumentApplier $applier, string $docType, int $seriesId): int
@@ -2807,7 +2820,7 @@ class DocumentApplierTest extends TestCase
         return $ref->invoke($applier, $docType, $seriesId);
     }
 
-    /** `applyOptions.numberSeriesId` (#110): řada podle id, musí být aktivní a typu dokladu. */
+    /** Řada z reference `numberSeries` (#166 D30): musí být aktivní a typu dokladu. */
     public function testResolveNumberSeriesByIdChecksDocTypeAndActiveState(): void
     {
         $captured = null;
@@ -2837,7 +2850,8 @@ class DocumentApplierTest extends TestCase
         $this->invokeResolveSeriesById($applier, 'invno', 7);
     }
 
-    public function testNumberSeriesIdAndCodeTogetherAreRejectedBeforeTheTransaction(): void
+    /** Řada z reference, která není typu dokladu nebo není aktivní, je čistá chyba před transakcí. */
+    public function testNumberSeriesOfOtherTypeIsRejectedBeforeTheTransaction(): void
     {
         $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
         $db = $this->createMock(Connection::class);
@@ -2848,39 +2862,61 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildApplier(
             db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
             vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads,
+            references: $this->referenceResolver(['docs_core_number_series' => ['code=invno' => 3]]),
         );
 
         $payload = $this->payloadWithCanCreateSupplier(
             ['full_name' => 'X', 'company_id' => '12345678'],
-            applyOptions: ['autoCreateMode' => 'safe', 'numberSeriesCode' => 'FV', 'numberSeriesId' => 3],
+            applyOptions: ['autoCreateMode' => 'safe'],
         );
+        $payload['numberSeries'] = '@invno';
         $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
-        $this->assertSame('number_series_conflict', $result->errorCode);
+        $this->assertSame('number_series_not_found', $result->errorCode);
         $this->assertSame(422, $result->statusCode);
     }
 
-    public function testValidateAcceptsNumberSeriesIdInSchema(): void
+    /** Řada, kterou resolver nenajde, je nález s kódem resolveru a 422 `validation_failed`. */
+    public function testUnknownNumberSeriesReferenceIsAFinding(): void
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->expects($this->never())->method('begin');
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'],
+            references: $this->referenceResolver([]),
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier(
+            ['full_name' => 'X', 'company_id' => '12345678'],
+            applyOptions: ['autoCreateMode' => 'safe'],
+        );
+        $payload['numberSeries'] = '@neznama';
+        $result = $applier->apply($payload, ApplyMode::Proposal);
+
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertSame(422, $result->statusCode);
+        $issue = $this->findIssueByCode($result->canonical['_resolve']['issues'] ?? [], 'reference_not_found');
+        $this->assertSame(['error', 'numberSeries'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+    }
+
+    /** D14: stará pole řady ve schématu nejsou; `numberSeries` bere id i text, tvar hlídá resolver. */
+    public function testSchemaCarriesNumberSeriesAsReference(): void
     {
         $applier = $this->buildApplier();
         $payload = $this->happyPayload();
-        $payload['applyOptions'] = ['numberSeriesId' => 5];
-        $this->assertNotSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
-        $payload['applyOptions'] = ['numberSeriesId' => 0];
-        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
-        $payload['applyOptions'] = ['numberSeriesId' => '5'];
-        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
-    }
-
-    public function testResolveNumberSeriesByUnknownCodeThrows(): void
-    {
-        $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturn(null); // nic nematchuje
-        $applier = $this->buildApplier(db: $db);
-
-        $this->expectException(NumberSeriesNotFoundException::class);
-        $this->invokeResolveSeries($applier, 'invni', '999');
+        foreach ([5, '@invni', '5'] as $reference) {
+            $payload['numberSeries'] = $reference;
+            $this->assertNotSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
+        }
+        unset($payload['numberSeries']);
+        foreach ([['numberSeriesId' => 5], ['numberSeriesCode' => 'A']] as $removed) {
+            $payload['applyOptions'] = $removed;
+            $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
+        }
     }
 
     public function testResolveNumberSeriesWithoutCodeFallsBackToFirstActive(): void
@@ -2893,8 +2929,8 @@ class DocumentApplierTest extends TestCase
         });
         $applier = $this->buildApplier(db: $db);
 
-        $this->assertSame(1, $this->invokeResolveSeries($applier, 'invni', null));
-        // Stará cesta NESMÍ filtrovat podle doc_number_code (zpětná kompatibilita)
+        $this->assertSame(1, $this->invokeResolveSeries($applier, 'invni'));
+        // Výchozí řada typu se nevybírá podle kódu z čísla dokladu.
         $this->assertStringNotContainsString('doc_number_code', (string) $captured[0]);
     }
 
@@ -4363,7 +4399,7 @@ class DocumentApplierTest extends TestCase
     // ── applyOptions.importOwnBankAccount jako kód číselníku (datasety) ──
 
     /** Matched resolvery, aby apply došel až k 5c (bez side-creates). */
-    private function buildApplierForOwnBankTests(Connection $db, ?TransactionlessTableGateway $heads = null): DocumentApplier
+    private function buildApplierForOwnBankTests(Connection $db, ?TransactionlessTableGateway $heads = null, ?ReferenceResolver $references = null): DocumentApplier
     {
         $party = $this->createMock(PartyResolver::class);
         $party->method('resolve')->willReturn(ResolveResult::matched(5, 'companyId'));
@@ -4379,38 +4415,35 @@ class DocumentApplierTest extends TestCase
         $bank = $this->createMock(BankAccountResolver::class);
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
-        return $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank, heads: $heads);
+        return $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank, heads: $heads, references: $references);
     }
 
-    public function testApplyRejectsUnknownOwnBankAccountCode(): void
+    public function testApplyRejectsUnknownOwnBankAccountReference(): void
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturn(null); // series default → null, bank code → not found
+        $db->method('fetch')->willReturn(null);
         $db->expects($this->never())->method('begin');
 
         $payload = json_decode(
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $payload['applyOptions'] = ['importOwnBankAccount' => 'MAIN'];
+        $payload['payment']['ownBankAccount'] = '@MAIN';
 
-        $result = $this->buildApplierForOwnBankTests($db)->apply($payload, ApplyMode::Proposal);
+        $result = $this->buildApplierForOwnBankTests($db, references: $this->referenceResolver([]))->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
-        $this->assertSame('own_bank_account_not_found', $result->errorCode);
+        $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame(422, $result->statusCode);
-        $this->assertStringContainsString("'MAIN'", (string) $result->errorMessage);
+        $issue = $this->findIssueByCode($result->canonical['_resolve']['issues'] ?? [], 'reference_not_found');
+        $this->assertSame(['error', 'payment.ownBankAccount'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+        $this->assertStringContainsString('MAIN', (string) ($issue['message'] ?? ''));
     }
 
-    public function testApplyResolvesOwnBankAccountCodeToId(): void
+    public function testApplyResolvesOwnBankAccountReferenceToId(): void
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturnCallback(static function (string $sql): ?Row {
-            if (str_contains($sql, '[economy_codebooks_bank_accounts]')) {
-                return new Row(['id' => 17]);
-            }
-            return null;
-        });
+        $db->method('fetch')->willReturn(null);
 
         $heads = $this->createMock(TransactionlessTableGateway::class);
         $heads->expects($this->once())
@@ -4422,23 +4455,28 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $payload['applyOptions'] = ['importOwnBankAccount' => 'MAIN'];
+        $payload['payment']['ownBankAccount'] = '@MAIN';
 
-        $result = $this->buildApplierForOwnBankTests($db, $heads)->apply($payload, ApplyMode::Proposal);
+        $references = $this->referenceResolver(['economy_codebooks_bank_accounts' => ['code=MAIN' => 17]]);
+        $result = $this->buildApplierForOwnBankTests($db, $heads, $references)->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "Expected success; got {$result->errorCode}: {$result->errorMessage}");
         $this->assertSame(100, $result->savedId);
-        $this->assertSame(17, $result->canonical['applyOptions']['importOwnBankAccount']);
+        $this->assertSame('@MAIN', $result->canonical['payment']['ownBankAccount'], 'payload se nepřepisuje');
     }
 
-    public function testValidateAcceptsStringOwnBankAccountInSchema(): void
+    /** D14: `applyOptions.importOwnBankAccount` ve schématu není — vlastní účet nese `payment.ownBankAccount`. */
+    public function testSchemaCarriesOwnBankAccountAsReference(): void
     {
-        $result = $this->buildApplier()->validate([
+        $base = [
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceReceived',
             'selfParty' => 'customer', 'supplier' => ['name' => 'X'], 'dates' => ['issueDate' => '2026-06-01'],
-            'applyOptions' => ['importOwnBankAccount' => 'MAIN'],
-        ], ApplyMode::Proposal);
-        $this->assertNotSame('schema_invalid', $result->errorCode);
+        ];
+        $applier = $this->buildApplier();
+
+        $this->assertNotSame('schema_invalid', $applier->validate($base + ['payment' => ['ownBankAccount' => '@MAIN']], ApplyMode::Proposal)->errorCode);
+        $this->assertNotSame('schema_invalid', $applier->validate($base + ['payment' => ['ownBankAccount' => 17]], ApplyMode::Proposal)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($base + ['applyOptions' => ['importOwnBankAccount' => 'MAIN']], ApplyMode::Proposal)->errorCode);
     }
 
     // ── Druh plnění ze štítku řádku (tasks/exchange-received-supply-kind.md) ──

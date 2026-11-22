@@ -62,12 +62,20 @@
         "docNumber": { "type": ["string", "null"] },
         "docText":   { "type": ["string", "null"] },
         "selfParty": { "enum": ["supplier", "customer", null] },
-        // Pokladna (#59 D12): kód economy_codebooks_cash_desks.code. Povinný
-        // u cashDocument / cashRegisterDocument (řada vázaná na pokladnu —
-        // applier ji dohledá podle typu + pokladny, numberSeriesCode se
-        // ignoruje); u faktur volitelný a platí jen s payment.method "cash"
-        // (faktura placená hotově → docs_core_heads.cash_desk).
-        "cashDesk": { "type": ["string", "null"], "maxLength": 10 },
+        // Pokladna (#59 D12) — reference na economy_codebooks_cash_desks
+        // (přirozený klíč = kód: "@POK"). Povinná u cashDocument /
+        // cashRegisterDocument (řada vázaná na pokladnu — applier ji dohledá
+        // podle typu + pokladny; uvedená jiná `numberSeries` je chyba
+        // number_series_conflict); u faktur volitelná a platí jen
+        // s payment.method "cash" (faktura placená hotově →
+        // docs_core_heads.cash_desk).
+        "cashDesk": { "$ref": "#/$defs/Reference" },
+        // Číselná řada dokladu (#166 D30) — reference na
+        // docs_core_number_series (přirozený klíč = kód řady: "@invno").
+        // Chybí → výchozí řada typu dokladu (první aktivní); u typu vázaného
+        // na pokladnu řadu určuje pokladna. Řada musí být aktivní a typu
+        // docType, jinak number_series_not_found.
+        "numberSeries": { "$ref": "#/$defs/Reference" },
         // Směr pokladního dokladu: 1 příjem, 2 výdej. Jen cashDocument.
         "cashDirection": { "enum": [1, 2, null] },
         // Doklad otevíracího / uzávěrkového období (#69 D20): zařadí se do
@@ -76,10 +84,16 @@
         "fiscalPeriodType": { "enum": ["opening", "closing", null] },
 
         // ── Parties ─────────────────────────────────────────────────────
+        // Strana = reference na osobu (#166 D30, D35: 42, "@K00042",
+        // "@company_id:12345678", "@vat_id:CZ12345678"), nebo objekt
+        // s `ref` a daty. Pokyn hledá jen přes referenci a nic nezakládá —
+        // objekt bez `ref` s názvem / IČO / DIČ je chyba reference_missing.
+        // Návrh (pošta, ISDOC) hledá podle údajů jako dřív; uvedený `ref`
+        // má přednost. Strana vlastní firmy (`selfParty`) referenci nenese.
         "supplier": { "$ref": "#/$defs/Party" },
         "customer": { "$ref": "#/$defs/Party" },
         // Osoba pro saldokonto (#72 D2) — ruční plátce dokladu: applier ji
-        // resolvuje jako stranu a zapíše partner_balance + partner_balance_manual = 1
+        // dohledá jako stranu a zapíše partner_balance + partner_balance_manual = 1
         // (odvození z terminálu / dopravce ji nepřepíše). Null / vynecháno =
         // plátce se odvodí při uložení. Exportér ji vydává jen u ručního plátce.
         "balanceParty": { "$ref": "#/$defs/Party" },
@@ -122,10 +136,17 @@
                 // world.vat `foreign`). Neznámá hodnota → warning
                 // `vat_place_unknown`, fallback domestic.
                 "place":               { "enum": ["domestic", "intracom", "thirdCountry", null] },
-                // Země naší registrace DPH. U přijatých dokladů (selfParty
-                // customer) ji applier odvodí z první aktivní registrace na
-                // zdroji a hodnotu tu ignoruje (při rozporu info issue
-                // `vat_registration_country_derived`).
+                // Naše registrace DPH (#166 D36) — reference na
+                // economy_codebooks_vat_registrations (přirozený klíč = kód:
+                // "@cz"). Nepovinná: bez ní pokyn doplní výchozí registraci
+                // zdroje dat, dokladu Bez DPH žádnou.
+                "registration":        { "$ref": "#/$defs/Reference" },
+                // DOČASNÉ (#166 D39) — signál platný jen v návrhu: země naší
+                // registrace DPH, jak ji přečetla AI. U přijatých dokladů
+                // (selfParty customer) ji návrh odvodí z první aktivní
+                // registrace na zdroji a hodnotu tu ignoruje (při rozporu
+                // info `vat_registration_country_derived`). Pokyn pole
+                // odmítá chybou signal_not_allowed — patří tam `registration`.
                 "registrationCountry": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
                 // Daň přiznává příjemce („reverse charge“, přenesení daňové
                 // povinnosti, čl. 196 směrnice, § 92a) — signál pro odvození
@@ -180,6 +201,10 @@
             "additionalProperties": false,
             "properties": {
                 "method":         { "type": ["string", "null"] },
+                // Vlastní bankovní účet dokladu (#166 D30) — reference na
+                // economy_codebooks_bank_accounts (přirozený klíč = kód:
+                // "@BU1"). Vydaná faktura ho ve stavu V pořádku vyžaduje.
+                "ownBankAccount": { "$ref": "#/$defs/Reference" },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol": { "type": ["string", "null"] },
                 "constantSymbol": { "type": ["string", "null"] }
@@ -198,31 +223,36 @@
 
         // ── Dimenze deníku (#110 D20, T2) ───────────────────────────────
         // Klíč = id dimenze (`journalDimensions` v economy.accounting:
-        // costCenter, asset), hodnota = přirozený klíč záznamu cílové
-        // tabulky (`exchangeKey` v její definici: středisko kód, zakázka
-        // číslo, majetek inventární číslo).
+        // costCenter, workOrder, asset), hodnota = reference na záznam
+        // cílové tabulky (#166 D30; přirozený klíč říká `exchangeKey` v její
+        // definici: středisko kód "@STR1", zakázka číslo, majetek
+        // inventární číslo).
         // Hlavička = výchozí hodnota pro řádky bez vlastní. Klíče hlídá PHP:
         // neznámé id nebo dimenze, jejíž tabulka klíč nemá → dimension_unknown,
-        // hodnota bez záznamu → dimension_not_found (obě blokují apply).
+        // hodnota bez záznamu → reference_not_found (obě blokují apply).
         // Chybějící objekt nebo klíč = sloupec zůstane prázdný.
         "dimensions": {
             "type": ["object", "null"],
-            "additionalProperties": { "type": "string" }
+            "additionalProperties": { "$ref": "#/$defs/Reference" }
         },
 
         // ── Opravný daňový doklad (#92 D10, task B U1) ─────────────────
         // Objekt = opravný doklad (docs_core_heads.corrective = 1), null nebo
         // chybějící klíč = běžný doklad. Applier ho bere jen u typu dokladu
         // s příznakem docTypes[].corrective (invno); jinde varování
-        // correction_not_supported. Původní doklad: _resolve.correction
-        // useExisting:<id>, jinak dohledání podle originalDocNumber mezi
-        // doklady téhož typu ve stavu V pořádku; s odkazem applier číslo
-        // a datum plnění přepíše z původního dokladu. Objekt se samými null
-        // je platný (import ze starého Shipardu nese jen příznak).
+        // correction_not_supported. Původní doklad: `originalDoc` (#166 D30)
+        // — reference na docs_core_heads (přirozený klíč = číslo dokladu;
+        // čísla různých typů se mohou shodovat, generátory proto posílají
+        // id); v návrhu i volba _resolve.correction useExisting:<id>.
+        // S odkazem applier číslo a datum plnění přepíše z původního
+        // dokladu. `originalDocNumber` je jen text (souhrnný opravný doklad,
+        // číslo na tisku) — podle něj se nic nedohledává. Objekt se samými
+        // null je platný (import ze starého Shipardu nese jen příznak).
         "correction": {
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                "originalDoc":          { "$ref": "#/$defs/Reference" },
                 "originalDocNumber":    { "type": ["string", "null"], "maxLength": 40 },
                 "originalTaxPointDate": { "type": ["string", "null"], "format": "date" },
                 "reason":               { "type": ["string", "null"] }
@@ -287,17 +317,9 @@
                 // 80 (V opravě) je parkovací cíl migrace — validátor ho povoluje
                 // jen v kombinaci s applyOptions.importNumber.
                 "targetDocState":        { "type": "integer", "enum": [10, 40, 30, 80] },
+                // Zakládání chybějících osob, položek a účtů partnera — čte
+                // jen návrh; pokyn nic nezakládá (#166 D31).
                 "autoCreateMode":        { "enum": ["strict", "safe", "liberal"] },
-                "numberSeriesCode": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Výběr číselné řady v rámci doc_type (%C = docs_core_number_series.doc_number_code). Bez něj platí stávající chování (první aktivní řada). Neznámý kód = apply selže (number_series_not_found), žádný tichý fallback."
-                },
-                "numberSeriesId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "description": "Výběr číselné řady podle id (docs_core_number_series.id) — pro doklady, které Shipard generuje sám z nastavení (periodická fakturace, #110); kód řady je nepovinný a neunikátní. Řada musí být aktivní a typu docType, jinak number_series_not_found; společně s numberSeriesCode = number_series_conflict."
-                },
                 "createMissingEntities": { "type": "boolean" },
                 "rejectOnIssues": {
                     "type": "array",
@@ -321,13 +343,6 @@
                     },
                     "required": ["docNumber", "sequenceNumber"],
                     "additionalProperties": false
-                },
-
-                "importOwnBankAccount": {
-                    "type": ["integer", "string", "null"],
-                    "minimum": 1,
-                    "minLength": 1,
-                    "description": "Import mode: our own bank account (economy_codebooks_bank_accounts) to set on the document — integer id, or string = codebook `code` (datasets; resolved by the applier, unknown code = own_bank_account_not_found). For issued invoices confirmed at state 40+, bank_account is required and cannot be carried by the standard self-party flow; the importer resolves it and passes it here."
                 },
 
                 // Autor dokladu „Vystavil“ (#93 D9). Přítomný klíč = explicitní
@@ -363,11 +378,25 @@
 
     "$defs": {
 
+        // ── Reference na záznam (#166 D9, D15) ──────────────────────────
+        // Gramatiku hodnoty drží jediné místo — ReferenceValue (core.exchange);
+        // schéma hlídá jen typ, špatný tvar (i číselný řetězec "42") je
+        // chyba reference_invalid. Hledá ReferenceResolver: přesně jeden živý
+        // záznam, nenalezeno i nejednoznačné je chyba.
+        "Reference": {
+            "type": ["integer", "string", "null"],
+            "description": "Reference to an existing record: a positive integer = record id, or a string starting with \"@\" = natural key of the target table (\"@K00042\") or a named lookup column (\"@company_id:12345678\"). Exactly one live record must match; not found or ambiguous is an error. Written by scripts, datasets and Shipard itself — a document read from its paper form never carries a reference (omit the field)."
+        },
+
         // ── Party ───────────────────────────────────────────────────────
+        // Reference sama (číslo / "@…"), nebo objekt s `ref` a daty. Data
+        // vedle `ref` jsou dobový snapshot v importním módu; mimo něj se
+        // snapshot staví z adresáře.
         "Party": {
-            "type": ["object", "null"],
+            "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
+                "ref":               { "$ref": "#/$defs/Reference" },
                 "name":              { "type": ["string", "null"] },
                 "country":           { "type": ["string", "null"] },
                 "companyId":         { "type": ["string", "null"] },
@@ -434,7 +463,8 @@
         // operation `acc.record` (účet z `account`) / `acc.item` (účet z
         // položky), `accSide` + `totalPrice` nesou stranu a částku; item /
         // quantity / unitPrice / vat zůstávají prázdné. Per-řádkový partner se
-        // pinuje přes `_resolve.rows[i].partner` (useExisting:<id>).
+        // zatím určuje volbou `_resolve.rows[i].partner` (useExisting:<id>) —
+        // jediná volba, kterou čte i pokyn (do tasks/doc-format-partner-fields.md).
         "Row": {
             "type": "object",
             "additionalProperties": false,
@@ -460,8 +490,12 @@
                 // item.description (není-li v názvu obsažený); ořez na 500 znaků.
                 "description":      { "type": ["string", "null"] },
 
-                // Kontace (účetní doklad) — viz komentář výše.
-                "account":          { "type": ["string", "null"], "pattern": "^[0-9]+$" },
+                // Kontace (účetní doklad) — viz komentář výše. Reference na
+                // economy_accounting_accounts (#166 D30; přirozený klíč =
+                // číslo účtu: "@518100"). DOČASNÉ (D39): holé číslo účtu
+                // ("518100") je signál platný jen v návrhu — pokyn ho odmítá
+                // chybou signal_not_allowed.
+                "account":          { "$ref": "#/$defs/Reference" },
                 "accSide":          { "enum": ["debit", "credit", null] },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol":   { "type": ["string", "null"], "maxLength": 20 },
@@ -472,15 +506,24 @@
                 // hlavičce; řádek bez hodnoty dědí hlavičku.
                 "dimensions": {
                     "type": ["object", "null"],
-                    "additionalProperties": { "type": "string" }
+                    "additionalProperties": { "$ref": "#/$defs/Reference" }
                 }
             }
         },
 
+        // Položka řádku: reference sama (číslo / "@KOD" / "@ean:…"), nebo
+        // objekt s `ref` a texty (#166 D30). Pokyn hledá jen přes referenci;
+        // objekt bez `ref` s názvem nebo kódem je chyba reference_missing
+        // (řádek bez položky nese text v `description` řádku). Návrh hledá
+        // podle kódů a názvu jako dřív; uvedený `ref` má přednost.
         "RowItem": {
-            "type": ["object", "null"],
+            "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
+                "ref":          { "$ref": "#/$defs/Reference" },
+                // DOČASNÉ (#166 D39) — signál platný jen v návrhu (uložené
+                // návrhy z pošty); pokyn ho odmítá chybou signal_not_allowed
+                // — patří tam `ref` ("@KOD").
                 "ourCode":      { "type": ["string", "null"] },
                 "supplierCode": { "type": ["string", "null"] },
                 "sku":          { "type": ["string", "null"] },

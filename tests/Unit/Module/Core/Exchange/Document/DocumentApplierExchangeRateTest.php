@@ -37,6 +37,8 @@ use Shipard\Tests\Fixtures\Module\Economy\ExchangeRates\FakeExchangeRateResolver
  */
 class DocumentApplierExchangeRateTest extends TestCase
 {
+    use ReferenceFixture;
+
     private const RATES = ['eur|2026-10-16' => 24.325, 'eur|2026-10-20' => 24.5];
 
     private static ?array $vatCz = null;
@@ -106,6 +108,7 @@ class DocumentApplierExchangeRateTest extends TestCase
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($vatConfig)),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($tradeConfig)),
             exchangeRateResolver: $resolver,
+            references: $this->referenceResolver(self::REFERENCE_RECORDS),
         ) extends DocumentApplier {
             protected function executeSql(mixed ...$args): void
             {
@@ -173,9 +176,9 @@ class DocumentApplierExchangeRateTest extends TestCase
     public function testImportModeNeverLooksUp(): void
     {
         $resolver = new FakeExchangeRateResolver(self::RATES);
-        $result = $this->applier($resolver)->apply(self::payload([
+        $result = $this->applier($resolver)->apply(self::asInstruction(self::payload([
             'applyOptions' => ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]],
-        ]), ApplyMode::Instruction);
+        ])), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertArrayNotHasKey('exchange_rate', $this->saved, 'chybějící kurz zůstane chybějící');

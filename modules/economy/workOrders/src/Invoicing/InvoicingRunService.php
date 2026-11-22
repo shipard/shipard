@@ -319,7 +319,7 @@ class InvoicingRunService
      * rozpracovaným dokladem. Failed = InvoiceBuildException
      * (`contributor_failed`), Waiting = doklad beze změny + důvod, Ready =
      * řádky přispěvatele nahrazené vrácenými (pořadí zachované, `orderPos`
-     * přečíslované, piny `_resolve.rows` přemapované).
+     * přečíslované).
      *
      * @param array<string, mixed> $workOrder
      * @return array{0: array<string, mixed>, 1: ?string} [kanonický doklad, důvod čekání]
@@ -397,7 +397,6 @@ class InvoicingRunService
         }
 
         $rows = [];
-        $indexMap = [];
         foreach ($canonical['rows'] ?? [] as $index => $row) {
             if (isset($insertAt[$index])) {
                 foreach ($insertAt[$index] as $newRow) {
@@ -407,25 +406,12 @@ class InvoicingRunService
             if (isset($removed[$index])) {
                 continue;
             }
-            $indexMap[$index] = count($rows);
             $rows[] = $row;
         }
         foreach ($rows as $i => $row) {
             $rows[$i]['orderPos'] = $i + 1;
         }
         $canonical['rows'] = $rows;
-
-        $pins = [];
-        foreach ($canonical['_resolve']['rows'] ?? [] as $pin) {
-            $old = (int) ($pin['index'] ?? -1);
-            if (isset($indexMap[$old])) {
-                $pin['index'] = $indexMap[$old];
-                $pins[] = $pin;
-            }
-        }
-        if (isset($canonical['_resolve'])) {
-            $canonical['_resolve']['rows'] = $pins;
-        }
         return $canonical;
     }
 

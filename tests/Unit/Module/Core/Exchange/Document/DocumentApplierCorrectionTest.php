@@ -32,13 +32,19 @@ use Shipard\Tests\Fixtures\Module\Economy\ExchangeRates\FakeExchangeRateResolver
 
 /**
  * Opravný daňový doklad ve výměnném formátu (#92 D10, tasks/corrective-doc-exchange.md
- * U2–U4): blok `correction` → sloupce skupiny `correction`; dohledání
- * původního dokladu pinem nebo podle čísla; sazba DPH k datu původního
+ * U2–U4): blok `correction` → sloupce skupiny `correction`; původní doklad
+ * referencí `correction.originalDoc` (#166 D30), v návrhu i volbou
+ * `_resolve.correction` — podle čísla se nic nedohledává; sazba DPH k datu původního
  * plnění; kurz původního dokladu místo lístku. Skutečný VatCodeResolver nad
  * vat-cz.jsonc, aby sazba závisela na datu (cz-111: 15 % do 2014, 12 % od 2024).
  */
 class DocumentApplierCorrectionTest extends TestCase
 {
+    use ReferenceFixture;
+
+    /** Doklady, které zná resolver referencí: číslo původního dokladu → id. */
+    private const KNOWN_DOCS = ['doc_number=FV26-00123' => 77];
+
     private const ORIGINAL = [
         'id' => 77, 'doc_type' => 'invno', 'doc_number' => 'FV26-00123',
         'vat_duzp' => '2014-06-10', 'issue_date' => '2014-06-01', 'exchange_rate' => null, 'doc_currency' => 'czk',
@@ -50,18 +56,19 @@ class DocumentApplierCorrectionTest extends TestCase
     /** @var array<string, mixed>|null data hlavičky, jak šla do gateway */
     private ?array $saved = null;
 
-    /** @var list<string> SQL dotazů fetch/fetchAll nad docs_core_heads */
+    /** @var list<string> dotazy applieru nad docs_core_heads (načtení původního dokladu podle id) */
     private array $headQueries = [];
 
     /**
-     * @param array<string, mixed>|null       $pinned   řádek původního dokladu pro dotaz podle id (null = neexistuje)
-     * @param list<array<string, mixed>>      $byNumber řádky pro dotaz podle čísla
+     * @param array<string, mixed>|null         $original řádek původního dokladu pro dotaz podle id (null = neexistuje)
+     * @param array<string, int|list<int>>|null $known    doklady resolveru referencí (null = {@see KNOWN_DOCS})
      */
     private function applier(
-        ?array $pinned = null,
-        array $byNumber = [],
+        ?array $original = null,
         ?FakeExchangeRateResolver $rates = null,
+        ?array $known = null,
     ): DocumentApplier {
+        $pinned = $original;
         $party = $this->createMock(PartyResolver::class);
         $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
         $party->method('resolveSelfParty')->willReturn(ResolveResult::matched(1, 'self'));
@@ -94,11 +101,11 @@ class DocumentApplierCorrectionTest extends TestCase
             }
             return null;
         });
-        $db->method('fetchAll')->willReturnCallback(static function (mixed ...$args) use ($byNumber, &$queries): array {
+        $db->method('fetchAll')->willReturnCallback(static function (mixed ...$args) use (&$queries): array {
             $sql = (string) ($args[0] ?? '');
-            if (str_contains($sql, 'FROM [docs_core_heads]') && str_contains($sql, '[doc_number] = %s')) {
+            if (str_contains($sql, 'FROM [docs_core_heads]')) {
+                // Applier podle čísla nehledá (#166 D30) — hledá resolver referencí.
                 $queries[] = 'number:' . json_encode(array_slice($args, 1));
-                return array_map(static fn (array $r): Row => new Row($r), $byNumber);
             }
             return [];
         });
@@ -137,6 +144,7 @@ class DocumentApplierCorrectionTest extends TestCase
             vatCodeDerivation: new VatCodeDerivation($vatRates),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($tradeConfig)),
             exchangeRateResolver: $rates,
+            references: $this->referenceResolver(self::REFERENCE_RECORDS + ['docs_core_heads' => $known ?? self::KNOWN_DOCS]),
         ) extends DocumentApplier {
             protected function executeSql(mixed ...$args): void
             {
@@ -166,9 +174,16 @@ class DocumentApplierCorrectionTest extends TestCase
         return array_replace($payload, $override);
     }
 
+    /** Blok bez odkazu — číslo původního dokladu je jen text. */
     private static function block(?string $number = 'FV26-00123', ?string $date = '2026-03-15', ?string $reason = 'Sleva za vadu'): array
     {
         return ['originalDocNumber' => $number, 'originalTaxPointDate' => $date, 'reason' => $reason];
+    }
+
+    /** Blok s odkazem na původní doklad referencí (číslo dokladu, nebo id). */
+    private static function linked(int|string $reference = '@FV26-00123'): array
+    {
+        return ['originalDoc' => $reference] + self::block();
     }
 
     private static function describe(ApplyResult $result): string
@@ -184,10 +199,10 @@ class DocumentApplierCorrectionTest extends TestCase
 
     // ── Blok a dohledání ────────────────────────────────────────────────────
 
-    public function testBlockWithNumberLinksOriginalAndTakesItsNumberAndDate(): void
+    public function testReferenceLinksOriginalAndTakesItsNumberAndDate(): void
     {
-        $applier = $this->applier(byNumber: [self::ORIGINAL]);
-        $result = $applier->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        $applier = $this->applier(original: self::ORIGINAL);
+        $result = $applier->apply(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(1, $this->saved['corrective']);
@@ -195,19 +210,26 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->assertSame('FV26-00123', $this->saved['corrected_doc_number']);
         $this->assertSame('2014-06-10', $this->saved['corrected_doc_date'], 'datum plnění z odkazu přepíše hodnotu bloku');
         $this->assertSame('Sleva za vadu', $this->saved['correction_reason']);
-        $this->assertSame(['number:["FV26-00123","invno",40]'], $this->headQueries, 'jen doklady téhož typu ve stavu V pořádku');
+        $this->assertSame(['pin:[77]'], $this->headQueries, 'applier načte jen doklad, který našel resolver');
 
         $resolve = $result->canonical['_resolve']['correction'];
-        $this->assertSame(['status' => 'matched', 'matchedId' => 77, 'matchedBy' => 'number', 'docNumber' => 'FV26-00123', 'taxPointDate' => '2014-06-10'], $resolve);
+        $this->assertSame(['status' => 'matched', 'matchedId' => 77, 'matchedBy' => 'ref', 'docNumber' => 'FV26-00123', 'taxPointDate' => '2014-06-10'], $resolve);
         $issues = self::issuesByCode($result->canonical);
-        $this->assertArrayNotHasKey('correction_original_not_found', $issues);
-        $this->assertArrayNotHasKey('correction_original_ambiguous', $issues);
+        $this->assertArrayNotHasKey('reference_not_found', $issues);
         $this->assertArrayNotHasKey('correction_not_supported', $issues);
+    }
+
+    public function testReferenceByIdLinksTheSameDocument(): void
+    {
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued(['correction' => self::linked(77)]), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, self::describe($result));
+        $this->assertSame(77, $this->saved['corrected_doc']);
     }
 
     public function testPreviewReturnsCorrectionResolveBlock(): void
     {
-        $result = $this->applier(byNumber: [self::ORIGINAL])->preview(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL)->preview(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame('matched', $result->canonical['_resolve']['correction']['status']);
@@ -233,7 +255,7 @@ class DocumentApplierCorrectionTest extends TestCase
 
     public function testWithoutBlockNothingIsWritten(): void
     {
-        $result = $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued(), ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         foreach (['corrective', 'corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
@@ -243,52 +265,77 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->assertSame([], $this->headQueries);
     }
 
-    public function testImportModeLinksByNumberAndKeepsTargetState(): void
+    public function testImportModeLinksByReferenceAndKeepsTargetState(): void
     {
-        $result = $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued([
-            'correction'   => self::block(),
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
+            'correction'   => self::linked(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ]), ApplyMode::Instruction);
+        ])), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(40, $this->saved['docState']);
         $this->assertSame(1, $this->saved['corrective']);
-        $this->assertSame(77, $this->saved['corrected_doc'], 'seed datové sady obnoví odkaz podle čísla i v import módu');
+        $this->assertSame(77, $this->saved['corrected_doc'], 'seed datové sady obnoví odkaz referencí i v import módu');
         $this->assertSame('2014-06-10', $this->saved['corrected_doc_date']);
     }
 
-    public function testNumberNotFoundKeepsTextAndInforms(): void
+    /** D30: `originalDocNumber` je jen text — podle čísla se nic nedohledává, ani v návrhu. */
+    public function testNumberAloneIsOnlyText(): void
     {
-        $result = $this->applier(byNumber: [])->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(1, $this->saved['corrective']);
         $this->assertArrayNotHasKey('corrected_doc', $this->saved);
         $this->assertSame('FV26-00123', $this->saved['corrected_doc_number'], 'číslo zůstane textem');
         $this->assertSame('2026-03-15', $this->saved['corrected_doc_date'], 'datum plnění z bloku');
-        $issues = self::issuesByCode($result->canonical);
-        $this->assertSame('info', $issues['correction_original_not_found']['severity'] ?? null);
-        $this->assertSame('correction.originalDocNumber', $issues['correction_original_not_found']['path']);
-        $this->assertSame('notFound', $result->canonical['_resolve']['correction']['status']);
+        $this->assertSame([], $this->headQueries);
+        $this->assertSame(['status' => 'none'], $result->canonical['_resolve']['correction']);
+        $this->assertSame([], array_intersect_key(self::issuesByCode($result->canonical), array_flip([
+            'reference_not_found', 'correction_original_not_found', 'correction_original_ambiguous',
+        ])));
     }
 
-    public function testNumberAmbiguousWarnsWithoutLink(): void
+    public function testUnknownReferenceIsAnErrorInBothModes(): void
     {
-        $second = self::ORIGINAL + [];
-        $second['id'] = 78;
-        $result = $this->applier(byNumber: [self::ORIGINAL, $second])->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        foreach ([ApplyMode::Proposal, ApplyMode::Instruction] as $mode) {
+            $payload = self::issued(['correction' => self::linked('@FV99-00001')]);
+            $result = $this->applier()->apply($mode === ApplyMode::Instruction ? self::asInstruction($payload) : $payload, $mode);
 
-        $this->assertTrue($result->success, self::describe($result));
-        $this->assertArrayNotHasKey('corrected_doc', $this->saved);
-        $this->assertSame('FV26-00123', $this->saved['corrected_doc_number']);
-        $issues = self::issuesByCode($result->canonical);
-        $this->assertSame('warning', $issues['correction_original_ambiguous']['severity'] ?? null);
-        $this->assertSame('ambiguous', $result->canonical['_resolve']['correction']['status']);
+            $this->assertFalse($result->success, $mode->value);
+            $this->assertSame('validation_failed', $result->errorCode);
+            $this->assertNull($this->saved);
+            $issue = self::issuesByCode($result->canonical)['reference_not_found'] ?? null;
+            $this->assertSame(['error', 'correction.originalDoc'], [$issue['severity'] ?? null, $issue['path'] ?? null], $mode->value);
+        }
+    }
+
+    /** Číslo dokladu není unikátní napříč typy — víc dokladů je chyba, ne první nalezený (D10). */
+    public function testAmbiguousReferenceIsAnError(): void
+    {
+        $result = $this->applier(original: self::ORIGINAL, known: ['doc_number=FV26-00123' => [77, 78]])
+            ->apply(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
+
+        $this->assertFalse($result->success);
+        $this->assertNull($this->saved);
+        $issue = self::issuesByCode($result->canonical)['reference_ambiguous'] ?? null;
+        $this->assertSame(['error', 'correction.originalDoc'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+    }
+
+    public function testReferenceToDocumentOfOtherTypeIsAnError(): void
+    {
+        $received = self::ORIGINAL;
+        $received['doc_type'] = 'invni';
+        $result = $this->applier(original: $received)->apply(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
+
+        $this->assertFalse($result->success);
+        $issue = self::issuesByCode($result->canonical)['correction_original_not_supported'] ?? null;
+        $this->assertSame(['error', 'correction.originalDoc'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
     }
 
     public function testPinLinksDirectlyAndIgnoresNumberLookup(): void
     {
-        $result = $this->applier(pinned: self::ORIGINAL)->apply(self::issued([
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued([
             'correction' => self::block('jiné číslo'),
             '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
         ]), ApplyMode::Proposal);
@@ -296,32 +343,58 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(77, $this->saved['corrected_doc']);
         $this->assertSame('FV26-00123', $this->saved['corrected_doc_number'], 'číslo z odkazu, ne z bloku');
-        $this->assertSame(['pin:[77]'], $this->headQueries, 'podle čísla se už nehledá');
+        $this->assertSame(['pin:[77]'], $this->headQueries);
         $this->assertSame('pin', $result->canonical['_resolve']['correction']['matchedBy']);
         $this->assertArrayNotHasKey('pin_target_missing', self::issuesByCode($result->canonical));
     }
 
-    public function testMissingPinWarnsAndFallsBackToNumber(): void
+    public function testMissingPinWarnsWithoutLink(): void
     {
-        $result = $this->applier(pinned: null, byNumber: [self::ORIGINAL])->apply(self::issued([
+        $result = $this->applier(original: null)->apply(self::issued([
             'correction' => self::block(),
             '_resolve'   => ['correction' => ['userAction' => 'useExisting:999']],
         ]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
-        $this->assertSame(77, $this->saved['corrected_doc']);
-        $this->assertSame(['pin:[999]', 'number:["FV26-00123","invno",40]'], $this->headQueries);
+        $this->assertArrayNotHasKey('corrected_doc', $this->saved);
+        $this->assertSame('FV26-00123', $this->saved['corrected_doc_number'], 'číslo z bloku zůstává textem');
+        $this->assertSame(['pin:[999]'], $this->headQueries);
         $issues = self::issuesByCode($result->canonical);
         $this->assertSame('warning', $issues['pin_target_missing']['severity'] ?? null);
         $this->assertSame('_resolve.correction', $issues['pin_target_missing']['path']);
-        $this->assertSame('number', $result->canonical['_resolve']['correction']['matchedBy']);
+    }
+
+    /** D32: pokyn volby `_resolve` nečte — odkaz určuje jen `correction.originalDoc`. */
+    public function testInstructionIgnoresPin(): void
+    {
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
+            'correction' => self::block(),
+            '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
+        ])), ApplyMode::Instruction);
+
+        $this->assertTrue($result->success, self::describe($result));
+        $this->assertArrayNotHasKey('corrected_doc', $this->saved);
+        $this->assertSame([], $this->headQueries);
+    }
+
+    public function testReferenceWinsOverPin(): void
+    {
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued([
+            'correction' => self::linked(),
+            '_resolve'   => ['correction' => ['userAction' => 'useExisting:999']],
+        ]), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, self::describe($result));
+        $this->assertSame(77, $this->saved['corrected_doc']);
+        $this->assertSame('ref', $result->canonical['_resolve']['correction']['matchedBy']);
+        $this->assertArrayNotHasKey('pin_target_missing', self::issuesByCode($result->canonical));
     }
 
     public function testPinOnDocumentOfOtherTypeIsMissing(): void
     {
         $received = self::ORIGINAL;
         $received['doc_type'] = 'invni';
-        $result = $this->applier(pinned: $received)->apply(self::issued([
+        $result = $this->applier(original: $received)->apply(self::issued([
             'correction' => self::block(null),
             '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
         ]), ApplyMode::Proposal);
@@ -336,7 +409,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $payload = json_decode((string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Exchange/invoiceReceived_happy.json'), true);
         $payload['correction'] = self::block();
 
-        $result = $this->applier(byNumber: [self::ORIGINAL])->apply($payload, ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL)->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         foreach (['corrective', 'corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
@@ -358,13 +431,13 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->assertSame(12.0, $this->saved['rows'][0]['vat_pct']);
 
         // S odkazem: datum plnění původního dokladu (2014 → 15 %).
-        $result = $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL)->apply(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(15.0, $this->saved['rows'][0]['vat_pct']);
         $this->assertSame('2026-04-15', $this->saved['vat_duzp'], 'DUZP opravného dokladu se nemění');
 
         // Bez odkazu: datum plnění z bloku.
-        $this->applier(byNumber: [])->apply(self::issued(['correction' => self::block(null, '2014-06-10')]), ApplyMode::Proposal);
+        $this->applier()->apply(self::issued(['correction' => self::block(null, '2014-06-10')]), ApplyMode::Proposal);
         $this->assertSame(15.0, $this->saved['rows'][0]['vat_pct']);
 
         // Blok bez data: dnešní pravidlo.
@@ -374,10 +447,10 @@ class DocumentApplierCorrectionTest extends TestCase
 
     public function testVatRateDateAppliesInImportMode(): void
     {
-        $this->applier(byNumber: [self::ORIGINAL])->apply(self::issued([
-            'correction'   => self::block(),
+        $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
+            'correction'   => self::linked(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ]), ApplyMode::Instruction);
+        ])), ApplyMode::Instruction);
 
         $this->assertSame(15.0, $this->saved['rows'][0]['vat_pct']);
     }
@@ -391,8 +464,8 @@ class DocumentApplierCorrectionTest extends TestCase
         $original['doc_currency'] = 'eur';
         $rates = new FakeExchangeRateResolver(['eur' => 25.0]);
 
-        $result = $this->applier(byNumber: [$original], rates: $rates)->apply(self::issued([
-            'currency' => 'EUR', 'correction' => self::block(),
+        $result = $this->applier(original: $original, rates: $rates)->apply(self::issued([
+            'currency' => 'EUR', 'correction' => self::linked(),
         ]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
@@ -408,7 +481,7 @@ class DocumentApplierCorrectionTest extends TestCase
     {
         $rates = new FakeExchangeRateResolver(['eur' => 25.0]);
 
-        $result = $this->applier(byNumber: [], rates: $rates)->apply(self::issued([
+        $result = $this->applier(rates: $rates)->apply(self::issued([
             'currency' => 'EUR', 'correction' => self::block(),
         ]), ApplyMode::Proposal);
 
@@ -425,8 +498,8 @@ class DocumentApplierCorrectionTest extends TestCase
     {
         $rates = new FakeExchangeRateResolver(['eur' => 25.0]);
 
-        $result = $this->applier(byNumber: [self::ORIGINAL], rates: $rates)->apply(self::issued([
-            'currency' => 'EUR', 'correction' => self::block(),
+        $result = $this->applier(original: self::ORIGINAL, rates: $rates)->apply(self::issued([
+            'currency' => 'EUR', 'correction' => self::linked(),
         ]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
@@ -441,13 +514,13 @@ class DocumentApplierCorrectionTest extends TestCase
         $original['doc_currency'] = 'eur';
         $rates = new FakeExchangeRateResolver(['eur' => 25.0]);
 
-        $result = $this->applier(byNumber: [$original], rates: $rates)->apply(self::issued([
-            'currency' => 'EUR', 'exchangeRate' => 23.9, 'correction' => self::block(),
+        $result = $this->applier(original: $original, rates: $rates)->apply(self::issued([
+            'currency' => 'EUR', 'exchangeRate' => 23.9, 'correction' => self::linked(),
         ]), ApplyMode::Proposal);
         $this->assertSame(23.9, $this->saved['exchange_rate']);
         $this->assertArrayNotHasKey('exchange_rate_from_original', self::issuesByCode($result->canonical));
 
-        $result = $this->applier(byNumber: [self::ORIGINAL], rates: $rates)->apply(self::issued(['correction' => self::block()]), ApplyMode::Proposal);
+        $result = $this->applier(original: self::ORIGINAL, rates: $rates)->apply(self::issued(['correction' => self::linked()]), ApplyMode::Proposal);
         $this->assertArrayNotHasKey('exchange_rate', $this->saved);
         $issues = self::issuesByCode($result->canonical);
         $this->assertArrayNotHasKey('exchange_rate_corrective_manual', $issues);
@@ -460,13 +533,13 @@ class DocumentApplierCorrectionTest extends TestCase
         $original['exchange_rate'] = '24.100000';
         $original['doc_currency'] = 'eur';
 
-        $result = $this->applier(byNumber: [$original], rates: null)->apply(self::issued([
-            'currency' => 'EUR', 'correction' => self::block(),
+        $result = $this->applier(original: $original, rates: null)->apply(self::issued([
+            'currency' => 'EUR', 'correction' => self::linked(),
         ]), ApplyMode::Proposal);
         $this->assertSame(24.1, $this->saved['exchange_rate']);
 
         // Bez resolveru není známá domácí měna — chybějící kurz se nehlásí.
-        $result = $this->applier(byNumber: [], rates: null)->apply(self::issued([
+        $result = $this->applier(rates: null)->apply(self::issued([
             'currency' => 'EUR', 'correction' => self::block(),
         ]), ApplyMode::Proposal);
         $this->assertArrayNotHasKey('exchange_rate', $this->saved);

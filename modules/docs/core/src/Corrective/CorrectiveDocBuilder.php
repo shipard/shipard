@@ -14,10 +14,11 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
  * skládají z databáze, nikdy přes DocumentExporter (ten nese applyOptions
  * datových sad — číslo a stav původního dokladu).
  *
- * Přebírá se typ dokladu, partner (pin `_resolve.customer`), měna a kurz,
- * režim DPH, místo plnění, registrace DPH, metoda výpočtu, způsob úhrady,
- * vlastní bankovní účet, dimenze a řada původního dokladu
- * (`applyOptions.numberSeriesId`). Nepřebírají se čísla a symboly, data
+ * Přebírá se typ dokladu, partner, měna a kurz, režim DPH, místo plnění,
+ * registrace DPH, metoda výpočtu, způsob úhrady, vlastní bankovní účet,
+ * dimenze a řada původního dokladu — každý odkaz na záznam referencí id
+ * (#166 D30; generátor zná záznamy z původního dokladu, `_resolve`
+ * neposílá). Nepřebírají se čísla a symboly, data
  * (vystavení = dnes, ostatní doplní dokument), text a poznámky, rekapitulace
  * ani součty (`vatRecap` by převzal rekapitulaci původního dokladu; `totals`
  * jsou v pokynu kontrolní součet a opravný doklad si částky počítá sám,
@@ -28,8 +29,8 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
  * znaménkem — záporné množství a stejná jednotková cena, u řádku z celkové
  * ceny i záporná celková cena, sleva částkou s opačným znaménkem, sleva
  * procentem beze změny; řádek bez množství nese znaménko v ceně. Položky
- * pinem `_resolve.rows[].item`, kódy DPH se přebírají (sazbu určí applier
- * k datu původního plnění).
+ * referencí id, kódy DPH se přebírají (sazbu určí applier k datu původního
+ * plnění).
  */
 final class CorrectiveDocBuilder
 {
@@ -40,12 +41,12 @@ final class CorrectiveDocBuilder
 
     /**
      * @param array<string, mixed>       $head           hlavička původního dokladu (docs_core_heads)
-     *                                                   + `vat_reg_country` (země registrace DPH)
-     * @param list<array<string, mixed>> $rows           řádky původního dokladu (docs_core_rows) + `item_code`,
-     *                                                   `item_name`, `unit_code`, `unit_shortcut`, `dimensions`
-     *                                                   (id dimenze → přirozený klíč)
-     * @param array<string, mixed>|null  $customer       kanonická strana partnera (CanonicalParty), null = bez partnera
-     * @param array<string, string>      $headDimensions id dimenze → přirozený klíč záznamu (hlavička)
+     *                                                   + `vat_registration_ref` (id registrace DPH,
+     *                                                   která k datu vystavení platí; jinak null)
+     * @param list<array<string, mixed>> $rows           řádky původního dokladu (docs_core_rows) + `item_name`,
+     *                                                   `unit_code`, `dimensions` (id dimenze → id záznamu)
+     * @param array<string, mixed>|null  $customer       data partnera (CanonicalParty), null = bez partnera
+     * @param array<string, int>         $headDimensions id dimenze → id záznamu (hlavička)
      * @param string                     $today          datum vystavení `Y-m-d`
      * @return array<string, mixed> canonical `shpd.docs.document`
      */
@@ -55,32 +56,8 @@ final class CorrectiveDocBuilder
         $partnerId = V::int($head['partner'] ?? null);
 
         $canonicalRows = [];
-        $rowResolve = [];
-        $index = 0;
-        foreach ($rows as $row) {
+        foreach (array_values($rows) as $index => $row) {
             $canonicalRows[] = self::canonicalRow($row, $index + 1);
-            $itemId = V::int($row['item'] ?? null);
-            if ($itemId !== null && $itemId > 0) {
-                $rowResolve[] = ['index' => $index, 'item' => ['userAction' => "useExisting:{$itemId}"]];
-            }
-            $index++;
-        }
-
-        $resolve = ['correction' => ['userAction' => "useExisting:{$originalId}"]];
-        if ($partnerId !== null && $partnerId > 0) {
-            $resolve['customer'] = ['userAction' => "useExisting:{$partnerId}"];
-        }
-        if ($rowResolve !== []) {
-            $resolve['rows'] = $rowResolve;
-        }
-
-        $applyOptions = [
-            'targetDocState' => 10,
-            'numberSeriesId' => (int) ($head['number_series'] ?? 0),
-        ];
-        $bankAccount = V::int($head['bank_account'] ?? null);
-        if ($bankAccount !== null) {
-            $applyOptions['importOwnBankAccount'] = $bankAccount;
         }
 
         $canonical = [
@@ -88,7 +65,10 @@ final class CorrectiveDocBuilder
             'formatVersion' => self::FORMAT_VERSION,
             'docType'       => DocumentApplier::canonicalDocType((string) ($head['doc_type'] ?? '')),
             'selfParty'     => 'supplier',
-            'customer'      => $customer,
+            'numberSeries'  => V::int($head['number_series'] ?? null),
+            'customer'      => $customer !== null && $partnerId !== null && $partnerId > 0
+                ? ['ref' => $partnerId] + $customer
+                : null,
             // Jen datum vystavení — DUZP, DPPD, účetní datum a splatnost
             // doplní DocDocument::applyDateDefaults.
             'dates'         => ['issueDate' => $today],
@@ -97,24 +77,24 @@ final class CorrectiveDocBuilder
             'vat'           => V::prune([
                 'mode'                => DocumentApplier::canonicalVatMode((int) ($head['vat_mode'] ?? 1)),
                 'place'               => DocumentApplier::canonicalVatPlace((int) ($head['vat_place'] ?? 0)),
-                'registrationCountry' => V::countryLower($head['vat_reg_country'] ?? null),
+                'registration'        => V::int($head['vat_registration_ref'] ?? null),
                 'calcSource'          => DocumentApplier::canonicalVatCalcSource((int) ($head['vat_calc_source'] ?? 0)),
             ]) ?: null,
             'payment'       => V::prune([
-                'method' => DocumentApplier::canonicalPaymentMethod((int) ($head['payment_method'] ?? 1)),
+                'method'         => DocumentApplier::canonicalPaymentMethod((int) ($head['payment_method'] ?? 1)),
+                'ownBankAccount' => V::int($head['bank_account'] ?? null),
             ]) ?: null,
             'dimensions'    => $headDimensions !== [] ? $headDimensions : null,
-            // Číslo a datum plnění původního dokladu i tak přepíše applier
-            // z odkazu; tady jsou pro případ, že by pin nešel použít.
+            // Číslo a datum plnění původního dokladu přepíše applier z odkazu.
             'correction'    => [
+                'originalDoc'          => $originalId,
                 'originalDocNumber'    => V::str($head['doc_number'] ?? null),
                 'originalTaxPointDate' => V::date($head['vat_duzp'] ?? null) ?? V::date($head['issue_date'] ?? null),
                 'reason'               => null,
             ],
             'source'        => ['kind' => self::SOURCE_KIND],
             'rows'          => $canonicalRows,
-            '_resolve'      => $resolve,
-            'applyOptions'  => $applyOptions,
+            'applyOptions'  => ['targetDocState' => 10],
         ];
 
         // Jen hlavičkové null klíče (customer bez partnera, kurz, dimenze…);
@@ -146,11 +126,12 @@ final class CorrectiveDocBuilder
             return $out;
         }
 
-        $itemCode = V::str($r['item_code'] ?? null);
-        if ($itemCode !== null) {
-            $out['item'] = ['ourCode' => $itemCode, 'name' => V::str($r['item_name'] ?? null)];
+        $itemId = V::int($r['item'] ?? null);
+        if ($itemId !== null && $itemId > 0) {
+            $out['item'] = V::prune(['ref' => $itemId, 'name' => V::str($r['item_name'] ?? null)]);
         }
-        $unit = V::str($r['unit_code'] ?? null) ?? V::str($r['unit_shortcut'] ?? null);
+        // Pokyn bere jen systémový kód jednotky (#166 D37).
+        $unit = V::str($r['unit_code'] ?? null);
         if ($unit !== null) {
             $out['unit'] = $unit;
         }

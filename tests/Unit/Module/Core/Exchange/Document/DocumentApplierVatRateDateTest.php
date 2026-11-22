@@ -44,6 +44,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierVatRateDateTest extends TestCase
 {
+    use ReferenceFixture;
+
     private const ROOT = __DIR__ . '/../../../../../..';
 
     private const IMPORT = ['targetDocState' => 10, 'importNumber' => ['docNumber' => 'FV14-00077', 'sequenceNumber' => 77]];
@@ -192,6 +194,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             accountResolver: $account,
             vatCodeDerivation: new VatCodeDerivation($vatRates),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($tradeConfig)),
+            references: $this->referenceResolver(self::REFERENCE_RECORDS),
         ) extends DocumentApplier {
             protected function executeSql(mixed ...$args): void
             {
@@ -363,7 +366,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         ];
         $payload['applyOptions'] = self::IMPORT;
 
-        $result = $this->applier()->apply($payload, ApplyMode::Instruction);
+        $result = $this->applier()->apply(self::asInstruction($payload), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertNotContains('recap_source_computed_fallback', self::issueCodes($result));
@@ -382,11 +385,11 @@ class DocumentApplierVatRateDateTest extends TestCase
     public function testRowRateDateGivesRateOfCodeValidOnlyInThePast(): void
     {
         // cz-311 (druhá snížená) má sazbu jen 2015–2023.
-        $result = $this->applier()->apply(self::issued(
+        $result = $this->applier()->apply(self::asInstruction(self::issued(
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'rateDate' => '2023-12-15'])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT], ApplyMode::Instruction);
+        ) + ['applyOptions' => self::IMPORT]), ApplyMode::Instruction);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame('cz-311', $this->saved['rows'][0]['vat_code']);
@@ -398,11 +401,11 @@ class DocumentApplierVatRateDateTest extends TestCase
     {
         // Tentýž řádek bez data: kód k únoru 2024 sazbu nemá. Applier ho
         // nesmí tiše nahradit — odmítne ho validace dokumentu (D15).
-        $result = $this->applier()->apply(self::issued(
+        $result = $this->applier()->apply(self::asInstruction(self::issued(
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'pct' => 10])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT], ApplyMode::Instruction);
+        ) + ['applyOptions' => self::IMPORT]), ApplyMode::Instruction);
 
         $this->assertFalse($result->success);
         $this->assertSame(['vat_rate_missing'], $this->validationCodes);

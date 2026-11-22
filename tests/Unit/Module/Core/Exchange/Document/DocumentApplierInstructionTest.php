@@ -36,12 +36,14 @@ final class DocumentApplierInstructionTest extends TestCase
     }
 
     /**
-     * Apply v režimu pokyn. Číselné `totals` se z payloadu berou jen
+     * Apply v režimu pokyn — payload harnessu s referencemi místo údajů,
+     * podle kterých hledá návrh ({@see asInstruction()}). Číselné `totals` se z payloadu berou jen
      * s `$checksum` — testy D19 / D20 payload mění a kontrolní součet
      * (#166 D27) není jejich předmětem ({@see withoutChecksum()}).
      */
     private function instruction(array $payload, ?Connection $db = null, bool $checksum = false): ApplyResult
     {
+        $payload = self::asInstruction($payload);
         return $this->buildApplier($db)->apply($checksum ? $payload : self::withoutChecksum($payload), ApplyMode::Instruction);
     }
 
@@ -555,7 +557,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertNotSame([], $learned($proposal), 'návrh mapování kódu dodavatele zapisuje');
 
         $instruction = $this->buildApplier();
-        $this->assertTrue($instruction->apply(self::withoutChecksum($this->happyPayload()))->success);
+        $this->assertTrue($instruction->apply(self::asInstruction(self::withoutChecksum($this->happyPayload())))->success);
         $this->assertSame([], $learned($instruction));
     }
 
@@ -644,30 +646,73 @@ final class DocumentApplierInstructionTest extends TestCase
 
         $this->assertSame(0, $saved['vat_mode']);
         $this->assertArrayNotHasKey('vat_code', $saved['rows'][0]);
-        $this->assertArrayNotHasKey('vat_registration', $saved, 'bez vat.registrationCountry doklad Bez DPH registraci nedostane');
+        $this->assertArrayNotHasKey('vat_registration', $saved, 'bez vat.registration doklad Bez DPH registraci nedostane');
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($result->canonical));
     }
 
-    public function testRegistrationFollowsDeclaredCountryValidAtDocumentDate(): void
+    /** D36: registrace je reference; mimo import musí k datu dokladu platit. */
+    public function testRegistrationFollowsReference(): void
     {
         [$db, $queries] = $this->registrationDb();
-        $payload = $this->happyPayload();
+        $payload = self::asInstruction($this->happyPayload());
+        $payload['vat']['registration'] = '@cz';
 
         $ctx = $this->vatContextOf($this->buildApplier($db), $payload);
 
         $this->assertSame([5, 'cz'], [$ctx['ownRegistrationId'], $ctx['ownCountry']]);
         $this->assertCount(1, $queries->list);
-        $this->assertStringContainsString('[country] = %s', $queries->list[0][0]);
-        $this->assertStringContainsString('[valid_from]', $queries->list[0][0]);
-        $this->assertSame('cz', $queries->list[0][1]);
-        $this->assertSame('2026-04-15', $queries->list[0][5]);
+        $this->assertStringContainsString('WHERE [id] = %i', $queries->list[0][0]);
+        $this->assertSame(5, $queries->list[0][1]);
+    }
+
+    public function testRegistrationNotValidAtDocumentDateIsAnError(): void
+    {
+        [$db] = $this->registrationDb(validTo: '2025-12-31');
+        $payload = self::asInstruction($this->happyPayload());
+        $payload['vat']['registration'] = '@cz';
+
+        $result = $this->buildApplier($db)->apply(self::withoutChecksum($payload));
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $issue = $this->issues($result->canonical, 'vat_registration_not_valid')[0] ?? null;
+        $this->assertSame(['error', 'vat.registration'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+    }
+
+    public function testUnknownRegistrationReferenceIsAnError(): void
+    {
+        $payload = self::asInstruction($this->happyPayload());
+        $payload['vat']['registration'] = '@sk';
+
+        $result = $this->instruction($payload);
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $issue = $this->issues($result->canonical, 'reference_not_found')[0] ?? null;
+        $this->assertSame(['error', 'vat.registration'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+    }
+
+    /** D39: země registrace je signál návrhu — pokyn ji odmítá, návrh ji čte dál. */
+    public function testRegistrationCountryIsRejectedAsProposalSignal(): void
+    {
+        $payload = self::asInstruction($this->happyPayload());
+        $payload['vat']['registrationCountry'] = 'CZ';
+
+        $result = $this->buildApplier()->apply(self::withoutChecksum($payload));
+
+        $this->assertFalse($result->success);
+        $issue = $this->issues($result->canonical, 'signal_not_allowed')[0] ?? null;
+        $this->assertSame(['error', 'vat.registrationCountry'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+        $this->assertStringContainsString('vat.registration', (string) ($issue['message'] ?? ''));
+
+        $proposal = $this->buildApplier()->preview($this->happyPayload(), ApplyMode::Proposal)->canonical;
+        $this->assertNotContains('signal_not_allowed', $this->issueCodes($proposal));
     }
 
     public function testRegistrationDefaultsToFirstRegistrationLikeTheForm(): void
     {
         [$db, $queries] = $this->registrationDb();
-        $payload = $this->happyPayload();
-        unset($payload['vat']['registrationCountry']);
+        $payload = self::asInstruction($this->happyPayload());
 
         $ctx = $this->vatContextOf($this->buildApplier($db), $payload);
 
@@ -679,19 +724,17 @@ final class DocumentApplierInstructionTest extends TestCase
     /** D22: importní mód platnost registrace k datu nezkoumá. */
     public function testImportModeTakesRegistrationRegardlessOfValidity(): void
     {
-        [$db, $queries] = $this->registrationDb();
-        $payload = $this->happyPayload();
+        [$db, $queries] = $this->registrationDb(validTo: '2025-12-31');
+        $payload = self::asInstruction($this->happyPayload());
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $declared = $this->vatContextOf($this->buildApplier($db), $payload);
-        unset($payload['vat']['registrationCountry']);
         $default = $this->vatContextOf($this->buildApplier($db), $payload);
+        $payload['vat']['registration'] = '@cz';
+        $declared = $this->vatContextOf($this->buildApplier($db), $payload);
 
         $this->assertSame([5, 5], [$declared['ownRegistrationId'], $default['ownRegistrationId']]);
         $this->assertCount(2, $queries->list);
-        foreach ($queries->list as $query) {
-            $this->assertStringNotContainsString('[valid_from]', $query[0]);
-        }
+        $this->assertStringNotContainsString('[valid_from] <=', $queries->list[0][0], 'výchozí registrace bez podmínky platnosti');
     }
 
     /** D22: `importNumber` v režimu návrh je chyba validace — nic se neuloží ani nenahlédne jako import. */
@@ -769,23 +812,24 @@ final class DocumentApplierInstructionTest extends TestCase
     }
 
     /**
-     * DB, která zapisuje dotazy na registrace DPH; vrací registraci cz, id 5.
+     * DB, která zapisuje dotazy na registrace DPH; vrací registraci cz, id 5
+     * (s koncem platnosti `$validTo`).
      *
      * @return array{0: Connection, 1: object{list: list<array<int, mixed>>}}
      */
-    private function registrationDb(): array
+    private function registrationDb(?string $validTo = null): array
     {
         $queries = new class {
             /** @var list<array<int, mixed>> */
             public array $list = [];
         };
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturnCallback(static function (mixed ...$args) use ($queries): ?Row {
+        $db->method('fetch')->willReturnCallback(static function (mixed ...$args) use ($queries, $validTo): ?Row {
             if (!str_contains((string) ($args[0] ?? ''), 'economy_codebooks_vat_registrations')) {
                 return null;
             }
             $queries->list[] = $args;
-            return new Row(['id' => 5, 'country' => 'cz']);
+            return new Row(['id' => 5, 'country' => 'cz', 'valid_from' => null, 'valid_to' => $validTo]);
         });
         $db->method('fetchAll')->willReturn([]);
         return [$db, $queries];

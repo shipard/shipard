@@ -1036,6 +1036,65 @@ class DocumentValidatorTest extends TestCase
         return null;
     }
 
+    // ── Reference (#166 D30, D39) ───────────────────────────────────────────
+
+    /** D39: tři signály návrhu jsou v pokynu chyba s radou; návrh je čte dál. */
+    public function testProposalSignalsAreErrorsOnlyInInstruction(): void
+    {
+        $payload = [
+            'docType' => 'invoiceReceived',
+            'selfParty' => 'customer',
+            'supplier' => ['ref' => 42],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'vat' => ['registrationCountry' => 'CZ'],
+            'rows' => [
+                ['rowKind' => 'item', 'item' => ['ourCode' => 'K-001', 'name' => 'Konzultace'], 'account' => '518100'],
+                ['rowKind' => 'item', 'item' => ['ref' => '@K-001'], 'account' => '@518100'],
+                ['rowKind' => 'item', 'item' => '@K-001', 'account' => 9],
+            ],
+        ];
+
+        $signals = array_values(array_filter(
+            $this->v->validate($payload),
+            static fn (array $i): bool => $i['code'] === 'signal_not_allowed',
+        ));
+        $this->assertSame(
+            ['vat.registrationCountry', 'rows.0.item.ourCode', 'rows.0.account'],
+            array_column($signals, 'path'),
+            'reference na řádcích 1 a 2 signálem nejsou',
+        );
+        $this->assertSame(['error', 'error', 'error'], array_column($signals, 'severity'));
+        $this->assertStringContainsString('vat.registration', $signals[0]['message']);
+        $this->assertStringContainsString('"@K-001"', $signals[1]['message']);
+        $this->assertStringContainsString('"@518100"', $signals[2]['message']);
+
+        $this->assertNull($this->findByCode($this->v->validate($payload, ApplyMode::Proposal), 'signal_not_allowed'));
+    }
+
+    /** Strana i pokladna jen referencí projdou povinnými poli stejně jako objekt. */
+    public function testScalarReferencesSatisfyRequiredFields(): void
+    {
+        $issues = $this->v->validate([
+            'docType' => 'invoiceReceived', 'selfParty' => 'customer', 'supplier' => '@F00001',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item', 'item' => '@K-001', 'quantity' => 1, 'unitPrice' => 100]],
+        ]);
+        $this->assertNull($this->findByCode($issues, 'required'));
+
+        foreach (['@POK', 2] as $cashDesk) {
+            $issues = $this->v->validate([
+                'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => $cashDesk,
+                'dates' => ['issueDate' => '2026-04-15'],
+            ]);
+            $this->assertSame([], array_filter($issues, static fn (array $i): bool => $i['path'] === 'cashDesk'));
+        }
+        $issues = $this->v->validate([
+            'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => '',
+            'dates' => ['issueDate' => '2026-04-15'],
+        ]);
+        $this->assertCount(1, array_filter($issues, static fn (array $i): bool => $i['path'] === 'cashDesk'));
+    }
+
     public function testValueFindingsAreAppended(): void
     {
         // #118 D13: čistý validátor hodnot běží z DocumentValidator — warning na cestě pole.

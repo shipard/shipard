@@ -41,6 +41,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 trait OutOfScopeHarness
 {
+    use ReferenceFixture;
+
     private const ROOT = __DIR__ . '/../../../../../..';
 
     private string $tmpDir;
@@ -222,9 +224,21 @@ trait OutOfScopeHarness
      * @param bool $validateOnSave uložení jako `TableGateway::saveDocument()`: nejdřív
      *        `validate()` dokladu (chyba = `DocumentResult::validationFailed`), pak
      *        `beforeSave()`; varování nese úspěšný výsledek. Doklad pak jede nad `$db`.
+     * @param array<string, array<string, int|list<int>>>|null $records záznamy resolveru
+     *        referencí ({@see ReferenceFixture}); null = výchozí. Resolvery `$party` …
+     *        `$bank` a gateway osob jdou podstrčit testům, které hlídají, co se (ne)volá.
      */
-    private function buildApplier(?Connection $db = null, bool $validateOnSave = false): DocumentApplier
-    {
+    private function buildApplier(
+        ?Connection $db = null,
+        bool $validateOnSave = false,
+        ?array $records = null,
+        ?PartyResolver $party = null,
+        ?ItemResolver $item = null,
+        ?UnitResolver $unit = null,
+        ?AccountResolver $account = null,
+        ?BankAccountResolver $bank = null,
+        ?TransactionlessTableGateway $persons = null,
+    ): DocumentApplier {
         $heads = $this->createMock(TransactionlessTableGateway::class);
         $document = function () use ($db, $validateOnSave): Document {
             $doc = $this->headDocument();
@@ -251,23 +265,33 @@ trait OutOfScopeHarness
             return DocumentResult::ok(['id' => 1234] + $data, $validation);
         });
 
-        $party = $this->createMock(PartyResolver::class);
-        $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
-        $party->method('resolveSelfParty')->willReturn(ResolveResult::matched(1, 'self'));
-        $unit = $this->createMock(UnitResolver::class);
-        $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
-        $item = $this->createMock(ItemResolver::class);
-        $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
-        $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
-        $account = $this->createMock(AccountResolver::class);
-        $account->method('resolve')->willReturn(null);
+        if ($party === null) {
+            $party = $this->createMock(PartyResolver::class);
+            $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
+            $party->method('resolveSelfParty')->willReturn(ResolveResult::matched(1, 'self'));
+        }
+        if ($unit === null) {
+            $unit = $this->createMock(UnitResolver::class);
+            $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
+        }
+        if ($item === null) {
+            $item = $this->createMock(ItemResolver::class);
+            $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
+        }
+        if ($bank === null) {
+            $bank = $this->createMock(BankAccountResolver::class);
+            $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
+        }
+        if ($account === null) {
+            $account = $this->createMock(AccountResolver::class);
+            $account->method('resolve')->willReturn(null);
+        }
 
         return new TestableDocumentApplier(
             db: $db ?? $this->db(),
             config: $this->applierConfig(),
             headsGateway: $heads,
-            personsGateway: $this->createMock(TransactionlessTableGateway::class),
+            personsGateway: $persons ?? $this->createMock(TransactionlessTableGateway::class),
             itemsGateway: $this->createMock(TransactionlessTableGateway::class),
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
             documentValidator: new DocumentValidator(),
@@ -280,6 +304,7 @@ trait OutOfScopeHarness
             vatCodeDerivation: new VatCodeDerivation($this->vatCzRateResolver()),
             vatPlaceDerivation: new VatPlaceDerivation($this->tradeUnionResolver()),
             contentTags: $this->contentTaxonomy(),
+            references: $this->referenceResolver($records ?? self::REFERENCE_RECORDS),
         );
     }
 

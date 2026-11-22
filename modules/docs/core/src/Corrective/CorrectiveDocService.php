@@ -78,7 +78,7 @@ class CorrectiveDocService
     public function createFor(int $docId, ?string $today = null): int
     {
         $head = $this->db->fetch(
-            'SELECT [h.*], [vr.country] AS [vat_reg_country]
+            'SELECT [h.*], [vr.valid_from] AS [vat_reg_valid_from], [vr.valid_to] AS [vat_reg_valid_to]
              FROM [docs_core_heads] AS [h]
              LEFT JOIN [economy_codebooks_vat_registrations] AS [vr] ON [vr.id] = [h.vat_registration]
              WHERE [h.id] = %i',
@@ -97,10 +97,20 @@ class CorrectiveDocService
             throw CorrectiveDocException::sourceInvalid('Opravný doklad jde vystavit jen k dokladu ve stavu V pořádku.');
         }
 
+        $today ??= date('Y-m-d');
+        // Registrace DPH původního dokladu jen když k datu vystavení platí —
+        // výslovná reference na neplatnou registraci je chyba pokynu
+        // (vat_registration_not_valid); bez ní applier doplní výchozí.
+        $from = V::date($head['vat_reg_valid_from'] ?? null);
+        $to = V::date($head['vat_reg_valid_to'] ?? null);
+        $head['vat_registration_ref'] = ($from === null || $from <= $today) && ($to === null || $to >= $today)
+            ? V::int($head['vat_registration'] ?? null)
+            : null;
+
         $dimensions = JournalDimensionSet::fromConfig($this->config);
         $rows = [];
         foreach ($this->rows($docId) as $row) {
-            $row['dimensions'] = $this->dimensionKeys($dimensions, $row, head: false);
+            $row['dimensions'] = $this->dimensionIds($dimensions, $row, head: false);
             $rows[] = $row;
         }
 
@@ -108,8 +118,8 @@ class CorrectiveDocService
             $head,
             $rows,
             CanonicalParty::fromPerson($this->db, V::int($head['partner'] ?? null)),
-            $this->dimensionKeys($dimensions, $head, head: true),
-            $today ?? date('Y-m-d'),
+            $this->dimensionIds($dimensions, $head, head: true),
+            $today,
         );
 
         // Generovaný doklad = pokyn (#166 U10): builder ví, co chce uložit.
@@ -121,16 +131,15 @@ class CorrectiveDocService
     }
 
     /**
-     * Řádky původního dokladu s kódem a názvem položky a kódem jednotky
-     * (přirozené klíče pro canonical; položka navíc pinem podle id).
+     * Řádky původního dokladu s názvem položky a systémovým kódem jednotky
+     * (položka jde do canonicalu referencí id).
      *
      * @return list<array<string, mixed>>
      */
     private function rows(int $docId): array
     {
         $rows = $this->db->fetchAll(
-            'SELECT [r.*], [i.code] AS [item_code], [i.name] AS [item_name],
-                    [u.system_code] AS [unit_code], [u.shortcut] AS [unit_shortcut]
+            'SELECT [r.*], [i.name] AS [item_name], [u.system_code] AS [unit_code]
              FROM [docs_core_rows] AS [r]
              LEFT JOIN [economy_items] AS [i] ON [i.id] = [r.item]
              LEFT JOIN [core_units] AS [u] ON [u.id] = [r.unit]
@@ -142,14 +151,14 @@ class CorrectiveDocService
     }
 
     /**
-     * Dimenze deníku jako přirozené klíče (`exchangeKey` cílové tabulky) — tak je čte
-     * applier (`dimensions` objekt, DimensionResolver); vzor
-     * DocumentExporter::dimensionValues.
+     * Dimenze deníku jako reference id (#166 D30) — tak je čte applier
+     * (objekt `dimensions`, DimensionResolver). Dimenzi, jejíž cílová
+     * tabulka nemá přirozený klíč, formát nenese.
      *
      * @param array<string, mixed> $record hlavička nebo řádek
-     * @return array<string, string> id dimenze → klíč
+     * @return array<string, int> id dimenze → id záznamu
      */
-    private function dimensionKeys(JournalDimensionSet $dimensions, array $record, bool $head): array
+    private function dimensionIds(JournalDimensionSet $dimensions, array $record, bool $head): array
     {
         $out = [];
         foreach ($dimensions as $dimension) {
@@ -164,10 +173,7 @@ class CorrectiveDocService
             if ($recordId === null) {
                 continue;
             }
-            $key = V::str($this->references->keyOf($dimension->table, $recordId));
-            if ($key !== null) {
-                $out[$dimension->id] = $key;
-            }
+            $out[$dimension->id] = $recordId;
         }
         return $out;
     }

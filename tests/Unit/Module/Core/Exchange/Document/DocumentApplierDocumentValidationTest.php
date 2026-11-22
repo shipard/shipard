@@ -54,7 +54,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
      */
     private function payloadWithoutRowCode(int $targetDocState): array
     {
-        $payload = self::withoutChecksum($this->happyPayload());
+        $payload = self::asInstruction(self::withoutChecksum($this->happyPayload()));
         $payload['rows'][0]['vat'] = ['pct' => 21];
         unset($payload['vatRecap'], $payload['rows'][0]['computed']);
         $payload['applyOptions'] = ['targetDocState' => $targetDocState];
@@ -156,7 +156,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         $payload['applyOptions'] = ['targetDocState' => 10];
 
         // Pokyn bez číselných `totals`: řádek bez DPH by neprošel kontrolním součtem (#166 D27).
-        $instruction = $this->applier()->apply(self::withoutChecksum($payload));
+        $instruction = $this->applier()->apply(self::asInstruction(self::withoutChecksum($payload)));
         $proposal = $this->applier()->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($instruction->success && $proposal->success);
@@ -181,21 +181,22 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         $this->assertSame(['rows.1.vat.code'], array_column($this->issuesByCode($result->canonical, 'vat_code_missing'), 'path'));
     }
 
-    /** Chyba dohledání řady je v náhledu pokynu nález s týmž kódem, jaký vrátí apply. */
-    public function testPreviewReportsSaveTargetErrorWithApplyCode(): void
+    /** Řada, která se nenajde, je nález s kódem resolveru — v náhledu pokynu i v apply (jednou). */
+    public function testPreviewReportsSaveTargetReferenceLikeApply(): void
     {
         $payload = $this->payloadWithoutRowCode(10);
-        $payload['applyOptions'] += ['numberSeriesCode' => 'A', 'numberSeriesId' => 7];
+        $payload['numberSeries'] = '@neznama';
 
         $apply = $this->applier()->apply($payload);
         $preview = $this->applier()->preview($payload);
 
-        $this->assertSame('number_series_conflict', $apply->errorCode);
-        $conflict = $this->issuesByCode($preview->canonical, 'number_series_conflict');
-        $this->assertSame([['error', 'applyOptions.numberSeriesId']], array_map(
-            static fn (array $issue): array => [$issue['severity'], $issue['path']],
-            $conflict,
-        ));
+        $this->assertSame('validation_failed', $apply->errorCode);
+        foreach ([$apply, $preview] as $result) {
+            $this->assertSame([['error', 'numberSeries']], array_map(
+                static fn (array $issue): array => [$issue['severity'], $issue['path']],
+                $this->issuesByCode($result->canonical, 'reference_not_found'),
+            ));
+        }
         $this->assertSame([], array_filter(
             $preview->canonical['_resolve']['issues'],
             static fn (array $issue): bool => $issue['path'] === 'number_series',

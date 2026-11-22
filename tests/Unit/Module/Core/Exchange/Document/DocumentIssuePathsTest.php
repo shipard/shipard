@@ -21,7 +21,10 @@ final class DocumentIssuePathsTest extends TestCase
         $this->assertSame('exchangeRate', DocumentIssuePaths::path('exchange_rate', $received, []));
         $this->assertSame('correction.reason', DocumentIssuePaths::path('correction_reason', $received, []));
         $this->assertSame('vatRecap', DocumentIssuePaths::path('recap', $received, []));
-        $this->assertSame('vat.registrationCountry', DocumentIssuePaths::path('vat_registration', $received, []));
+        $this->assertSame('vat.registration', DocumentIssuePaths::path('vat_registration', $received, []));
+        $this->assertSame('numberSeries', DocumentIssuePaths::path('number_series', $received, []));
+        $this->assertSame('payment.ownBankAccount', DocumentIssuePaths::path('bank_account', $received, []));
+        $this->assertSame('correction.originalDoc', DocumentIssuePaths::path('corrected_doc', $received, []));
         $this->assertSame('totals.totalRoundingMode', DocumentIssuePaths::path('total_rounding_mode', $received, []));
         $this->assertSame('totals.totalRoundingAuto', DocumentIssuePaths::path('total_rounding_auto', $received, []));
         $this->assertSame('vat.roundingMode', DocumentIssuePaths::path('vat_rounding_mode', $received, []));
@@ -47,7 +50,7 @@ final class DocumentIssuePathsTest extends TestCase
 
     public function testUnknownColumnStaysAsIs(): void
     {
-        $this->assertSame('number_series', DocumentIssuePaths::path('number_series', [], []));
+        $this->assertSame('transport', DocumentIssuePaths::path('transport', [], []));
         $this->assertSame(ValidationError::FIELD_FORM, DocumentIssuePaths::path(ValidationError::FIELD_FORM, [], []));
         $this->assertSame('rows.0.asset', DocumentIssuePaths::path('rows.0.asset', [], [0]));
     }

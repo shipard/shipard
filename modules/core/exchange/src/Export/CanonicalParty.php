@@ -11,14 +11,39 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * Kanonická strana dokladu (`$defs/Party` výměnného formátu) z osoby
  * adresáře: identifikace, první platná adresa, kontakt. Sdílí ji exportér
  * datových sad (`DocumentExporter`) a generátory dokladů, které skládají
- * kanonický payload z interních dat (periodická fakturace, #110) — strana
- * musí být v payloadu neprázdná i při pinu `_resolve … useExisting:<id>`.
+ * kanonický payload z interních dat (periodická fakturace, #110).
+ *
+ * Strana je objekt s `ref` a daty (#166 D34): exportér píše referenci
+ * přirozeným klíčem (`"@<person_id>"`), generátory id. Data vedle `ref`
+ * jsou dobový snapshot v importním módu; mimo něj je applier nečte.
  */
 final class CanonicalParty
 {
     private const ACTIVE_STATES = [10, 40, 80];
 
     /**
+     * Strana dokladu: `ref` + data osoby.
+     *
+     * @param bool $keyReference reference přirozeným klíčem (`"@<person_id>"`,
+     *        přenosná mezi zdroji dat) místo id; osoba bez `person_id`
+     *        dostane referenci id
+     * @return array<string, mixed>|null null = osoba neexistuje
+     */
+    public static function withReference(Connection $db, ?int $personId, bool $keyReference = false): ?array
+    {
+        $party = self::fromPerson($db, $personId);
+        if ($party === null) {
+            return null;
+        }
+        $key = $keyReference
+            ? V::str($db->fetchSingle('SELECT [person_id] FROM [base_persons_persons] WHERE [id] = %i', $personId))
+            : null;
+        return ['ref' => $key !== null ? '@' . $key : $personId] + $party;
+    }
+
+    /**
+     * Data osoby bez reference (sdílí je i exportéry zakázek a majetku).
+     *
      * @return array<string, mixed>|null null = osoba neexistuje
      */
     public static function fromPerson(Connection $db, ?int $personId): ?array

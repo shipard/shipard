@@ -27,7 +27,8 @@
         "docNumber": { "type": ["string", "null"] },
         "docText":   { "type": ["string", "null"] },
         "selfParty": { "enum": ["supplier", "customer", null] },
-        "cashDesk": { "type": ["string", "null"], "maxLength": 10 },
+        "cashDesk": { "$ref": "#/$defs/Reference" },
+        "numberSeries": { "$ref": "#/$defs/Reference" },
         "cashDirection": { "enum": [1, 2, null] },
         "fiscalPeriodType": { "enum": ["opening", "closing", null] },
         "supplier": { "$ref": "#/$defs/Party" },
@@ -58,6 +59,7 @@
             "properties": {
                 "mode":                { "enum": ["fromBase", "fromTotal", "none", null] },
                 "place":               { "enum": ["domestic", "intracom", "thirdCountry", null] },
+                "registration":        { "$ref": "#/$defs/Reference" },
                 "registrationCountry": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
                 "reverseCharge":       { "type": ["boolean", "null"] },
                 "recapSource":         { "enum": ["computed", "declared", null] },
@@ -72,6 +74,7 @@
             "additionalProperties": false,
             "properties": {
                 "method":         { "type": ["string", "null"] },
+                "ownBankAccount": { "$ref": "#/$defs/Reference" },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol": { "type": ["string", "null"] },
                 "constantSymbol": { "type": ["string", "null"] }
@@ -87,12 +90,13 @@
         },
         "dimensions": {
             "type": ["object", "null"],
-            "additionalProperties": { "type": "string" }
+            "additionalProperties": { "$ref": "#/$defs/Reference" }
         },
         "correction": {
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                "originalDoc":          { "$ref": "#/$defs/Reference" },
                 "originalDocNumber":    { "type": ["string", "null"], "maxLength": 40 },
                 "originalTaxPointDate": { "type": ["string", "null"], "format": "date" },
                 "reason":               { "type": ["string", "null"] }
@@ -132,16 +136,6 @@
             "properties": {
                 "targetDocState":        { "type": "integer", "enum": [10, 40, 30, 80] },
                 "autoCreateMode":        { "enum": ["strict", "safe", "liberal"] },
-                "numberSeriesCode": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Výběr číselné řady v rámci doc_type (%C = docs_core_number_series.doc_number_code). Bez něj platí stávající chování (první aktivní řada). Neznámý kód = apply selže (number_series_not_found), žádný tichý fallback."
-                },
-                "numberSeriesId": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "description": "Výběr číselné řady podle id (docs_core_number_series.id) — pro doklady, které Shipard generuje sám z nastavení (periodická fakturace, #110); kód řady je nepovinný a neunikátní. Řada musí být aktivní a typu docType, jinak number_series_not_found; společně s numberSeriesCode = number_series_conflict."
-                },
                 "createMissingEntities": { "type": "boolean" },
                 "rejectOnIssues": {
                     "type": "array",
@@ -165,12 +159,6 @@
                     "required": ["docNumber", "sequenceNumber"],
                     "additionalProperties": false
                 },
-                "importOwnBankAccount": {
-                    "type": ["integer", "string", "null"],
-                    "minimum": 1,
-                    "minLength": 1,
-                    "description": "Import mode: our own bank account (economy_codebooks_bank_accounts) to set on the document — integer id, or string = codebook `code` (datasets; resolved by the applier, unknown code = own_bank_account_not_found). For issued invoices confirmed at state 40+, bank_account is required and cannot be carried by the standard self-party flow; the importer resolves it and passes it here."
-                },
                 "author": {
                     "type": ["integer", "null"],
                     "minimum": 1,
@@ -190,10 +178,15 @@
         "savedDocId": { "type": ["integer", "null"] }
     },
     "$defs": {
+        "Reference": {
+            "type": ["integer", "string", "null"],
+            "description": "Reference to an existing record: a positive integer = record id, or a string starting with \"@\" = natural key of the target table (\"@K00042\") or a named lookup column (\"@company_id:12345678\"). Exactly one live record must match; not found or ambiguous is an error. Written by scripts, datasets and Shipard itself — a document read from its paper form never carries a reference (omit the field)."
+        },
         "Party": {
-            "type": ["object", "null"],
+            "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
+                "ref":               { "$ref": "#/$defs/Reference" },
                 "name":              { "type": ["string", "null"] },
                 "country":           { "type": ["string", "null"] },
                 "companyId":         { "type": ["string", "null"] },
@@ -262,7 +255,7 @@
                 "vat":            { "$ref": "#/$defs/RowVat" },
                 "computed":       { "$ref": "#/$defs/RowComputed" },
                 "description":      { "type": ["string", "null"] },
-                "account":          { "type": ["string", "null"], "pattern": "^[0-9]+$" },
+                "account":          { "$ref": "#/$defs/Reference" },
                 "accSide":          { "enum": ["debit", "credit", null] },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol":   { "type": ["string", "null"], "maxLength": 20 },
@@ -270,14 +263,15 @@
                 "dueDate":          { "type": ["string", "null"], "format": "date" },
                 "dimensions": {
                     "type": ["object", "null"],
-                    "additionalProperties": { "type": "string" }
+                    "additionalProperties": { "$ref": "#/$defs/Reference" }
                 }
             }
         },
         "RowItem": {
-            "type": ["object", "null"],
+            "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
+                "ref":          { "$ref": "#/$defs/Reference" },
                 "ourCode":      { "type": ["string", "null"] },
                 "supplierCode": { "type": ["string", "null"] },
                 "sku":          { "type": ["string", "null"] },
