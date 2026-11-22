@@ -11,6 +11,7 @@ use Shipard\Core\Database\NestedTransaction;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
@@ -435,6 +436,12 @@ class DocumentApplier
         //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6);
         //    vynechané řádky v nich nejsou (#111 D9).
         $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues, $rowSkips, $mode);
+        // 4. Náhled pokynu (#166 D21, U6): validace dokladu pro cílový stav —
+        //    nález je vidět před uložením. Návrh ji v náhledu nemá (review
+        //    pracuje s konceptem; chybu uložení dostane až apply).
+        if (!$mode->derives()) {
+            $this->appendDocumentValidation($canonical, $resolved, $clientResolve, $rowSkips, $issues, $mode);
+        }
         $enriched = $this->withResolve($canonical, $resolved, $issues);
 
         // preview always succeeds even with errors — client renders the
@@ -589,6 +596,139 @@ class DocumentApplier
     }
 
     /**
+     * Náhled pokynu (#166 D21, U6): spustí `DocDocument::validate()` pro
+     * cílový stav z `applyOptions.targetDocState` nad daty, která by apply
+     * uložil, a nálezy (chyby i varování) přidá do issues. Nic se neukládá.
+     *
+     * Data skládá stejnou cestou jako apply — {@see reconcile()} (spárovaná
+     * id stran a položek), {@see resolveSaveTargets()} bez zakládání řady,
+     * výchozí pohyby řádků a {@see transform()} — a validuje **před**
+     * `computeAmounts()`, v pořadí `TableGateway::saveDocument()`. Chyba
+     * dohledání pokladny, řady nebo vlastního účtu je nález s týmž kódem,
+     * jaký vrátí apply.
+     *
+     * Co náhled posoudit nemůže, nehlásí: nálezy na referenci, kterou apply
+     * teprve založí nebo která čeká na rozhodnutí (partner, položka řádku
+     * a její pohyb), a na řadě, kterou apply teprve zkusí založit. Zámky
+     * záznamu (`TableGateway::enforceLock`) se v náhledu nevyhodnocují.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $resolved      Výstup {@see resolveAll}.
+     * @param array<string, mixed> $clientResolve Klientské `_resolve`.
+     * @param list<int> $rowSkips
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendDocumentValidation(
+        array $canonical,
+        array $resolved,
+        array $clientResolve,
+        array $rowSkips,
+        array &$issues,
+        ApplyMode $mode,
+    ): void {
+        // reconcile() čte autoCreateMode; jeho nálezy (reference čekající na
+        // rozhodnutí) náhled nehlásí — stav referencí nesou bloky `_resolve`.
+        $this->applyOptionsCache = is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : [];
+        $discarded = [];
+        $plan = $this->reconcile($resolved, $clientResolve, $discarded, $rowSkips);
+
+        $targets = $this->resolveSaveTargets($canonical, $issues, provision: false);
+        if ($targets['error'] !== null) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => $targets['error']['path'],
+                'code'     => $targets['error']['code'],
+                'message'  => $targets['error']['message'],
+            ];
+        }
+        $plan['cashDeskId'] = $targets['cashDeskId'];
+        if ($targets['ownBankAccountId'] !== null) {
+            $canonical['applyOptions']['importOwnBankAccount'] = $targets['ownBankAccountId'];
+        }
+
+        try {
+            $plan['rowOperationDefaults'] = $this->defaultRowOperationsForApply($canonical, $plan, self::NO_SIDE_IDS, $discarded);
+            $data = $this->transform($canonical, $plan, self::NO_SIDE_IDS, $targets['numberSeriesId'], $mode);
+            $doc = $this->headsGateway->createDocument($data);
+            // validate() data mění (denormalizace z řady, DPPD) — jen nad kopií.
+            $copy = $data;
+            $validation = $doc->validate($copy);
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'DocumentApplier::preview: document validation failed');
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => '',
+                'code'     => 'document_validation_unavailable',
+                'message'  => 'Validaci dokladu pro cílový stav nešlo v náhledu spustit — nálezy dokladu ukáže až uložení.',
+            ];
+            return;
+        }
+
+        $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
+        $pending = $this->pendingReferenceColumns($canonical, $resolved, $plan, $data, $targets['numberSeriesId'], $rowIndices);
+        $kept = new ValidationResult();
+        foreach ($validation->getErrors() as $error) {
+            if (!in_array($error->column, $pending, true)) {
+                $kept->addError($error->column, $error->message, $error->code);
+            }
+        }
+        foreach ($validation->getWarnings() as $warning) {
+            if (!in_array($warning->column, $pending, true)) {
+                $kept->addWarning($warning->column, $warning->message, $warning->code);
+            }
+        }
+        foreach (DocumentIssuePaths::issues($kept, $canonical, $rowIndices) as $issue) {
+            $issues[] = $issue;
+        }
+    }
+
+    /**
+     * Sloupce dokladu, jejichž nález náhled pokynu nehlásí, protože hodnotu
+     * doplní až apply ({@see appendDocumentValidation()}): řada, kterou
+     * náhled nedohledal; partner, kterého payload nese, ale ještě nemá id
+     * (založí se, nebo čeká na rozhodnutí); položka řádku bez id a pohyb,
+     * který se z ní odvodí.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $resolved
+     * @param array<string, mixed> $plan
+     * @param array<string, mixed> $data    Výstup {@see transform()}.
+     * @param list<int> $rowIndices pozice řádku na dokladu → index canonicalu
+     * @return list<string>
+     */
+    private function pendingReferenceColumns(
+        array $canonical,
+        array $resolved,
+        array $plan,
+        array $data,
+        ?int $numberSeriesId,
+        array $rowIndices,
+    ): array {
+        $pending = [];
+        if ($numberSeriesId === null) {
+            $pending[] = 'number_series';
+        }
+        if (empty($data['partner'])) {
+            $carried = match ($canonical['selfParty'] ?? null) {
+                'customer' => isset($resolved['supplier']),
+                'supplier' => isset($resolved['customer']),
+                default    => isset($resolved['supplier']) || isset($resolved['customer']),
+            };
+            if ($carried) {
+                $pending[] = 'partner';
+            }
+        }
+        foreach ($rowIndices as $position => $index) {
+            $carriesItem = isset($resolved['rows'][$index]['item']);
+            if ($carriesItem && ($plan['resolvedRowItems'][$index] ?? null) === null) {
+                $pending[] = "rows.{$position}.item";
+                $pending[] = "rows.{$position}.operation";
+            }
+        }
+        return $pending;
+    }
+
+    /**
      * Plán pro náhled (D2): tvar {@see reconcile}, ale z klientských
      * rozhodnutí jen vynechané řádky (`rowSkips`, #111 D9) a bez založených
      * entit — strany, položky a účty `null`, jen kódy DPH a jednotky
@@ -712,118 +852,17 @@ class DocumentApplier
             return ApplyResult::error('validation_failed', 'Validace dokumentu selhala.', $enriched);
         }
 
-        // 5a. Pokladna kódem (#59 D12): u typů s řadou vázanou na pokladnu
-        //     (cash, cashreg) určuje řadu; u faktur jde do cash_desk hlavičky,
-        //     ale jen při platbě hotově. Neznámý kód = čistá 422 tady.
+        // 5a–5c. Pokladna, číselná řada a vlastní bankovní účet — čisté chyby
+        //        apply (422) před transakcí, ne pád uvnitř ní.
         $docTypeCode = $this->mapDocType($canonical);
-        $cashDeskCode = $canonical['cashDesk'] ?? null;
-        $cashDeskCode = is_string($cashDeskCode) && trim($cashDeskCode) !== '' ? trim($cashDeskCode) : null;
-        $cashDeskId = null;
-        if ($cashDeskCode !== null) {
-            $cashDeskId = $this->resolveCashDeskIdByCode($cashDeskCode);
-            if ($cashDeskId === null) {
-                return ApplyResult::error(
-                    'cash_desk_not_found',
-                    "Pokladna s kódem '{$cashDeskCode}' nebyla nalezena (economy_codebooks_cash_desks).",
-                    $enriched,
-                    statusCode: 422,
-                );
-            }
+        $targets = $this->resolveSaveTargets($canonical, $validatorIssues, provision: true);
+        if ($targets['error'] !== null) {
+            return ApplyResult::error($targets['error']['code'], $targets['error']['message'], $enriched, statusCode: 422);
         }
-
-        // 5b. Resolve the target number series up-front. An explicit but
-        //     unknown numberSeriesCode must fail as a clean apply-level error
-        //     (422) here, not blow up mid-transaction as internal_error (500).
-        //     Vázaný typ: řada = (doc_type, pokladna), numberSeriesCode se
-        //     ignoruje. Chybí-li řada, nejdřív ji zkusí založit provisioner
-        //     (idempotentní; pokladna importovaná přes generický CRUD nespustí
-        //     afterSave handler, takže řady může dostat až tady) — teprve
-        //     pokladna mimo stav 40 nebo neexistující je chyba. Archivovaná
-        //     pokladna (70) má řady v archivu a přijme ji jen import
-        //     (applyOptions.importNumber) — historické doklady jsou legitimní,
-        //     živý doklad na ni založit nejde (#59 Task E, E2).
-        if ($this->isCashDeskBoundDocType($docTypeCode)) {
-            $importMode = self::isImportMode($canonical);
-            $numberSeriesId = $cashDeskId !== null
-                ? $this->resolveBoundNumberSeries($docTypeCode, $cashDeskId, $importMode)
-                : null;
-            if ($numberSeriesId === null && $cashDeskId !== null) {
-                (new BoundNumberSeriesProvisioner(new DataSourceConnection($this->db), $this->config))
-                    ->provisionForCashDesk($cashDeskId);
-                $numberSeriesId = $this->resolveBoundNumberSeries($docTypeCode, $cashDeskId, $importMode);
-            }
-            if ($numberSeriesId === null) {
-                return ApplyResult::error(
-                    'cash_desk_not_found',
-                    "Pokladna '" . ($cashDeskCode ?? '') . "' nemá číselnou řadu typu {$docTypeCode}"
-                    . ' a nelze ji založit — pokladna není ve stavu V pořádku (40); archivovanou pokladnu přijme jen import.',
-                    $enriched,
-                    statusCode: 422,
-                );
-            }
-        } else {
-            $seriesCode = $canonical['applyOptions']['numberSeriesCode'] ?? null;
-            $seriesCode = is_string($seriesCode) && $seriesCode !== '' ? $seriesCode : null;
-            $seriesIdOption = $canonical['applyOptions']['numberSeriesId'] ?? null;
-            $seriesIdOption = is_int($seriesIdOption) && $seriesIdOption > 0 ? $seriesIdOption : null;
-            if ($seriesCode !== null && $seriesIdOption !== null) {
-                return ApplyResult::error(
-                    'number_series_conflict',
-                    'applyOptions nese numberSeriesCode i numberSeriesId — řadu určuje jen jedno z nich.',
-                    $enriched,
-                    statusCode: 422,
-                );
-            }
-            try {
-                $numberSeriesId = $seriesIdOption !== null
-                    ? $this->resolveNumberSeriesById($docTypeCode, $seriesIdOption)
-                    : $this->resolveNumberSeriesFor($docTypeCode, $seriesCode);
-            } catch (NumberSeriesNotFoundException $e) {
-                return ApplyResult::error('number_series_not_found', $e->getMessage(), $enriched, statusCode: 422);
-            }
-            if ($cashDeskId !== null && ($canonical['payment']['method'] ?? null) !== 'cash') {
-                // DocDocument::validate by odmítl (cash_desk_requires_cash_payment).
-                $validatorIssues[] = [
-                    'severity' => 'warning',
-                    'path'     => 'cashDesk',
-                    'code'     => 'cash_desk_ignored',
-                    'message'  => 'Pokladna má na faktuře smysl jen při platbě hotově — ignorováno.',
-                ];
-                $cashDeskId = null;
-            } elseif ($cashDeskId === null && ($canonical['payment']['method'] ?? null) === 'cash') {
-                // Doklad placený hotově bez `cashDesk` (návrh z AI pokladnu
-                // nezná): výchozí pokladna zdroje dat (`is_default`), aby se
-                // účtoval na 211 místo chybové masky `211???` (#103 F3 nález E).
-                // Bez výchozí pokladny zůstává prázdná — účtování pak ohlásí
-                // cash_desk_account_missing jako dnes.
-                $cashDeskId = $this->resolveDefaultCashDeskId();
-                if ($cashDeskId !== null) {
-                    $validatorIssues[] = [
-                        'severity' => 'info',
-                        'path'     => 'cashDesk',
-                        'code'     => 'cash_desk_defaulted',
-                        'message'  => 'Doklad placený hotově dostal výchozí pokladnu zdroje dat.',
-                    ];
-                }
-            }
-        }
-        $plan['cashDeskId'] = $cashDeskId;
-
-        // 5c. Import mode: vlastní bankovní účet zadaný kódem číselníku
-        //     (datové sady, #40) → id. Neznámý kód = čistá 422 tady, ne pád
-        //     v transakci.
-        $ownBank = $canonical['applyOptions']['importOwnBankAccount'] ?? null;
-        if (is_string($ownBank)) {
-            $ownBankId = $this->resolveOwnBankAccountByCode($ownBank);
-            if ($ownBankId === null) {
-                return ApplyResult::error(
-                    'own_bank_account_not_found',
-                    "Vlastní bankovní účet s kódem '{$ownBank}' nebyl nalezen (economy_codebooks_bank_accounts).",
-                    $enriched,
-                    statusCode: 422,
-                );
-            }
-            $canonical['applyOptions']['importOwnBankAccount'] = $ownBankId;
+        $numberSeriesId = $targets['numberSeriesId'];
+        $plan['cashDeskId'] = $targets['cashDeskId'];
+        if ($targets['ownBankAccountId'] !== null) {
+            $canonical['applyOptions']['importOwnBankAccount'] = $targets['ownBankAccountId'];
         }
 
         // 6–11. Transactional save — NestedTransaction: vlastní transakce,
@@ -832,7 +871,8 @@ class DocumentApplier
         //       Neúspěch closure = rollback vlastní práce; vnější transakce
         //       zůstává volajícímu.
         try {
-            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, $numberSeriesId, $replaceId, $docTypeCode, $mode): array {
+            $savedValidation = null;
+            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, &$savedValidation, $numberSeriesId, $replaceId, $docTypeCode, $mode): array {
             // Přegenerovat (Q2): zámek cílového konceptu — zavře závod
             // „koncept mezitím potvrzený“ (ApplyAbortedException → 409/422).
             $this->lockReplaceTarget($replaceId, $docTypeCode);
@@ -857,20 +897,16 @@ class DocumentApplier
             // Save doc head + rows + vat_recap through DocDocument.
             $result = $this->headsGateway->saveDocument($data);
             if (!$result->isSuccess()) {
-                // DocumentResult::validationFailed() leaves errorMessage null
-                // and carries field-level errors in ValidationResult — bubble
-                // them up explicitly, otherwise the caller only sees the
-                // generic "unknown error" placeholder.
-                $msg = $result->getErrorMessage();
-                if ($msg === null && $result->getValidation() !== null) {
-                    $parts = array_map(
-                        static fn($e) => ($e->column !== '' ? $e->column . ': ' : '') . $e->message,
-                        $result->getValidation()->getErrors(),
-                    );
-                    $msg = $parts !== [] ? implode('; ', $parts) : null;
+                // Doklad neprošel validací DocDocument (#166 D21): chyba apply
+                // s nálezy dokladu, ne internal_error. Výjimka vrátí transakci
+                // (založené entity); nálezy z ní poskládá catch níž.
+                $validation = $result->getValidation();
+                if ($result->getErrorMessage() === null && $validation !== null && !$validation->isValid()) {
+                    throw new DocumentValidationFailedException($validation);
                 }
-                throw new \RuntimeException('Save failed: ' . ($msg ?? 'unknown error'));
+                throw new \RuntimeException('Save failed: ' . ($result->getErrorMessage() ?? 'unknown error'));
             }
+            $savedValidation = $result->getValidation();
             $savedDocId = (int) $result->getData()['id'];
 
             // Per-partner item-code mapping learning — only after we know
@@ -889,8 +925,30 @@ class DocumentApplier
             });
         } catch (ApplyAbortedException $e) {
             return ApplyResult::error($e->errorCode, $e->getMessage(), $enriched, statusCode: $e->statusCode);
+        } catch (DocumentValidationFailedException $e) {
+            // D21 (#166), oba režimy: nálezy dokladu do `_resolve.issues`
+            // s cestou v canonicalu; nic se neuložilo.
+            $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
+            foreach (DocumentIssuePaths::issues($e->validation, $canonical, $rowIndices) as $issue) {
+                $validatorIssues[] = $issue;
+            }
+            return ApplyResult::error(
+                'validation_failed',
+                'Validace dokladu selhala.',
+                $this->withResolve($canonical, $resolved, $validatorIssues),
+                statusCode: 422,
+            );
         } catch (\Throwable $e) {
             return ApplyResult::error('internal_error', $e->getMessage(), $enriched, statusCode: 500);
+        }
+
+        // Varování dokladu z úspěšného uložení (#166 U6) — jen v pokynu:
+        // výstup apply návrhu se nemění, jeho varování ukazuje review.
+        if (!$mode->derives() && $savedValidation !== null) {
+            $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
+            foreach (DocumentIssuePaths::warnings($savedValidation, $canonical, $rowIndices) as $issue) {
+                $validatorIssues[] = $issue;
+            }
         }
 
         // Mark canCreate references as matched (with newly-assigned ids).
@@ -1141,6 +1199,148 @@ class DocumentApplier
             }
         }
         return $out;
+    }
+
+    /**
+     * Cíle uložení, které apply dohledává před transakcí: pokladna kódem,
+     * číselná řada a vlastní bankovní účet kódem (kroky 5a–5c). Společné pro
+     * apply a pro náhled pokynu (#166 U6), aby validace cílového stavu
+     * v náhledu dostala tutéž řadu a pokladnu jako uložení.
+     *
+     * `$provision = false` (náhled) nic nezakládá: chybí-li vázaná řada
+     * existující pokladny, vrátí řadu null **bez chyby** — apply by ji
+     * teprve zkusil založit.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array{numberSeriesId: ?int, cashDeskId: ?int, ownBankAccountId: ?int,
+     *     error: ?array{code: string, message: string, path: string}}
+     */
+    private function resolveSaveTargets(array $canonical, array &$issues, bool $provision): array
+    {
+        // 5a. Pokladna kódem (#59 D12): u typů s řadou vázanou na pokladnu
+        //     (cash, cashreg) určuje řadu; u faktur jde do cash_desk hlavičky,
+        //     ale jen při platbě hotově. Neznámý kód = čistá 422 tady.
+        $docTypeCode = $this->mapDocType($canonical);
+        $fail = static fn (string $code, string $message, string $path): array => [
+            'numberSeriesId' => null, 'cashDeskId' => null, 'ownBankAccountId' => null,
+            'error' => ['code' => $code, 'message' => $message, 'path' => $path],
+        ];
+        $cashDeskCode = $canonical['cashDesk'] ?? null;
+        $cashDeskCode = is_string($cashDeskCode) && trim($cashDeskCode) !== '' ? trim($cashDeskCode) : null;
+        $cashDeskId = null;
+        if ($cashDeskCode !== null) {
+            $cashDeskId = $this->resolveCashDeskIdByCode($cashDeskCode);
+            if ($cashDeskId === null) {
+                return $fail(
+                    'cash_desk_not_found',
+                    "Pokladna s kódem '{$cashDeskCode}' nebyla nalezena (economy_codebooks_cash_desks).",
+                    'cashDesk',
+                );
+            }
+        }
+
+        // 5b. Resolve the target number series up-front. An explicit but
+        //     unknown numberSeriesCode must fail as a clean apply-level error
+        //     (422) here, not blow up mid-transaction as internal_error (500).
+        //     Vázaný typ: řada = (doc_type, pokladna), numberSeriesCode se
+        //     ignoruje. Chybí-li řada, nejdřív ji zkusí založit provisioner
+        //     (idempotentní; pokladna importovaná přes generický CRUD nespustí
+        //     afterSave handler, takže řady může dostat až tady) — teprve
+        //     pokladna mimo stav 40 nebo neexistující je chyba. Archivovaná
+        //     pokladna (70) má řady v archivu a přijme ji jen import
+        //     (applyOptions.importNumber) — historické doklady jsou legitimní,
+        //     živý doklad na ni založit nejde (#59 Task E, E2).
+        if ($this->isCashDeskBoundDocType($docTypeCode)) {
+            $importMode = self::isImportMode($canonical);
+            $numberSeriesId = $cashDeskId !== null
+                ? $this->resolveBoundNumberSeries($docTypeCode, $cashDeskId, $importMode)
+                : null;
+            if ($numberSeriesId === null && $cashDeskId !== null && $provision) {
+                (new BoundNumberSeriesProvisioner(new DataSourceConnection($this->db), $this->config))
+                    ->provisionForCashDesk($cashDeskId);
+                $numberSeriesId = $this->resolveBoundNumberSeries($docTypeCode, $cashDeskId, $importMode);
+            }
+            if ($numberSeriesId === null && ($provision || $cashDeskId === null)) {
+                return $fail(
+                    'cash_desk_not_found',
+                    "Pokladna '" . ($cashDeskCode ?? '') . "' nemá číselnou řadu typu {$docTypeCode}"
+                    . ' a nelze ji založit — pokladna není ve stavu V pořádku (40); archivovanou pokladnu přijme jen import.',
+                    'cashDesk',
+                );
+            }
+        } else {
+            $seriesCode = $canonical['applyOptions']['numberSeriesCode'] ?? null;
+            $seriesCode = is_string($seriesCode) && $seriesCode !== '' ? $seriesCode : null;
+            $seriesIdOption = $canonical['applyOptions']['numberSeriesId'] ?? null;
+            $seriesIdOption = is_int($seriesIdOption) && $seriesIdOption > 0 ? $seriesIdOption : null;
+            if ($seriesCode !== null && $seriesIdOption !== null) {
+                return $fail(
+                    'number_series_conflict',
+                    'applyOptions nese numberSeriesCode i numberSeriesId — řadu určuje jen jedno z nich.',
+                    'applyOptions.numberSeriesId',
+                );
+            }
+            try {
+                $numberSeriesId = $seriesIdOption !== null
+                    ? $this->resolveNumberSeriesById($docTypeCode, $seriesIdOption)
+                    : $this->resolveNumberSeriesFor($docTypeCode, $seriesCode);
+            } catch (NumberSeriesNotFoundException $e) {
+                return $fail(
+                    'number_series_not_found',
+                    $e->getMessage(),
+                    $seriesIdOption !== null ? 'applyOptions.numberSeriesId' : 'applyOptions.numberSeriesCode',
+                );
+            }
+            if ($cashDeskId !== null && ($canonical['payment']['method'] ?? null) !== 'cash') {
+                // DocDocument::validate by odmítl (cash_desk_requires_cash_payment).
+                $issues[] = [
+                    'severity' => 'warning',
+                    'path'     => 'cashDesk',
+                    'code'     => 'cash_desk_ignored',
+                    'message'  => 'Pokladna má na faktuře smysl jen při platbě hotově — ignorováno.',
+                ];
+                $cashDeskId = null;
+            } elseif ($cashDeskId === null && ($canonical['payment']['method'] ?? null) === 'cash') {
+                // Doklad placený hotově bez `cashDesk` (návrh z AI pokladnu
+                // nezná): výchozí pokladna zdroje dat (`is_default`), aby se
+                // účtoval na 211 místo chybové masky `211???` (#103 F3 nález E).
+                // Bez výchozí pokladny zůstává prázdná — účtování pak ohlásí
+                // cash_desk_account_missing jako dnes.
+                $cashDeskId = $this->resolveDefaultCashDeskId();
+                if ($cashDeskId !== null) {
+                    $issues[] = [
+                        'severity' => 'info',
+                        'path'     => 'cashDesk',
+                        'code'     => 'cash_desk_defaulted',
+                        'message'  => 'Doklad placený hotově dostal výchozí pokladnu zdroje dat.',
+                    ];
+                }
+            }
+        }
+
+        // 5c. Import mode: vlastní bankovní účet zadaný kódem číselníku
+        //     (datové sady, #40) → id. Neznámý kód = čistá 422 tady, ne pád
+        //     v transakci.
+        $ownBank = $canonical['applyOptions']['importOwnBankAccount'] ?? null;
+        $ownBankId = null;
+        if (is_string($ownBank)) {
+            $ownBankId = $this->resolveOwnBankAccountByCode($ownBank);
+            if ($ownBankId === null) {
+                return $fail(
+                    'own_bank_account_not_found',
+                    "Vlastní bankovní účet s kódem '{$ownBank}' nebyl nalezen (economy_codebooks_bank_accounts).",
+                    'applyOptions.importOwnBankAccount',
+                );
+            }
+        }
+
+        return [
+            'numberSeriesId'   => $numberSeriesId,
+            'cashDeskId'       => $cashDeskId,
+            'ownBankAccountId' => $ownBankId,
+            'error'            => null,
+        ];
     }
 
     // ── Reconcile: validate userAction → execution plan ─────────────────────

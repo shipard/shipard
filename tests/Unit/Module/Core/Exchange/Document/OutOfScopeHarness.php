@@ -217,16 +217,36 @@ trait OutOfScopeHarness
         return self::$contentTaxonomy;
     }
 
-    /** @param Connection|null $db DB applieru; výchozí zdroj s registrací DPH ({@see db()}). */
-    private function buildApplier(?Connection $db = null): DocumentApplier
+    /**
+     * @param Connection|null $db DB applieru; výchozí zdroj s registrací DPH ({@see db()}).
+     * @param bool $validateOnSave uložení jako `TableGateway::saveDocument()`: nejdřív
+     *        `validate()` dokladu (chyba = `DocumentResult::validationFailed`), pak
+     *        `beforeSave()`; varování nese úspěšný výsledek. Doklad pak jede nad `$db`.
+     */
+    private function buildApplier(?Connection $db = null, bool $validateOnSave = false): DocumentApplier
     {
         $heads = $this->createMock(TransactionlessTableGateway::class);
-        $heads->method('createDocument')->willReturnCallback(fn (array $data): Document => $this->headDocument());
+        $document = function () use ($db, $validateOnSave): Document {
+            $doc = $this->headDocument();
+            if ($validateOnSave && $db !== null) {
+                $doc->setDb($db);
+            }
+            return $doc;
+        };
+        $heads->method('createDocument')->willReturnCallback(static fn (array $data): Document => $document());
         $this->savedHeadsData = null;
-        $heads->method('saveDocument')->willReturnCallback(function (array $data): DocumentResult {
-            $this->headDocument()->beforeSave($data);
+        $heads->method('saveDocument')->willReturnCallback(function (array $data) use ($document, $validateOnSave): DocumentResult {
+            $doc = $document();
+            $validation = null;
+            if ($validateOnSave) {
+                $validation = $doc->validate($data);
+                if (!$validation->isValid()) {
+                    return DocumentResult::validationFailed($validation);
+                }
+            }
+            $doc->beforeSave($data);
             $this->savedHeadsData = $data;
-            return DocumentResult::ok(['id' => 1234]);
+            return DocumentResult::ok(['id' => 1234], $validation);
         });
 
         $party = $this->createMock(PartyResolver::class);
