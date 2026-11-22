@@ -157,6 +157,28 @@ etapa 3 (#166 D11).
 
 ## Co je potřeba udělat
 
+### Commit 0 — oprava z ověření etapy 2: export dokladu bez tabulky dimenze
+
+Nález z ověření `tasks/exchange-key-references.md` (#166, komentář
+2026-11-22). `DocumentExporter::__construct()` hodí `LogicException`, když
+v předaných definicích chybí cílová tabulka některé dimenze deníku.
+Dimenze deklaruje `economy.accounting`, který na modulech zakázek
+a majetku nezávisí — zdroj dat s účetnictvím bez některého z nich by
+doklady nevyexportoval (`dataset-dump`, `dataset-verify`). Před etapou 2
+se taková dimenze jen nepřenesla.
+
+1. Chybějící definice cílové tabulky = dimenze **není přenosná**: stejná
+   větev jako tabulka bez `exchangeKey` (hodnota se nepřenese, varování
+   jen když ji některý doklad opravdu nese). Výjimka zmizí.
+2. Rozliš to od volajícího, který definice nepředal vůbec: `DocumentExporter`
+   bez konfigurace dimenzí funguje dál jako dnes (unit testy bez
+   `$tables`); s konfigurací dimenzí a prázdným `$tables` nejsou přenosné
+   žádné — neházej výjimku, test v `DocumentExporterTest`, který ji dnes
+   čeká, přepiš na „dimenze se nepřenáší + varování“.
+3. Test: konfigurace se třemi dimenzemi, definice jen pro středisko →
+   export projde, středisko se přenese, hodnota zakázky a majetku dá
+   varování.
+
 ### Commit 1 — sloupce, generátory, Document (U1–U4, U7)
 
 1. Definice tabulek: `code`, unikátní index, `exchangeKey`, popisky.
@@ -239,6 +261,8 @@ etapa 3 (#166 D11).
 
 ## Hotovo když
 
+- [ ] `DocumentExporter` bez definice cílové tabulky dimenze nepadá —
+      dimenze se nepřenese (commit 0)
 - [ ] obě tabulky mají `code` s unikátním indexem a `exchangeKey`
 - [ ] nový záznam (formulář, provisionery, líné založení) má kód podle
       D17; existující ho dostanou při `ds-upgrade`, idempotentně

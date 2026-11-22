@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 469 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 439.
+Celkem 471 tasků: **naplánováno** 7 · **částečně** 24 · **zrušeno** 1 · **hotovo** 439.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,8 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `doc-apply-instruction-mode.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část A; D18–D24) |
+| `doc-totals-rounding-explicit.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část B; D4); až po `tasks/doc-apply-instruction-mode.md`; upřesnění U1–U4 čekají na potvrzení |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `number-series-vat-registration-codes.md` | naplánováno | zadání 2026-11-22 (#166 D16, D17); až po `tasks/exchange-key-references.md` |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -298,6 +300,8 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `doc-saving-safety-net.md` | Pojistka před přestavbou ukládání dokladů: integrační matice round-tripu uložený doklad → export → apply → uložený doklad nad všemi sloupci z definic tabulek, známé mezery s přesným rozdílem (#166 etapa 1) |
 | `exchange-key-references.md` | Přirozený klíč tabulky `exchangeKey` v definici tabulky, parser gramatiky reference (`42`, `"@klíč"`, `"@sloupec:hodnota"`) a obecný `ReferenceResolver`; přechod datových sad a dimenzí, formát dokladu beze změny (#166 etapa 2, D8–D10) |
 | `number-series-vat-registration-codes.md` | Kód číselné řady dokladů a registrace DPH jako přirozený klíč: sloupec `code` s unikátním indexem, generátor (`invno`, `cash-<pokladna>`, `cz`), doplnění existujícím záznamům v `ds-upgrade`, formuláře; datové sady odkazují řadu kódem místo `{docType, code}` (#166 D16, D17) |
+| `doc-apply-instruction-mode.md` | Pokyn × návrh: režim applieru jako parametr volání, pokyn bez odvozování ze signálů (místo plnění, kód a režim DPH, rekapitulace, zaokrouhlení), chyby dokladu jako 422, importní mód jen pro historii, test payloadů importu; REST, datové sady a generátory na pokyn (#166 etapa 3, D18–D24) |
+| `doc-totals-rounding-explicit.md` | `totals` jako kontrolní součet pokynu (`totals_check_failed`) a výslovný mód zaokrouhlení ve výměnném formátu (`totals.totalRoundingMode`, `vat.roundingMode`), export nevýchozích hodnot; zavírá poslední mezeru matice round-tripu (#166 etapa 3, D4) |
 | `exchange-format-phase3a.md` | Vizualizace canonical + PDF split-view |
 | `exchange-format-phase3b.md` | Interakce s `_resolve` |
 | `exchange-resolve-decision-ui.md` | Rebuild rozhodování canCreate/ambiguous/notFound + smart totals |
