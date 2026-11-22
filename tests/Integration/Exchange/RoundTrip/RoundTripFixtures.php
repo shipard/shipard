@@ -44,6 +44,19 @@ final class RoundTripFixtures
         'supplier'   => ['IT-RT-P2', 'Dodavatel s.r.o.', '88200019', 'CZ88200019', 'cz', 'Olomouc'],
         'nonPayer'   => ['IT-RT-P3', 'Neplátce s.r.o.', '88300013', '', 'cz', 'Zlín'],
         'euSupplier' => ['IT-RT-P4', 'Lieferant GmbH', '', 'DE811234567', 'de', 'Berlin'],
+        'emptyTexts' => ['IT-RT-P5', 'Prázdné texty s.r.o.', '88400018', '', 'cz', 'Jihlava'],
+    ];
+
+    /**
+     * Osoba, kterou adresář drží s prázdnými řetězci místo `NULL` (#166 D29):
+     * sloupce osoby a adresy navíc. Snapshot z formuláře i z importu z nich
+     * musí dát `null`.
+     */
+    private const PERSON_EMPTY_TEXTS = [
+        'emptyTexts' => [
+            'person'  => ['court_registration' => '', 'email' => '', 'phone' => '', 'web' => '', 'gov_e_box_id' => ''],
+            'address' => ['city_part' => '', 'display_line' => ''],
+        ],
     ];
 
     private readonly VatRateResolver $vatRates;
@@ -220,7 +233,7 @@ final class RoundTripFixtures
             'vat_id'       => $vatId,
             'docState'     => 40,
             'docStateMain' => 3,
-        ]);
+        ] + (self::PERSON_EMPTY_TEXTS[$key]['person'] ?? []));
         $addressId = $this->db->insertRow('base_persons_addresses', [
             'person'       => $id,
             'address_type' => 1,
@@ -231,7 +244,7 @@ final class RoundTripFixtures
             'country'      => $country,
             'docState'     => 40,
             'docStateMain' => 3,
-        ]);
+        ] + (self::PERSON_EMPTY_TEXTS[$key]['address'] ?? []));
         $this->labels['base_persons_persons'][$id] = "@{$key}";
         $this->labels['base_persons_addresses'][$addressId] = "@{$key}.address";
         return $this->persons[$key] = $id;

@@ -72,10 +72,18 @@ final class PersonSnapshotBuilder
 
     /**
      * Tvar snapshotu osoby s adresou z hodnot sloupců — **jediné místo
-     * klíčů**. Staví jím {@see build()} z adresáře i importní mód výměnného
-     * formátu z kanonické strany dokladu (`DocumentApplier`, #166 D23), aby
-     * dobový snapshot z importu měl stejné klíče jako snapshot z formuláře.
-     * Hodnoty nemění; chybějící sloupec = null.
+     * klíčů a jediné pravidlo prázdné hodnoty**. Staví jím {@see build()}
+     * z adresáře i importní mód výměnného formátu z kanonické strany dokladu
+     * (`DocumentApplier`, #166 D23), aby dobový snapshot z importu měl stejné
+     * klíče i hodnoty jako snapshot z formuláře.
+     *
+     * Prázdná hodnota je vždy `null` (#166 D29): chybějící sloupec, `null`,
+     * prázdný řetězec i řetězec ze samých mezer — u identifikátorů, zápisu
+     * v rejstříku, kontaktu i adresy ({@see emptyToNull()}). Adresář drží
+     * prázdné hodnoty u jedné osoby jako `''`, u druhé jako `NULL`; snapshot
+     * ten rozdíl nepřenáší. Vyplněnou hodnotu nemění. `name` zůstává
+     * řetězec. Uložené snapshoty se nepřepisují — čtenář bere `null`, `''`
+     * i chybějící klíč stejně.
      *
      * Web a ID datové schránky přibyly s kontakty v zápatí tisku (#162
      * D133); snapshoty dokladů vystavených dřív je nemají a nedopočítávají
@@ -89,30 +97,39 @@ final class PersonSnapshotBuilder
     {
         $snap = [
             'name'               => (string) ($person['full_name'] ?? ''),
-            'company_id'         => $person['company_id']         ?? null,
-            'tax_id'             => $person['tax_id']             ?? null,
-            'vat_id'             => $person['vat_id']             ?? null,
-            'court_registration' => $person['court_registration'] ?? null,
+            'company_id'         => self::emptyToNull($person['company_id']         ?? null),
+            'tax_id'             => self::emptyToNull($person['tax_id']             ?? null),
+            'vat_id'             => self::emptyToNull($person['vat_id']             ?? null),
+            'court_registration' => self::emptyToNull($person['court_registration'] ?? null),
             'contact'            => [
-                'email'        => $person['email']        ?? null,
-                'phone'        => $person['phone']        ?? null,
-                'web'          => $person['web']          ?? null,
-                'gov_e_box_id' => $person['gov_e_box_id'] ?? null,
+                'email'        => self::emptyToNull($person['email']        ?? null),
+                'phone'        => self::emptyToNull($person['phone']        ?? null),
+                'web'          => self::emptyToNull($person['web']          ?? null),
+                'gov_e_box_id' => self::emptyToNull($person['gov_e_box_id'] ?? null),
             ],
         ];
         if ($address !== null) {
             $snap['address'] = [
-                'street'        => $address['street']        ?? null,
-                'house_number'  => $address['house_number']  ?? null,
-                'city'          => $address['city']          ?? null,
-                'city_part'     => $address['city_part']     ?? null,
-                'zip'           => $address['zip']           ?? null,
-                'country'       => $address['country']       ?? null,
-                'display_block' => $address['display_block'] ?? null,
-                'display_line'  => $address['display_line']  ?? null,
+                'street'        => self::emptyToNull($address['street']        ?? null),
+                'house_number'  => self::emptyToNull($address['house_number']  ?? null),
+                'city'          => self::emptyToNull($address['city']          ?? null),
+                'city_part'     => self::emptyToNull($address['city_part']     ?? null),
+                'zip'           => self::emptyToNull($address['zip']           ?? null),
+                'country'       => self::emptyToNull($address['country']       ?? null),
+                'display_block' => self::emptyToNull($address['display_block'] ?? null),
+                'display_line'  => self::emptyToNull($address['display_line']  ?? null),
             ];
         }
         return $snap;
+    }
+
+    /**
+     * Pravidlo prázdné hodnoty snapshotu (#166 D29): prázdný řetězec a řetězec
+     * ze samých mezer je `null`; cokoli jiného se vrací beze změny.
+     */
+    public static function emptyToNull(mixed $value): mixed
+    {
+        return is_string($value) && trim($value) === '' ? null : $value;
     }
 
     /**
@@ -149,11 +166,11 @@ final class PersonSnapshotBuilder
             );
             if ($bank !== null) {
                 $snap['bank_account'] = [
-                    'name'           => $bank['name']           ?? null,
-                    'account_number' => $bank['account_number'] ?? null,
-                    'iban'           => $bank['iban']           ?? null,
-                    'bic'            => $bank['bic']            ?? null,
-                    'currency'       => $bank['currency']       ?? null,
+                    'name'           => self::emptyToNull($bank['name']           ?? null),
+                    'account_number' => self::emptyToNull($bank['account_number'] ?? null),
+                    'iban'           => self::emptyToNull($bank['iban']           ?? null),
+                    'bic'            => self::emptyToNull($bank['bic']            ?? null),
+                    'currency'       => self::emptyToNull($bank['currency']       ?? null),
                 ];
             }
         }
@@ -165,8 +182,8 @@ final class PersonSnapshotBuilder
             );
             if ($reg !== null) {
                 $snap['vat_registration'] = [
-                    'country' => $reg['country'] ?? null,
-                    'vat_id'  => $reg['vat_id']  ?? null,
+                    'country' => self::emptyToNull($reg['country'] ?? null),
+                    'vat_id'  => self::emptyToNull($reg['vat_id']  ?? null),
                 ];
             }
         }

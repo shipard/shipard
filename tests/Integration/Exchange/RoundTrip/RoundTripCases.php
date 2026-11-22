@@ -96,6 +96,18 @@ final class RoundTripCases
             ),
 
             RoundTripCase::holds(
+                'issued-partner-empty-texts',
+                'faktura vydaná, odběratel s prázdnými řetězci v adresáři (DIČ, kontakt, web, datová schránka)',
+                // Snapshot z formuláře čte adresář (`''`), import kanonickou stranu
+                // dokladu (pole chybí) — oba dávají `null` (#166 D29).
+                static fn (F $f): array => $f->issuedHead('vydaná odběrateli s prázdnými texty', [
+                    'partner' => $f->person('emptyTexts'),
+                ]) + ['rows' => [
+                    $f->row(true, 'práce', 1, 1000.00, $f->vatCode('output', 'domestic', 'standard')),
+                ]],
+            ),
+
+            RoundTripCase::holds(
                 'issued-corrective',
                 'opravný daňový doklad (příznak, blok correction)',
                 static function (F $f): array {

@@ -1856,8 +1856,8 @@ class DocumentApplierTest extends TestCase
 
     public function testTransformImportSnapshotOmitsMissingSections(): void
     {
-        // Bez adresy sekce chybí úplně; prázdné identifikátory jsou prázdný
-        // řetězec jako ve snapshotu z adresáře (#166 D23), kontakt null.
+        // Bez adresy sekce chybí úplně; prázdná hodnota je `null` u všech
+        // polí, jako ve snapshotu z adresáře (#166 D29).
         $applier = $this->buildApplier();
         $canonical = [
             'docType'   => 'invoiceReceived',
@@ -1870,8 +1870,9 @@ class DocumentApplierTest extends TestCase
         $snap = $this->invokeTransform($applier, $canonical)['_importPartnerSnapshot'];
 
         $this->assertSame('Beta s.r.o.', $snap['name']);
-        $this->assertSame('', $snap['vat_id']);
-        $this->assertSame('', $snap['tax_id']);
+        $this->assertSame('111', $snap['company_id']);
+        $this->assertNull($snap['vat_id']);
+        $this->assertNull($snap['tax_id']);
         $this->assertNull($snap['court_registration']);
         $this->assertArrayNotHasKey('address', $snap);
         $this->assertArrayNotHasKey('bank_account', $snap);

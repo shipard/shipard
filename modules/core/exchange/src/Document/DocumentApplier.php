@@ -2127,8 +2127,8 @@ class DocumentApplier
     /**
      * Import mód: přeloží kanonickou stranu partnera (supplier/customer dle
      * selfParty) do tvaru snapshotu z formuláře — {@see PersonSnapshotBuilder::shape()}
-     * a `buildPartner()`: stejné klíče, bez bankovního spojení, prázdné
-     * identifikátory stejnou hodnotou (#166 D23).
+     * a `buildPartner()`: stejné klíče, bez bankovního spojení (#166 D23),
+     * prázdná hodnota vždy `null` (D29).
      * DocDocument ji persistuje jako dobový snapshot partnera — snapshoty se
      * u importu nestaví z dnešního adresáře, dobová data (především `vat_id`
      * pro kontrolní hlášení) nese payload; za jejich dobovost odpovídá
@@ -2166,9 +2166,9 @@ class DocumentApplier
             return null;
         }
 
-        // Prázdná hodnota: kontakt a adresa null; identifikátory prázdný
-        // řetězec — tak je drží adresář, a tedy i snapshot z formuláře
-        // (#166 D23). Klíče dává PersonSnapshotBuilder::shape().
+        // Hodnoty z payloadu se ořezávají; prázdná je `null` u všech polí —
+        // jedno pravidlo se snapshotem z formuláře (#166 D29). Klíče
+        // i pravidlo prázdné hodnoty dává PersonSnapshotBuilder::shape().
         $s = static function (mixed $v): ?string {
             if ($v === null) {
                 return null;
@@ -2176,7 +2176,6 @@ class DocumentApplier
             $t = trim((string) $v);
             return $t === '' ? null : $t;
         };
-        $id = static fn (mixed $v): string => $s($v) ?? '';
 
         $addr = is_array($party['address'] ?? null) ? $party['address'] : [];
         $country = $s($addr['country'] ?? null);
@@ -2187,9 +2186,9 @@ class DocumentApplier
         return PersonSnapshotBuilder::shape(
             [
                 'full_name'          => (string) ($party['name'] ?? ''),
-                'company_id'         => $id($party['companyId'] ?? null),
-                'tax_id'             => $id($party['taxId'] ?? null),
-                'vat_id'             => $id($party['vatId'] ?? null),
+                'company_id'         => $s($party['companyId'] ?? null),
+                'tax_id'             => $s($party['taxId'] ?? null),
+                'vat_id'             => $s($party['vatId'] ?? null),
                 'court_registration' => $s($party['courtRegistration'] ?? null),
                 'email'              => $s($party['contact']['email'] ?? null),
                 'phone'              => $s($party['contact']['phone'] ?? null),
