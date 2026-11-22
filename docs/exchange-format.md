@@ -145,7 +145,7 @@ ignorují s info `vat_pin_ignored`.
 | `vat.mode` | z payloadu; chybí = `fromBase`. Doklad s `none` kódy řádků nenese (jako ve formuláři) a neověřují se |
 | `rows[].vat.code` | z payloadu, ověřený proti číselníku země registrace k datu sazby řádku; neznámý = chyba `vat_code_unknown`. Řádek bez kódu (i s objektem `vat` bez `code`) je „nevyplněno“ a rozhodne `DocDocument` (`vat_code_missing`, `docs/vat-calculation.md` § 1.1) |
 | `rows[].vat.pct` | nepoužije se — procento je vždy z kódu a data sazby |
-| registrace DPH | `vat.registrationCountry` → registrace té země; bez údaje výchozí registrace zdroje dat jako ve formuláři (první podle země a id), jen u dokladu s DPH. Mimo importní mód musí platit k datu dokladu |
+| registrace DPH | reference `vat.registration` (`"@cz"`, #166 D36); bez ní výchozí registrace zdroje dat jako ve formuláři (první podle země a id), jen u dokladu s DPH. Signál `vat.registrationCountry` pokyn odmítá (`signal_not_allowed`). Mimo importní mód musí platit k datu dokladu |
 | `vat.recapSource` | z payloadu; chybí = `computed`. `declared` vyžaduje `vatRecap` s kódem DPH na každém řádku — chybějící rekapitulace (`vat_recap_missing`), chybějící kód (`vat_recap_code_missing`) i neznámý kód (`vat_code_unknown`) je chyba, ne tichý přepočet z řádků |
 | `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto. Na přítomnosti `totals.totalAmount` nezáleží (D26) |
 | `totals.totalRoundingMode` | při vypnuté automatice z payloadu, chybí = `cent`; mód se neodhaduje. Při zapnuté automatice ho určí způsob úhrady — liší-li se uvedený, varování `total_rounding_mode_ignored` (§ 5) |
@@ -250,9 +250,16 @@ Top-level struktura:
                                   //   .importNumber) — jinak applier pole
                                   //   ignoruje. Exportér ho vypisuje vždy.
 
+  // ── Řada a pokladna — reference (viz „Reference na záznamy“ níže) ────────
+  "numberSeries": "@invni",      // číselná řada dokladu; chybí = výchozí
+                                  //   řada typu, u pokladních typů ji určuje
+                                  //   pokladna
+  "cashDesk": null,              // pokladna ("@POK") — povinná u pokladního
+                                  //   dokladu a prodejky (§ „Polymorfismus“)
+
   // ── Parties ──────────────────────────────────────────────────────────────
-  "supplier":  { /* Party — viz sekce 6 */ },
-  "customer":  { /* Party — viz sekce 6 */ },
+  "supplier":  { /* Party — viz sekce 6 */ },   // reference na osobu, nebo
+  "customer":  { /* Party — viz sekce 6 */ },   //   objekt s `ref` a daty
   "balanceParty": null,            // Party — ruční plátce (osoba pro
                                   //   saldokonto, #72); null = odvodí se
 
@@ -323,13 +330,21 @@ Top-level struktura:
                                    //   `vat_place_derived`. Bez DIČ (nebo
                                    //   s prefixem, který unie nezná) platí
                                    //   hodnota odtud.
-    "registrationCountry": "cz",  // ISO země naší registrace DPH. U přijatých
-                                   //   dokladů (selfParty customer) ji applier
-                                   //   IGNORUJE a bere první aktivní registraci
-                                   //   zdroje (D2, info issue
-                                   //   `vat_registration_country_derived` při
-                                   //   rozporu); u ostatních dohledá
-                                   //   economy_codebooks_vat_registrations.
+    "registration": "@cz",        // naše registrace DPH — reference (#166
+                                   //   D36), nepovinná: bez ní pokyn doplní
+                                   //   výchozí registraci zdroje dat, dokladu
+                                   //   Bez DPH žádnou. Mimo importní mód musí
+                                   //   k datu dokladu platit, jinak chyba
+                                   //   `vat_registration_not_valid`.
+    "registrationCountry": null,  // DOČASNÉ (D39) — signál jen pro návrh:
+                                   //   ISO země naší registrace, jak ji
+                                   //   přečetla AI. U přijatých dokladů
+                                   //   (selfParty customer) ji návrh IGNORUJE
+                                   //   a bere první aktivní registraci zdroje
+                                   //   (D2, info `vat_registration_country_derived`
+                                   //   při rozporu); u ostatních podle ní
+                                   //   dohledá registraci. Pokyn pole odmítá
+                                   //   (`signal_not_allowed`).
     "reverseCharge": false,       // bool | null — daň přiznává příjemce
                                    //   („reverse charge“, přenesení daňové
                                    //   povinnosti, čl. 196 směrnice, § 92a);
@@ -375,6 +390,9 @@ Top-level struktura:
   "payment": {
     "method":          "bankTransfer",  // cash | bankTransfer | card | cashOnDelivery
                                         //   | setOff | paymentGateway (docs.core.paymentMethods)
+    "ownBankAccount":  "@BU1",          // náš bankovní účet dokladu — reference
+                                        //   (#166 D30); vydaná faktura ho ve
+                                        //   stavu V pořádku vyžaduje
     "paymentReference": "2026000123",
     "specificSymbol":  null,
     "constantSymbol":  null
@@ -388,31 +406,32 @@ Top-level struktura:
 
   // ── Dimenze deníku (#110 D20, T2) ────────────────────────────────────────
   "dimensions": {                 // klíč = id dimenze (journalDimensions
-    "costCenter": "S01"           //   v economy.accounting), hodnota =
-  },                              //   přirozený klíč záznamu (`exchangeKey`
-                                  //   cílové tabulky: středisko kód, zakázka
-                                  //   číslo, majetek inventární číslo).
+    "costCenter": "@S01"          //   v economy.accounting), hodnota =
+  },                              //   reference na záznam cílové tabulky
+                                  //   (#166 D30; přirozený klíč = `exchangeKey`
+                                  //   tabulky: středisko kód, zakázka číslo,
+                                  //   majetek inventární číslo).
                                   //   Hlavička = výchozí hodnota pro
                                   //   řádky bez vlastní (→ docs_core_heads
                                   //   .cost_center). Neznámé id / dimenze,
                                   //   jejíž tabulka klíč nemá → dimension_unknown,
-                                  //   hodnota bez záznamu → dimension_not_found
+                                  //   hodnota bez záznamu → reference_not_found
                                   //   (obě blokují apply). Chybějící objekt
                                   //   = sloupce zůstanou prázdné.
 
   // ── Opravný daňový doklad (#92 D10, task B) ──────────────────────────────
   "correction": {                 // objekt = opravný doklad (docs_core_heads
-    "originalDocNumber":    "FV26-00123",   //   .corrective = 1), null / chybí
-    "originalTaxPointDate": "2026-03-15",   //   = běžný doklad. Jen u typu
-    "reason":               "Sleva za vadu" //   s příznakem docTypes[]
-  },                              //   .corrective (faktura vydaná); jinde
-                                  //   warning correction_not_supported.
-                                  //   Původní doklad = _resolve.correction
-                                  //   useExisting:<id>, jinak dohledání
-                                  //   podle originalDocNumber (§ 5 „Opravný
-                                  //   daňový doklad“). Objekt se samými null
-                                  //   = jen příznak (import ze starého
-                                  //   Shipardu).
+    "originalDoc":          "@FV26-00123",  //   .corrective = 1), null / chybí
+    "originalDocNumber":    "FV26-00123",   //   = běžný doklad. Jen u typu
+    "originalTaxPointDate": "2026-03-15",   //   s příznakem docTypes[]
+    "reason":               "Sleva za vadu" //   .corrective (faktura vydaná);
+  },                              //   jinde warning correction_not_supported.
+                                  //   Původní doklad = reference `originalDoc`
+                                  //   (#166 D30); `originalDocNumber` je jen
+                                  //   text, nic se podle něj nedohledává
+                                  //   (§ 5 „Opravný daňový doklad“). Objekt
+                                  //   se samými null = jen příznak (import ze
+                                  //   starého Shipardu).
 
   // ── Rows ─────────────────────────────────────────────────────────────────
   "rows": [
@@ -456,6 +475,64 @@ Top-level struktura:
   "_resolve": { /* viz sekce 9 */ }
 }
 ```
+
+### Reference na záznamy — jedno pole na odkaz (#166 D30–D39)
+
+Každý odkaz na záznam je **jedno pole s referencí** podle gramatiky z § 8.6:
+`42` (id záznamu), `"@klíč"` (přirozený klíč cílové tabulky) nebo
+`"@sloupec:hodnota"` (jmenovaný sloupec, který tabulka pro hledání
+deklaruje). Hledá jediný `ReferenceResolver`: přesně jeden živý záznam,
+nenalezeno i nejednoznačné je chyba — nikdy první nalezený.
+
+| pole | cílová tabulka | přirozený klíč | příklad |
+|---|---|---|---|
+| `supplier`, `customer`, `balanceParty` — reference, nebo objekt s `ref` (§ 6) | osoby | číslo osoby; jmenovitě i IČO a DIČ (D35) | `"@F00042"`, `"@company_id:12345678"`, `"@vat_id:CZ12345678"` |
+| `rows[].item` — reference, nebo objekt s `ref` (§ 7) | položky | kód; jmenovitě i EAN a SKU | `"@KONZ"`, `"@ean:8590000000017"` |
+| `numberSeries` | řady dokladů | kód řady (D17) | `"@invno"` |
+| `payment.ownBankAccount` | vlastní bankovní účty | kód | `"@BU1"` |
+| `cashDesk` | pokladny | kód | `"@POK"` |
+| `dimensions.<id>`, `rows[].dimensions.<id>` | cílová tabulka dimenze | podle tabulky | `"@S01"` |
+| `rows[].account` | účty osnovy | číslo účtu | `"@518100"` |
+| `vat.registration` | registrace DPH | kód registrace (D17) | `"@cz"` |
+| `correction.originalDoc` | doklady | číslo dokladu | `"@FV26-00123"` |
+
+- **Pokyn** hledá jen přes referenci a **nic nezakládá** (D31) — osoby,
+  položky ani účty partnerů. Reference, která se nenajde, je nález
+  `severity: error` s kódem resolveru (`reference_not_found`,
+  `reference_ambiguous`, `reference_invalid`, …) a cestou pole; odpověď
+  422 `validation_failed`, nic se neuloží. Strana nebo položka jako objekt
+  **bez `ref`** s identifikujícími údaji (název, IČO, kód) je chyba
+  `reference_missing` — ne tiché „bez partnera“ / „bez položky“.
+- **Návrh** (pošta, ISDOC) hledá strany a položky podle údajů jako dřív
+  (§ 8); uvedený `ref` má přednost a hledání se přeskočí (nenalezený `ref`
+  je chyba i tady). Ostatní místa z tabulky bere návrh stejně jako pokyn.
+- **Jednotka** (`rows[].unit`) referencí není — je to holý systémový kód
+  jednotky (D37). Pokyn bere jen přesnou shodu, neznámá jednotka je chyba
+  `unit_not_found`; zkratky a aliasy zná jen návrh (§ 8.3).
+- **Autor** zůstává id v `applyOptions.author` (D38). Strana vlastní firmy
+  (`selfParty`) referenci nenese. `supplier.bankAccount` jsou data: jdou do
+  sloupců hlavičky, vazba na účet partnera vznikne v pokynu jen přesnou
+  shodou s jeho existujícím účtem.
+- `_resolve` pokyn **nečte** (D32) — s dočasnou výjimkou voleb
+  `_resolve.partner` a `_resolve.rows[].partner` u účetního a pokladního
+  dokladu, které dostanou vlastní pole v `tasks/doc-format-partner-fields.md`.
+- Exportér (`DocumentExporter`, datové sady) píše každý odkaz přirozeným
+  klíčem; generátory dokladů (periodická fakturace, opravný doklad) id.
+  Číslo dokladu nemá unikátní index a čísla různých typů se mohou shodovat —
+  `correction.originalDoc` klíčem pak může být nejednoznačný (chyba).
+
+**Dočasné signály návrhu (D39).** Uložené návrhy z pošty nesou tři pole
+starým tvarem: `rows[].item.ourCode`, účet řádku holým číslem
+(`"518100"`) a `vat.registrationCountry`. Ve schématu zůstávají jako
+**signály platné jen v návrhu**; pokyn je odmítá chybou `signal_not_allowed`
+s radou, které pole použít (tiché ignorování by uložilo jiný doklad, než
+jaký odesílatel zamýšlel). Je to přechodný stav — po převodu uložených
+návrhů pole zmizí. Obohacení řádků z historie už píše reference (`item.ref`,
+účet `"@číslo"`), starý tvar čte dál.
+
+Tvar referencí formátu drží `Document\CanonicalReferences` (strana a položka
+jen referencí se uvnitř applieru rozbalí na objekt s `ref`; odpověď vrací
+rozbalený tvar).
 
 ### Pole `vatRecap` a `totals` — vstup vs. autorita
 
@@ -713,12 +790,14 @@ zachová stav dokladu.
 - **`accountingDocument`** (`cmnbkp`) — bez stran, kontační řádky
   (`accSide`, `account`), partner per řádek přes pin.
 - **`cashDocument`** (`cash`, pokladní doklad, #59 D12) — povinný **`cashDesk`**
-  (kód pokladny `economy_codebooks_cash_desks.code`) a **`cashDirection`**
-  (1 příjem / 2 výdej). Řadu applier dohledá podle (typ, pokladna) — řady
-  jsou vázané na pokladnu, `applyOptions.numberSeriesCode` se ignoruje.
+  (reference na pokladnu, `"@POK"` = `economy_codebooks_cash_desks.code`)
+  a **`cashDirection`** (1 příjem / 2 výdej). Řadu applier dohledá podle
+  (typ, pokladna) — řady jsou vázané na pokladnu; uvedená jiná řada
+  (`numberSeries`) je chyba `number_series_conflict` (422, #166 U3).
   Chybí-li řada, applier ji založí sám (`BoundNumberSeriesProvisioner`,
   idempotentní — pokladna založená generickým CRUD importu nespustí
-  `afterSave` handler); neznámá pokladna nebo pokladna mimo stav 40 =
+  `afterSave` handler); pokladna, která se nenajde, je nález
+  `reference_not_found` (422 `validation_failed`), pokladna mimo stav 40 =
   apply-level chyba `cash_desk_not_found` (422). Archivovanou pokladnu (70)
   přijme jen import mód (`applyOptions.importNumber`) — řady vzniknou ve
   stavu 70 (#59 Task E). `cash_desk` hlavičky se denormalizuje z řady.
@@ -742,10 +821,10 @@ zachová stav dokladu.
 - **`cashRegisterDocument`** (`cashreg`, prodejka) — povinný `cashDesk`,
   bez `cashDirection` (pevně výstup); vratka = záporné řádky. `dataset-dump`
   oba pokladní typy vypisuje včetně `cashDesk` / `cashDirection`
-  (`DocumentExporter`, #131 krok 0a); `applyOptions.numberSeriesCode`
-  u nich nese kód pokladny (vázaná řada), applier ho ignoruje.
+  (`DocumentExporter`, #131 krok 0a); `numberSeries` u nich nevyváží —
+  řadu určuje pokladna.
 - **`invoiceIssued` / `proformaIssued` / `invoiceReceived` / `proformaReceived` + `cashDesk`** —
-  volitelný kód pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
+  volitelná reference na pokladnu platí jen s `payment.method: "cash"` (faktura placená hotově →
   `cash_desk` hlavičky, účtuje se na pokladnu místo 311/321); s jinou
   platbou se ignoruje s warningem `cash_desk_ignored`. Platba hotově **bez**
   `cashDesk` (návrh z AI pokladnu nezná) dostane výchozí pokladnu zdroje
@@ -805,8 +884,8 @@ extrakce pole nevyplňuje (#159 D12), ISDOC je nenese.
 Opravný doklad (#92, `tasks/corrective-doc-core.md` D1–D5,
 `tasks/corrective-doc-exchange.md` D10, U1–U5) je faktura vydaná s příznakem
 na hlavičce; ve výměnném formátu ho nese volitelný blok `correction`
-(`originalDocNumber` string | null, max 40; `originalTaxPointDate` date |
-null; `reason` string | null). Objekt = opravný doklad, `null` nebo chybějící
+(`originalDoc` reference | null; `originalDocNumber` string | null, max 40;
+`originalTaxPointDate` date | null; `reason` string | null). Objekt = opravný doklad, `null` nebo chybějící
 klíč = běžný doklad; objekt se samými `null` je platný (starý Shipard posílá
 jen příznak).
 
@@ -818,27 +897,35 @@ doklad vznikne jako běžný. Mapování: `corrective` = 1, `corrected_doc`
 Bez bloku se do hlavičky nic nezapisuje (příznak zůstává 0);
 `applyOptions.replaceConcept` bez bloku sloupce opravy vynuluje.
 
-**Dohledání původního dokladu** (`DocumentApplier::correctionDecision()`,
-jednou per canonical — čtou ho datum sazby, kurz, `transform()` i náhled):
+**Odkaz na původní doklad** (`DocumentApplier::correctionDecision()`,
+jednou per canonical — čtou ho datum sazby, kurz, `transform()` i náhled;
+#166 D30):
 
-1. `_resolve.correction.userAction = "useExisting:<id>"` — odkaz přímo
-   (posílá služba Vystavit opravný doklad). Doklad musí existovat a mít typ
-   s příznakem; jinak warning `pin_target_missing` (path `_resolve.correction`)
-   a pokračuje se bodem 2. Stav původního dokladu applier nehlídá — při
-   potvrzení ho zkontroluje `DocDocument::validateCorrective` (V pořádku,
-   stejný partner).
-2. Jinak podle `originalDocNumber`: právě jeden doklad **téhož typu** ve
-   stavu V pořádku s tímto číslem → odkaz. Žádný → bez odkazu, číslo zůstane
-   textem, info `correction_original_not_found`; víc shod → bez odkazu,
-   warning `correction_original_ambiguous`.
+1. Reference `correction.originalDoc` — id (posílá služba Vystavit opravný
+   doklad), nebo `"@číslo dokladu"` (datové sady). Doklad musí existovat
+   a mít typ s příznakem; nenalezená nebo nejednoznačná reference je chyba
+   s kódem resolveru, doklad jiného typu chyba
+   `correction_original_not_supported` (path `correction.originalDoc`,
+   422 `validation_failed`). Číslo dokladu nemá unikátní index — shodné
+   číslo u dvou dokladů je `reference_ambiguous`. Stav původního dokladu
+   applier nehlídá — při potvrzení ho zkontroluje
+   `DocDocument::validateCorrective` (V pořádku, stejný partner).
+2. Jen v **návrhu** a bez reference: volba
+   `_resolve.correction.userAction = "useExisting:<id>"`; neplatná = warning
+   `pin_target_missing` (path `_resolve.correction`) a doklad vznikne bez
+   odkazu. Pokyn volby `_resolve` nečte.
+
+Podle `originalDocNumber` se **nic nedohledává** — je to jen text
+(souhrnný opravný doklad, číslo na tisku); bez odkazu zůstane číslo i datum
+plnění z bloku.
 
 S odkazem applier přepíše `corrected_doc_number` a `corrected_doc_date`
 (DUZP původního dokladu, bez něj datum vystavení) už v `transform()` —
 dokument je z odkazu dosazuje znovu v `beforeSave()`, ale `validate()`
 i odvození sazeb DPH běží dřív a čtou je z dat
 (`VatRateDates`). Náhled vrací výsledek dohledání
-v `_resolve.correction` (`status` matched | notFound | ambiguous | none,
-`matchedId`, `matchedBy` pin | number, `docNumber`, `taxPointDate`).
+v `_resolve.correction` (`status` matched | notFound | none,
+`matchedId`, `matchedBy` ref | pin, `docNumber`, `taxPointDate`).
 
 **Datum sazby DPH** (D4): automatické datum sazby opravného dokladu je
 datum plnění původního dokladu (z odkazu, jinak `originalTaxPointDate`; bez
@@ -856,17 +943,26 @@ nedoplňuje. S odkazem a shodnou měnou převezme kurz původního dokladu (info
 (`docs/exchange-rates.md` § 5.2).
 
 **Import mód** (`applyOptions.importNumber`): blok platí stejně — příznak,
-dohledání podle čísla i datum sazby; důvod opravy ani číslo původního
-dokladu se nevyžadují (`validateCorrective` je v import módu nekontroluje)
-a doklad se uloží v cílovém stavu. Datové sady na tom stojí: dump vyváží
-blok ze sloupců bez odkazu a seed odkaz obnoví dohledáním podle čísla —
-proto exportér řadí opravné doklady až za běžné doklady téhož typu
-(`DocumentExporter::orderSql()`, `docs/datasets.md` § 4).
+odkaz referencí i datum sazby — a doklad se uloží v cílovém stavu. Datové
+sady na tom stojí: dump vyváží blok ze sloupců s odkazem
+`originalDoc: "@<číslo původního dokladu>"` (jen když odkaz existuje)
+a seed ho podle něj obnoví — proto exportér řadí opravné doklady až za
+běžné doklady téhož typu (`DocumentExporter::orderSql()`,
+`docs/datasets.md` § 4).
 
 ## 6. Party object
 
+Strana je **reference na osobu** — sama (`"supplier": 42`,
+`"customer": "@F00042"`, `"@company_id:12345678"`), nebo objekt s `ref`
+a daty (#166 D30, D34, D35):
+
 ```jsonc
 {
+  "ref":      "@F00042",           // reference na osobu: id, "@číslo osoby",
+                                    //   "@company_id:IČO", "@vat_id:DIČ".
+                                    //   Pokyn hledá jen podle ní; návrh ji
+                                    //   bere přednostně, jinak hledá podle
+                                    //   údajů níž (§ 8.1). AI ji nevyplňuje.
   "name":     "Dodavatel s.r.o.",
   "country":  "cz",                // ISO 3166-1 alpha-2, lowercase v canonical
                                     //   ("cz", "sk", "de", ...)
@@ -914,6 +1010,17 @@ proto exportér řadí opravné doklady až za běžné doklady téhož typu
 }
 ```
 
+**Reference a data vedle ní.** V pokynu určuje osobu jen `ref`; objekt bez
+`ref` s názvem, IČO nebo DIČ je chyba `reference_missing`, prázdný objekt
+(anonymní pokladní doklad) strana bez osoby. Data vedle `ref` jsou
+**dobový snapshot**: v importním módu (`applyOptions.importNumber`) z nich
+vzniká snapshot partnera na dokladu (dobové DIČ pro kontrolní hlášení); mimo
+něj se snapshot staví z adresáře a data z payloadu se nepoužijí. Strana jen
+referencí v importním módu dostane snapshot z adresáře. Dvě osoby se stejným
+IČO nebo DIČ jsou u `"@company_id:…"` / `"@vat_id:…"` chyba
+`reference_ambiguous`. `DocumentExporter` píše stranu jako objekt s
+`ref: "@<číslo osoby>"` a daty z adresáře.
+
 **`contact` u dokladu vs. u Osoby.** V dokladu je `contact` *kontakt
 k dokladu*: kontaktní osoba strany (`name` — „Vyřizuje“, „Kontaktní osoba“,
 „Attn“, jméno uvedené nad názvem firmy; ISDOC `Contact/Name`) a její kanály.
@@ -942,9 +1049,9 @@ Symetricky pro `selfParty == "supplier"`.
 
 **`balanceParty` — ruční plátce (#72 D2).** Volitelná třetí strana bez
 vazby na `selfParty`: osoba pro saldokonto, za kterou vzniká saldokontní
-řádek dokladu (`docs_core_heads.partner_balance`). Applier ji resolvuje
-stejně jako `supplier`/`customer` (`_resolve.balanceParty`, `userAction`,
-auto-create) a zapíše ji s `partner_balance_manual = 1` — odvození při
+řádek dokladu (`docs_core_heads.partner_balance`). Applier ji hledá
+stejně jako `supplier`/`customer` (pokyn referencí, návrh i podle údajů —
+`_resolve.balanceParty`, `userAction`, auto-create) a zapíše ji s `partner_balance_manual = 1` — odvození při
 uložení (terminál / dopravce / partner) ji pak nepřepíše, v import módu
 ani terminál. Vynechaná / `null` = plátce se odvodí při uložení. Exportér
 ji vydává jen u dokladu s ručním plátcem; odvozeného si cílový DS odvodí
@@ -968,9 +1075,17 @@ nebo import mezi dvěma cizími subjekty.
                                     //   §10 „Doplnění pohybu řádků".
   "orderPos": 1,
 
-  // Item identification — resolver zkouší více cest, viz sekce 8
+  // Položka: reference sama ("item": "@K-001", "item": 18), nebo objekt
+  // s `ref` a texty (#166 D30). Pokyn hledá jen přes referenci; návrh hledá
+  // i podle kódů a názvu, viz sekce 8.
   "item": {
-    "ourCode":      "K-001",       // economy_items.code
+    "ref":          "@K-001",      // reference na položku: id, "@kód",
+                                    //   "@ean:…", "@sku:…". AI ji nevyplňuje;
+                                    //   obohacení z historie ano.
+    "ourCode":      null,          // DOČASNÉ (D39) — economy_items.code jako
+                                    //   signál jen pro návrh (uložené návrhy
+                                    //   z pošty); pokyn ho odmítá
+                                    //   (signal_not_allowed) — patří tam `ref`
     "supplierCode": "KONZ-001",    // dodavatelský kód
                                     //   (per-partner mapování přes
                                     //    economy_items_supplier_codes)
@@ -981,8 +1096,11 @@ nebo import mezi dvěma cizími subjekty.
   },
 
   // Quantity & price
-  "unit":          "h",            // ISO unit code nebo náš unit id;
-                                    //   resolver mapuje na core_units.id
+  "unit":          "hr",           // systémový kód jednotky (core_units
+                                    //   .system_code) — holý kód, ne reference
+                                    //   (D37). Pokyn bere jen přesnou shodu
+                                    //   (jinak chyba unit_not_found); návrh
+                                    //   zná i zkratky a aliasy ("h", "ks")
   "quantity":      10,
   "unitPrice":     1033.06,
   "totalPrice":    10330.58,       // informative; applier recomputes z
@@ -1034,11 +1152,15 @@ nebo import mezi dvěma cizími subjekty.
 
   // Kontace / saldo identita (účetní doklad, úhrady payment.* na pokladním
   // dokladu): částka přímo v totalPrice, strana a účet u kontace, VS / SS /
-  // KS / splatnost úhrady. Partner řádku se NEPOSÍLÁ jako Party — pinuje
-  // se přes `_resolve.rows[i].partner = "useExisting:<id>"` (exportér zná
-  // id z LocalIdMap; PartyResolver je pro hlavičkové strany).
+  // KS / splatnost úhrady. Partner řádku se NEPOSÍLÁ jako Party — zatím se
+  // určuje volbou `_resolve.rows[i].partner = "useExisting:<id>"` (jediná
+  // volba, kterou čte i pokyn; vlastní pole dostane v
+  // tasks/doc-format-partner-fields.md).
   "accSide":          null,          // "debit" | "credit" (jen kontace)
-  "account":          null,          // číslo účtu (acc.record)
+  "account":          null,          // účet řádku — reference na účet osnovy
+                                     //   ("@518100", id). DOČASNÉ (D39): holé
+                                     //   číslo ("518100") je signál jen pro
+                                     //   návrh, pokyn ho odmítá
   "paymentReference": "2026000042",  // VS hrazeného dokladu
   "specificSymbol":   null,
   "constantSymbol":   null,
@@ -1046,7 +1168,7 @@ nebo import mezi dvěma cizími subjekty.
 
   // Dimenze deníku řádku (#110 T2): stejný tvar jako na hlavičce (sekce 5),
   // → docs_core_rows.cost_center. Řádek bez hodnoty dědí hlavičku (engine).
-  "dimensions":       { "costCenter": "V01" }
+  "dimensions":       { "costCenter": "@V01" }
 }
 ```
 
@@ -1057,7 +1179,8 @@ helper `Shipard\Module\Core\Exchange\Document\CanonicalRowText::compose($row)`
 ([tasks/exchange-row-text.md](../tasks/exchange-row-text.md) D1/D2, #84):
 
 1. neprázdný top-level `description` má přednost (účetní doklad, export,
-   dataset round-trip);
+   dataset round-trip, položka zadaná jen referencí — ta žádný text nenese
+   a řádek bez `description` zůstane bez textu);
 2. jinak `item.name`; za oddělovač ` — ` se připojí `item.description`,
    pokud je po trimu neprázdný a není v názvu obsažený (case-insensitive) —
    AI extrakce do popisu dává někdy užitečný detail (fakturované období,
@@ -1073,6 +1196,13 @@ historie nenapáruje exact matchem). Frontend skladbu nezrcadlí, jen
 zobrazuje `rowText`.
 
 ## 8. Resolve
+
+> **Hledání podle údajů v této kapitole (§ 8.1–§ 8.3, § 8.5) platí pro režim
+> návrh** (#166 D31, D33). **Pokyn** hledá záznamy jen přes reference
+> (§ 5 „Reference na záznamy“, § 8.6) a nic nezakládá: stav `canCreate`
+> ani `ambiguous` v něm nevzniká, nenalezená reference je chyba. I v návrhu
+> má uvedený `ref` strany nebo položky přednost — hledání se přeskočí
+> a blok `_resolve` nese `matchedBy: "ref"`.
 
 Resolver je sada nezávislých "lookuperů", které pro každou referenci v canonical
 vrací jeden ze čtyř stavů:
@@ -1126,10 +1256,10 @@ když se liší — silný signál chybně extrahovaného dokladu.
 Vstup: `Row.item` object + kontext (resolved `supplier.personId` pokud existuje,
 pro per-partner mapování).
 
-Postup:
+Postup (jen návrh; řádek s `item.ref` se nehledá — § 8):
 
 1. **`ourCode` exact match** v `economy_items.code` → `matched`,
-   `matchedBy: "ourCode"`.
+   `matchedBy: "ourCode"` (signál uložených návrhů, D39).
 2. **`(supplier.personId, supplierCode)` lookup** v nové tabulce
    `economy_items_supplier_codes` → `matched`, `matchedBy: "supplierCode"`.
 3. **`ean` exact match** v `economy_items.ean` (nový sloupec) → `matched`,
@@ -1160,14 +1290,20 @@ a potvrzení z Konceptu (`SupplierCodeCaptureHandler`) zapisují jen
 
 Vstup: `unit` string.
 
-Postup:
+Postup v **návrhu**:
 
 1. **ISO kód** (e.g. `"h"`, `"kg"`, `"pcs"`, `"l"`) — mapování v
    `core.units.unitsSeed` na `core_units.code`. → `matched`.
 2. **Lokalizovaná zkratka** (`"ks"` → pcs, `"hod"` → h, `"l"` → l) přes
    alias tabulku v PHP resolveru.
 3. Žádný match → `notFound`. Applier použije default unit (`pcs`) a vyrobí
-   warning.
+   warning `unit_not_found`.
+
+V **pokynu** (#166 D37) platí jen přesná shoda na systémový kód jednotky
+(`core_units.system_code`, např. `"hr"`, `"pcs"`, `"mnth"`) — bez aliasů,
+zkratek a úprav hodnoty; neznámá jednotka je **chyba** `unit_not_found`.
+Jednotka bez systémového kódu se ve formátu vyjádřit nedá (exportér ji
+s varováním vynechá).
 
 ### 8.4 VatCodeResolver
 
@@ -1646,7 +1782,7 @@ Postup pro **partner's bank** (resolved person je partner, ne my),
 3. Partner ještě neexistuje (sám `canCreate`) → odložit do Apply fáze.
 
 Postup pro **vlastní účet** (`resolveOwnBank`, dnes bez produkčního
-volajícího — applier bere vlastní účet kódem `importOwnBankAccount`):
+volajícího — applier bere vlastní účet referencí `payment.ownBankAccount`):
 
 1. Načíst aktivní účty z `economy_codebooks_bank_accounts` a porovnat
    stejným klíčem.
@@ -1661,11 +1797,12 @@ sloupec je klíč, říká **definice cílové tabulky** (`exchangeKey`,
 najde. Třídy `ReferenceValue` (rozbor hodnoty, bez databáze),
 `ReferenceResolver` a `ReferenceException` v `modules/core/exchange/src/Resolve/`.
 
-> **Formát dokladu tuto gramatiku zatím nepoužívá.** Pole `shpd.docs.document.v1`
-> (`ourCode`, `numberSeriesCode`, `importOwnBankAccount`, strany dokladu, …)
-> se nemění; na reference přejdou až v etapě 3 (#166 D11–D14). Dnes resolver
-> používají datové sady (`SetupReferences`) a dimenze dokladů
-> (`DimensionResolver`) — obojí s holou hodnotou klíče, bez `@`.
+> **Formát dokladu tuto gramatiku používá od etapy 3** (#166 D11–D14,
+> D30–D39, `tasks/doc-format-references.md`): každý odkaz na záznam
+> v `shpd.docs.document.v1` je jedno pole s referencí — seznam míst
+> a pravidla pokynu × návrhu jsou v § 5 „Reference na záznamy“. Datové
+> sady (`SetupReferences`) v sekci setup dál píšou holou hodnotu klíče bez
+> `@`; dimenze dokladů (`DimensionResolver`) berou referenci.
 
 **Číselná řada dokladů a registrace DPH mají vlastní kód** (#166 D16, D17;
 `tasks/number-series-vat-registration-codes.md`): sloupec `code`
@@ -1676,9 +1813,8 @@ propisuje do čísla dokladu jako `%C`). Tvar kódu hlídá
 `Shipard\Core\Database\RecordCode`: písmena bez diakritiky, číslice, tečka,
 podtržítko a pomlčka, první znak písmeno nebo číslice — **bez mezer, `@`
 a dvojtečky**, aby kód šel zapsat do reference a nekolidoval s pravidlem
-dvojtečky. Formát dokladu se tím nemění: `applyOptions.numberSeriesCode`
-dál nese `doc_number_code`, `numberSeriesId` id a `vat.registrationCountry`
-zemi; na reference přejdou až v etapě 3 (D11).
+dvojtečky. Ve formátu dokladu je nesou pole `numberSeries`
+a `vat.registration` (§ 5).
 
 **Gramatika hodnoty reference** (D9):
 
@@ -1718,7 +1854,8 @@ hodnota za deklarovaným sloupcem (`"@company_id:"`) je chyba.
 
 **Chyby** — `ReferenceException` s kódem (`errorCode`), tabulkou, sloupcem,
 hodnotou a u nejednoznačnosti seznamem id; volající si z nich skládá vlastní
-znění (datové sady `DatasetException`, dimenze `dimension_not_found`):
+znění (datové sady `DatasetException`). Formát dokladu kód výjimky přebírá
+jako kód nálezu s cestou pole (`DocumentApplier::referenceIssue()`):
 
 | Kód | Kdy |
 |---|---|
@@ -1733,6 +1870,14 @@ znění (datové sady `DatasetException`, dimenze `dimension_not_found`):
 
 Vyrábí ho `/preview`, čte `/apply`. Žije v stejném JSON dokumentu jako data —
 klient drží jeden payload mezi step preview a apply.
+
+**Volby v `_resolve` čte jen návrh** (#166 D32; výjimky v § „`userAction`
+slovník“). Výstupní bloky jsou v obou režimech stejné: záznam určený
+referencí z payloadu má `status: "matched"`, `matchedBy: "ref"`; reference,
+která se nenašla, `status: "notFound"` s příznakem `referenceError: true`
+(chybu nese nález v `issues`). Řádek obohacený z historie nese položku jako
+`item.ref`, takže i její blok má `matchedBy: "ref"` — zdroj napárování
+říká `enrichment.matchedBy`.
 
 ```jsonc
 {
@@ -1998,6 +2143,14 @@ do něj přidávají vlastní bloky bez změny schématu:
 Klient vyplňuje `userAction` mezi `/preview` a `/apply`. `/apply` aktion
 zvalidnuje a buď uloží, nebo vrátí chybu se seznamem nerozhodnutých referencí.
 
+**Volby platí jen v návrhu** (#166 D32). Pokyn `_resolve` nečte — reference
+určuje payload (§ 5 „Reference na záznamy“), volby DPH hlásí info
+`vat_pin_ignored`. Dočasná výjimka: `_resolve.partner`
+a `_resolve.rows[].partner` (partner účetního a pokladního dokladu), dokud
+nedostanou vlastní pole (`tasks/doc-format-partner-fields.md`). V návrhu
+volba `useExisting` přebíjí i položku, kterou řádku zapsalo obohacení
+(`item.ref`); nenalezený `ref` z payloadu volbou přebít nejde.
+
 ### Issue codes — dokumenty
 
 Kódy v `_resolve.issues[]` (`DocumentValidator` + `DocumentApplier`).
@@ -2072,7 +2225,13 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `row_operation_config_invalid` | warning | Pohyb řádku nejde doplnit — chybná konfigurace rowOperations. |
 | `invalid_value` | error | `cashDirection` pokladního dokladu není 1 ani 2. |
 | `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo cílová tabulka dimenze nemá `exchangeKey` (#110 T2, #166 D8). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
-| `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá v cílové tabulce právě jeden živý záznam (`DimensionResolver` nad `ReferenceResolver`, § 8.6; koš se nepočítá, víc záznamů se stejným klíčem je také nenalezeno). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
+| `reference_not_found` / `reference_ambiguous` / `reference_invalid` / `reference_no_key` / `reference_column_not_allowed` / `reference_table_unknown` | error | Reference formátu dokladu (#166 D30, § 5 „Reference na záznamy“) se nenašla, není jednoznačná, nemá tvar reference, nebo cílová tabulka hledání neumí — kód resolveru (§ 8.6), path = pole s referencí (`supplier`, `rows.N.item`, `numberSeries`, `payment.ownBankAccount`, `cashDesk`, `dimensions.<id>`, `rows.N.account`, `vat.registration`, `correction.originalDoc`). Oba režimy; odpověď 422 `validation_failed`, nic se neuloží. U dimenze nese zpráva její název. |
+| `reference_missing` | error | Jen pokyn: strana nebo položka jako objekt bez `ref`, ale s názvem / IČO / DIČ / kódem — pokyn podle údajů nehledá a nic nezakládá (#166 D31). Path `supplier` / `customer` / `balanceParty` / `rows.N.item`. |
+| `signal_not_allowed` | error | Jen pokyn: dočasný signál návrhu (#166 D39) — `rows.N.item.ourCode`, účet řádku holým číslem (`rows.N.account`), `vat.registrationCountry`. Zpráva radí, které pole použít. |
+| `unit_not_found` | warning / error | Jednotka řádku: návrh ji nerozpoznal (warning, doplní se výchozí); v pokynu není přesným systémovým kódem jednotky (error, #166 D37). Path `rows.N.unit`. |
+| `account_not_found` | warning | Jen návrh: účet řádku holým číslem (signál) není v rozvrhu — řádek bude bez účtu. V pokynu je nenalezený účet `reference_not_found`. |
+| `vat_registration_not_valid` | error | Reference `vat.registration` míří na registraci, která k datu dokladu neplatí (mimo importní mód). Path `vat.registration`. |
+| `correction_original_not_supported` | error | `correction.originalDoc` míří na doklad typu, ke kterému nejde vystavit opravný doklad. |
 | `cash_desk_ignored` | warning | `cashDesk` na faktuře bez `payment.method: "cash"` — pokladna se nepropíše. |
 | `cash_desk_defaulted` | info | Platba hotově bez `cashDesk` — doklad dostal výchozí pokladnu zdroje dat (`is_default`, #103 F3). |
 | `replace_concept_requires_draft` | error | `applyOptions.replaceConcept` s `targetDocState` jiným než 10 — přegenerování ukládá vždy Koncept (#110 Q2). |
@@ -2091,21 +2250,23 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `exchange_rate_from_list` | info | Doklad v cizí měně bez `exchangeRate` mimo import mód: kurz doplněn z kurzovního lístku k účetnímu datu (#121 D6, `docs/exchange-rates.md` § 5.2). Path `exchangeRate`. |
 | `exchange_rate_missing` | warning | Kurz k účetnímu datu není v lístku — doklad se uloží bez kurzu, potvrzení zastaví validace dokladu. |
 | `correction_not_supported` | warning | Blok `correction` na typu dokladu bez příznaku `docTypes[].corrective` (přijatá, zálohová, pokladní) — ignorován, doklad vznikne jako běžný (#92 task B U2). Path `correction`. |
-| `correction_original_not_found` | info | `correction.originalDocNumber` nemá doklad téhož typu ve stavu V pořádku — číslo zůstane textem bez odkazu (souhrnný opravný doklad, migrace). |
-| `correction_original_ambiguous` | warning | Číslo původního dokladu má víc dokladů téhož typu ve stavu V pořádku — odkaz se nenastaví, číslo zůstane textem. |
 | `exchange_rate_from_original` | info | Opravný doklad v cizí měně bez `exchangeRate`: kurz převzat z původního dokladu (odkaz, shodná měna) místo lístku (#92 D4). Path `exchangeRate`. |
 | `exchange_rate_corrective_manual` | info | Opravný doklad v cizí měně bez odkazu a bez `exchangeRate`: lístek se nečte, kurz zůstane prázdný a potvrzení zastaví validace dokladu. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): **`validation_failed`**
 (error v issues před uložením, nebo doklad neprošel validací `DocDocument`
 při uložení — #166 D21; nálezy jsou v `_resolve.issues`, nic se neuložilo),
-`number_series_not_found`,
-`number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
+`number_series_not_found` (řada z reference `numberSeries` není aktivní
+nebo není typu dokladu),
+`number_series_conflict` (u typu vázaného na pokladnu uvádí `numberSeries`
+jinou řadu, než jakou určuje pokladna),
 `replace_target_not_found` / `replace_target_type_mismatch` (422)
 a `replace_target_not_concept` (409) u `replaceConcept`,
-`own_bank_account_not_found`, **`cash_desk_not_found`** (neznámý kód pokladny,
-nebo pokladna mimo stav V pořádku (40), takže jí nelze založit řadu typu
-`cash`/`cashreg`; pokladně ve stavu 40 applier chybějící řadu založí sám).
+**`cash_desk_not_found`** (pokladna mimo stav V pořádku (40), takže jí nelze
+založit řadu typu `cash`/`cashreg`; pokladně ve stavu 40 applier chybějící
+řadu založí sám). Pokladna, řada ani vlastní účet, které se podle reference
+**nenajdou**, apply-level kód nemají — jsou nálezem `reference_not_found`
+pod `validation_failed`.
 
 ## 10. Apply pipeline
 
@@ -2186,9 +2347,12 @@ Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
 |---|---|---|
 | normalizace hodnot (před validací) | tvary + oprava IBAN ↔ číslo účtu | jen tvary |
 | `DocumentValidator` | včetně heuristik nad čísly předlohy | bez heuristik; `importNumber` povolené |
+| resolve — strany, položky | `ref` má přednost, jinak hledání podle údajů (§ 8.1, § 8.2) | jen reference (`ReferenceResolver`); objekt bez `ref` s údaji = `reference_missing` (#166 D31) |
+| resolve — účet řádku, jednotka | reference, nebo signál holým číslem (nenalezený = warning); jednotka i zkratkou a aliasem | jen reference (nenalezená = chyba); jednotka jen přesným systémovým kódem (`unit_not_found` = chyba) |
+| resolve — řada, pokladna, vlastní účet, dimenze, registrace DPH, původní doklad | reference | reference |
 | resolve — kódy DPH | odvození, soulad se signály, volby uživatele (§ 8.4) | kód z payloadu se jen ověří |
-| reconcile | čte `userAction` vč. vynechání řádků | `userAction` stran a položek platí, řádky se nevynechávají |
-| side-creates | + učení dodavatelských kódů | bez učení |
+| reconcile | čte `userAction` vč. vynechání řádků | `_resolve` se nečte (D32) — kromě dočasných `partner` a `rows[].partner`; řádky se nevynechávají |
+| side-creates | podle `autoCreateMode` / `userAction` + učení dodavatelských kódů | **žádné** — pokyn osoby, položky ani účty partnerů nezakládá; `autoCreateMode` nečte |
 | transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5 | hodnoty z payloadu a výchozí hodnoty (§ 3, tabulka D20) |
 | po uložení (v transakci) | — | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
 | po uložení | — | varování dokladu do `_resolve.issues`, `total_rounding_mode_ignored` |
@@ -2201,10 +2365,9 @@ uložením; stejně tak neshodu kontrolního součtu `totals`
 jako apply (reconcile, dohledání
 pokladny a řady, výchozí pohyby řádků, transform) a nic nezapisuje; chybu
 dohledání pokladny, řady nebo vlastního účtu hlásí týmž kódem, jaký vrátí
-apply. Nehlásí, co posoudit nemůže: nálezy na referenci, kterou apply
-teprve založí nebo která čeká na rozhodnutí (partner, položka řádku a její
-pohyb), řadu vázanou na pokladnu, kterou apply teprve zkusí založit,
-a zámky záznamu. Náhled návrhu validaci cílového stavu nemá — review
+apply. Nehlásí, co posoudit nemůže: řadu vázanou na pokladnu, kterou apply
+teprve zkusí založit, zámky záznamu a nález dokladu na poli, jehož
+reference už sama skončila chybou (partner, položka řádku a její pohyb). Náhled návrhu validaci cílového stavu nemá — review
 pracuje s konceptem a chybu uložení vrátí až apply.
 
 ### Doplnění pohybu řádků (`operation`)
@@ -2307,20 +2470,17 @@ a `vat_registration` z hlavičky dokladu). Prázdná strana partnera
 v payloadu = partnerský snapshot zůstává NULL (kanonické zdroje bez stran,
 např. účetní doklady).
 
-`applyOptions.numberSeriesId` (#110) vybírá číselnou řadu **podle id**
-(`docs_core_number_series.id`) — pro doklady, které Shipard generuje sám
-z nastavení (periodická fakturace zakázek: řada je na druhu / zakázce
-uložená jako id; kód řady `%C` je nepovinný a neunikátní, takže
-`numberSeriesCode` by u řady bez kódu vzal „první aktivní“). Řada musí být
-aktivní a typu `docType`, jinak `number_series_not_found` (422); obě volby
-najednou = `number_series_conflict` (422). U typů vázaných na pokladnu se
-ignoruje stejně jako `numberSeriesCode`.
-
-`applyOptions.importOwnBankAccount` (vlastní bankovní účet u vydaných
-faktur ve stavu 40+) přijímá buď interní id, nebo **string = `code`
-z číselníku `economy_codebooks_bank_accounts`** — přenosná varianta pro
-datové sady (#40). Kód resolvuje `DocumentApplier` před transakcí; neznámý
-kód = `own_bank_account_not_found` (422).
+**Řada a vlastní účet jsou pole dokladu, ne volby apply** (#166 D30):
+`numberSeries` (reference na `docs_core_number_series` — generátory dokladů
+posílají id, datové sady kód `"@invno"`) a `payment.ownBankAccount`
+(reference na `economy_codebooks_bank_accounts`, vlastní účet vydané faktury
+ve stavu 40+). Řada musí být aktivní a typu `docType`, jinak
+`number_series_not_found` (422); bez pole platí výchozí řada typu (první
+aktivní); u typů vázaných na pokladnu řadu určuje pokladna a uvedená jiná
+řada je `number_series_conflict`. Reference, která se nenajde, je nález
+`reference_not_found`. Dřívější volby `applyOptions.numberSeriesCode`,
+`numberSeriesId` a `importOwnBankAccount` ve schématu nejsou (D14 — řez bez
+přechodného období).
 
 `applyOptions.author` (#93 D9) určuje **autora dokladu** — `docs_core_heads.author`,
 na tisku „Vystavil“. Rozhoduje **přítomnost klíče**, ne hodnota:
@@ -2380,13 +2540,17 @@ datové sady) se nemění.
 Opačný směr (DB → canonical) dělají exportery v
 `modules/core/exchange/src/Export/` (`DocumentExporter`, `PersonExporter`,
 `ItemExporter`) a `RegistryExporter` v `modules/base/registry/src/` —
-zrcadlo `transform()` s referencemi externě (partner identifikátory,
-položky `ourCode`, účty číslem, řada `numberSeriesCode`, vlastní účet
-kódem). Konzument: datové sady, `shpd-ds dataset-dump`.
+zrcadlo `transform()` s referencemi přirozeným klíčem (#166 D34, § 5
+„Reference na záznamy“: strana `{ref: "@<číslo osoby>", …data}`, položka
+`{ref: "@<kód>", name}`, účet `"@<číslo>"`, řada, vlastní účet, registrace
+DPH, dimenze, původní doklad). Záznam bez hodnoty klíče (položka nebo
+vlastní účet bez kódu, jednotka bez systémového kódu) = varování dumpu
+a pole se vynechá. Konzument: datové sady, `shpd-ds dataset-dump`.
 
 ### `autoCreateMode`
 
-Řídí, co se stane s `canCreate` referencí, na které klient nedoplnil
+**Jen návrh.** Pokyn nic nezakládá a volbu nečte (#166 D31). V návrhu
+řídí, co se stane s `canCreate` referencí, na které klient nedoplnil
 `userAction`:
 
 | Mode | Chování |
@@ -2502,14 +2666,17 @@ mezeru** s přesným rozdílem; seznam mezer žije v testu
 (`RoundTrip/RoundTripCases`), ne tady. Změna applieru nebo exportu, která
 mezeru zavře nebo otevře novou, test zastaví — viz
 `tests/Integration/README.md`. Po zavedení pokynu a výslovného módu
-zaokrouhlení (#166 etapa 3) matice žádnou mezeru nemá.
+zaokrouhlení (#166 etapa 3) matice žádnou mezeru nemá; přechod formátu na
+reference (část C) ji nezměnil — 20 případů z 20 drží.
 
 Matice hlídá tvar, jaký vyrobí export. Tvary, které export nevyrobí —
 řádek s objektem `vat` bez kódu, místo plnění v rozporu s DIČ dodavatele,
 převzatá rekapitulace bez kódů, ceny řádků s daní při `fromBase`, `totals`
-v rozporu s výpočtem, mód zaokrouhlení v rozporu s automatikou — drží
+v rozporu s výpočtem, mód zaokrouhlení v rozporu s automatikou, reference
+(nenalezená, nejednoznačná, špatně zapsaná, strana jen údaji, signály
+návrhu, řada a registrace DPH referencí) — drží
 `tests/Integration/Exchange/DocumentInstructionPayloadTest.php`
-(„payload → uložený doklad“, #166 D24, D27).
+(„payload → uložený doklad“, #166 D24, D27, D30–D39).
 
 ## 11. REST API endpointy
 
@@ -2528,6 +2695,52 @@ u pošty) si klient vyžádá výslovně:
 ```jsonc
 { "applyOptions": { "interpret": true } }   // režim návrh; s importNumber nejde
 ```
+
+### Doklad skriptem — minimální pokyn
+
+Nejmenší payload, kterým skript (nebo jiný systém) založí vydanou fakturu:
+odběratel a položka **referencí**, bez `totals` — částky, daň, splatnost,
+účetní datum, DUZP, řadu, registraci DPH i výchozí pohyb řádku doplní
+doklad stejně jako formulář.
+
+```jsonc
+POST /api/v1/_exchange/docs/document/apply
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "selfParty": "supplier",
+  "customer": "@F00001",                    // nebo id: 42, nebo "@company_id:12345678"
+  "dates": { "issueDate": "2026-11-20" },
+  "rows": [
+    {
+      "item": "@SPRAVA-IT",                 // kód položky
+      "description": "Správa IT — listopad 2026",
+      "unit": "mnth",                       // systémový kód jednotky
+      "quantity": 1,
+      "unitPrice": 5000,
+      "vat": { "code": "cz-120" }           // procento se neposílá
+    }
+  ]
+}
+```
+
+- Vznikne **koncept** (výchozí `applyOptions.targetDocState` je 10);
+  odpověď nese `savedDocId`. Pro stav V pořádku přidej
+  `"applyOptions": {"targetDocState": 40}` a vlastní účet
+  `"payment": {"ownBankAccount": "@BU1"}` — bez něj vydaná faktura
+  potvrdit nejde.
+- **Nejdřív `/preview`**: nic nezapíše a vrátí v `_resolve.issues` vše, co by
+  apply odmítl (nenalezená reference, chybějící účet pro cílový stav),
+  a v `_resolve.computed` částky, které doklad spočítá.
+- Osoby a položky musí existovat předem (`/_exchange/persons/person/`,
+  `/_exchange/items/item/`) — pokyn je nezakládá ani nehledá podle jména.
+  Reference, která se nenajde nebo není jednoznačná, je 422
+  `validation_failed` s nálezem na cestě pole.
+- `totals` neposílej, pokud částky sám nepočítáš — uvedené jsou kontrolní
+  součet (§ 5) a neshoda doklad odmítne.
+- Text řádku jde z `description`; položka zadaná jen referencí text nenese.
+- Jednotka je systémový kód (`pcs`, `hr`, `mnth`, …), ne zkratka z tisku.
 
 ### POST `/validate`
 
@@ -2557,8 +2770,9 @@ pro cílový stav (§ 10 „Pipeline pokynu vedle návrhu“) — náhled vždy 
 
 Validate + resolve + reconcile s klientským `_resolve.*.userAction` + uložit.
 
-**Request body:** canonical JSON s vyplněným `_resolve.*.userAction` (pokud
-preview indikoval `canCreate` / `ambiguous`).
+**Request body:** canonical JSON; v režimu **návrh** s vyplněným
+`_resolve.*.userAction` (pokud preview indikoval `canCreate` /
+`ambiguous`). Pokyn `_resolve` nečte — reference nese payload.
 
 **Response:** enriched canonical (jako z `/preview`), navíc:
 
@@ -2570,17 +2784,19 @@ preview indikoval `canCreate` / `ambiguous`).
 **Chybové stavy:**
 
 - `400` — schema validation failure (chyba struktury)
-- `422 unresolved` — applier běžel, ale narazil na nerozhodnuté reference
-  bez `userAction`. Tělo obsahuje `_resolve` se seznamem.
-- `422 validation_failed` — `_resolve.issues` obsahuje severity=error mimo
-  resolve scope (např. chybějící datum, neznámý kód DPH v pokynu), nebo
-  doklad neprošel validací `DocDocument` při uložení (#166 D21); nic se
-  neuložilo.
+- `422 unresolved` — jen návrh: applier běžel, ale narazil na nerozhodnuté
+  reference bez `userAction`. Tělo obsahuje `_resolve` se seznamem.
+- `422 validation_failed` — `_resolve.issues` obsahuje severity=error
+  (např. chybějící datum, neznámý kód DPH v pokynu, **reference, která se
+  nenašla** — `reference_not_found` / `reference_ambiguous` /
+  `reference_invalid`, `reference_missing`, `signal_not_allowed`,
+  `unit_not_found`; #166 D31), nebo doklad neprošel validací `DocDocument`
+  při uložení (#166 D21); nic se neuložilo.
 - `422 totals_check_failed` — jen pokyn: `totals` payloadu se liší od
   výpočtu dokladu (#166 D27); nálezy s `declared` / `computed` jsou
   v `_resolve.issues`, nic se neuložilo.
-- `409 conflict` — během reconcile se zjistilo, že entita mezitím
-  zmizela (`useExisting:42` ale person 42 už neexistuje).
+- `409 conflict` — jen návrh: během reconcile se zjistilo, že entita
+  mezitím zmizela (`useExisting:42` ale person 42 už neexistuje).
 
 ## 12. Source lineage
 

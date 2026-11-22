@@ -126,6 +126,14 @@ curl -X POST \
 
 Odpověď: `{"success":true,"data":{"canonical": {...enriched...}, "savedDocId":null}}`
 
+> **Dva režimy** (#166, `docs/exchange-format.md` § 3, § 5 „Reference na
+> záznamy“): REST je **pokyn** — každý odkaz na záznam je reference
+> (`"customer": "@F00001"`, `"item": "@KONZ"`), nic se nehledá podle jména
+> a nic nezakládá; minimální payload je v `docs/exchange-format.md` § 11
+> „Doklad skriptem“. Příklady níže s hledáním podle údajů, `_resolve`
+> a zakládáním partnera jsou režim **návrh** — vyžádá si ho
+> `applyOptions.interpret: true`.
+
 ### `/preview` — vrátí `_resolve` s navrženými matches
 
 ```bash
@@ -141,7 +149,7 @@ V odpovědi je `data.canonical._resolve.supplier.status` jeden ze
 vyplní `_resolve.supplier.userAction` (jednu z: `useExisting:<id>`,
 `create`, `skip`) a pošle do `/apply`.
 
-### `/apply` — uložení dokladu s vytvořením neexistujícího partnera
+### `/apply` v režimu návrh — uložení dokladu s vytvořením neexistujícího partnera
 
 ```bash
 # Pošli canonical, ve kterém pro každou neresolved referenci je
@@ -178,7 +186,7 @@ curl -X POST \
       "supplierBank":{"userAction":"create"},
       "rows":[{"item":{"userAction":"create"}}]
     },
-    "applyOptions":{"targetDocState":10}
+    "applyOptions":{"targetDocState":10,"interpret":true}
   }' \
   http://127.0.0.1/<ds-id>/api/v1/_exchange/docs/document/apply
 ```

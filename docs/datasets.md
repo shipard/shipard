@@ -43,9 +43,17 @@ sada/
   `json_encode` bez `PRESERVE_ZERO_FRACTION` — `1.0` skončí v DB i v dumpu
   jako `1`; sada psaná mimo PHP, která má být s dumpem byte-shodná, je
   zapisuje rovnou tak (`docs/test-corpus.md` § 16).
-- **Žádná interní id.** Partner jako identifikátory (IČO/DIČ/VAT ID),
-  položky přes `ourCode`, účty číslem, jednotky `system_code`, řada přes
-  `numberSeriesCode`, vlastní bankovní účet přes `code` číselníku, mailbox a
+- **Žádná interní id — odkazy přirozeným klíčem.** V sekci `docs/` je každý
+  odkaz na záznam **reference** formátu dokladu (#166 D30, D34,
+  `docs/exchange-format.md` § 5 „Reference na záznamy“): partner jako objekt
+  s `ref: "@<číslo osoby>"` a daty (dobový snapshot), položka
+  `{ref: "@<kód>", name}`, účet `"@<číslo>"`, řada `numberSeries`
+  (`"@invno"`; u pokladních typů ji určuje pokladna), vlastní bankovní účet
+  `payment.ownBankAccount`, pokladna, registrace DPH `vat.registration`,
+  dimenze a původní doklad opravného dokladu. Jednotky jsou holý
+  `system_code`. Osoby sady proto potřebují **stálé číslo osoby**
+  (`personId` v souboru osoby — generátor demo sady ho bere z příběhu).
+  Ostatní sekce: partner jako identifikátory (IČO/DIČ/VAT ID), mailbox a
   AI profil kódem, vazby zpráva ↔ doklad přes číslo dokladu (spisovna:
   titulek + `created`), zakázka číslem (dimenze dokladů, řada zakázek
   kódem, druh zakázky názvem), karta majetku inventárním číslem (dimenze
@@ -443,13 +451,13 @@ Sekce `mail/` se nemění: zprávy nesou návrhy, které až `dataset-verify`
 použije cestou pošty, tedy v režimu **návrh**.
 
 **Dimenze deníku na dokladech** (#110 T2): `DocumentExporter` vypisuje
-objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
-(`exchangeKey` cílové tabulky dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
+objekt `dimensions` na hlavičce i řádcích s referencí přirozeným klíčem
+(`"@<klíč>"`, `exchangeKey` cílové tabulky dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
 nese v `setup/` — středisko (`cost_centers.jsonc`) — nebo ve vlastní sekci
 (`$sectionTables`: zakázka číslem se sekcí `workOrders/`, #131 fáze 2b;
 karta majetku inventárním číslem se sekcí `assets/`, fáze 2c). Dimenzi
 na záznamy mimo sadu (zdroj dat bez příslušné sekce) dump vynechá — seed
-by doklad odmítl `dimension_not_found` — a ohlásí to jedním varováním per
+by doklad odmítl `reference_not_found` — a ohlásí to jedním varováním per
 dimenze s počtem dokladů. Stejně dopadne dimenze, jejíž cílová tabulka
 na zdroji dat není aktivní (dimenze deklaruje `economy.accounting`, který
 na zakázkách ani majetku nezávisí) nebo nemá `exchangeKey`: hodnota se
@@ -567,8 +575,15 @@ Vědomé normalizace a limity fáze 1:
   `it-servis` je to sedm přijatých faktur zaokrouhlených na koruny
   (`"unit"`).
 - Řádkový partner účetního dokladu a hlavičkový partner `cmnbkp` se
-  nepřenáší (formát ho nemá) → warning při dumpu.
-- Vlastní bankovní účet bez `code` v číselníku nelze přenést → warning.
+  nepřenáší (formát ho nemá) → warning při dumpu; pole dostanou
+  v `tasks/doc-format-partner-fields.md`.
+- Záznam bez hodnoty přirozeného klíče nelze odkázat (#166 U5) → warning
+  a pole se vynechá: vlastní bankovní účet a položka bez kódu, řada
+  a registrace DPH bez kódu (zdroj před `ds-upgrade`), jednotka bez
+  systémového kódu, původní doklad bez čísla.
+- Seed sekce `docs/` je pokyn: osoby a položky, na které doklady odkazují,
+  musí sada nést (nebo je založí provisioner — účetní položky z nabídky
+  osnovy) — pokyn je nezaloží a nenalezená reference seed dokladu zastaví.
 - `app.icon` / `app.companyLogo` (soubory v `branding/`) se nepřenáší.
 - Fiskální roky po resetu zakládá provisioner jen pro aktuální rok; roky
   dat sady doplní `FiscalYearsSeeder` (§3).
@@ -602,15 +617,17 @@ Vědomé normalizace a limity fáze 1:
   znovu Odpisy za období; karta bez inventárního čísla identitu v sadě
   nemá; stav V opravě se vrátí jako V pořádku; dlouhodobá vyřazená karta
   skončí v archivu jen přes potvrzené vyřazení.
-- Opravný daňový doklad (#92 task B U5): sada nese blok `correction`
-  (číslo a datum plnění původního dokladu, důvod), ne odkaz — po seedu ho
-  applier obnoví dohledáním podle čísla mezi doklady téhož typu ve stavu
-  V pořádku. Dump proto řadí opravné doklady až za běžné doklady téhož
-  typu (`DocumentExporter::orderSql`), aby původní doklad byl v sadě dřív
-  i v jiné řadě. Limity: opravný doklad k opravnému dokladu v jiné řadě,
-  než má ten původní, může být v sadě dřív a odkaz ztratí (číslo zůstane
-  textem, info `correction_original_not_found`); původní doklad mimo stav
-  V pořádku (stornovaný) odkaz po seedu nedostane.
+- Opravný daňový doklad (#92 task B U5, #166 D30): sada nese blok
+  `correction` s odkazem na původní doklad referencí číslem
+  (`originalDoc: "@<číslo>"`, jen když odkaz existuje), číslem, datem
+  plnění a důvodem. Dump proto řadí opravné doklady až za běžné doklady
+  téhož typu (`DocumentExporter::orderSql`), aby původní doklad byl v sadě
+  dřív i v jiné řadě. Limity: číslo dokladu nemá unikátní index — shodné
+  číslo u dvou dokladů (i různých typů) je při seedu chyba
+  `reference_ambiguous`; opravný doklad k opravnému dokladu v jiné řadě,
+  než má ten původní, může být v sadě dřív a seed ho odmítne
+  (`reference_not_found`); původní doklad bez čísla (koncept) dump
+  neodkáže.
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI.
 

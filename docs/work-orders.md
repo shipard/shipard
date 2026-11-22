@@ -450,9 +450,10 @@ otisk konceptu). `src/Invoicing/`: `PeriodCalendar` (kalendářní období,
 den fakturace, splatná období k datu, ukončení bez krácení),
 `PeriodLabel` (`{období}` přes ext-intl a cfgItem `periodTexts` cs / en /
 sk / de), `InvoiceBuilder` → kanonický `shpd.docs.document.v1`
-(`DocumentApplier`, Q1: `numberSeriesId`, `importOwnBankAccount`
-efektivní nebo výchozí účet, pin zákazníka, dimenze zakázka a středisko,
-`source.kind = workOrder`), `InvoicingRunService` (zámek řádku období +
+(`DocumentApplier`, Q1; reference id podle #166 D30: řada `numberSeries`,
+efektivní nebo výchozí účet `payment.ownBankAccount`, zákazník jako strana
+`{ref, …data}`, položky řádků `{ref, name}`, dimenze zakázka a středisko;
+jednotka systémovým kódem; `source.kind = workOrder`; bez `_resolve`), `InvoicingRunService` (zámek řádku období +
 apply + zápis dokladu v jedné transakci — applier ukládá v
 `NestedTransaction`; chyba jednoho období zastaví jen je; pojistka
 dohánění `MAX_CATCHUP = 3` s `force`; dry-run bez zápisu; Přegenerovat
@@ -469,7 +470,7 @@ s množstvím 0, Ready v dalším běhu přegeneruje jen nezměněný koncept
 (invoices_to_review souhrnně, period_failed, catchup_blocked,
 period_waiting per zakázka). Viewer dokladů má filtr Zdroj
 (`source_kind`). Odchylky od zadání: řada do applieru podle id
-(`numberSeriesId` — kód řady je nepovinný a neunikátní), výchozí účet
+(dnes reference `numberSeries`, #166 D30), výchozí účet
 dosazuje builder přes `DefaultBankAccountResolver` (applier pro ostatní
 volající beze změny), `inv_vat_mode` nabízí i Bez DPH, id alertů malými
 písmeny (`economy.workorders.*`).

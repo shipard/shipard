@@ -1,6 +1,6 @@
 # Task: Reference ve formátu dokladu — pokyn bez hledání podle jména a bez zakládání
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část C1; D9–D14, D30–D39)
+**Stav:** hotovo — implementováno 2026-11-22 (#166 etapa 3, část C1; D9–D14, D30–D39)
 
 **Issue:** #166 (etapa 3, část C)
 
@@ -268,13 +268,124 @@ nezaloží. Etapa 6.
 
 ## Hotovo když
 
-- [ ] každé místo z U1 je jedno pole s referencí; stará pole kromě D39
+- [x] každé místo z U1 je jedno pole s referencí; stará pole kromě D39
       ve schématu nejsou
-- [ ] pokyn hledá jen přes `ReferenceResolver`, nic nezakládá, chyby
+- [x] pokyn hledá jen přes `ReferenceResolver`, nic nezakládá, chyby
       podle U3
-- [ ] návrh beze změny výsledku; `ref` má přednost; obohacení píše
+- [x] návrh beze změny výsledku; `ref` má přednost; obohacení píše
       reference
-- [ ] export, generátory dokladů, generátor sad a demo sada na referencích
-- [ ] matice 20 / 20, nové případy payloadů, `dataset-verify` beze změny
-- [ ] cílené testy, pak celá unit sada
-- [ ] dokumentace včetně návodu „Doklad skriptem“, stav tasku
+- [x] export, generátory dokladů, generátor sad a demo sada na referencích
+- [x] matice 20 / 20, nové případy payloadů, `dataset-verify` beze změny
+- [x] cílené testy, pak celá unit sada
+- [x] dokumentace včetně návodu „Doklad skriptem“, stav tasku
+
+## Poznámky k implementaci
+
+Implementováno 2026-11-22 ve čtyřech commitech kódu (`6bdee605`,
+`8ea40789`, `45cff21a`, `a452dfc4`) a commitu dokumentace.
+
+### Upřesnění přijatá při plánování
+
+- **Skalární reference se uvnitř applieru rozbalí.** `"supplier": 42`
+  a `"item": "@KOD"` se po validaci schématu převedou na objekt s `ref`
+  (`CanonicalReferences::expand()`), takže applier, validátor
+  a normalizace hodnot čtou jeden tvar. Odpověď vrací rozbalený tvar.
+- **Tvar referencí na jednom místě** — `Document\CanonicalReferences`:
+  rozbalení, identifikující údaje strany a položky, signál účtu, volby
+  `_resolve`, které pokyn nečte, a čtení / zápis položky a účtu řádku
+  v návrhu (obohacení, pásmo karty, zvláštní místo plnění).
+- **Původní doklad opravného dokladu:** podle `originalDocNumber` se už
+  nic nedohledává ani v návrhu (U1 nemá u `correction.originalDoc`
+  poznámku „v pokynu“). Volba `_resolve.correction` v návrhu zůstává;
+  reference má přednost. Nález `correction_original_not_found` /
+  `…_ambiguous` zanikl; reference na doklad jiného typu je chyba
+  `correction_original_not_supported`.
+- **Stálé číslo osoby v demo sadě:** `personId` je zapsané v příběhu
+  (`partners.jsonc`, `story.jsonc`) s dosavadními hodnotami, generátor ho
+  už neodvozuje z pořadí. Soubory `persons/` se nezměnily.
+- **`numberSeries` v exportu vždy** u typu nevázaného na pokladnu
+  (i výchozí řada); u pokladních typů se nevyváží — řadu určuje pokladna.
+- **Registrace DPH, která k datu dokladu neplatí** (reference, mimo
+  import), je chyba `vat_registration_not_valid` — výslovně určená
+  registrace nesmí tiše vypadnout. `CorrectiveDocService` proto registraci
+  původního dokladu předává jen, když k datu vystavení platí.
+- **Reference dimenze:** chyby mají kód resolveru (`reference_not_found`
+  …) s názvem dimenze ve zprávě; `dimension_not_found` zanikl,
+  `dimension_unknown` zůstává. `DimensionResolver::resolve()` bere
+  referenci a hází `ReferenceException`.
+- **Chyby dohledání cílů uložení:** pokladna, řada a vlastní účet, které
+  se podle reference nenajdou, jsou nálezy pod `validation_failed`
+  (všechny tři najednou), ne apply-level kódy `cash_desk_not_found` /
+  `own_bank_account_not_found`. `number_series_not_found` zůstává pro
+  řadu jiného typu nebo neaktivní, `cash_desk_not_found` pro pokladnu
+  bez řady.
+- **`enrichment.suggested` nese dál holé hodnoty** (`ourCode`, `account`);
+  na řádek jdou reference. Frontend náhledu potřeboval jen číst
+  `matchedBy: "ref"` jako napárování naším kódem (`rowMatch.js`).
+
+### Odchylky od zadání
+
+- **Rozdělení commitů.** Schéma se starými poli končí (D14), takže
+  `DocumentExporter`, `CanonicalParty` a generátory dokladů (U5, U6) jsou
+  v commitu 1 se schématem a pokynem — jejich výstup jinak schématem
+  neprojde a unit sada by mezi commity nebyla zelená. Commit 2 obohacení,
+  commit 3 sady a generátor sad, commit 4 případy payloadů, commit 5
+  dokumentace.
+- **Definice reference ve schématu hlídá jen typ** (číslo nebo text),
+  ne tvar `@…`: gramatiku drží jediné místo (`ReferenceValue`) a U8 chce
+  u `"42"` nález `reference_invalid`, ne `schema_invalid`. Strana
+  a položka jsou místo `oneOf` sjednocením typů téže definice
+  (`["object", "integer", "string", "null"]`) — stejný význam, čitelnější
+  chyby schématu.
+- **Jednotka v exportu a generátorech jen systémovým kódem** (D37) —
+  dřív export padal zpět na zkratku. Jednotka bez systémového kódu se
+  s varováním vynechá.
+- **Strana jen referencí v importním módu** dostane snapshot z adresáře
+  (`PersonSnapshotBuilder::buildPartner()`); `DocDocument` by jinak
+  v importním módu nechal snapshot prázdný.
+
+### Stávající testy
+
+- **Testy pokynu nad harnessem** (`OutOfScopeHarness`): payloady nesou
+  papírovou podobu dokladu; pokyn je dostává převedené
+  (`ReferenceFixture::asInstruction()` — `ref` u strany a položky, bez
+  signálu země registrace). Očekávání beze změny. `ReferenceFixture` staví
+  skutečný `ReferenceResolver` nad vyjmenovanými záznamy.
+- **Testy obohacení:** tvrzení o výstupu obohacení přešla na `item.ref`
+  a účet `"@číslo"`; nový test drží čtení uloženého návrhu starým tvarem.
+- **`DocumentImportSeriesStatesTest`** si zakládá vlastního partnera
+  a položku bere existující; neposílá papírové součty fixtury. Na volných
+  zdrojích test přeskakuje (chce dvě řady přijatých faktur s kódy 1 a 5)
+  a od zavedení kontrolního součtu (část B) by neprošel — ověřen na
+  demo zdroji s dočasně založenými řadami.
+- **`CashDocumentImportTest`:** řádek komentáře s názvem reálného zdroje
+  dat anonymizován prefixem ID.
+
+### Ověření (volné zdroje dat)
+
+- Unit sada 12 077 testů; integrační skupina dokladů, sad a pošty nad
+  zdrojem se sadou Plátce DPH 516 testů bez selhání; matice round-tripu
+  20 / 20, případy payloadů 33 (12 nových).
+- Demo sada: seed → dump je v `docs/` bajtově shodný se sadou v repu,
+  druhé kolo seed → dump stabilní (liší se jen manifest).
+- Srovnání s kódem před taskem (worktree): 305 dokladů po seedu demo
+  sady a běhu periodické fakturace (10 nových konceptů) shodných ve všech
+  porovnávaných sloupcích hlavičky a řádků; tři opravné doklady (Kč se
+  zakázkou, Kč bez ní, EUR s přenesením) shodné; `dataset-verify --json`
+  tří veřejných sad shodný.
+- Minimální payload z návodu „Doklad skriptem“ přes REST `/preview`
+  a `/apply` na demo zdroji: koncept vydané faktury 5 000 + 21 %, náhled
+  pro stav V pořádku hlásí chybějící vlastní účet na `payment.ownBankAccount`.
+
+### Otevřené body
+
+- **Výstupní schéma profilu pošty** (`output_schema` v
+  `czech_general.jsonc`) nese kopii schématu, takže model na čerstvě
+  založeném zdroji uvidí `ref`, `numberSeries` a referenci u účtu (popis
+  definice říká, že doklad z papíru referenci nenese). Verze promptu se
+  nemění, existující zdroje dat si proto drží uložené starší schéma.
+  Dopad na extrakci ověří evaluace (pouští člověk).
+- Import ze starého Shipardu (etapa 6) musí posílat reference a osoby
+  i položky nahrávat předem — viz „Dopad na import“.
+- Navazuje `tasks/doc-format-partner-fields.md` (partner účetního
+  a pokladního dokladu jako pole, konec `_resolve` v pokynu).

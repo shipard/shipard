@@ -151,9 +151,10 @@ Saldokonto, účtování, přiznání k DPH ani KH se podle příznaku nemění
 
 **Výměnný formát a akce Vystavit opravný doklad** (#92 task B,
 `tasks/corrective-doc-exchange.md`): canonical nese blok `correction`
-(`originalDocNumber`, `originalTaxPointDate`, `reason`) a odkaz pinem
-`_resolve.correction` — applier ho bere jen u typu s příznakem, původní
-doklad dohledá pinem nebo podle čísla mezi doklady téhož typu V pořádku,
+(`originalDoc`, `originalDocNumber`, `originalTaxPointDate`, `reason`) —
+odkaz na původní doklad je reference `correction.originalDoc` (#166 D30;
+v návrhu i volba `_resolve.correction`), podle čísla se nic nedohledává.
+Applier blok bere jen u typu s příznakem,
 sloupce opravy zapíše už v `transform()`, sazby DPH hledá k datu původního
 plnění a kurz přebírá z původního dokladu (`docs/exchange-format.md` § 5
 „Opravný daňový doklad“). `src/Corrective/`: `CorrectiveDocBuilder` (čistá

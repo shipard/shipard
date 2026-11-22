@@ -742,6 +742,16 @@ automatické zaokrouhlení tam, kde platí — proto generátor nepředává
 `totals`). Řádek dokladu s DPH má nést kód DPH: bez něj koncept vznikne
 s varováním a nepůjde potvrdit.
 
+**Záznamy, které generátor zná, posílá referencí id** (#166 D30,
+`docs/exchange-format.md` § 5 „Reference na záznamy“): partnera jako stranu
+`{ref: <id>, …data}`, položku řádku `{ref: <id>, name}`, řadu
+`numberSeries`, vlastní účet `payment.ownBankAccount`, dimenze, registraci
+DPH `vat.registration`, původní doklad opravného dokladu
+`correction.originalDoc`. Volby v `_resolve` (`useExisting:<id>`) pokyn
+nečte a generátor je neposílá; nic se nezakládá — reference, která se
+nenajde, apply zastaví nálezem. Jednotka jde systémovým kódem
+(`core_units.system_code`); jednotku bez něj formát vyjádřit neumí.
+
 Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
 přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku
 (`AssetPostingDocuments`) jdou přes `TableGateway` přímo; sjednotí je
