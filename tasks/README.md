@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 472 tasků: **naplánováno** 4 · **částečně** 24 · **zrušeno** 1 · **hotovo** 443.
+Celkem 474 tasků: **naplánováno** 6 · **částečně** 24 · **zrušeno** 1 · **hotovo** 443.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,8 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `doc-format-partner-fields.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část C2; D30, D32); až po `tasks/doc-format-references.md` |
+| `doc-format-references.md` | naplánováno | zadání 2026-11-22 (#166 etapa 3, část C1; D9–D14, D30–D39) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -299,6 +301,8 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `number-series-vat-registration-codes.md` | Kód číselné řady dokladů a registrace DPH jako přirozený klíč: sloupec `code` s unikátním indexem, generátor (`invno`, `cash-<pokladna>`, `cz`), doplnění existujícím záznamům v `ds-upgrade`, formuláře; datové sady odkazují řadu kódem místo `{docType, code}` (#166 D16, D17) |
 | `doc-apply-instruction-mode.md` | Pokyn × návrh: režim applieru jako parametr volání, pokyn bez odvozování ze signálů (místo plnění, kód a režim DPH, rekapitulace, zaokrouhlení), chyby dokladu jako 422, importní mód jen pro historii, test payloadů importu; REST, datové sady a generátory na pokyn (#166 etapa 3, D18–D24) |
 | `doc-totals-rounding-explicit.md` | `totals` jako kontrolní součet pokynu (`totals_check_failed`) a výslovný mód zaokrouhlení ve výměnném formátu (`totals.totalRoundingMode`, `vat.roundingMode`), export nevýchozích hodnot; zavírá poslední mezeru matice round-tripu (#166 etapa 3, D4) |
+| `doc-format-references.md` | Reference ve formátu dokladu: strana, položka, řada, vlastní účet, pokladna, dimenze, účet řádku, registrace DPH a původní doklad jako jedno pole s referencí; pokyn hledá jen přes `ReferenceResolver`, nic nezakládá a nenalezená reference je chyba; export, generátory a sady na referencích (#166 etapa 3, D30–D39) |
+| `doc-format-partner-fields.md` | Pole `partner` na hlavičce účetního a pokladního dokladu a `rows[].partner` ve formátu dokladu; pokyn přestane číst `_resolve`; sady přenášejí partnera účetního dokladu (#166 etapa 3, D30, D32) |
 | `exchange-format-phase3a.md` | Vizualizace canonical + PDF split-view |
 | `exchange-format-phase3b.md` | Interakce s `_resolve` |
 | `exchange-resolve-decision-ui.md` | Rebuild rozhodování canCreate/ambiguous/notFound + smart totals |
