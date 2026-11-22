@@ -35,8 +35,10 @@ final class VatRegistrationCodeGenerator
      *
      * @param array<string, mixed> $registration `country`, u existující
      *        registrace `id` a `docState`
+     * @param array<string, true> $alsoTaken kódy obsazené nad rámec toho,
+     *        co je vidět v databázi (souběžný zápis, {@see RecordCode::key()})
      */
-    public function generate(array $registration): string
+    public function generate(array $registration, array $alsoTaken = []): string
     {
         $id = (int) ($registration['id'] ?? 0);
         $country = (string) ($registration['country'] ?? '');
@@ -44,7 +46,7 @@ final class VatRegistrationCodeGenerator
         return self::compose(
             $country,
             $this->isFirstOfCountry($country, $id, (int) ($registration['docState'] ?? 0)),
-            $this->takenKeys($id),
+            $this->takenKeys($id) + $alsoTaken,
         );
     }
 

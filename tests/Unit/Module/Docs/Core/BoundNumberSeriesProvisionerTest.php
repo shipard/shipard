@@ -11,6 +11,8 @@ use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 
 class BoundNumberSeriesProvisionerTest extends TestCase
 {
+    use NumberSeriesDbTrait;
+
     private string $tmpDir;
 
     protected function setUp(): void
@@ -318,5 +320,32 @@ class BoundNumberSeriesProvisionerTest extends TestCase
 
         $this->assertSame(['created' => 0, 'existing' => 0], $result);
         $this->assertCount(0, $store->tables['docs_core_number_series']);
+    }
+
+    // ── kód řady (#166 D17, U5) ─────────────────────────────────────────────
+
+    public function testCreatedBoundSeriesGetsItsCode(): void
+    {
+        // Řada vzniká přímým insertem mimo Document (i líně z applieru) —
+        // kód `<typ>-<kód pokladny>` má na konci téže operace.
+        $store = new \ArrayObject();
+        $dibi = $this->seriesDb([], ['economy_codebooks_cash_desks' => [4 => 'POK']], $store);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(static function (string $sql, mixed ...$params): ?array {
+            // pokladna podle id; řada (doc_type, pokladna) ještě není
+            return str_contains($sql, 'docs_core_number_series') ? null : ['id' => 4, 'code' => 'POK', 'docState' => 40];
+        });
+        $db->method('insertRow')->willReturnCallback(static function (string $table, array $data) use ($store): int {
+            $id = count($store['rows']) + 1;
+            $store['rows'] = [...$store['rows'], ['id' => $id, 'code' => null] + $data];
+            return $id;
+        });
+        $db->method('getDibiConnection')->willReturn($dibi);
+
+        $result = (new BoundNumberSeriesProvisioner($db, $this->buildConfig($this->cfgCashAndInvoice())))
+            ->provisionForCashDesk(4);
+
+        $this->assertSame(['created' => 1, 'existing' => 0], $result);
+        $this->assertSame([1 => 'cashb-POK'], self::codesOf($store));
     }
 }

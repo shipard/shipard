@@ -17,7 +17,9 @@ use Shipard\Core\Database\DataSourceConnection;
  * restart per fiskální rok, stav dle entity (40/3, archivovaná pokladna
  * 70/4 — jen pro import historických dokladů). Přejmenování entity se do
  * `doc_number_code` NEpropaguje (záměr, #59 D3) — čísla už vydaných
- * dokladů se nesmí měnit.
+ * dokladů se nesmí měnit. Stejně tak do kódu řady (`code`, přirozený klíč
+ * `<typ>-<kód entity>`, #166 D17), který řadě po vložení doplní
+ * NumberSeriesCodeBackfill.
  *
  * Běží z `ds-upgrade` i pod skipProvisioning (řady jsou infrastruktura,
  * kterou import dokladů potřebuje — D12) a z CashDeskSeriesEventHandler
@@ -169,6 +171,10 @@ final class BoundNumberSeriesProvisioner
             'docState'           => $entityState,
             'docStateMain'       => self::ENTITY_STATE_TO_SERIES_MAIN_STATE[$entityState] ?? 3,
         ]);
+        // Řádek vzniká mimo Document — kód řady (`cash-<kód pokladny>`,
+        // #166 D17) doplní služba hned po vložení. Běží i líně uprostřed
+        // apply dokladu: bez vlastní transakce, souběh řeší dalším kódem.
+        (new NumberSeriesCodeBackfill($this->db->getDibiConnection()))->run();
         return true;
     }
 }

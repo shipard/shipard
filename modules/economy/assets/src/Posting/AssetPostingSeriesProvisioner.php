@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\Assets\Posting;
 
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Settings\KeyValueStore;
+use Shipard\Module\Docs\Core\NumberSeriesCodeBackfill;
 
 /**
  * Řada účetních dokladů „Majetek“ pro nový zdroj dat (docs/assets.md D54):
@@ -59,6 +60,8 @@ final class AssetPostingSeriesProvisioner
                 'docState'           => 40,
                 'docStateMain'       => 3,
             ]);
+            // Řádek vzniká mimo Document — kód řady (`cmnbkp-MA`, #166 D17).
+            (new NumberSeriesCodeBackfill($this->db->getDibiConnection()))->run();
             $created = 1;
         }
         $this->settings->set(AssetPostingSeries::SETTING, (string) $seriesId);

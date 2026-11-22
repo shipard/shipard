@@ -1126,4 +1126,102 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringContainsString('[ERROR] Secrets migration failed: invalid JSON', $tester->getDisplay());
         $this->assertSame('{not json', file_get_contents($this->dsDir . '/config/main.json'));
     }
+
+    // ── kódy řad a registrací DPH (#166 D16, D17) ───────────────────────────
+
+    /** Fixture moduly docs.core a economy.codebooks bez tabulek — stačí na aktivní modul. */
+    private function createRecordCodeFixtureModules(): void
+    {
+        foreach (['docs/core' => 'docs.core', 'economy/codebooks' => 'economy.codebooks'] as $dir => $id) {
+            $moduleDir = $this->modulesPath . '/' . $dir;
+            mkdir($moduleDir, 0755, true);
+            file_put_contents($moduleDir . '/module.jsonc', json_encode([
+                'id' => $id, 'name' => $id, 'dependencies' => [], 'tables' => [], 'extensions' => [], 'config' => [],
+            ]));
+        }
+    }
+
+    /**
+     * Dibi spojení pro doplnění kódů: `$missing` = řádky bez kódu per tabulka.
+     *
+     * @param array<string, list<array<string, mixed>>> $missing
+     * @param \ArrayObject<int, array{0: string, 1: string}> $written tabulka + zapsaný kód
+     */
+    private function recordCodeDibi(array $missing, \ArrayObject $written): \Dibi\Connection
+    {
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->method('fetchAll')->willReturnCallback(static function (string $sql, mixed ...$args) use ($missing): array {
+            if (!str_contains($sql, '[code] IS NULL OR')) {
+                return [];
+            }
+            return array_map(static fn(array $row): \Dibi\Row => new \Dibi\Row($row), $missing[(string) $args[0]] ?? []);
+        });
+        $dibi->method('fetch')->willReturn(new \Dibi\Row(['first_id' => 1]));
+        $dibi->method('update')->willReturnCallback(function (string $table, iterable $values) use ($written): \Dibi\Fluent {
+            $written[] = [$table, (string) [...$values]['code']];
+            $fluent = $this->createMock(\Dibi\Fluent::class);
+            $fluent->method('__call')->willReturnSelf();
+            return $fluent;
+        });
+        $dibi->method('getAffectedRows')->willReturn(1);
+        return $dibi;
+    }
+
+    public function testRecordCodesAreFilledUnderSkipProvisioning(): void
+    {
+        $this->createRecordCodeFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'docs.core', 'economy.codebooks']);
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $written = new \ArrayObject();
+        $this->dsConnection->method('getDibiConnection')->willReturn($this->recordCodeDibi([
+            'docs_core_number_series' => [
+                ['id' => 1, 'docState' => 40, 'doc_type' => 'invno', 'doc_number_code' => null, 'cash_desk' => null, 'warehouse' => null],
+            ],
+            'economy_codebooks_vat_registrations' => [
+                ['id' => 1, 'docState' => 40, 'country' => 'cz'],
+            ],
+        ], $written));
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Provisioning disabled via config', $display);
+        $this->assertStringContainsString('[FILL]   number series codes — filled: 1', $display);
+        $this->assertStringContainsString('[FILL]   VAT registration codes — filled: 1', $display);
+        $this->assertSame([
+            ['docs_core_number_series', 'invno'],
+            ['economy_codebooks_vat_registrations', 'cz'],
+        ], $written->getArrayCopy());
+    }
+
+    public function testRecordCodesAreSilentWhenNothingIsMissing(): void
+    {
+        $this->createRecordCodeFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'docs.core', 'economy.codebooks']);
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $written = new \ArrayObject();
+        $this->dsConnection->method('getDibiConnection')->willReturn($this->recordCodeDibi([], $written));
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+
+        $this->assertStringNotContainsString('[FILL]', $tester->getDisplay());
+        $this->assertCount(0, $written);
+    }
+
+    public function testRecordCodesAreSkippedWithoutTheirModules(): void
+    {
+        // Bez docs.core a economy.codebooks tabulky nejsou — žádný dotaz.
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->expects($this->never())->method('fetchAll');
+        $this->dsConnection->method('getDibiConnection')->willReturn($dibi);
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+    }
 }

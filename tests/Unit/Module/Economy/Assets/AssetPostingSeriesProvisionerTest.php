@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Economy\Assets;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Tests\Unit\Module\Docs\Core\NumberSeriesDbTrait;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Settings\KeyValueStore;
@@ -18,6 +19,8 @@ use Shipard\Module\Economy\Assets\Posting\AssetPostingSeriesProvisioner;
  */
 class AssetPostingSeriesProvisionerTest extends TestCase
 {
+    use NumberSeriesDbTrait;
+
     /** @param array<string, mixed> $values */
     private function settings(array $values = []): KeyValueStore
     {
@@ -104,5 +107,25 @@ class AssetPostingSeriesProvisionerTest extends TestCase
 
         $this->assertSame(['created' => 0, 'existing' => 1, 'seriesId' => 3], $result);
         $this->assertSame('3', $settings->get(AssetPostingSeries::SETTING));
+    }
+
+    public function testCreatedSeriesGetsItsCode(): void
+    {
+        // #166 D17: druhá řada účetních dokladů = `cmnbkp-<kód z čísla dokladu>`.
+        $store = new \ArrayObject();
+        $dibi = $this->seriesDb([
+            ['id' => 1, 'doc_type' => 'cmnbkp', 'code' => 'cmnbkp', 'doc_number_code' => null, 'docState' => 40],
+        ], [], $store);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+        $db->method('insertRow')->willReturnCallback(static function (string $table, array $data) use ($store): int {
+            $store['rows'] = [...$store['rows'], ['id' => 2, 'code' => null] + $data];
+            return 2;
+        });
+        $db->method('getDibiConnection')->willReturn($dibi);
+
+        (new AssetPostingSeriesProvisioner($db, $this->settings()))->provision();
+
+        $this->assertSame([1 => 'cmnbkp', 2 => 'cmnbkp-MA'], self::codesOf($store));
     }
 }

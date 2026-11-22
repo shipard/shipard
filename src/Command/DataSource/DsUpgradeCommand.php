@@ -33,6 +33,7 @@ use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRulesProvisioner;
 use Shipard\Module\Core\Units\UnitsProvisioner;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
+use Shipard\Module\Docs\Core\NumberSeriesCodeBackfill;
 use Shipard\Module\Docs\Core\NumberSeriesProvisioner;
 use Shipard\Module\Economy\Accbal\BalancesProvisioner;
 use Shipard\Module\Economy\Accbal\ClearingInfrastructureProvisioner;
@@ -43,6 +44,7 @@ use Shipard\Module\Economy\Assets\AccountingGroupsProvisioner;
 use Shipard\Module\Economy\Assets\Posting\AssetPostingSeries;
 use Shipard\Module\Economy\Assets\Posting\AssetPostingSeriesProvisioner;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
+use Shipard\Module\Economy\Codebooks\VatRegistrationCodeBackfill;
 use Shipard\Module\Economy\Items\ItemKindsProvisioner;
 use Shipard\Module\Economy\Vat\Accounting\VatReturnAccountingService;
 use Shipard\Module\Economy\Vat\ReportPeriodsProvisioner;
@@ -435,6 +437,13 @@ class DsUpgradeCommand extends Command
             $this->provisionAssetPostingSeries($resolvedModules, $dsConnection, $output);
             $this->provisionMailRouter($resolvedModules, $dsConfig, $dsConnection, $output);
         }
+
+        // Kód číselných řad dokladů a registrací DPH (#166 D16, D17) —
+        // BEZPODMÍNEČNĚ, i pod skipProvisioning, a až po provisionerech řad:
+        // přirozený klíč je infrastruktura jako vázané řady. Doplní ho řádkům
+        // z doby před zavedením sloupce a řádkům z importu přes generické
+        // CRUD. Idempotentní — druhý běh nic nenajde.
+        $this->backfillRecordCodes($resolvedModules, $dsConnection, $output);
 
         $secretsWarnings = DsSecretCipher::healthCheck($dsConfig);
         foreach ($secretsWarnings as $warning) {
@@ -1262,6 +1271,33 @@ class DsUpgradeCommand extends Command
         $result = (new BoundNumberSeriesProvisioner($dsConnection, $config))->provision();
 
         $this->logProvisioningResult($output, 'bound number series', $result);
+    }
+
+    /**
+     * Doplnění kódů (přirozených klíčů) záznamům bez kódu — běží mimo
+     * skipProvisioning gate, viz komentář u volání v execute(). Řádek výpisu
+     * jen když se něco doplnilo.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function backfillRecordCodes(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $db = $dsConnection->getDibiConnection();
+        $filled = [];
+        if ($this->isModuleActive($resolvedModules, 'docs.core')) {
+            $filled['number series codes'] = (new NumberSeriesCodeBackfill($db))->run();
+        }
+        if ($this->isModuleActive($resolvedModules, 'economy.codebooks')) {
+            $filled['VAT registration codes'] = (new VatRegistrationCodeBackfill($db))->run();
+        }
+        foreach ($filled as $label => $count) {
+            if ($count > 0) {
+                $output->writeln(sprintf('  [FILL]   %s — filled: %d', $label, $count));
+            }
+        }
     }
 
     /**

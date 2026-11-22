@@ -11,6 +11,8 @@ use Shipard\Module\Docs\Core\NumberSeriesProvisioner;
 
 class NumberSeriesProvisionerTest extends TestCase
 {
+    use NumberSeriesDbTrait;
+
     private string $tmpDir;
 
     protected function setUp(): void
@@ -223,5 +225,61 @@ class NumberSeriesProvisionerTest extends TestCase
 
         $row = $store->tables['docs_core_number_series'][0];
         $this->assertSame('%D%y%4', $row['doc_number_pattern']);
+    }
+
+    // ── kód řady (#166 D17, U5) ─────────────────────────────────────────────
+
+    /**
+     * DataSourceConnection nad řadami v `$store`: insert přidá řádek,
+     * doplnění kódu běží nad týmiž řádky.
+     *
+     * @param \ArrayObject<string, mixed> $store
+     * @param list<array<string, mixed>> $existing
+     */
+    private function dbWithCodes(\ArrayObject $store, array $existing = []): DataSourceConnection
+    {
+        $dibi = $this->seriesDb($existing, [], $store);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(static function (string $sql, mixed ...$params) use ($store): ?array {
+            foreach ($store['rows'] as $row) {
+                if ($row['doc_type'] === $params[0] && (int) $row['docState'] !== (int) $params[1]) {
+                    return $row;
+                }
+            }
+            return null;
+        });
+        $db->method('insertRow')->willReturnCallback(static function (string $table, array $data) use ($store): int {
+            $id = count($store['rows']) + 1;
+            $store['rows'] = [...$store['rows'], ['id' => $id, 'code' => null] + $data];
+            return $id;
+        });
+        $db->method('getDibiConnection')->willReturn($dibi);
+        return $db;
+    }
+
+    public function testCreatedSeriesGetTheirCodes(): void
+    {
+        $store = new \ArrayObject();
+        $config = $this->buildConfig([
+            'invno' => ['name' => 'Faktura vydaná'],
+            'invni' => ['name' => 'Faktura přijatá'],
+        ]);
+
+        (new NumberSeriesProvisioner($this->dbWithCodes($store), $config))->provision();
+
+        $this->assertSame([1 => 'invno', 2 => 'invni'], self::codesOf($store), 'výchozí řada typu má kód typu dokladu');
+    }
+
+    public function testWithoutNewSeriesCodesAreNotTouched(): void
+    {
+        // Doplnění existujících řad je věc ds-upgrade; provisioner, který nic
+        // nezaložil, do tabulky nesahá.
+        $store = new \ArrayObject();
+        $db = $this->dbWithCodes($store, [['id' => 1, 'doc_type' => 'invno', 'code' => null, 'docState' => 40]]);
+
+        $result = (new NumberSeriesProvisioner($db, $this->buildConfig(['invno' => ['name' => 'Faktura vydaná']])))->provision();
+
+        $this->assertSame(['created' => 0, 'existing' => 1], $result['numberSeries']);
+        $this->assertSame([1 => null], self::codesOf($store));
     }
 }

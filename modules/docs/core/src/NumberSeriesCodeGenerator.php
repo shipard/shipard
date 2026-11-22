@@ -43,8 +43,10 @@ final class NumberSeriesCodeGenerator
      * @param array<string, mixed> $series `doc_type`, vazby (`cash_desk`,
      *        `warehouse`), `doc_number_code`, u existující řady `id`
      *        a `docState`
+     * @param array<string, true> $alsoTaken kódy obsazené nad rámec toho,
+     *        co je vidět v databázi (souběžný zápis, {@see RecordCode::key()})
      */
-    public function generate(array $series): string
+    public function generate(array $series, array $alsoTaken = []): string
     {
         $id = (int) ($series['id'] ?? 0);
         $docType = (string) ($series['doc_type'] ?? '');
@@ -63,7 +65,7 @@ final class NumberSeriesCodeGenerator
             $entityCode,
             $entityCode === null && $this->isFirstOfType($docType, $id, (int) ($series['docState'] ?? 0)),
             (string) ($series['doc_number_code'] ?? ''),
-            $this->takenKeys($id),
+            $this->takenKeys($id) + $alsoTaken,
         );
     }
 

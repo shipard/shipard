@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** částečně — commity 0–1 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document); zbývají commity 2–5 (#166 D16, D17)
+**Stav:** částečně — commity 0–2 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery); zbývají commity 3–5 (#166 D16, D17)
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -291,3 +291,14 @@ se taková dimenze jen nepřenesla.
   ve stavu V pořádku padalo na povinných polích.
 - **Existující záznam bez kódu** (založený mimo `Document`) ho dostane
   i při běžném uložení; `required` je jen pokus vymazat uložený kód.
+- **Doplnění má společné jádro** `Shipard\Core\Database\RecordCodeBackfill`;
+  služby tabulek (`NumberSeriesCodeBackfill`, `VatRegistrationCodeBackfill`)
+  jsou tenké. Zápis je podmíněný `UPDATE` bez transakce; při porušení
+  unikátního indexu si obsazený kód pamatuje a zkusí další (uvnitř cizí
+  transakce ho čtení obsazených kódů vidět nemusí).
+- **`NumberSeriesProvisioner` doplňuje jen po založení řady** — existující
+  řady bez kódu jsou věc `ds-upgrade`. Výpis `ds-upgrade`: `[FILL] … —
+  filled: N`, jen při N > 0.
+- **Ověřeno 2026-11-22** na `4l3j-z`, `jfpl-7` a `8yft-3`: první
+  `ds-upgrade` doplnil kódy podle D17 (`invno`, `cmnbkp-MA`, `cash-POK`,
+  `cashreg-POK`, registrace `cz`), druhý nic.

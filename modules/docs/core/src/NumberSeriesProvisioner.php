@@ -14,6 +14,8 @@ use Shipard\Core\Database\DataSourceConnection;
  * Typy se `series_binding` přeskakuje — jejich řady vznikají per entitu
  * v BoundNumberSeriesProvisioner a nevázaná řada vázaného typu nesmí
  * existovat (NumberSeriesDocument by ji odmítl).
+ *
+ * Založené řady dostanou kód (`invno`, #166 D17) z NumberSeriesCodeBackfill.
  */
 class NumberSeriesProvisioner
 {
@@ -68,6 +70,12 @@ class NumberSeriesProvisioner
                 'docStateMain'       => 3,
             ]);
             $created++;
+        }
+
+        // Řádky vznikají mimo Document — kód řady (#166 D17) doplní služba
+        // hned po vložení: výchozí řada typu má kód typu dokladu.
+        if ($created > 0) {
+            (new NumberSeriesCodeBackfill($this->db->getDibiConnection()))->run();
         }
 
         return ['numberSeries' => ['created' => $created, 'existing' => $existing]];
