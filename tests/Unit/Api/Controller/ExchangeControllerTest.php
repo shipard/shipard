@@ -10,6 +10,7 @@ use Shipard\Api\Controller\ExchangeController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
@@ -103,6 +104,39 @@ class ExchangeControllerTest extends TestCase
         ]));
 
         $this->assertSame(200, $this->getStatus($response));
+    }
+
+    /**
+     * REST je pokyn (#166 D2, D18); interpretaci si klient vyžádá
+     * `applyOptions.interpret: true` — na všech třech endpointech.
+     */
+    public function testDocumentEndpointsCallInstructionUnlessInterpretIsRequested(): void
+    {
+        $cases = [
+            'bez applyOptions'   => [[], ApplyMode::Instruction],
+            'interpret false'    => [['applyOptions' => ['interpret' => false]], ApplyMode::Instruction],
+            'interpret true'     => [['applyOptions' => ['interpret' => true]], ApplyMode::Proposal],
+            'interpret jako text' => [['applyOptions' => ['interpret' => 'true']], ApplyMode::Instruction],
+        ];
+        foreach ($cases as $label => [$extra, $expected]) {
+            $modes = [];
+            $capture = static function (array $canonical, ApplyMode $mode) use (&$modes): ApplyResult {
+                $modes[] = $mode;
+                return ApplyResult::ok($canonical);
+            };
+            $applier = $this->createMock(DocumentApplier::class);
+            $applier->method('validate')->willReturnCallback($capture);
+            $applier->method('preview')->willReturnCallback($capture);
+            $applier->method('apply')->willReturnCallback($capture);
+            $controller = new ExchangeController($applier);
+            $body = ['format' => 'shpd.docs.document'] + $extra;
+
+            $controller->validate($this->buildRequest('POST', '/api/v1/_exchange/docs/document/validate', $body));
+            $controller->preview($this->buildRequest('POST', '/api/v1/_exchange/docs/document/preview', $body));
+            $controller->apply($this->buildRequest('POST', '/api/v1/_exchange/docs/document/apply', $body));
+
+            $this->assertSame([$expected, $expected, $expected], $modes, $label);
+        }
     }
 
     public function testApplyReturnsSavedDocId(): void

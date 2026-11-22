@@ -9,6 +9,7 @@ use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
@@ -66,7 +67,7 @@ final class ExchangeController
         if ($payload instanceof Response) {
             return $payload;
         }
-        return $this->respond($this->applier->validate($payload), 'savedDocId');
+        return $this->respond($this->applier->validate($payload, self::documentMode($payload)), 'savedDocId');
     }
 
     public function preview(Request $request): Response
@@ -75,7 +76,7 @@ final class ExchangeController
         if ($payload instanceof Response) {
             return $payload;
         }
-        return $this->respond($this->applier->preview($payload), 'savedDocId');
+        return $this->respond($this->applier->preview($payload, self::documentMode($payload)), 'savedDocId');
     }
 
     public function apply(Request $request): Response
@@ -84,7 +85,21 @@ final class ExchangeController
         if ($payload instanceof Response) {
             return $payload;
         }
-        return $this->respond($this->applier->apply($payload), 'savedDocId');
+        return $this->respond($this->applier->apply($payload, self::documentMode($payload)), 'savedDocId');
+    }
+
+    /**
+     * Režim dokladového endpointu (#166 D2, D18): REST je **pokyn** — doklad
+     * se uloží, jak ho payload říká. Interpretaci (odvození ze signálů jako
+     * u pošty) si klient vyžádá výslovně `applyOptions.interpret: true`.
+     *
+     * @param array<string, mixed> $payload
+     */
+    private static function documentMode(array $payload): ApplyMode
+    {
+        return ($payload['applyOptions']['interpret'] ?? null) === true
+            ? ApplyMode::Proposal
+            : ApplyMode::Instruction;
     }
 
     // ── Person flow ────────────────────────────────────────────────────

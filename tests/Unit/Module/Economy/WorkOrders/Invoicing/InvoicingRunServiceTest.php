@@ -57,6 +57,8 @@ class InvoicingRunServiceTest extends TestCase
         $this->assertSame(3, $report->count(RunReport::OUTCOME_ISSUED));
         $this->assertSame([1001, 1002, 1003], array_column(array_map(static fn($l) => $l->toArray(), $report->lines), 'docId'));
         $this->assertSame(3, $service->fakeApplier->applied);
+        // Generovaný doklad jde applierem jako pokyn (#166 U10).
+        $this->assertSame([ApplyMode::Instruction, ApplyMode::Instruction, ApplyMode::Instruction], $service->fakeApplier->modes);
         $this->assertSame(['2026-08-01', '2026-09-01', '2026-10-01'], array_keys($service->fakeRepo->periods[6]));
         foreach ($service->fakeRepo->periods[6] as $period) {
             $this->assertSame('issued', $period['state']);

@@ -7,7 +7,7 @@ from decimal import Decimal
 from invoicegen.catalogs import load_catalogs
 from invoicegen.datasetio import dumps_dataset
 from invoicegen.dumpshape import (
-    asset_record, asset_slug, asset_sort_key, bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key,
+    asset_record, asset_slug, asset_sort_key, bank_record, bank_slug, bank_sort_key, doc_record, doc_slug, doc_sort_key, total_rounding_auto,
     php_float, work_order_record, work_order_slug, work_order_sort_key,
 )
 from invoicegen.model import AssetRec, DocRec, PeriodRec, RecapLine, RowRec, StatementRec, TxRec, WorkOrderRec, WorkOrderRowRec
@@ -29,6 +29,36 @@ class PhpFloatTest(unittest.TestCase):
                  "d": php_float(Decimal("2340.00")), "e": php_float(Decimal("0.718")), "f": php_float(0)}
         self.assertEqual('{\n    "a": 1.0,\n    "b": 21.0,\n    "c": 486.5,\n    "d": 2340.0,\n    "e": 0.718,\n    "f": 0.0\n}\n',
                          dumps_dataset(value))
+
+
+class TotalRoundingAutoTest(unittest.TestCase):
+    """`totals.totalRoundingAuto` výslovně (#166 U4, U11) — sekce `docs/` je pokyn."""
+
+    def test_flag_follows_document_type_and_cash_rounding(self) -> None:
+        whole, cents = Decimal("121.00"), Decimal("121.61")
+        # Prodejní typy: bezhotovostně vždy (automatika = na haléře).
+        self.assertTrue(total_rounding_auto(doc("invno", total_amount=cents)))
+        self.assertTrue(total_rounding_auto(doc("invpo", total_amount=cents)))
+        # Hotově v Kč: jen když částka sedí s automatikou (na koruny).
+        self.assertTrue(total_rounding_auto(doc("cashreg", payment_method="cash", total_amount=whole)))
+        self.assertTrue(total_rounding_auto(doc("invno", payment_method="cash", total_amount=whole)))
+        self.assertFalse(total_rounding_auto(doc("invno", payment_method="cash", total_amount=cents)),
+                         "příběh nezaokrouhlil — automatika by částku změnila")
+        self.assertTrue(total_rounding_auto(doc("invno", payment_method="cash", currency="EUR", total_amount=cents)))
+        # Pokladní doklad: jen příjem; ostatní typy automatiku nemají.
+        self.assertTrue(total_rounding_auto(doc("cash", payment_method="cash", cash_direction=1, total_amount=whole)))
+        self.assertFalse(total_rounding_auto(doc("cash", payment_method="cash", cash_direction=2, total_amount=whole)))
+        self.assertFalse(total_rounding_auto(doc("invni", total_amount=whole)))
+        self.assertFalse(total_rounding_auto(doc("cmnbkp", total_amount=whole)))
+
+    def test_record_carries_the_flag_as_last_totals_key(self) -> None:
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        issued = doc_record(doc("invno", partner_key="kopretina", self_party="supplier", number="1260001", sequence=1), story)
+        received = doc_record(doc("invni", partner_key="cipdeska", self_party="customer", number="2260011", sequence=11), story)
+
+        self.assertEqual("totalRoundingAuto", list(issued["totals"])[-1], "pořadí klíčů jako DocumentExporter")
+        self.assertIs(True, issued["totals"]["totalRoundingAuto"])
+        self.assertIs(False, received["totals"]["totalRoundingAuto"], "false se neprořezává — pokyn ho čte výslovně")
 
 
 class DocDimensionsTest(unittest.TestCase):

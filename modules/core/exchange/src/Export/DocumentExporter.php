@@ -412,7 +412,8 @@ final class DocumentExporter implements RecordExporter
                 'totalAmount'   => V::float($h['total_amount'] ?? null),
                 'totalRounding' => V::float($h['total_rounding'] ?? null),
                 // Explicitní příznak, aby dump → seed zachoval automatiku
-                // (#73 D8) — bez něj by deklarovaná částka automatiku vypnula.
+                // (#73 D8): pokyn ji bez pole zapne všude, kde platí (#166 U4),
+                // návrh by ji podle deklarované částky vypnul.
                 'totalRoundingAuto' => V::bool($h['total_rounding_auto'] ?? null),
             ],
             'applyOptions'  => $applyOptions,

@@ -106,7 +106,8 @@
         "totalBase": 52300.0,
         "totalVat": 10983.0,
         "totalAmount": 63283.0,
-        "totalRounding": 0.0
+        "totalRounding": 0.0,
+        "totalRoundingAuto": true
     },
     "applyOptions": {
         "targetDocState": 40,

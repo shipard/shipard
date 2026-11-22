@@ -11,6 +11,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Export\CanonicalParty;
 use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
@@ -111,7 +112,8 @@ class CorrectiveDocService
             $today ?? date('Y-m-d'),
         );
 
-        $result = $this->applier->apply($canonical);
+        // Generovaný doklad = pokyn (#166 U10): builder ví, co chce uložit.
+        $result = $this->applier->apply($canonical, ApplyMode::Instruction);
         if (!$result->success || $result->savedId === null) {
             throw CorrectiveDocException::applyFailed($result);
         }

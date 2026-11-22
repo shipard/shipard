@@ -203,6 +203,26 @@ def partner_side(doc: DocRec) -> str | None:
     return None
 
 
+def total_rounding_auto(doc: DocRec) -> bool:
+    """`totals.totalRoundingAuto` výslovně (#166 U4, U11): sekce `docs/` jde
+    applierem jako pokyn, který automatiku zaokrouhlení neodvozuje z přítomnosti
+    částky — bez pole by byla zapnutá všude, kde platí.
+
+    Platí u prodejních typů (`docTypes[].total_rounding_auto`: vydaná
+    a zálohová faktura, prodejka, příjmový pokladní doklad). Zapnutá je tam,
+    kde s ní částka dokladu vyjde stejně: bezhotovostní úhrada (na haléře)
+    a hotovost zaokrouhlená na koruny. Doklad v Kč hrazený hotově, který
+    příběh na koruny nezaokrouhlil, ji má vypnutou — jinak by ho automatika
+    zaokrouhlila."""
+    applies = doc.doc_type in ("invno", "invpo", "cashreg") or (doc.doc_type == "cash" and doc.cash_direction == 1)
+    if not applies:
+        return False
+    if doc.payment_method == "cash" and doc.currency.upper() == "CZK":
+        amount = Decimal(str(doc.total_amount))
+        return amount == amount.to_integral_value()
+    return True
+
+
 def doc_record(doc: DocRec, story: Story) -> dict:
     side = partner_side(doc)
     party = None
@@ -268,6 +288,7 @@ def doc_record(doc: DocRec, story: Story) -> dict:
             "totalVat": php_float(doc.total_vat),
             "totalAmount": php_float(doc.total_amount),
             "totalRounding": php_float(doc.total_rounding),
+            "totalRoundingAuto": total_rounding_auto(doc),
         },
         "applyOptions": apply_options,
     }

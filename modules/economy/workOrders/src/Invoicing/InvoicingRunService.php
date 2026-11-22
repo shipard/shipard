@@ -8,6 +8,7 @@ use Dibi\Connection;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\NestedTransaction;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionContext;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
@@ -436,7 +437,8 @@ class InvoicingRunService
      */
     protected function applyCanonical(array $canonical): int
     {
-        $result = $this->applier->apply($canonical);
+        // Generovaný doklad = pokyn (#166 U10): builder ví, co chce uložit.
+        $result = $this->applier->apply($canonical, ApplyMode::Instruction);
         if (!$result->success || $result->savedId === null) {
             throw new \RuntimeException(self::applyErrorMessage($result));
         }
