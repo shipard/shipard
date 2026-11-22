@@ -29,8 +29,8 @@ class DimensionResolverTest extends TestCase
             ]),
             // Cílová tabulka bez přirozeného klíče.
             JournalDimension::fromArray([
-                'id' => 'series', 'rowColumn' => 'series', 'journalColumn' => 'series',
-                'table' => 'docs_core_number_series', 'name' => 'Řada',
+                'id' => 'counter', 'rowColumn' => 'counter', 'journalColumn' => 'counter',
+                'table' => 'docs_core_number_counters', 'name' => 'Čítač',
             ]),
             // Cílová tabulka na zdroji dat není.
             JournalDimension::fromArray([
@@ -43,7 +43,7 @@ class DimensionResolverTest extends TestCase
     /** @return array<string, \Shipard\Core\Database\TableDefinition> */
     private function tables(): array
     {
-        return ModuleTables::load('economy_codebooks_cost_centers', 'docs_core_number_series');
+        return ModuleTables::load('economy_codebooks_cost_centers', 'docs_core_number_counters');
     }
 
     public function testResolvesByNaturalKeyOfTheTargetTableExcludingTrash(): void
@@ -83,10 +83,10 @@ class DimensionResolverTest extends TestCase
         $resolver = new DimensionResolver($db, $this->dimensions(), $this->tables());
 
         $this->assertTrue($resolver->knows('costCenter'));
-        $this->assertFalse($resolver->knows('series'), 'cílová tabulka nemá exchangeKey — formát dimenzi nenese');
+        $this->assertFalse($resolver->knows('counter'), 'cílová tabulka nemá exchangeKey — formát dimenzi nenese');
         $this->assertFalse($resolver->knows('project'), 'cílová tabulka není aktivní');
         $this->assertFalse($resolver->knows('asset'), 'nedeklarovaná dimenze');
-        $this->assertNull($resolver->resolve('series', 'S'));
+        $this->assertNull($resolver->resolve('counter', 'S'));
         $this->assertNull($resolver->resolve('project', 'P1'));
         $this->assertNull($resolver->resolve('asset', 'MA0001'));
         $this->assertNull($resolver->resolve('costCenter', '  '));

@@ -6,6 +6,10 @@
 
     "displayPattern": "{name}",
 
+    // Přirozený klíč řady mimo zdroj dat (#166 D16, D17) — datové sady
+    // odkazují řadu kódem.
+    "exchangeKey": "code",
+
     "docStates": {
         "stateColumn": "docState",
         "mainColumn": "docStateMain",
@@ -56,6 +60,24 @@
 
         // --- identity ---
 
+        // Kód řady = přirozený klíč záznamu (#166 D16, D17), nezávislý na
+        // `doc_number_code` (ten se propisuje do čísla dokladu jako %C).
+        // Výchozí řada typu má kód typu dokladu (`invno`), další řada
+        // `invno-<kód z čísla dokladu>` nebo `invno-2`, vázaná řada
+        // `<typ>-<kód pokladny>` — NumberSeriesCodeGenerator. Nullable jen
+        // kvůli pořadí `ds-upgrade` (sloupec a unikátní index vzniknou dřív,
+        // než se kódy stávajícím řadám doplní; index víc NULL snese);
+        // povinnost a tvar hlídá NumberSeriesDocument.
+        {
+            "id": "code",
+            "name": "Series code",
+            "name:cs": "Kód řady",
+            "name:en": "Series code",
+            "type": "varchar",
+            "length": 40,
+            "nullable": true,
+            "group": "identity"
+        },
         {
             "id": "doc_type",
             "name": "Document type",
@@ -115,9 +137,9 @@
 
         {
             "id": "doc_number_code",
-            "name": "Series code (%C)",
-            "name:cs": "Kód řady (%C)",
-            "name:en": "Series code (%C)",
+            "name": "Code in document number (%C)",
+            "name:cs": "Kód v čísle dokladu (%C)",
+            "name:en": "Code in document number (%C)",
             "type": "varchar",
             "length": 10,
             "nullable": true,
@@ -233,6 +255,11 @@
     ],
 
     "indexes": [
+        {
+            "id": "unq_code",
+            "type": "unique",
+            "columns": [{"column": "code"}]
+        },
         {
             "id": "idx_doc_type",
             "type": "index",

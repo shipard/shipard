@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** částečně — commit 0 (export dokladu bez tabulky dimenze) hotový 2026-11-22; zbývají commity 1–5 (#166 D16, D17)
+**Stav:** částečně — commity 0–1 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document); zbývají commity 2–5 (#166 D16, D17)
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -273,3 +273,21 @@ se taková dimenze jen nepřenesla.
       `dataset-verify` beze změny
 - [ ] cílené testy zelené, pak celá unit sada
 - [ ] dokumentace a nápověda podle commitu 5, stav tasku
+
+## Poznámky k implementaci (průběžně)
+
+- **Commit 0:** tabulka dimenze bez `exchangeKey` se dřív přeskakovala
+  tiše, nově dává stejné varování jako chybějící definice (jen když
+  hodnotu některý doklad nese). Varování nese důvod.
+- **Pravidlo tvaru kódu je v jádře** (`Shipard\Core\Database\RecordCode`)
+  — čtou ho generátory i validace v `docs.core` a `economy.codebooks`.
+- **`exchangeKey` registrace DPH přijde až s commitem 4.** Strážní test
+  `SetupExporterTest` chce u každé tabulky sekce setup právě jedno z
+  „výslovný klíč upsertu“ a „`exchangeKey`“; výslovný klíč (země, název)
+  může zmizet až s převodem sad v repu. Sloupec a unikátní index registrace
+  má od commitu 1, řada dokladů má i `exchangeKey`.
+- **`NumberSeriesDocument` validuje sloučený řádek** (uložený + payload)
+  jako `VatRegistrationDocument` — bez toho by částečné uložení kódu u řady
+  ve stavu V pořádku padalo na povinných polích.
+- **Existující záznam bez kódu** (založený mimo `Document`) ho dostane
+  i při běžném uložení; `required` je jen pokus vymazat uložený kód.

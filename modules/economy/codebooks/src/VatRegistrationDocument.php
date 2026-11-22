@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Codebooks;
 
+use Shipard\Core\Database\RecordCode;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 
@@ -31,6 +32,8 @@ class VatRegistrationDocument extends Document
         // povinných polích.
         $current   = !empty($data['id']) ? $this->loadCurrent((int) $data['id']) : null;
         $effective = array_merge($current ?? [], $data);
+
+        $this->validateCode($data, $current, $result);
 
         if (empty($effective['name'])) {
             $result->addError('name', 'Název je povinný', 'required');
@@ -99,6 +102,71 @@ class VatRegistrationDocument extends Document
         return $result;
     }
 
+    /**
+     * Registrace bez kódu ho dostane z generátoru (#166 D17): nová vždy,
+     * existující jen když ho ještě nemá (založená mimo Document, před
+     * doplněním při `ds-upgrade`). Vyplněný kód se nikdy nepřepisuje.
+     */
+    public function beforeSave(array &$data, ?array $originalData = null): void
+    {
+        $effective = array_merge($originalData ?? [], $data);
+        if (trim((string) ($effective['code'] ?? '')) !== '') {
+            return;
+        }
+        $generator = $this->codeGenerator();
+        if ($generator !== null) {
+            $data['code'] = $generator->generate($effective);
+        }
+    }
+
+    /**
+     * Kód registrace (#166 D16, D17) — přirozený klíč záznamu. Prázdný kód
+     * není chyba: doplní ho `beforeSave`. Chyba je tvar mimo
+     * {@see RecordCode}, kód, který už má jiná registrace (i v koši —
+     * unikátní index platí pro všechny řádky), a vymazání kódu, který
+     * registrace už má.
+     *
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>|null $current uložený řádek, null = nová registrace
+     */
+    private function validateCode(array &$data, ?array $current, ValidationResult $result): void
+    {
+        if (!array_key_exists('code', $data)) {
+            return;
+        }
+        $code = trim((string) ($data['code'] ?? ''));
+        // Prázdný řetězec do sloupce nesmí — druhý by porušil unikátní index.
+        $data['code'] = $code === '' ? null : $code;
+
+        if ($code === '') {
+            if ($current !== null && trim((string) ($current['code'] ?? '')) !== '') {
+                $result->addError('code', 'Kód registrace nejde vymazat', 'required');
+            }
+            return;
+        }
+        if (!RecordCode::isValid($code)) {
+            $result->addError('code', 'Kód registrace ' . RecordCode::SHAPE_HINT, 'invalid_value');
+            return;
+        }
+        if (strlen($code) > VatRegistrationCodeGenerator::MAX_LENGTH) {
+            $result->addError(
+                'code',
+                'Kód registrace smí mít nejvýš ' . VatRegistrationCodeGenerator::MAX_LENGTH . ' znaků',
+                'invalid_value',
+            );
+            return;
+        }
+
+        $holder = $this->codeGenerator()?->holder($code, (int) ($data['id'] ?? 0));
+        if ($holder !== null) {
+            $result->addError(
+                'code',
+                "Kód „{$code}“ už má registrace „{$holder['name']}“" . ($holder['deleted'] ? ' (v koši)' : ''),
+                'duplicate',
+            );
+        }
+    }
+
     /** Datum v ISO tvaru — DB vrací DateTime, formulář řetězec; prázdné = null. */
     private static function isoDate(mixed $value): ?string
     {
@@ -121,6 +189,12 @@ class VatRegistrationDocument extends Document
         }
         $row = $this->db->fetch('SELECT * FROM %n WHERE [id] = %i', self::TABLE, $id);
         return $row !== null ? $row->toArray() : null;
+    }
+
+    /** Bez DB (unit test bez seamu) se kód negeneruje ani nehlídá unikátnost. */
+    protected function codeGenerator(): ?VatRegistrationCodeGenerator
+    {
+        return $this->db !== null ? new VatRegistrationCodeGenerator($this->db) : null;
     }
 
     /** Bez DB (unit test bez seamu) se osoba nekontroluje. */

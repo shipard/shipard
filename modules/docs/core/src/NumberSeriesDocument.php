@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Docs\Core;
 
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\RecordCode;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Mail\AddressList;
@@ -46,19 +47,28 @@ class NumberSeriesDocument extends Document
     {
         $result = new ValidationResult();
 
-        $this->validateBinding($data, $result);
+        // Uložení může být částečné: kód řady jde měnit i u řady ve stavu
+        // V pořádku a formulář ho pak posílá samotný
+        // (TableForm::getReadOnlyEditableColumns). Co payload nenese, drží
+        // uložený řádek — bez merge by částečná aktualizace padala na
+        // povinných polích.
+        $current   = !empty($data['id']) ? $this->loadCurrent((int) $data['id']) : null;
+        $effective = array_merge($current ?? [], $data);
 
-        if (empty($data['name'])) {
+        $this->validateBinding($effective, $result);
+        $this->validateCode($data, $current, $result);
+
+        if (empty($effective['name'])) {
             $result->addError('name', 'Název řady je povinný', 'required');
         }
-        if (empty($data['doc_type'])) {
+        if (empty($effective['doc_type'])) {
             $result->addError('doc_type', 'Typ dokladu je povinný', 'required');
         }
-        // Vzorec a kód řady validuje jádro číslování (#110 D17); chyby
-        // s cílem „code“ patří ke kódu řady, ostatní ke vzorci.
+        // Vzorec a kód v čísle dokladu validuje jádro číslování (#110 D17);
+        // chyby s cílem „code“ patří ke kódu v čísle, ostatní ke vzorci.
         $patternErrors = NumberPattern::validate(
-            (string) ($data['doc_number_pattern'] ?? ''),
-            (string) ($data['doc_number_code'] ?? ''),
+            (string) ($effective['doc_number_pattern'] ?? ''),
+            (string) ($effective['doc_number_code'] ?? ''),
             self::DOMAIN_PLACEHOLDERS,
         );
         foreach ($patternErrors as $error) {
@@ -69,15 +79,15 @@ class NumberSeriesDocument extends Document
             );
         }
 
-        if (!empty($data['reset_scope'])
-            && !in_array($data['reset_scope'], self::ALLOWED_RESET_SCOPES, true)
+        if (!empty($effective['reset_scope'])
+            && !in_array($effective['reset_scope'], self::ALLOWED_RESET_SCOPES, true)
         ) {
             $result->addError('reset_scope', 'Neplatný typ restartu', 'invalid_value');
         }
 
-        if (!empty($data['valid_from']) && !empty($data['valid_to'])
-            && (string) $data['valid_from'] > (string) $data['valid_to']
-        ) {
+        $validFrom = self::isoDate($effective['valid_from'] ?? null);
+        $validTo   = self::isoDate($effective['valid_to'] ?? null);
+        if ($validFrom !== null && $validTo !== null && $validFrom > $validTo) {
             $result->addError(
                 'valid_to',
                 'Konec platnosti musí být později než začátek',
@@ -88,6 +98,100 @@ class NumberSeriesDocument extends Document
         $this->validateSender($data, $result);
 
         return $result;
+    }
+
+    /**
+     * Řada bez kódu ho dostane z generátoru (#166 D17): nová vždy,
+     * existující jen když ho ještě nemá (založená mimo Document, před
+     * doplněním při `ds-upgrade`). Vyplněný kód se nikdy nepřepisuje.
+     */
+    public function beforeSave(array &$data, ?array $originalData = null): void
+    {
+        $effective = array_merge($originalData ?? [], $data);
+        if (trim((string) ($effective['code'] ?? '')) !== '') {
+            return;
+        }
+        $generator = $this->codeGenerator();
+        if ($generator !== null) {
+            $data['code'] = $generator->generate($effective);
+        }
+    }
+
+    /**
+     * Kód řady (#166 D16, D17) — přirozený klíč záznamu. Prázdný kód není
+     * chyba: doplní ho `beforeSave`. Chyba je tvar mimo {@see RecordCode},
+     * kód, který už má jiná řada (i v koši — unikátní index platí pro
+     * všechny řádky), a vymazání kódu, který řada už má.
+     *
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>|null $current uložený řádek, null = nová řada
+     */
+    private function validateCode(array &$data, ?array $current, ValidationResult $result): void
+    {
+        if (!array_key_exists('code', $data)) {
+            return;
+        }
+        $code = trim((string) ($data['code'] ?? ''));
+        // Prázdný řetězec do sloupce nesmí — druhý by porušil unikátní index.
+        $data['code'] = $code === '' ? null : $code;
+
+        if ($code === '') {
+            if ($current !== null && trim((string) ($current['code'] ?? '')) !== '') {
+                $result->addError('code', 'Kód řady nejde vymazat', 'required');
+            }
+            return;
+        }
+        if (!RecordCode::isValid($code)) {
+            $result->addError('code', 'Kód řady ' . RecordCode::SHAPE_HINT, 'invalid_value');
+            return;
+        }
+        if (strlen($code) > NumberSeriesCodeGenerator::MAX_LENGTH) {
+            $result->addError(
+                'code',
+                'Kód řady smí mít nejvýš ' . NumberSeriesCodeGenerator::MAX_LENGTH . ' znaků',
+                'invalid_value',
+            );
+            return;
+        }
+
+        $holder = $this->codeGenerator()?->holder($code, (int) ($data['id'] ?? 0));
+        if ($holder !== null) {
+            $result->addError(
+                'code',
+                "Kód „{$code}“ už má řada „{$holder['name']}“" . ($holder['deleted'] ? ' (v koši)' : ''),
+                'duplicate',
+            );
+        }
+    }
+
+    /** Datum v ISO tvaru — DB vrací DateTime, formulář řetězec; prázdné = null. */
+    private static function isoDate(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        return substr((string) $value, 0, 10);
+    }
+
+    // ── DB přístup (přepsatelné v testech) ──────────────────────────────────
+
+    /** @return ?array<string, mixed> */
+    protected function loadCurrent(int $id): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch('SELECT * FROM %n WHERE [id] = %i', NumberSeriesCodeGenerator::TABLE, $id);
+        return $row !== null ? $row->toArray() : null;
+    }
+
+    /** Bez DB (unit test bez seamu) se kód negeneruje ani nehlídá unikátnost. */
+    protected function codeGenerator(): ?NumberSeriesCodeGenerator
+    {
+        return $this->db !== null ? new NumberSeriesCodeGenerator($this->db) : null;
     }
 
     /**

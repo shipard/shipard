@@ -38,6 +38,22 @@
 
         // --- identity ---
 
+        // Kód registrace = přirozený klíč záznamu (#166 D16, D17): země
+        // malými písmeny (`cz`), druhá registrace téže země `cz-2` —
+        // VatRegistrationCodeGenerator. Nullable jen kvůli pořadí
+        // `ds-upgrade` (sloupec a unikátní index vzniknou dřív, než se kódy
+        // stávajícím registracím doplní; index víc NULL snese); povinnost
+        // a tvar hlídá VatRegistrationDocument.
+        {
+            "id": "code",
+            "name": "Registration code",
+            "name:cs": "Kód registrace",
+            "name:en": "Registration code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "group": "identity"
+        },
         {
             "id": "name",
             "name": "Name",
@@ -183,6 +199,13 @@
     ],
 
     "indexes": [
+        {
+            "id": "unq_code",
+            "type": "unique",
+            "columns": [
+                {"column": "code"}
+            ]
+        },
         {
             "id": "idx_country",
             "type": "index",

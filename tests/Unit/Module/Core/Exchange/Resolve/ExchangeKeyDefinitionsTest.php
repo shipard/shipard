@@ -47,7 +47,11 @@ class ExchangeKeyDefinitionsTest extends TestCase
         'economy_assets_types'              => 'name',
     ];
 
-    /** Tabulky sekce setup bez přirozeného klíče (#166 D16 — do zavedení kódu). */
+    /**
+     * Tabulky sekce setup bez přirozeného klíče. Registrace DPH sloupec
+     * `code` s unikátním indexem už má (#166 D16); `exchangeKey` dostane
+     * spolu s převodem sad, až klíč upsertu (země, název) z mapy zmizí.
+     */
     private const SETUP_WITHOUT_KEY = ['core_system_settings', 'economy_codebooks_vat_registrations'];
 
     /** @var array<string, TableDefinition>|null */
@@ -102,7 +106,8 @@ class ExchangeKeyDefinitionsTest extends TestCase
         foreach (self::SETUP_WITHOUT_KEY as $table) {
             $this->assertNull($tables[$table]->exchangeKey, "{$table}: složený klíč, exchangeKey nemá");
         }
-        $this->assertNull($tables['docs_core_number_series']->exchangeKey, 'řada dokladů zůstává {docType, code}');
+        // #166 D16, D17: řada dokladů má vlastní kód s unikátním indexem.
+        $this->assertSame('code', $tables['docs_core_number_series']->exchangeKey);
     }
 
     public function testRecordsOutsideDatasetsHaveKeysAndLookupColumns(): void

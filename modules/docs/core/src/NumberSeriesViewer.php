@@ -178,7 +178,7 @@ class NumberSeriesViewer extends TableViewer
         $this->addItem($identityItems, $this->columnLabel('notice', 'Notice'), $record['notice'] ?? null);
 
         $numberingItems = [];
-        $this->addItem($numberingItems, $this->columnLabel('doc_number_code', 'Series code (%C)'), $record['doc_number_code'] ?? null);
+        $this->addItem($numberingItems, $this->columnLabel('doc_number_code', 'Code in document number (%C)'), $record['doc_number_code'] ?? null);
         $this->addItem($numberingItems, $this->columnLabel('doc_number_pattern', 'Document number pattern'), $record['doc_number_pattern'] ?? null);
         $this->addItem(
             $numberingItems,

@@ -13,6 +13,8 @@ use Shipard\Module\Docs\Core\NumberSeriesDocument;
 
 class NumberSeriesDocumentTest extends TestCase
 {
+    use NumberSeriesDbTrait;
+
     private ?string $tmpDir = null;
 
     protected function tearDown(): void
@@ -375,5 +377,156 @@ class NumberSeriesDocumentTest extends TestCase
 
         $errors = $this->errorsFor($doc, $this->validData() + ['email_from' => 'neni-adresa'], 'email_from');
         $this->assertSame('invalid_email', $errors[0]['code']);
+    }
+
+    // ── kód řady (#166 D16, D17) ────────────────────────────────────────────
+
+    /** Uložená výchozí řada vydaných faktur. */
+    private const STORED = [
+        'id' => 5, 'doc_type' => 'invno', 'code' => 'invno', 'name' => 'Faktury vydané',
+        'doc_number_code' => null, 'doc_number_pattern' => '%D%y%4', 'reset_scope' => 'fiscal_year',
+        'cash_desk' => null, 'warehouse' => null, 'valid_from' => null, 'valid_to' => null,
+        'docState' => 40,
+    ];
+
+    /**
+     * @param list<array<string, mixed>> $series
+     * @param array<string, array<int, string>> $entities
+     */
+    private function docWithSeries(array $series = [self::STORED], array $entities = []): NumberSeriesDocument
+    {
+        return $this->docWithBindings($this->seriesDb($series, $entities));
+    }
+
+    /** @return list<string> kódy chyb sloupce `code` */
+    private function codeErrors(NumberSeriesDocument $doc, array $data): array
+    {
+        return array_column($this->errorsFor($doc, $data, 'code'), 'code');
+    }
+
+    public function testNewSeriesWithoutCodeIsValidAndGetsOneOnSave(): void
+    {
+        $doc = $this->docWithSeries();
+        $data = $this->validData() + ['code' => ''];
+
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertNull($data['code'], 'prázdný řetězec se do sloupce s unikátním indexem neuloží');
+
+        $doc->beforeSave($data, null);
+        $this->assertSame('invno-A', $data['code'], 'další řada typu: kód z čísla dokladu');
+
+        $data = ['doc_number_code' => ''] + $this->validData();
+        $data['doc_number_pattern'] = '%D%y%4';
+        $doc->beforeSave($data, null);
+        $this->assertSame('invno-2', $data['code']);
+
+        $first = $this->docWithSeries([]);
+        $data = $this->validData();
+        $first->beforeSave($data, null);
+        $this->assertSame('invno', $data['code'], 'první řada typu');
+    }
+
+    public function testBoundSeriesGetsCodeFromItsEntity(): void
+    {
+        $doc = $this->docWithSeries([], ['economy_codebooks_cash_desks' => [4 => 'HL']]);
+        $data = ['doc_type' => 'cashb', 'cash_desk' => 4, 'doc_number_code' => 'HL'] + $this->validData();
+
+        $this->assertTrue($doc->validate($data)->isValid());
+        $doc->beforeSave($data, null);
+        $this->assertSame('cashb-HL', $data['code']);
+    }
+
+    public function testFilledCodeIsKeptOnSave(): void
+    {
+        $doc = $this->docWithSeries();
+        $data = $this->validData() + ['code' => 'faktury'];
+        $doc->beforeSave($data, null);
+        $this->assertSame('faktury', $data['code']);
+
+        // Částečné uložení bez kódu uložený kód nepřepisuje.
+        $data = ['id' => 5, 'name' => 'Jiný název'];
+        $doc->beforeSave($data, self::STORED);
+        $this->assertArrayNotHasKey('code', $data);
+    }
+
+    public function testStoredSeriesWithoutCodeGetsOneOnSave(): void
+    {
+        // Založená mimo Document (provisioner, import) a ještě bez doplnění.
+        $stored = ['code' => null] + self::STORED;
+        $doc = $this->docWithSeries([$stored]);
+        $data = ['id' => 5, 'name' => 'Faktury'];
+
+        $this->assertTrue($doc->validate($data)->isValid());
+        $doc->beforeSave($data, $stored);
+        $this->assertSame('invno', $data['code']);
+    }
+
+    public function testPartialSaveWithCodeOnlyIsValid(): void
+    {
+        // Řada ve stavu V pořádku: formulář posílá jen kód.
+        $doc = $this->docWithSeries();
+        $data = ['id' => 5, 'code' => 'fv'];
+
+        $this->assertTrue($doc->validate($data)->isValid());
+    }
+
+    public function testPartialSaveStillValidatesTheMergedRow(): void
+    {
+        $doc = $this->docWithSeries([['valid_from' => new \DateTimeImmutable('2026-06-01')] + self::STORED]);
+
+        $errors = $this->errorsFor($doc, ['id' => 5, 'valid_to' => '2026-01-31'], 'valid_to');
+        $this->assertSame('invalid_range', $errors[0]['code']);
+        $this->assertSame([], $this->errorsFor($doc, ['id' => 5, 'valid_to' => '2026-06-01'], 'valid_to'));
+
+        $errors = $this->errorsFor($doc, ['id' => 5, 'name' => ''], 'name');
+        $this->assertSame('required', $errors[0]['code']);
+    }
+
+    public function testCodeShapeIsValidated(): void
+    {
+        $doc = $this->docWithSeries();
+
+        foreach (['invno:2', '@invno', 'inv no', '-invno', 'řada', str_repeat('a', 41)] as $code) {
+            $this->assertSame(['invalid_value'], $this->codeErrors($doc, $this->validData() + ['code' => $code]), $code);
+        }
+        $data = $this->validData() + ['code' => ' invno-export '];
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame('invno-export', $data['code'], 'okraje se oříznou');
+    }
+
+    public function testCodeMustBeUniqueIncludingTrashAndCase(): void
+    {
+        $doc = $this->docWithSeries([
+            self::STORED,
+            ['id' => 9, 'code' => 'stara', 'name' => 'Stará řada', 'docState' => 90] + self::STORED,
+        ]);
+
+        $errors = $this->errorsFor($doc, $this->validData() + ['code' => 'INVNO'], 'code');
+        $this->assertSame('duplicate', $errors[0]['code']);
+        $this->assertStringContainsString('Faktury vydané', $errors[0]['message'], 'zpráva jmenuje, kdo kód má');
+
+        $errors = $this->errorsFor($doc, $this->validData() + ['code' => 'stara'], 'code');
+        $this->assertStringContainsString('Stará řada', $errors[0]['message']);
+        $this->assertStringContainsString('v koši', $errors[0]['message']);
+
+        // Vlastní kód duplicitou není; přepsat ho jde.
+        $this->assertSame([], $this->codeErrors($doc, ['id' => 5, 'code' => 'invno']));
+        $this->assertSame([], $this->codeErrors($doc, ['id' => 5, 'code' => 'invno-cz']));
+    }
+
+    public function testStoredCodeCannotBeCleared(): void
+    {
+        $doc = $this->docWithSeries();
+
+        $this->assertSame(['required'], $this->codeErrors($doc, ['id' => 5, 'code' => '']));
+        $this->assertSame(['required'], $this->codeErrors($doc, ['id' => 5, 'code' => null]));
+        $this->assertSame([], $this->codeErrors($doc, ['id' => 5, 'name' => 'Faktury']), 'payload bez kódu ho nemaže');
+    }
+
+    public function testWithoutDbCodeIsNotGenerated(): void
+    {
+        $data = $this->validData();
+        $this->doc()->beforeSave($data, null);
+        $this->assertArrayNotHasKey('code', $data);
     }
 }
