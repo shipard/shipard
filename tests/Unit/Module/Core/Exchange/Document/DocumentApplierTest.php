@@ -33,6 +33,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\World\Trade\TradeUnionResolver;
 use Shipard\Module\World\Vat\VatRateResolver;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 /**
  * Testable applier with `executeSql` no-op'd. `Dibi\Connection::query()` is
@@ -187,11 +188,11 @@ class DocumentApplierTest extends TestCase
             'costCenter' => [
                 'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
                 'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
-                'name' => 'Středisko', 'exchangeKey' => 'code',
+                'name' => 'Středisko',
             ],
             'asset' => [
                 'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
-                'table' => 'economy_assets_assets', 'name' => 'Majetek', 'exchangeKey' => 'asset_number',
+                'table' => 'economy_assets_assets', 'name' => 'Majetek',
             ],
         ];
         $config = $this->createMock(ConfigRuntime::class);
@@ -201,17 +202,27 @@ class DocumentApplierTest extends TestCase
         return $config;
     }
 
+    /**
+     * Cílové tabulky dimenzí — přirozený klíč říká jejich definice (#166 D8).
+     *
+     * @return array<string, \Shipard\Core\Database\TableDefinition>
+     */
+    private static function dimensionTables(): array
+    {
+        return ModuleTables::load('economy_codebooks_cost_centers', 'economy_assets_assets');
+    }
+
     /** Resolver nad DB, kde existuje středisko S01 (id 3) a V01 (id 5), nic jiného. */
     private function dimensionResolver(): DimensionResolver
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturnCallback(static function (string $sql, string $value): ?Row {
+        $db->method('fetchAll')->willReturnCallback(static function (string $sql, string $value): array {
             $ids = ['S01' => 3, 'V01' => 5];
             return str_contains($sql, 'economy_codebooks_cost_centers') && isset($ids[$value])
-                ? new Row(['id' => $ids[$value]])
-                : null;
+                ? [new Row(['id' => $ids[$value]])]
+                : [];
         });
-        return new DimensionResolver($db, $this->dimensionSet());
+        return new DimensionResolver($db, $this->dimensionSet(), self::dimensionTables());
     }
 
     /**
@@ -245,7 +256,7 @@ class DocumentApplierTest extends TestCase
             heads: $heads, persons: $persons,
             config: $this->configWithDimensions(),
             dimension: $withResolver ? $this->dimensionResolver() : null,
-            validator: new DocumentValidator($this->dimensionSet()),
+            validator: new DocumentValidator($this->dimensionSet(), self::dimensionTables()),
         );
 
         $payload = $this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'safe']);

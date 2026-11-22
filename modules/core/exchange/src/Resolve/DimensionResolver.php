@@ -12,32 +12,36 @@ use Shipard\Core\Database\TableDefinition;
  * Přeloží hodnotu dimenze deníku z výměnného formátu (objekt `dimensions`,
  * #110 T2) na id záznamu cílové tabulky: klíč = id dimenze
  * (`journalDimensions` v economy.accounting), hodnota = přirozený klíč
- * (`exchangeKey` dimenze — středisko kód, majetek inventární číslo).
+ * cílové tabulky (`exchangeKey` v její definici, #166 D8 — středisko kód,
+ * zakázka číslo, majetek inventární číslo). Hledá obecný
+ * {@see ReferenceResolver}.
  *
- * Bez fuzzy hledání a bez userAction — klíč je autoritativní. Nenalezeno →
- * null (applier hlásí chybu `dimension_not_found`, doklad se neuloží).
- * Záznam v koši (docState 90) se nepočítá, archivovaný ano — historický
- * doklad smí nést středisko, které už neplatí. Cache per běh podle hodnoty.
+ * Bez fuzzy hledání a bez userAction — klíč je autoritativní. Nenalezeno
+ * nebo nejednoznačné → null (applier hlásí chybu `dimension_not_found`,
+ * doklad se neuloží). Záznam v koši (docState 90) se nepočítá, archivovaný
+ * ano — historický doklad smí nést středisko, které už neplatí.
  */
 final class DimensionResolver
 {
-    /** @var array<string, array<string, ?int>> */
-    private array $cache = [];
+    private readonly ReferenceResolver $references;
 
     /**
-     * @param array<string, TableDefinition> $tables aktivní tabulky DS — jen
-     *        kvůli tomu, zda má cílová tabulka `docState` (koš se vylučuje)
+     * @param array<string, TableDefinition> $tables aktivní tabulky DS —
+     *        přirozený klíč cílové tabulky dimenze
      */
     public function __construct(
-        private readonly Connection $db,
+        Connection $db,
         private readonly JournalDimensionSet $dimensions,
-        private readonly array $tables = [],
-    ) {}
+        array $tables = [],
+    ) {
+        $this->references = new ReferenceResolver($db, $tables);
+    }
 
-    /** Je dimenze deklarovaná a má klíč pro výměnný formát? */
+    /** Je dimenze deklarovaná a má její cílová tabulka klíč pro výměnný formát? */
     public function knows(string $dimensionId): bool
     {
-        return $this->dimensions->get($dimensionId)?->exchangeKey !== null;
+        $dimension = $this->dimensions->get($dimensionId);
+        return $dimension !== null && $this->references->hasKey($dimension->table);
     }
 
     /** Lokalizovaný název dimenze pro zprávy issue; neznámá dimenze = id. */
@@ -50,22 +54,13 @@ final class DimensionResolver
     {
         $dimension = $this->dimensions->get($dimensionId);
         $value = trim($value);
-        if ($dimension === null || $dimension->exchangeKey === null || $value === '') {
+        if ($dimension === null || $value === '' || !$this->references->hasKey($dimension->table)) {
             return null;
         }
-        if (array_key_exists($value, $this->cache[$dimensionId] ?? [])) {
-            return $this->cache[$dimensionId][$value];
+        try {
+            return $this->references->resolveByKey($dimension->table, $value);
+        } catch (ReferenceException) {
+            return null;
         }
-
-        // Tabulka i sloupec jsou identifikátory ověřené při načtení modulu.
-        $hasDocState = ($this->tables[$dimension->table] ?? null)?->docStates !== null;
-        $row = $this->db->fetch(
-            "SELECT [id] FROM [{$dimension->table}] WHERE [{$dimension->exchangeKey}] = %s"
-            . ($hasDocState ? ' AND [docState] <> 90' : '')
-            . ' ORDER BY [id] LIMIT 1',
-            $value,
-        );
-
-        return $this->cache[$dimensionId][$value] = ($row !== null ? (int) $row['id'] : null);
     }
 }

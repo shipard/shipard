@@ -190,7 +190,7 @@ class DocumentRoundTripMatrixTest extends IntegrationTestCase
      */
     private function export(int $headId): array
     {
-        $records = (new DocumentExporter($this->db->getDibiConnection(), $this->configRuntime))->exportByIds([$headId]);
+        $records = (new DocumentExporter($this->db->getDibiConnection(), $this->configRuntime, tables: $this->tables))->exportByIds([$headId]);
         $this->assertCount(1, $records, "Doklad #{$headId} nejde exportovat.");
         return $records[0]->data;
     }

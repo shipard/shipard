@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 class DocumentValidatorTest extends TestCase
 {
@@ -18,14 +19,14 @@ class DocumentValidatorTest extends TestCase
         $this->v = new DocumentValidator();
     }
 
-    /** Sada dimenzí jako na DS: středisko s klíčem, projekt bez něj. */
+    /** Sada dimenzí jako na DS: středisko s klíčem v definici tabulky, projekt bez něj. */
     private function dimensions(): JournalDimensionSet
     {
         return new JournalDimensionSet([
             JournalDimension::fromArray([
                 'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
                 'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
-                'name' => 'Středisko', 'exchangeKey' => 'code',
+                'name' => 'Středisko',
             ]),
             JournalDimension::fromArray([
                 'id' => 'project', 'rowColumn' => 'project', 'journalColumn' => 'project',
@@ -37,7 +38,8 @@ class DocumentValidatorTest extends TestCase
     public function testUnknownDimensionOrDimensionWithoutExchangeKeyIsAnError(): void
     {
         // #110 T2: překlep v klíči nesmí hodnotu tiše zahodit.
-        $issues = (new DocumentValidator($this->dimensions()))->validate([
+        $validator = new DocumentValidator($this->dimensions(), ModuleTables::load('economy_codebooks_cost_centers'));
+        $issues = $validator->validate([
             'docType' => 'accountingDocument',
             'dates' => ['issueDate' => '2026-04-15'],
             'dimensions' => ['costCenter' => 'S01', 'costcenter' => 'S01'],

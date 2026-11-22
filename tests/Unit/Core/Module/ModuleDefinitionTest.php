@@ -1122,15 +1122,10 @@ class ModuleDefinitionTest extends TestCase
         ModuleDefinition::fromArray(['id' => 'economy.assets', 'name' => 'Assets', 'journalDimensions' => [$dimension]]);
     }
 
-    public function testJournalDimensionExchangeKeyIsOptionalIdentifier(): void
+    public function testJournalDimensionNoLongerDeclaresExchangeKey(): void
     {
-        // #110 T2: přirozený klíč ve výměnném formátu; bez něj klíč v entry chybí.
-        $with = ModuleDefinition::fromArray([
-            'id' => 'economy.accounting', 'name' => 'Accounting',
-            'journalDimensions' => [$this->assetDimension(['exchangeKey' => 'asset_number'])],
-        ]);
-        $this->assertSame('asset_number', $with->journalDimensions[0]['exchangeKey']);
-
+        // #166 D8: přirozený klíč říká definice cílové tabulky. Pole u dimenze
+        // by se tiše ignorovalo — proto je chyba, která řekne, kam patří.
         $without = ModuleDefinition::fromArray([
             'id' => 'economy.accounting', 'name' => 'Accounting',
             'journalDimensions' => [$this->assetDimension()],
@@ -1138,10 +1133,12 @@ class ModuleDefinitionTest extends TestCase
         $this->assertArrayNotHasKey('exchangeKey', $without->journalDimensions[0]);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('journalDimensions[0].exchangeKey must be an identifier');
+        $this->expectExceptionMessage(
+            "journalDimensions[0].exchangeKey is no longer supported — declare exchangeKey in the definition of table 'economy_assets_assets'",
+        );
         ModuleDefinition::fromArray([
             'id' => 'economy.accounting', 'name' => 'Accounting',
-            'journalDimensions' => [$this->assetDimension(['exchangeKey' => 'asset number'])],
+            'journalDimensions' => [$this->assetDimension(['exchangeKey' => 'asset_number'])],
         ]);
     }
 

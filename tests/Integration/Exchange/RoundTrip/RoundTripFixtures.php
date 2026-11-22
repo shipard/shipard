@@ -293,7 +293,7 @@ final class RoundTripFixtures
     public function costCenter(): int
     {
         $dimension = JournalDimensionSet::fromConfig($this->config)->get('costCenter');
-        if ($dimension === null || $dimension->exchangeKey === null || $dimension->headColumn === null) {
+        if ($dimension === null || $dimension->headColumn === null) {
             throw new FixtureUnavailable('zdroj dat nemá dimenzi středisko');
         }
         $id = $this->db->fetchSingle('SELECT [id] FROM [economy_codebooks_cost_centers] WHERE [code] = %s LIMIT 1', self::PREFIX);

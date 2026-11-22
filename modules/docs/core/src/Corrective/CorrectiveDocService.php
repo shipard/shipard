@@ -13,6 +13,7 @@ use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Export\CanonicalParty;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
 use Shipard\Module\Docs\Core\DocTypes;
 
 /**
@@ -33,11 +34,19 @@ class CorrectiveDocService
 {
     private const STATE_DONE = 40;
 
+    private readonly ReferenceResolver $references;
+
+    /**
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     *        aktivní tabulky DS — přirozený klíč cílových tabulek dimenzí
+     */
     public function __construct(
         private readonly Connection $db,
         private readonly ?ConfigRuntime $config,
         private readonly DocumentApplier $applier,
+        array $tables,
     ) {
+        $this->references = new ReferenceResolver($db, $tables);
     }
 
     /**
@@ -57,7 +66,7 @@ class CorrectiveDocService
         if ($config === null) {
             throw new \RuntimeException('Opravný doklad potřebuje zkompilovanou konfiguraci (ds-upgrade).');
         }
-        return new self($db, $config, DocumentApplier::create($db, $config, $dsConfig, $registry, $tables, $dispatcher));
+        return new self($db, $config, DocumentApplier::create($db, $config, $dsConfig, $registry, $tables, $dispatcher), $tables);
     }
 
     /**
@@ -131,7 +140,7 @@ class CorrectiveDocService
     }
 
     /**
-     * Dimenze deníku jako přirozené klíče (`exchangeKey`) — tak je čte
+     * Dimenze deníku jako přirozené klíče (`exchangeKey` cílové tabulky) — tak je čte
      * applier (`dimensions` objekt, DimensionResolver); vzor
      * DocumentExporter::dimensionValues.
      *
@@ -142,7 +151,7 @@ class CorrectiveDocService
     {
         $out = [];
         foreach ($dimensions as $dimension) {
-            if ($dimension->exchangeKey === null) {
+            if (!$this->references->hasKey($dimension->table)) {
                 continue;
             }
             $column = $head ? $dimension->headColumn : $dimension->rowColumn;
@@ -153,10 +162,7 @@ class CorrectiveDocService
             if ($recordId === null) {
                 continue;
             }
-            $key = V::str($this->db->fetchSingle(
-                "SELECT [{$dimension->exchangeKey}] FROM [{$dimension->table}] WHERE [id] = %i",
-                $recordId,
-            ));
+            $key = V::str($this->references->keyOf($dimension->table, $recordId));
             if ($key !== null) {
                 $out[$dimension->id] = $key;
             }

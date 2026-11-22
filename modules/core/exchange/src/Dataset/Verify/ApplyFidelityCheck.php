@@ -171,7 +171,7 @@ final class ApplyFidelityCheck implements VerifyCheck
         }
 
         $w = $ctx->wiring;
-        $exporter = new DocumentExporter($w->db, $w->config);
+        $exporter = new DocumentExporter($w->db, $w->config, tables: $w->tables);
         $adapter = new SavedDocumentProjection(
             $w->db,
             $w->config !== null ? new VatRateResolver($w->config) : null,

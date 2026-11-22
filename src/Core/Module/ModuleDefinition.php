@@ -353,9 +353,9 @@ class ModuleDefinition
         // Volitelné `forms` = na kterých formulářích dokladů se pole dimenze
         // nabízí (typy dokladů, hlavička / řádky, případně jen se zapnutým
         // nastavením `enabledBySetting`).
-        // Volitelné `exchangeKey` = sloupec cílové tabulky, který je
-        // přirozeným klíčem ve výměnném formátu dokladu (objekt `dimensions`,
-        // #110 T2); dimenze bez něj ve formátu není.
+        // Přirozený klíč pro výměnný formát dokladu (objekt `dimensions`)
+        // dimenze nedeklaruje — říká ho `exchangeKey` v definici cílové
+        // tabulky (#166 D8); pole `exchangeKey` tady je chyba.
         $journalDimensions = [];
         if (array_key_exists('journalDimensions', $data)) {
             if (!is_array($data['journalDimensions']) || !array_is_list($data['journalDimensions'])) {
@@ -376,7 +376,13 @@ class ModuleDefinition
                         );
                     }
                 }
-                foreach (['id', 'rowColumn', 'journalColumn', 'headColumn', 'table', 'rowFlag', 'exchangeKey'] as $key) {
+                if (array_key_exists('exchangeKey', $dim)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': journalDimensions[{$idx}].exchangeKey is no longer supported"
+                        . " — declare exchangeKey in the definition of table '{$dim['table']}'",
+                    );
+                }
+                foreach (['id', 'rowColumn', 'journalColumn', 'headColumn', 'table', 'rowFlag'] as $key) {
                     if (isset($dim[$key]) && !preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', (string) $dim[$key])) {
                         throw new \InvalidArgumentException(
                             "Module '{$data['id']}': journalDimensions[{$idx}].{$key} must be an identifier",
@@ -402,9 +408,6 @@ class ModuleDefinition
                 ];
                 if (isset($dim['rowFlag'])) {
                     $entry['rowFlag'] = (string) $dim['rowFlag'];
-                }
-                if (isset($dim['exchangeKey'])) {
-                    $entry['exchangeKey'] = (string) $dim['exchangeKey'];
                 }
                 if (array_key_exists('forms', $dim)) {
                     $entry['forms'] = self::journalDimensionForms($dim['forms'], $entry, "Module '{$data['id']}': journalDimensions[{$idx}].forms");

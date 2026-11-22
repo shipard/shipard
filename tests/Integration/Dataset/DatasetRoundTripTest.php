@@ -725,7 +725,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame([], $woExporter->getWarnings());
 
             $issuedOut = [];
-            foreach ((new DocumentExporter($dibi, $this->config, ['economy_work_orders_heads']))->exportByIds([$invnoId, $correctiveId]) as $record) {
+            foreach ((new DocumentExporter($dibi, $this->config, ['economy_work_orders_heads'], $this->tables))->exportByIds([$invnoId, $correctiveId]) as $record) {
                 $issuedOut[$record->id] = $record->data;
             }
             $this->assertSame([$invnoId, $correctiveId], array_keys($issuedOut), 'opravný doklad řadí dump až za běžné doklady typu (U5)');
@@ -761,7 +761,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $this->assertSame($reader->readJsonc(self::ASSET_FILE), $assetOut->data, 'karta se vrátí beze změny — typ názvem, skupina kódem, zařazení s původem manual');
             $this->assertSame([], $assetExporter->getWarnings());
 
-            $withAssets = new DocumentExporter($dibi, $this->config, ['economy_assets_assets']);
+            $withAssets = new DocumentExporter($dibi, $this->config, ['economy_assets_assets'], $this->tables);
             $assetDocs = $withAssets->exportByIds([$assetDocId, $postingId]);
             $this->assertSame([$assetDocId], array_map(static fn($r) => $r->id, $assetDocs), 'doklad zaúčtování majetku (řádky asset.*) se nepřenáší');
             $row = $assetDocs[0]->data['rows'][0];

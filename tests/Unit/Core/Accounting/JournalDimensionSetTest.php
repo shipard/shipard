@@ -119,12 +119,14 @@ class JournalDimensionSetTest extends TestCase
         $this->assertSame([], $ids($set->forForm('invni', true, null)));
     }
 
-    public function testExchangeKeyIsOptional(): void
+    public function testLeftoverExchangeKeyInCompiledConfigIsIgnored(): void
     {
-        // #110 T2: přirozený klíč ve výměnném formátu; prázdný nebo chybějící = null.
-        $this->assertSame('code', JournalDimension::fromArray(['exchangeKey' => 'code'] + self::ASSET)->exchangeKey);
-        $this->assertNull(JournalDimension::fromArray(['exchangeKey' => ''] + self::ASSET)->exchangeKey);
-        $this->assertNull(JournalDimension::fromArray(self::ASSET)->exchangeKey);
+        // #166 D8: klíč říká definice cílové tabulky. Zdroj dat před
+        // `ds-upgrade` má pole ještě ve zkompilované konfiguraci — nevadí.
+        $dimension = JournalDimension::fromArray(['exchangeKey' => 'code'] + self::ASSET);
+
+        $this->assertSame(self::ASSET['table'], $dimension->table);
+        $this->assertFalse(property_exists($dimension, 'exchangeKey'));
     }
 
     public function testHeadFieldNeedsHeadColumn(): void

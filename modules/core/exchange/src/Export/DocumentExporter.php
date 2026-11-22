@@ -8,9 +8,11 @@ use Dibi\Connection;
 use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
 use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
 
 /**
  * `docs_core_heads` (+ řádky, rekapitulace DPH) → `shpd.docs.document.v1`.
@@ -73,8 +75,9 @@ final class DocumentExporter implements RecordExporter
     private array $warnings = [];
 
     /**
-     * Dimenze deníku s `exchangeKey` (#110 T2) — jen ty, jejichž cílovou
-     * tabulku sada nese v sekci setup (středisko) nebo ve vlastní sekci
+     * Dimenze deníku, jejichž cílová tabulka má přirozený klíč
+     * (`exchangeKey` v definici tabulky, #110 T2, #166 D8) — jen ty, jejichž
+     * cílovou tabulku sada nese v sekci setup (středisko) nebo ve vlastní sekci
      * (`$sectionTables`: zakázky v `workOrders/`, #131 fáze 2b; karty
      * majetku v `assets/`, fáze 2c). Dimenze mířící na záznamy mimo sadu
      * se nepřenáší: seed by jinak doklad odmítl (`dimension_not_found`),
@@ -87,8 +90,8 @@ final class DocumentExporter implements RecordExporter
     /** @var list<JournalDimension> dimenze s klíčem, které sada neumí obnovit */
     private readonly array $unportableDimensions;
 
-    /** @var array<string, array<int, ?string>> id dimenze → id záznamu → přirozený klíč */
-    private array $dimensionKeys = [];
+    /** Přirozený klíč záznamu cílové tabulky dimenze (`keyOf`). */
+    private readonly ReferenceResolver $references;
 
     /** @var array<string, array<string, true>> id dimenze → doklady, kde se hodnota zahodila */
     private array $droppedDimensions = [];
@@ -99,17 +102,29 @@ final class DocumentExporter implements RecordExporter
     /**
      * @param list<string> $sectionTables cílové tabulky dimenzí, které sada
      *        nese ve vlastní sekci (dump je předá jen při aktivní tabulce)
+     * @param array<string, TableDefinition> $tables aktivní tabulky DS —
+     *        přirozený klíč cílových tabulek dimenzí. Zdroj dat s dimenzemi
+     *        je bez nich neumí vyvézt, proto je chybějící definice chyba.
      */
     public function __construct(
         private readonly Connection $db,
         ?ConfigRuntime $config = null,
         array $sectionTables = [],
+        array $tables = [],
     ) {
+        $this->references = new ReferenceResolver($db, $tables);
         $portableTables = [...array_column(SetupExporter::TABLES, 'table'), ...$sectionTables];
         $portable = [];
         $unportable = [];
         foreach (JournalDimensionSet::fromConfig($config) as $dimension) {
-            if ($dimension->exchangeKey === null) {
+            if (!isset($tables[$dimension->table])) {
+                // Tiché vynechání by dimenze z exportu ztratilo bez stopy.
+                throw new \LogicException(
+                    "DocumentExporter: dimenze '{$dimension->id}' míří na tabulku '{$dimension->table}',"
+                    . ' jejíž definici volající nepředal',
+                );
+            }
+            if (!$this->references->hasKey($dimension->table)) {
                 continue;
             }
             if (in_array($dimension->table, $portableTables, true)) {
@@ -432,7 +447,7 @@ final class DocumentExporter implements RecordExporter
             }
             $key = $this->dimensionKey($dimension, $recordId);
             if ($key === null) {
-                $this->warnings[] = "docs {$label}: dimenze {$dimension->name} #{$recordId} nemá klíč {$dimension->exchangeKey} — nepřenáší se";
+                $this->warnings[] = "docs {$label}: dimenze {$dimension->name} #{$recordId} nemá klíč {$this->references->keyColumn($dimension->table)} — nepřenáší se";
                 continue;
             }
             $out[$dimension->id] = $key;
@@ -447,14 +462,7 @@ final class DocumentExporter implements RecordExporter
 
     private function dimensionKey(JournalDimension $dimension, int $recordId): ?string
     {
-        if (!array_key_exists($recordId, $this->dimensionKeys[$dimension->id] ?? [])) {
-            $row = $this->db->fetch(
-                "SELECT [{$dimension->exchangeKey}] AS [k] FROM [{$dimension->table}] WHERE [id] = %i",
-                $recordId,
-            );
-            $this->dimensionKeys[$dimension->id][$recordId] = $row !== null ? V::str($row['k'] ?? null) : null;
-        }
-        return $this->dimensionKeys[$dimension->id][$recordId];
+        return V::str($this->references->keyOf($dimension->table, $recordId));
     }
 
     // ── partner ─────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 class DocumentExporterTest extends TestCase
 {
@@ -51,10 +52,10 @@ class DocumentExporterTest extends TestCase
         $db->method('fetch')->willReturnCallback(function (string $sql, mixed ...$args) use ($hasAccounting, $partner): ?Row {
             if (str_contains($sql, 'FROM [economy_codebooks_cost_centers]')) {
                 $codes = [3 => 'S01', 5 => 'V01'];
-                return isset($codes[(int) ($args[0] ?? 0)]) ? new Row(['k' => $codes[(int) $args[0]]]) : null;
+                return isset($codes[(int) ($args[0] ?? 0)]) ? new Row(['code' => $codes[(int) $args[0]]]) : null;
             }
             if (str_contains($sql, 'FROM [economy_work_orders_heads]')) {
-                return (int) ($args[0] ?? 0) === 8 ? new Row(['k' => 'S0001']) : null;
+                return (int) ($args[0] ?? 0) === 8 ? new Row(['number' => 'S0001']) : null;
             }
             if (str_contains($sql, 'SHOW TABLES')) {
                 return $hasAccounting ? new Row(['t' => 'economy_accounting_accounts']) : null;
@@ -102,6 +103,24 @@ class DocumentExporterTest extends TestCase
         ];
     }
 
+    /**
+     * Cílové tabulky dimenzí — přirozený klíč říká jejich definice (#166 D8).
+     *
+     * @return array<string, \Shipard\Core\Database\TableDefinition>
+     */
+    private static function dimensionTables(): array
+    {
+        return ModuleTables::load('economy_codebooks_cost_centers', 'economy_assets_assets');
+    }
+
+    public function testDimensionWithoutTableDefinitionIsAWiringError(): void
+    {
+        // Bez definice cílové tabulky by se dimenze z exportu tiše ztratily.
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage("dimenze 'costCenter' míří na tabulku 'economy_codebooks_cost_centers'");
+        new DocumentExporter($this->db(), $this->configWithDimensions());
+    }
+
     /** cfgItem dimenzí deníku jako na DS: středisko (setup sady) a majetek (mimo sadu). */
     private function configWithDimensions(): ConfigRuntime
     {
@@ -109,11 +128,11 @@ class DocumentExporterTest extends TestCase
             'costCenter' => [
                 'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
                 'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
-                'name' => 'Středisko', 'exchangeKey' => 'code',
+                'name' => 'Středisko',
             ],
             'asset' => [
                 'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
-                'table' => 'economy_assets_assets', 'name' => 'Majetek', 'exchangeKey' => 'asset_number',
+                'table' => 'economy_assets_assets', 'name' => 'Majetek',
             ],
         ];
         $config = $this->createMock(ConfigRuntime::class);
@@ -131,7 +150,7 @@ class DocumentExporterTest extends TestCase
             ['cost_center' => 5, 'asset' => 7] + $this->itemRowRow(),
             ['id' => 2, 'order_pos' => 2, 'cost_center' => null, 'asset' => null] + $this->itemRowRow(),
         ];
-        $exporter = new DocumentExporter($this->db(rows: $rows), $this->configWithDimensions());
+        $exporter = new DocumentExporter($this->db(rows: $rows), $this->configWithDimensions(), tables: self::dimensionTables());
 
         $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'asset' => 7]))->data;
 
@@ -153,7 +172,7 @@ class DocumentExporterTest extends TestCase
         $dimensions = [
             'workOrder' => [
                 'id' => 'workOrder', 'rowColumn' => 'work_order', 'headColumn' => 'work_order', 'journalColumn' => 'work_order',
-                'table' => 'economy_work_orders_heads', 'name' => 'Zakázka', 'exchangeKey' => 'number',
+                'table' => 'economy_work_orders_heads', 'name' => 'Zakázka',
             ],
         ];
         $config = $this->createMock(ConfigRuntime::class);
@@ -162,13 +181,14 @@ class DocumentExporterTest extends TestCase
         );
         $rows = [['work_order' => 8] + $this->itemRowRow()];
 
-        $without = new DocumentExporter($this->db(rows: $rows), $config);
+        $tables = ModuleTables::load('economy_work_orders_heads');
+        $without = new DocumentExporter($this->db(rows: $rows), $config, tables: $tables);
         $c = $without->exportDocument($this->headRow(['work_order' => 8]))->data;
         $this->assertArrayNotHasKey('dimensions', $c);
         $this->assertArrayNotHasKey('dimensions', $c['rows'][0]);
         $this->assertCount(1, array_filter($without->getWarnings(), static fn(string $w): bool => str_contains($w, 'Zakázka')));
 
-        $with = new DocumentExporter($this->db(rows: $rows), $config, ['economy_work_orders_heads']);
+        $with = new DocumentExporter($this->db(rows: $rows), $config, ['economy_work_orders_heads'], $tables);
         $c = $with->exportDocument($this->headRow(['work_order' => 8]))->data;
         $this->assertSame(['workOrder' => 'S0001'], $c['dimensions'], 'hlavička číslem zakázky');
         $this->assertSame(['workOrder' => 'S0001'], $c['rows'][0]['dimensions'], 'řádek číslem zakázky');
@@ -184,7 +204,7 @@ class DocumentExporterTest extends TestCase
         $db = $this->createMock(Connection::class);
         $db->method('fetch')->willReturnCallback(static function (string $sql, mixed ...$args): ?Row {
             if (str_contains($sql, 'FROM [economy_assets_assets]')) {
-                return (int) ($args[0] ?? 0) === 7 ? new Row(['k' => 'MA0001']) : null;
+                return (int) ($args[0] ?? 0) === 7 ? new Row(['asset_number' => 'MA0001']) : null;
             }
             if (str_contains($sql, 'SHOW TABLES')) {
                 return new Row(['t' => 'economy_accounting_accounts']);
@@ -208,7 +228,7 @@ class DocumentExporterTest extends TestCase
             return [];
         });
 
-        $exporter = new DocumentExporter($db, $this->configWithDimensions(), ['economy_assets_assets']);
+        $exporter = new DocumentExporter($db, $this->configWithDimensions(), ['economy_assets_assets'], self::dimensionTables());
         $records = $exporter->exportByIds([100, 200]);
 
         $this->assertSame([100], array_map(static fn($r) => $r->id, $records), 'doklad zaúčtování majetku vynechán');

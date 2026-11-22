@@ -127,22 +127,26 @@ class StandardDimensionsTest extends TestCase
         );
     }
 
-    public function testExchangeKeysPointToColumnsOfTargetTables(): void
+    public function testTargetTablesDeclareTheNaturalKey(): void
     {
-        // #110 T2: středisko kód, majetek inventární číslo — sloupec musí
-        // v cílové tabulce existovat, jinak by resolver padal v SQL.
+        // #110 T2, #166 D8: středisko kód, zakázka číslo, majetek inventární
+        // číslo — klíč je v definici cílové tabulky, dimenze ho nedeklaruje.
         $tables = [
             'economy_codebooks_cost_centers' => 'economy/codebooks/tables/economy_codebooks_cost_centers.jsonc',
             'economy_work_orders_heads'      => 'economy/workOrders/tables/economy_work_orders_heads.jsonc',
             'economy_assets_assets'          => 'economy/assets/tables/economy_assets_assets.jsonc',
         ];
         $expected = ['costCenter' => 'code', 'workOrder' => 'number', 'asset' => 'asset_number'];
+        $seen = [];
         foreach (self::dimensions() as $dimension) {
-            $this->assertSame($expected[$dimension->id] ?? null, $dimension->exchangeKey, $dimension->id);
             $def = JsoncParser::parseFile(self::MODULES . '/' . $tables[$dimension->table]);
-            $this->assertContains($dimension->exchangeKey, array_column($def['columns'], 'id'), "{$dimension->id}: klíč v tabulce");
-            // #166 D8: přirozený klíč je v definici cílové tabulky — týž sloupec.
-            $this->assertSame($dimension->exchangeKey, $def['exchangeKey'] ?? null, "{$dimension->id}: exchangeKey tabulky");
+            $this->assertSame($expected[$dimension->id] ?? null, $def['exchangeKey'] ?? null, "{$dimension->id}: exchangeKey tabulky");
+            $seen[] = $dimension->id;
+        }
+        $this->assertSame(array_keys($expected), $seen);
+
+        foreach (JsoncParser::parseFile(self::MODULES . '/economy/accounting/module.jsonc')['journalDimensions'] as $declared) {
+            $this->assertArrayNotHasKey('exchangeKey', $declared, $declared['id']);
         }
     }
 

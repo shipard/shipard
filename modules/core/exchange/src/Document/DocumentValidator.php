@@ -18,7 +18,8 @@ use Shipard\Module\Docs\Core\RoundingModes;
  *     a warning, not an error, since the canonical's totals are
  *     informative and DocDocument::beforeSave recomputes them anyway.
  *   - Dimenze deníku (objekt `dimensions`, #110 T2): klíč musí být id
- *     deklarované dimenze s `exchangeKey`, jinak `dimension_unknown`.
+ *     deklarované dimenze, jejíž cílová tabulka má přirozený klíč
+ *     (`exchangeKey` v definici tabulky, #166 D8), jinak `dimension_unknown`.
  *     Kontroluje se jen se znalostí sady dimenzí; bez ní (preflight sady
  *     bez DS) se neznámé id odhalí až při apply.
  *
@@ -29,8 +30,13 @@ use Shipard\Module\Docs\Core\RoundingModes;
  */
 final class DocumentValidator
 {
+    /**
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     *        aktivní tabulky DS — přirozený klíč cílových tabulek dimenzí
+     */
     public function __construct(
         private readonly ?JournalDimensionSet $dimensions = null,
+        private readonly array $tables = [],
     ) {}
 
     /**
@@ -94,7 +100,7 @@ final class DocumentValidator
 
     /**
      * Objekt `dimensions` na hlavičce a řádcích (#110 T2): klíč = id dimenze
-     * deníku s `exchangeKey`. Neznámé id i dimenze bez klíče jsou chyba —
+     * deníku, jejíž cílová tabulka má `exchangeKey`. Neznámé id i dimenze bez klíče jsou chyba —
      * překlep v sadě nesmí hodnotu tiše zahodit. Hodnoty (existence záznamu)
      * řeší applier při resolve (`dimension_not_found`).
      *
@@ -126,7 +132,7 @@ final class DocumentValidator
             $dimension = $this->dimensions?->get((string) $id);
             if ($dimension === null) {
                 $message = "Neznámá dimenze deníku „{$id}“.";
-            } elseif ($dimension->exchangeKey === null) {
+            } elseif (($this->tables[$dimension->table] ?? null)?->exchangeKey === null) {
                 $message = "Dimenze „{$id}“ nemá klíč pro výměnný formát (exchangeKey) — formát ji nenese.";
             } else {
                 continue;

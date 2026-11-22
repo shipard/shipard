@@ -237,7 +237,7 @@ class DocumentApplier
         private readonly array $contentTags = [],
         /**
          * Dimenze deníku z objektu `dimensions` (#110 T2) — přirozený klíč →
-         * id záznamu. Null = DS bez dimenzí s `exchangeKey`, objekt se ignoruje
+         * id záznamu. Null = DS bez dimenzí s přirozeným klíčem, objekt se ignoruje
          * (neznámé klíče hlásí DocumentValidator).
          */
         private readonly ?DimensionResolver $dimensionResolver = null,
@@ -286,7 +286,7 @@ class DocumentApplier
             personsGateway: self::buildGateway('base_persons_persons', $db, $registry, $config, $dsConfig, $tables),
             itemsGateway: self::buildGateway('economy_items', $db, $registry, $config, $dsConfig, $tables),
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            documentValidator: new DocumentValidator(JournalDimensionSet::fromConfig($config)),
+            documentValidator: new DocumentValidator(JournalDimensionSet::fromConfig($config), $tables),
             partyResolver: new PartyResolver($db, $own),
             itemResolver: new ItemResolver($db),
             unitResolver: new UnitResolver($db),
@@ -4812,7 +4812,7 @@ class DocumentApplier
 
     /**
      * Dimenze deníku z objektu `dimensions` (#110 T2): klíč = id dimenze,
-     * hodnota = přirozený klíč záznamu (`exchangeKey`). Neznámé id hlásí
+     * hodnota = přirozený klíč záznamu (`exchangeKey` cílové tabulky). Neznámé id hlásí
      * {@see DocumentValidator} (`dimension_unknown`) — tady se přeskočí;
      * prázdná hodnota = bez dimenze; hodnota bez záznamu = chyba
      * `dimension_not_found` (blokuje apply, klíč je autoritativní). Platí

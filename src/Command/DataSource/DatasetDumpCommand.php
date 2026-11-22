@@ -178,7 +178,7 @@ class DatasetDumpCommand extends Command
             if ($hasAssets) {
                 $sectionTables[] = AssetDocument::TABLE;
             }
-            $records[] = new DocumentExporter($db, $config, $sectionTables);
+            $records[] = new DocumentExporter($db, $config, $sectionTables, $tables);
         }
         // Bankovní výpisy (#131 fáze 2a): pořadí za doklady = pořadí seedu i klíčů counts.
         if (isset($tables['economy_bank_statements'])) {
