@@ -27,32 +27,64 @@ class SetupReferencesTest extends TestCase
     /** @return array<string, TableDefinition> */
     private function tables(): array
     {
-        return [
-            'economy_work_orders_kinds'       => $this->tableDef('economy/workOrders/tables/economy_work_orders_kinds.jsonc'),
-            'economy_codebooks_bank_accounts' => $this->tableDef('economy/codebooks/tables/economy_codebooks_bank_accounts.jsonc'),
-            'docs_core_number_series'         => $this->tableDef('docs/core/tables/docs_core_number_series.jsonc'),
-            'economy_assets_accounting_groups' => $this->tableDef('economy/assets/tables/economy_assets_accounting_groups.jsonc'),
-            'economy_assets_types'             => $this->tableDef('economy/assets/tables/economy_assets_types.jsonc'),
-        ];
+        $tables = [];
+        foreach ([
+            'economy/accounting/tables/economy_accounting_accounts.jsonc',
+            'economy/codebooks/tables/economy_codebooks_bank_accounts.jsonc',
+            'economy/codebooks/tables/economy_codebooks_cost_centers.jsonc',
+            'economy/codebooks/tables/economy_codebooks_vat_registrations.jsonc',
+            'economy/workOrders/tables/economy_work_orders_kinds.jsonc',
+            'economy/workOrders/tables/economy_work_orders_number_series.jsonc',
+            'economy/assets/tables/economy_assets_accounting_groups.jsonc',
+            'economy/assets/tables/economy_assets_type_groups.jsonc',
+            'economy/assets/tables/economy_assets_types.jsonc',
+            'docs/core/tables/docs_core_number_series.jsonc',
+            'base/persons/tables/base_persons_persons.jsonc',
+            'core/system/tables/core_system_settings.jsonc',
+        ] as $relPath) {
+            $tables[basename($relPath, '.jsonc')] = $this->tableDef($relPath);
+        }
+        return $tables;
     }
 
-    public function testPortabilityFollowsSetupTablesAndSpecialCases(): void
+    public function testPortabilityFollowsSetupTablesAndTheirExchangeKey(): void
     {
-        $this->assertTrue(SetupReferences::isPortable('economy_accounting_accounts'), 'účet osnovy číslem');
-        $this->assertSame('number', SetupReferences::keyColumn('economy_accounting_accounts'));
-        $this->assertTrue(SetupReferences::isPortable('docs_core_number_series'), 'řada dokladů {docType, code} (D37)');
-        $this->assertNull(SetupReferences::keyColumn('docs_core_number_series'), 'složený klíč nemá jeden sloupec');
-        $this->assertSame('name', SetupReferences::keyColumn('economy_work_orders_kinds'));
-        $this->assertSame('code', SetupReferences::keyColumn('economy_codebooks_bank_accounts'));
-        $this->assertSame('code', SetupReferences::keyColumn('economy_codebooks_cost_centers'));
-        $this->assertSame('number_code', SetupReferences::keyColumn('economy_work_orders_number_series'));
+        $refs = new SetupReferences($this->createMock(Connection::class), $this->tables());
+
+        $this->assertTrue($refs->isPortable('economy_accounting_accounts'), 'účet osnovy číslem');
+        $this->assertSame('number', $refs->keyColumn('economy_accounting_accounts'));
+        $this->assertTrue($refs->isPortable('docs_core_number_series'), 'řada dokladů {docType, code} (D37)');
+        $this->assertNull($refs->keyColumn('docs_core_number_series'), 'řada nemá přirozený klíč v definici');
+        $this->assertSame('name', $refs->keyColumn('economy_work_orders_kinds'));
+        $this->assertSame('code', $refs->keyColumn('economy_codebooks_bank_accounts'));
+        $this->assertSame('code', $refs->keyColumn('economy_codebooks_cost_centers'));
+        $this->assertSame('number_code', $refs->keyColumn('economy_work_orders_number_series'));
         // #131 fáze 2c (D39): číselníky majetku — sekce assets/ odkazuje typ názvem a skupinu kódem.
-        $this->assertSame('code', SetupReferences::keyColumn('economy_assets_accounting_groups'));
-        $this->assertSame('name', SetupReferences::keyColumn('economy_assets_type_groups'));
-        $this->assertSame('name', SetupReferences::keyColumn('economy_assets_types'));
-        $this->assertFalse(SetupReferences::isPortable('economy_codebooks_vat_registrations'), 'dvousloupcový klíč');
-        $this->assertFalse(SetupReferences::isPortable('base_persons_persons'), 'osoby sada FK nenese');
-        $this->assertFalse(SetupReferences::isPortable('core_system_settings'), 'pseudo-tabulka settings');
+        $this->assertSame('code', $refs->keyColumn('economy_assets_accounting_groups'));
+        $this->assertSame('name', $refs->keyColumn('economy_assets_type_groups'));
+        $this->assertSame('name', $refs->keyColumn('economy_assets_types'));
+        $this->assertFalse($refs->isPortable('economy_codebooks_vat_registrations'), 'dvousloupcový klíč');
+        $this->assertFalse($refs->isPortable('core_system_settings'), 'pseudo-tabulka settings');
+    }
+
+    public function testTableWithExchangeKeyOutsideSetupSectionIsNotPortable(): void
+    {
+        // #166: osoby přirozený klíč mají, ale sekce setup je nenese — FK na
+        // ně se do sady nesmí začít zapisovat (soubory sad se nemění).
+        $tables = $this->tables();
+        $this->assertSame('person_id', $tables['base_persons_persons']->exchangeKey);
+
+        $refs = new SetupReferences($this->createMock(Connection::class), $tables);
+        $this->assertFalse($refs->isPortable('base_persons_persons'));
+        $this->assertNull($refs->keyColumn('base_persons_persons'));
+    }
+
+    public function testInactiveTableIsNotPortable(): void
+    {
+        $refs = new SetupReferences($this->createMock(Connection::class), []);
+
+        $this->assertFalse($refs->isPortable('economy_codebooks_cost_centers'), 'modul není aktivní');
+        $this->assertTrue($refs->isPortable('docs_core_number_series'));
     }
 
     public function testExportGivesNaturalKeyOrDocSeriesObject(): void

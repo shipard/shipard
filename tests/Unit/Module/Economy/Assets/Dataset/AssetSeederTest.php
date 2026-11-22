@@ -24,6 +24,7 @@ use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
 use Shipard\Module\Economy\Assets\Dataset\AssetSeeder;
 use Shipard\Tests\Unit\Module\Core\Exchange\Dataset\DatasetPreflightTest;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 /**
  * Seeder karet (#131 fáze 2c, D38, D40): přirozené klíče → id, karta bez
@@ -107,7 +108,8 @@ class AssetSeederTest extends TestCase
             config: $config,
             dsConfig: $this->createMock(DataSourceConfig::class),
             registry: new DocumentRegistry(),
-            tables: [],
+            // Cílové tabulky referencí — přirozený klíč říká jejich definice (#166).
+            tables: ModuleTables::load('economy_assets_types', 'economy_assets_accounting_groups'),
             dsDir: $this->tmp,
             attachments: $this->createMock(AttachmentService::class),
             dispatcher: null,

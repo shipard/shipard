@@ -22,10 +22,10 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * Jeden soubor per tabulka (`shpd.dataset.setup.v1`), řádky s přirozeným
  * klíčem, bez interních id a auditních sloupců. Hodnoty se typují podle
  * `TableDefinition`, aby JSON nesl int/float/bool místo řetězců z MySQL.
- * FK sloupce nesou přirozený klíč cílové tabulky, pokud ho sada umí
- * přeložit zpět (`SetupReferences`: účet číslem, druh názvem, účet
- * kódem, řada dokladů `{docType, code}` — D37); ostatní se s varováním
- * vynechají. Tabulky modulů, které na DS nejsou aktivní, se přeskočí.
+ * FK sloupce nesou přirozený klíč cílové tabulky (`exchangeKey` v její
+ * definici), pokud ho sada umí přeložit zpět (`SetupReferences`: účet
+ * číslem, druh názvem, účet kódem, řada dokladů `{docType, code}` — D37);
+ * ostatní se s varováním vynechají. Tabulky modulů, které na DS nejsou aktivní, se přeskočí.
  */
 final class SetupExporter
 {
@@ -54,41 +54,47 @@ final class SetupExporter
     public const SETTINGS_EXCLUDED = ['economy.assets.accountingSeries', 'economy.vat.filingAccountingSeries'];
 
     /**
+     * Tabulky sekce setup. Klíč upsertu řádku souboru je přirozený klíč
+     * z definice tabulky (`exchangeKey`, #166 D8); výslovný `key` má jen
+     * tabulka, která `exchangeKey` nemá (nastavení, registrace DPH se
+     * složeným klíčem) — čte se přes {@see self::upsertKey()}.
+     *
      * `where` = pevný filtr řádků (sloupec → int), jen pro tabulky, z nichž
      * sada nese podmnožinu.
      *
-     * @var array<string, array{table: string, key: list<string>, where?: array<string, int>}>
+     * @var array<string, array{table: string, key?: list<string>, where?: array<string, int>}>
      */
     public const TABLES = [
-        'settings'          => ['table' => 'core_system_settings',                'key' => ['key']],
+        'settings'          => ['table' => 'core_system_settings', 'key' => ['key']],
         // Nesystémové účty osnovy (#131 fáze 2a): analytiky založené nad seedem
         // (bankovní účet v cizí měně potřebuje vlastní 221xxx). Systémové účty
         // obnoví AccountChartProvisioner. Seed jde abecedně, takže
         // `accounts.jsonc` předchází `bank_accounts.jsonc` a účet číslem se dohledá.
-        'accounts'          => ['table' => 'economy_accounting_accounts',          'key' => ['number'], 'where' => ['is_system' => 0]],
-        'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts',     'key' => ['code']],
+        'accounts'          => ['table' => 'economy_accounting_accounts', 'where' => ['is_system' => 0]],
+        'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts'],
         // Pokladny (#103 F3 nález E) — výchozí pokladna pro hotově hrazené
         // přijaté doklady; účet se přenáší číslem jako u ostatních FK na rozvrh.
-        'cash_desks'        => ['table' => 'economy_codebooks_cash_desks',        'key' => ['code']],
+        'cash_desks'        => ['table' => 'economy_codebooks_cash_desks'],
         // Dimenze Středisko na dokladech (#110 D20) — doklady v sadě nesou kód.
-        'cost_centers'      => ['table' => 'economy_codebooks_cost_centers',      'key' => ['code']],
+        'cost_centers'      => ['table' => 'economy_codebooks_cost_centers'],
         'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations', 'key' => ['country', 'name']],
-        'binders'           => ['table' => 'base_registry_binders',               'key' => ['name']],
-        'mailboxes'         => ['table' => 'core_mail_mailboxes',                 'key' => ['mailbox_id']],
+        'binders'           => ['table' => 'base_registry_binders'],
+        'mailboxes'         => ['table' => 'core_mail_mailboxes'],
         // Druhy a číselné řady zakázek (#131 fáze 2b, D29): sekce workOrders/
-        // odkazuje řadu kódem, řada druh názvem, druh řadu dokladů (D37)
-        // a bankovní účet kódem. Seed jde abecedně — druhy před řadami, obě
-        // za bank_accounts. Řada bez kódu se nepřenese (warning).
-        'work_order_kinds'  => ['table' => 'economy_work_orders_kinds',           'key' => ['name']],
-        'work_order_series' => ['table' => 'economy_work_orders_number_series',   'key' => ['number_code']],
+        // odkazuje řadu kódem (`number_code`), řada druh názvem, druh řadu
+        // dokladů (D37) a bankovní účet kódem. Seed jde abecedně — druhy
+        // před řadami, obě za bank_accounts. Řada bez kódu se nepřenese
+        // (warning).
+        'work_order_kinds'  => ['table' => 'economy_work_orders_kinds'],
+        'work_order_series' => ['table' => 'economy_work_orders_number_series'],
         // Číselníky majetku (#131 fáze 2c, D39): sekce assets/ odkazuje typ
         // názvem a účetní skupinu kódem, typ nese skupinu typů názvem a výchozí
         // účetní skupinu kódem, účetní skupina účty osnovy číslem. Seed jde
         // abecedně — za `accounts`, před `bank_accounts`; účetní skupiny
         // zakládá i provisioner, upsert podle kódu je jen srovná.
-        'asset_accounting_groups' => ['table' => 'economy_assets_accounting_groups', 'key' => ['code']],
-        'asset_type_groups'       => ['table' => 'economy_assets_type_groups',       'key' => ['name']],
-        'asset_types'             => ['table' => 'economy_assets_types',             'key' => ['name']],
+        'asset_accounting_groups' => ['table' => 'economy_assets_accounting_groups'],
+        'asset_type_groups'       => ['table' => 'economy_assets_type_groups'],
+        'asset_types'             => ['table' => 'economy_assets_types'],
     ];
 
     private const SKIP_COLUMNS = ['id', 'docStateMain', 'created', 'modified', 'created_by'];
@@ -132,10 +138,29 @@ final class SetupExporter
                 'table'  => $key,
                 'rows'   => $key === self::SETTINGS_TABLE
                     ? $this->exportSettings()
-                    : $this->exportTable($spec['table'], $def, $spec['key'], $spec['where'] ?? []),
+                    : $this->exportTable($spec['table'], $def, self::upsertKey($spec, $def), $spec['where'] ?? []),
             ]);
         }
         return $out;
+    }
+
+    /**
+     * Sloupce, podle kterých se řádek souboru sady páruje se záznamem
+     * (upsert při seedu, řazení a identita řádku v dumpu): výslovný `key`
+     * z mapy, jinak přirozený klíč tabulky.
+     *
+     * @param array{table: string, key?: list<string>} $spec položka `TABLES`
+     * @return list<string>
+     */
+    public static function upsertKey(array $spec, TableDefinition $def): array
+    {
+        if (isset($spec['key'])) {
+            return $spec['key'];
+        }
+        if ($def->exchangeKey === null) {
+            throw new \LogicException("setup {$spec['table']}: tabulka nemá exchangeKey ani výslovný klíč upsertu");
+        }
+        return [$def->exchangeKey];
     }
 
     /** @return list<string> */
@@ -163,7 +188,7 @@ final class SetupExporter
         // ostatní se vynechají.
         foreach ($columns as $colId => $col) {
             if ($col->reference !== null && !in_array($colId, self::SKIP_COLUMNS, true)
-                && !SetupReferences::isPortable($col->reference)) {
+                && !$this->references->isPortable($col->reference)) {
                 if (!in_array($colId, self::SILENT_FK_COLUMNS, true)) {
                     $this->warnings[] = "setup {$tableName}: sloupec '{$colId}' (FK na {$col->reference}) se nepřenáší";
                 }

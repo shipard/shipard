@@ -20,7 +20,7 @@ use Shipard\Module\Core\Exchange\Export\SetupExporter;
  * `docStateMain` odvozený z cfgItemu). Nastavení s id řady dokladů
  * (`SetupExporter::SETTINGS_EXCLUDED`) seed přeskočí — nastaví je
  * provisionery po resetu (D42). Upsert podle přirozeného klíče
- * tabulky (`SetupExporter::TABLES`) — default mailbox po resetu existuje
+ * tabulky (`SetupExporter::upsertKey()`) — default mailbox po resetu existuje
  * a jen se aktualizuje. FK přichází přirozeným klíčem (`SetupReferences`):
  * účet z rozvrhu číslem → id jako dosud (chybějící = null), ostatní
  * přenosné reference (druh názvem, účet kódem, řada dokladů
@@ -78,6 +78,7 @@ final class SetupSeeder implements SectionSeeder
 
             // Jednotka počítání = soubor (tabulka), stejně jako v dumpu;
             // chyba libovolného řádku = chyba souboru.
+            $keyColumns = SetupExporter::upsertKey($spec, $def);
             $rowErrors = 0;
             foreach ((array) ($file['rows'] ?? []) as $i => $row) {
                 if (!is_array($row)) {
@@ -86,9 +87,9 @@ final class SetupSeeder implements SectionSeeder
                     continue;
                 }
                 try {
-                    $this->upsertRow($ctx, $gateway, $references, $spec, $columns, $row);
+                    $this->upsertRow($ctx, $gateway, $references, $spec['table'], $keyColumns, $columns, $row);
                 } catch (\Throwable $e) {
-                    $label = implode('/', array_map(static fn(string $k) => (string) ($row[$k] ?? '?'), $spec['key']));
+                    $label = implode('/', array_map(static fn(string $k) => (string) ($row[$k] ?? '?'), $keyColumns));
                     $report->warning("setup {$rel} [{$label}]: {$e->getMessage()}");
                     $rowErrors++;
                 }
@@ -151,7 +152,7 @@ final class SetupSeeder implements SectionSeeder
     }
 
     /**
-     * @param array{table: string, key: list<string>} $spec
+     * @param list<string> $keyColumns klíč upsertu (`SetupExporter::upsertKey`)
      * @param array<string, \Shipard\Core\Database\ColumnDefinition> $columns
      * @param array<string, mixed> $row
      */
@@ -159,7 +160,8 @@ final class SetupSeeder implements SectionSeeder
         SeedContext $ctx,
         TableGateway $gateway,
         SetupReferences $references,
-        array $spec,
+        string $table,
+        array $keyColumns,
         array $columns,
         array $row,
     ): void {
@@ -177,7 +179,7 @@ final class SetupSeeder implements SectionSeeder
                     $value,
                 );
                 $value = $acc !== null ? (int) $acc['id'] : null;
-            } elseif ($col->reference !== null && $value !== null && SetupReferences::isPortable($col->reference)) {
+            } elseif ($col->reference !== null && $value !== null && $references->isPortable($col->reference)) {
                 $value = $references->resolve($col->reference, $value);
             } elseif ($col->type === 'json' && is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -190,7 +192,7 @@ final class SetupSeeder implements SectionSeeder
         // Upsert podle přirozeného klíče.
         $where = [];
         $args = [];
-        foreach ($spec['key'] as $k) {
+        foreach ($keyColumns as $k) {
             if (!array_key_exists($k, $data)) {
                 throw new DatasetException("chybí klíčový sloupec '{$k}'");
             }
@@ -199,7 +201,7 @@ final class SetupSeeder implements SectionSeeder
         }
         $existing = $ctx->db->fetch(
             'SELECT [id] FROM %n WHERE ' . implode(' AND ', $where) . ' ORDER BY [id] LIMIT 1',
-            $spec['table'], ...$args,
+            $table, ...$args,
         );
         if ($existing !== null) {
             $data['id'] = (int) $existing['id'];

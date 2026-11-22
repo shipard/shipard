@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetWriter;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Economy\Assets\Dataset\AssetExporter;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 /**
  * Sekce assets při dumpu (#131 fáze 2c, D38, D40): přirozené klíče místo
@@ -125,7 +126,7 @@ class AssetExporterTest extends TestCase
     public function testExportsNaturalKeysAndConfirmedEventsWithOrigin(): void
     {
         $sql = [];
-        $exporter = new AssetExporter($this->db($sql), $this->config());
+        $exporter = new AssetExporter($this->db($sql), $this->config(), ModuleTables::load('economy_assets_types', 'economy_assets_accounting_groups'));
         $this->assertSame('assets', $exporter->section());
 
         $records = $exporter->exportAll();
@@ -178,7 +179,7 @@ class AssetExporterTest extends TestCase
     public function testExportByIdsFiltersAndEmptyListQueriesNothing(): void
     {
         $sql = [];
-        $exporter = new AssetExporter($this->db($sql), $this->config());
+        $exporter = new AssetExporter($this->db($sql), $this->config(), ModuleTables::load('economy_assets_types', 'economy_assets_accounting_groups'));
 
         $this->assertSame([], $exporter->exportByIds([]));
         $this->assertSame([], $sql);

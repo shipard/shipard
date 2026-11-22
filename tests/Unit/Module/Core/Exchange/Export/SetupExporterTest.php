@@ -24,12 +24,38 @@ class SetupExporterTest extends TestCase
     public function testCostCentersAreCarriedByCode(): void
     {
         // #110 T2: doklady v sadě odkazují na střediska kódem (objekt dimensions).
-        $this->assertSame(
-            ['table' => 'economy_codebooks_cost_centers', 'key' => ['code']],
+        $this->assertSame(['table' => 'economy_codebooks_cost_centers'], SetupExporter::TABLES['cost_centers']);
+        $this->assertSame(['code'], SetupExporter::upsertKey(
             SetupExporter::TABLES['cost_centers'],
-        );
+            $this->tableDef('economy/codebooks/tables/economy_codebooks_cost_centers.jsonc'),
+        ));
         $schema = JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/core/exchange/schemas/shpd.dataset.setup.v1.jsonc');
         $this->assertSame(array_keys(SetupExporter::TABLES), $schema['properties']['table']['enum']);
+    }
+
+    public function testEveryTableHasExactlyOneSourceOfUpsertKey(): void
+    {
+        // #166 U7: klíč upsertu je přirozený klíč z definice tabulky; výslovný
+        // `key` v mapě jen tam, kde tabulka `exchangeKey` nemá.
+        foreach (SetupExporter::TABLES as $section => $spec) {
+            $path = glob(dirname(__DIR__, 6) . "/modules/*/*/tables/{$spec['table']}.jsonc")[0] ?? null;
+            $this->assertNotNull($path, "{$section}: definice tabulky {$spec['table']}");
+            $def = TableDefinition::fromArray(JsoncParser::parseFile($path));
+
+            $this->assertNotSame(
+                isset($spec['key']),
+                $def->exchangeKey !== null,
+                "{$section}: právě jedno z `key` v mapě a `exchangeKey` v definici",
+            );
+            $this->assertNotSame([], SetupExporter::upsertKey($spec, $def));
+        }
+        $this->assertSame(
+            ['country', 'name'],
+            SetupExporter::upsertKey(
+                SetupExporter::TABLES['vat_registrations'],
+                $this->tableDef('economy/codebooks/tables/economy_codebooks_vat_registrations.jsonc'),
+            ),
+        );
     }
 
     public function testAccountsCarryOnlyNonSystemRows(): void
@@ -37,7 +63,7 @@ class SetupExporterTest extends TestCase
         // #131 fáze 2a: analytiky založené nad seedem (221xxx pro účet v cizí
         // měně); systémové účty obnoví provisioner, sada je nenese.
         $this->assertSame(
-            ['table' => 'economy_accounting_accounts', 'key' => ['number'], 'where' => ['is_system' => 0]],
+            ['table' => 'economy_accounting_accounts', 'where' => ['is_system' => 0]],
             SetupExporter::TABLES['accounts'],
         );
 
@@ -127,6 +153,7 @@ class SetupExporterTest extends TestCase
         $def = TableDefinition::fromArray([
             'tableId' => 9999,
             'name'    => 'Synthetic',
+            'exchangeKey' => 'code',
             'columns' => [
                 ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true, 'autoIncrement' => true],
                 ['id' => 'code', 'name' => 'Code', 'type' => 'varchar', 'length' => 20],
@@ -136,16 +163,25 @@ class SetupExporterTest extends TestCase
         ]);
 
         $db = $this->createMock(Connection::class);
-        $db->method('fetchAll')->willReturn([new Row(['id' => 1, 'code' => 'A', 'accounting_account' => 9, 'owner' => 5])]);
+        $db->method('fetchAll')->willReturnCallback(static fn(string $sql): array => str_contains($sql, '[economy_codebooks_bank_accounts]')
+            ? [new Row(['id' => 1, 'code' => 'A', 'accounting_account' => 9, 'owner' => 5])]
+            : []);
         $db->method('fetch')->willReturnCallback(function (string $sql, int $id): ?Row {
             $this->assertStringContainsString('[economy_accounting_accounts]', $sql);
             return $id === 9 ? new Row(['number' => '221100']) : null;
         });
 
-        $exporter = new SetupExporter($db, ['economy_codebooks_bank_accounts' => $def]);
+        // Cílová tabulka FK je na zdroji dat vždy aktivní — klíč říká její definice.
+        $exporter = new SetupExporter($db, [
+            'economy_accounting_accounts'     => $this->tableDef('economy/accounting/tables/economy_accounting_accounts.jsonc'),
+            'economy_codebooks_bank_accounts' => $def,
+            // Osoby přirozený klíč mají, sada je ale nenese (#166) — FK se dál vynechá.
+            'base_persons_persons'            => $this->tableDef('base/persons/tables/base_persons_persons.jsonc'),
+        ]);
         $records = $exporter->exportAll();
 
-        $this->assertSame(['code' => 'A', 'accounting_account' => '221100'], $records[0]->data['rows'][0]);
+        $this->assertSame(['accounts', 'bank_accounts'], array_map(static fn($r) => $r->slug, $records));
+        $this->assertSame(['code' => 'A', 'accounting_account' => '221100'], $records[1]->data['rows'][0]);
         $this->assertCount(1, $exporter->getWarnings());
         $this->assertStringContainsString("'owner' (FK na base_persons_persons)", $exporter->getWarnings()[0]);
     }
@@ -155,11 +191,15 @@ class SetupExporterTest extends TestCase
         // #131 fáze 2b (D29, D37): druh nese řadu dokladů jako {docType, code}
         // a účet kódem, řada zakázek nese druh názvem; řada bez kódu se nepřenese.
         $tables = [
+            'economy_codebooks_bank_accounts'   => $this->tableDef('economy/codebooks/tables/economy_codebooks_bank_accounts.jsonc'),
             'economy_work_orders_kinds'         => $this->tableDef('economy/workOrders/tables/economy_work_orders_kinds.jsonc'),
             'economy_work_orders_number_series' => $this->tableDef('economy/workOrders/tables/economy_work_orders_number_series.jsonc'),
         ];
         $db = $this->createMock(Connection::class);
         $db->method('fetchAll')->willReturnCallback(function (string $sql): array {
+            if (str_contains($sql, '[economy_codebooks_bank_accounts]')) {
+                return [];
+            }
             if (str_contains($sql, '[economy_work_orders_kinds]')) {
                 $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [name], [id]', $sql);
                 return [new Row([
@@ -202,14 +242,14 @@ class SetupExporterTest extends TestCase
         $exporter = new SetupExporter($db, $tables);
         $records = $exporter->exportAll();
 
-        $this->assertSame(['work_order_kinds', 'work_order_series'], array_map(static fn($r) => $r->slug, $records));
-        $kind = $records[0]->data['rows'][0];
+        $this->assertSame(['bank_accounts', 'work_order_kinds', 'work_order_series'], array_map(static fn($r) => $r->slug, $records));
+        $kind = $records[1]->data['rows'][0];
         $this->assertSame(['docType' => 'invno'], $kind['inv_number_series'], 'řada dokladů bez kódu (D37)');
         $this->assertSame('BU1', $kind['inv_bank_account']);
         $this->assertSame(14, $kind['inv_due_days']);
         $this->assertSame(40, $kind['docState']);
 
-        $series = $records[1]->data['rows'];
+        $series = $records[2]->data['rows'];
         $this->assertCount(1, $series, 'řada bez number_code se nepřenáší');
         $this->assertSame('S', $series[0]['number_code']);
         $this->assertSame('Správa IT — paušál', $series[0]['kind'], 'druh názvem');
@@ -223,12 +263,16 @@ class SetupExporterTest extends TestCase
         // #131 fáze 2c (D39): účetní skupina nese účty osnovy číslem, typ
         // majetku skupinu typů názvem a výchozí účetní skupinu kódem.
         $tables = [
+            'economy_accounting_accounts'      => $this->tableDef('economy/accounting/tables/economy_accounting_accounts.jsonc'),
             'economy_assets_accounting_groups' => $this->tableDef('economy/assets/tables/economy_assets_accounting_groups.jsonc'),
             'economy_assets_type_groups'       => $this->tableDef('economy/assets/tables/economy_assets_type_groups.jsonc'),
             'economy_assets_types'             => $this->tableDef('economy/assets/tables/economy_assets_types.jsonc'),
         ];
         $db = $this->createMock(Connection::class);
         $db->method('fetchAll')->willReturnCallback(function (string $sql): array {
+            if (str_contains($sql, '[economy_accounting_accounts]')) {
+                return [];
+            }
             if (str_contains($sql, '[economy_assets_accounting_groups]')) {
                 $this->assertStringContainsString('WHERE [docState] <> 90 ORDER BY [code], [id]', $sql);
                 return [
@@ -276,11 +320,11 @@ class SetupExporterTest extends TestCase
         $records = $exporter->exportAll();
 
         $this->assertSame(
-            ['asset_accounting_groups', 'asset_type_groups', 'asset_types'],
+            ['accounts', 'asset_accounting_groups', 'asset_type_groups', 'asset_types'],
             array_map(static fn($r) => $r->slug, $records),
             'pořadí souborů podle SetupExporter::TABLES',
         );
-        [$movable, $land] = $records[0]->data['rows'];
+        [$movable, $land] = $records[1]->data['rows'];
         $this->assertSame('022', $movable['code']);
         $this->assertSame(
             ['022100', '042100', '082100', '551100', '541100'],
@@ -292,9 +336,9 @@ class SetupExporterTest extends TestCase
         $this->assertNull($land['account_accumulated'], 'pozemky bez oprávek a odpisů zůstávají null');
         $this->assertNull($land['account_depreciation']);
 
-        $this->assertSame('Hmotný majetek', $records[1]->data['rows'][0]['name']);
+        $this->assertSame('Hmotný majetek', $records[2]->data['rows'][0]['name']);
 
-        $type = $records[2]->data['rows'][0];
+        $type = $records[3]->data['rows'][0];
         $this->assertSame('Výpočetní technika', $type['name']);
         $this->assertSame('Hmotný majetek', $type['type_group'], 'skupina typů názvem');
         $this->assertSame('022', $type['default_accounting_group'], 'výchozí účetní skupina kódem');

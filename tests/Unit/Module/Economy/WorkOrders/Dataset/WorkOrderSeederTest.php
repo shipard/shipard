@@ -24,6 +24,7 @@ use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderSeeder;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportResult;
 use Shipard\Tests\Unit\Module\Core\Exchange\Dataset\DatasetPreflightTest;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 /**
  * Seeder sekce workOrders (#131 fáze 2b, D30): přirozené klíče → id
@@ -97,7 +98,8 @@ class WorkOrderSeederTest extends TestCase
             config: $this->createMock(ConfigRuntime::class),
             dsConfig: $this->createMock(DataSourceConfig::class),
             registry: new DocumentRegistry(),
-            tables: [],
+            // Cílové tabulky referencí — přirozený klíč říká jejich definice (#166).
+            tables: ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'),
             dsDir: $this->tmp,
             attachments: $this->createMock(AttachmentService::class),
             dispatcher: null,

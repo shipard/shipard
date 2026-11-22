@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetWriter;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderExporter;
+use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 /**
  * Sekce workOrders při dumpu (#131 fáze 2b, D30): přirozené klíče místo id,
@@ -138,7 +139,7 @@ class WorkOrderExporterTest extends TestCase
     public function testExportsNaturalKeysPredpisAndIssuedPeriodsInParentFirstOrder(): void
     {
         $sql = [];
-        $exporter = new WorkOrderExporter($this->db($sql), $this->config());
+        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'));
         $this->assertSame('workOrders', $exporter->section());
 
         $records = $exporter->exportAll();
@@ -196,7 +197,7 @@ class WorkOrderExporterTest extends TestCase
     public function testExportByIdsFiltersAndEmptyListQueriesNothing(): void
     {
         $sql = [];
-        $exporter = new WorkOrderExporter($this->db($sql), $this->config());
+        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'));
 
         $this->assertSame([], $exporter->exportByIds([]));
         $this->assertSame([], $sql);

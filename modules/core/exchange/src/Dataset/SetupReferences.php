@@ -7,24 +7,29 @@ namespace Shipard\Module\Core\Exchange\Dataset;
 use Dibi\Connection;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Module\Core\Exchange\Export\SetupExporter;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceException;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
 
 /**
  * Cizí klíč v sadě přes přirozený klíč cílové tabulky (#131 fáze 2b, D29,
- * D37) — jediné místo, které říká, kam FK sloupec sady umí ukázat a jak se
- * hodnota překládá tam (dump) a zpět (seed):
+ * D37) — fasáda datových sad nad obecným {@see ReferenceResolver} (#166
+ * D8). Říká, kam FK sloupec sady umí ukázat a jak se hodnota překládá tam
+ * (dump) a zpět (seed):
  *
- *  - tabulka ze `SetupExporter::TABLES` s jednosloupcovým klíčem → hodnota
- *    klíče (druh zakázky názvem, bankovní účet kódem, středisko kódem, …);
+ *  - tabulka sekce `setup/` (`SetupExporter::TABLES`) s přirozeným klíčem
+ *    v definici (`exchangeKey`) → hodnota klíče (druh zakázky názvem,
+ *    bankovní účet kódem, středisko kódem, účet osnovy číslem, …);
  *  - `docs_core_number_series` → objekt `{docType, code}` (D37): výchozí
  *    řady z provisioneru kód nemají, samotný kód by je nedohledal;
- *  - `economy_accounting_accounts` → číslo účtu jako dosud;
- *  - ostatní reference (osoby, uživatelé) sada nepřenáší.
+ *  - ostatní reference sada nepřenáší — ani na tabulku, která přirozený
+ *    klíč má (osoby, položky, doklady): sekce setup je nenese, odkaz by
+ *    na cílovém zdroji dat neměl kam ukázat.
  *
  * Seed hledá přísně: nenalezený nebo nejednoznačný klíč je
  * `DatasetException` — nikdy tiché vynechání ani první nalezený. Záznam
  * v koši (`docState` 90) se nepočítá, archivovaný ano. Výjimka: účet osnovy
- * zůstává jako dřív (chybějící účet = null, hlídá ho až engine) — řeší
- * volající.
+ * v sekci setup zůstává jako dřív (chybějící účet = null, hlídá ho až
+ * engine) — řeší volající.
  */
 final class SetupReferences
 {
@@ -33,6 +38,8 @@ final class SetupReferences
 
     private const DELETED = 90;
 
+    private readonly ReferenceResolver $resolver;
+
     /** @var array<string, array<int, mixed>> tabulka → id → hodnota pro sadu */
     private array $exportCache = [];
 
@@ -40,36 +47,32 @@ final class SetupReferences
     private array $resolveCache = [];
 
     /**
-     * @param array<string, TableDefinition> $tables aktivní tabulky DS — jen
-     *        kvůli tomu, zda má cílová tabulka `docState` (koš se vylučuje)
+     * @param array<string, TableDefinition> $tables aktivní tabulky DS —
+     *        přirozený klíč cílové tabulky a to, zda má `docState`
      */
     public function __construct(
         private readonly Connection $db,
         private readonly array $tables = [],
-    ) {}
+    ) {
+        $this->resolver = new ReferenceResolver($db, $tables);
+    }
 
     /** Umí sada řádek tabulky odkázat přirozeným klíčem? */
-    public static function isPortable(string $table): bool
+    public function isPortable(string $table): bool
     {
-        return $table === self::ACCOUNTS_TABLE
-            || $table === self::DOC_SERIES_TABLE
-            || self::keyColumn($table) !== null;
+        return $table === self::DOC_SERIES_TABLE || $this->keyColumn($table) !== null;
     }
 
     /**
-     * Jednosloupcový přirozený klíč tabulky ze `SetupExporter::TABLES`
-     * (účet osnovy číslem); null = složený klíč nebo nepřenosná tabulka.
+     * Přirozený klíč (`exchangeKey`) tabulky, kterou nese sekce setup;
+     * null = tabulka klíč nemá, není aktivní, nebo ji sada nenese.
      */
-    public static function keyColumn(string $table): ?string
+    public function keyColumn(string $table): ?string
     {
-        if ($table === self::ACCOUNTS_TABLE) {
-            return 'number';
-        }
         foreach (SetupExporter::TABLES as $key => $spec) {
-            if ($key === SetupExporter::SETTINGS_TABLE || $spec['table'] !== $table) {
-                continue;
+            if ($key !== SetupExporter::SETTINGS_TABLE && $spec['table'] === $table) {
+                return $this->resolver->keyColumn($table);
             }
-            return count($spec['key']) === 1 ? $spec['key'][0] : null;
         }
         return null;
     }
@@ -82,7 +85,7 @@ final class SetupReferences
     public function export(string $table, mixed $id): mixed
     {
         $id = ValueNormalizer::int($id);
-        if ($id === null || $id <= 0 || !self::isPortable($table)) {
+        if ($id === null || $id <= 0 || !$this->isPortable($table)) {
             return null;
         }
         if (array_key_exists($id, $this->exportCache[$table] ?? [])) {
@@ -97,10 +100,7 @@ final class SetupReferences
                 'code'    => ValueNormalizer::str($row['doc_number_code'] ?? null),
             ]);
         } else {
-            $column = (string) self::keyColumn($table);
-            $row = $this->db->fetch("SELECT [{$column}] FROM [{$table}] WHERE [id] = %i", $id);
-            $row = $row === null ? null : (is_array($row) ? $row : $row->toArray());
-            $value = $row === null ? null : ValueNormalizer::str($row[$column] ?? null);
+            $value = ValueNormalizer::str($this->resolver->keyOf($table, $id));
         }
 
         return $this->exportCache[$table][$id] = $value;
@@ -114,7 +114,7 @@ final class SetupReferences
      */
     public function resolve(string $table, mixed $value): int
     {
-        if (!self::isPortable($table)) {
+        if (!$this->isPortable($table)) {
             throw new DatasetException("tabulka {$table}: reference se přirozeným klíčem nepřenáší");
         }
         $cacheKey = is_array($value) ? json_encode($value) : (string) $value;
@@ -129,12 +129,17 @@ final class SetupReferences
             if (!is_scalar($value) || (string) $value === '') {
                 throw new DatasetException("{$table}: klíč musí být neprázdný řetězec");
             }
-            $column = (string) self::keyColumn($table);
-            $ids = $this->fetchIds(
-                "SELECT [id] FROM [{$table}] WHERE [{$column}] = %s" . $this->notDeleted($table) . ' ORDER BY [id]',
-                (string) $value,
-            );
-            $label = "{$table} {$column} '{$value}'";
+            $label = "{$table} {$this->keyColumn($table)} '{$value}'";
+            try {
+                $ids = [$this->resolver->resolveByKey($table, (string) $value)];
+            } catch (ReferenceException $e) {
+                // Sady drží vlastní znění chyb — z obecné chyby se bere jen druh a id.
+                $ids = match ($e->errorCode) {
+                    ReferenceException::NOT_FOUND => [],
+                    ReferenceException::AMBIGUOUS => $e->ids,
+                    default => throw new DatasetException("{$label}: {$e->getMessage()}"),
+                };
+            }
         }
 
         if ($ids === []) {
