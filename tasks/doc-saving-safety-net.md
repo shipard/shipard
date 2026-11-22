@@ -1,6 +1,6 @@
 # Task: Pojistka před přestavbou ukládání dokladů — matice round-tripu
 
-**Stav:** naplánováno — zadání 2026-11-21 (#166 etapa 1)
+**Stav:** hotovo — test, známé mezery a dokumentace 2026-11-22 (3 commity, #166 etapa 1); tabulku mezer z poznámek zbývá přenést do #166
 
 **Issue:** #166 (etapa 1; navazuje #164, #159)
 
@@ -204,15 +204,15 @@ a dokumentaci.
 
 ## Hotovo když
 
-- [ ] `DocumentRoundTripMatrixTest` běží proti ukázkovému zdroji, všechny
+- [x] `DocumentRoundTripMatrixTest` běží proti ukázkovému zdroji, všechny
       případy matice U4 jsou `holds` nebo `gap` s přesným rozdílem
-- [ ] porovnání bere sloupce z definic tabulek; vyloučené sloupce mají
+- [x] porovnání bere sloupce z definic tabulek; vyloučené sloupce mají
       důvod a hlídá je unit test
-- [ ] tabulka mezer je v poznámkách tasku (do #166 ji po ověření
+- [x] tabulka mezer je v poznámkách tasku (do #166 ji po ověření
       přenese Claude v chatu)
-- [ ] `dataset-verify` veřejných sad beze změny, výsledek v poznámkách
-- [ ] žádná změna v `modules/` ani `src/`
-- [ ] `docs/exchange-format.md`, `tests/Integration/README.md`, stav tasku
+- [x] `dataset-verify` veřejných sad beze změny, výsledek v poznámkách
+- [x] žádná změna v `modules/` ani `src/`
+- [x] `docs/exchange-format.md`, `tests/Integration/README.md`, stav tasku
 
 ## Poznámky k implementaci
 
@@ -269,3 +269,20 @@ drží: snapshot partnera se v Konceptu nestaví.
   sloupce nenese; případy pro ně v U4 nejsou.
 - **Úklid** ověřený porovnáním počtu řádků všech tabulek zdroje a čítačů
   řad před během a po něm — beze změny.
+
+### `dataset-verify` veřejných sad — výchozí stav pro etapy 3 a 5
+
+Spuštěno před taskem i po něm (2026-11-22) nad zdroji testovacího kola;
+výstupy jsou shodné do znaku.
+
+| sada | zdroj dat | výsledek | doklady |
+|---|---|---|---|
+| `cz/vat-payer` | `jfpl-7` | ok 6, rozdíl 0, přeskočeno 0 | 24 dokladů, 4 období DPH, 8 dokladů v cizí měně |
+| `cz/non-payer` | `im3v-h` | ok 6, rozdíl 0, přeskočeno 0 | 20 dokladů, 4 doklady v cizí měně |
+| `cz/association` | `gsbg-b` | ok 6, rozdíl 0, přeskočeno 0 | 20 dokladů, 4 doklady v cizí měně |
+
+Všech šest kontrol (věrnost apply, položky a účty, přiznání DPH
+a kontrolní hlášení, náklady dokladů, kurzy, hlavní kniha proti snímku)
+je u všech tří sad `ok`; návrhy už byly použité z dřívějších běhů
+(„Apply: použito 0, selhalo 0“). Věrnost apply pracuje u každé sady
+s 15 výjimkami (`ApplyFidelityCheck`).

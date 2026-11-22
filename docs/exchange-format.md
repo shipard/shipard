@@ -2158,6 +2158,27 @@ pro PSČ zemi osoby, `country` se nedoplňuje (D24). Podrobně
 funkce, jen změněné sloupce, nevalidní hodnoty vypíše. Ověření
 v registrech (ARES, VIES) je #142.
 
+### Invariant ukládání (#166)
+
+**Co uloží `DocDocument`, to výměnný formát přenese beze změny:** doklad
+uložený formulářem (`TableGateway` → `DocDocument`), vyvezený
+`DocumentExporter` a znovu uložený přes `DocumentApplier::apply` se musí
+shodovat ve všech sloupcích `docs_core_heads`, `docs_core_rows`
+a `docs_core_vat_recap`, které nejsou identitou, auditem ani původem
+dokladu. Platí i opačně — co projde formátem, jde pořídit formulářem.
+
+Invariant hlídá integrační test
+`tests/Integration/Exchange/DocumentRoundTripMatrixTest.php` nad maticí
+dokladů (vydané a přijaté faktury v režimech DPH, převzatá rekapitulace,
+řádek „Mimo DPH“, data sazeb, opravný doklad, cizí měna, dimenze, účetní
+a pokladní doklad). Sloupce k porovnání bere z definic tabulek, takže nový
+sloupec se hlídá sám. Kde invariant dnes neplatí, vede test **známou
+mezeru** s přesným rozdílem; seznam mezer žije v testu
+(`RoundTrip/RoundTripCases`), ne tady. Změna applieru nebo exportu, která
+mezeru zavře nebo otevře novou, test zastaví — viz
+`tests/Integration/README.md`. Cílový model ukládání (pokyn × návrh)
+a etapy, které mezery zavírají, jsou v #166.
+
 ## 11. REST API endpointy
 
 Všechny pod `/api/v1/_exchange/docs/document/`. Auth: standardní (API key

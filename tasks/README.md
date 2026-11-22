@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 469 tasků: **naplánováno** 7 · **částečně** 24 · **zrušeno** 1 · **hotovo** 437.
+Celkem 469 tasků: **naplánováno** 6 · **částečně** 24 · **zrušeno** 1 · **hotovo** 438.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,7 +28,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `doc-saving-safety-net.md` | naplánováno | zadání 2026-11-21 (#166 etapa 1) |
 | `exchange-key-references.md` | naplánováno | zadání 2026-11-21 (#166 etapa 2, D8–D10) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `number-series-vat-registration-codes.md` | naplánováno | zadání 2026-11-22 (#166 D16, D17); až po `tasks/exchange-key-references.md` |

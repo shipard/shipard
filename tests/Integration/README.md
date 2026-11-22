@@ -43,6 +43,33 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
   idempotentní. Uklízí podle `date_begin` a kódu; přeskočí se, když rok 2001
   existuje nebo už na DS jsou všechny kódy nabídky.
 
+- `Exchange/DocumentRoundTripMatrixTest.php` — pojistka ukládání dokladů
+  (#166 etapa 1, `tasks/doc-saving-safety-net.md`): hlídá invariant „co
+  uloží `DocDocument`, to výměnný formát přenese beze změny“. Doklad A
+  vznikne přes `TableGateway` cestou formuláře (Koncept → V pořádku) →
+  `DocumentExporter` → v exportu jen jiné číslo se `sequenceNumber: null` →
+  `DocumentApplier::apply` → doklad B → porovnání **všech** sloupců hlavičky,
+  řádků a rekapitulace podle definic tabulek. Vyloučené sloupce (identita,
+  audit, původ) jsou v `RoundTrip/RoundTripColumns::EXCLUDED` s důvodem —
+  další se nepřidávají bez schválení.
+
+  Případy jsou v `RoundTrip/RoundTripCases` s očekáváním `holds`, nebo
+  `gap` = **známá mezera** s přesným rozdílem (kód chyby apply, nebo seznam
+  `sloupec → [A, B]`). Jak číst selhání:
+
+  - „mezera `<id>` je zavřená — přepni na `holds`“ — rozdíl zmizel; přepni
+    případ na `RoundTripCase::holds()` a odškrtni mezeru v tasku;
+  - „mezera `<id>` se změnila“ — rozdíl je jiný než zapsaný, výpis nese obě
+    verze; buď regrese, nebo záměrná změna (pak přepiš očekávání podle běhu);
+  - selhání případu `holds` — formát přestal doklad přenášet. Applier ani
+    export se neopravují výjimkou v testu; nový rozdíl je nález.
+
+  Fixtury (partneři, položky, středisko) mají prefix `IT-RT`, kódy DPH
+  a sazby se berou z konfigurace zdroje. Test uklízí podle prefixu před
+  během i po něm a vrací čítače řad; běží jen nad zdrojem s třídou dat
+  `free`, vlastní firmou a registrací DPH, jednotlivé případy se přeskočí
+  bez řady typu, pokladny nebo dimenze.
+
 - `Mail/MailEndpointTest.php` — procedurální pokrytí `MailController::receiveIncoming`
   s reálnou DB + file storage:
   - happy path (raw_source + 2 přílohy)
