@@ -120,12 +120,29 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
 
     public function testRowWithoutCodeIsSavedAsDraftWithWarning(): void
     {
-        $result = $this->applier->apply($this->options($this->payloadWithoutRowCode(), 10));
+        $result = $this->applier->apply($this->options(self::withoutChecksum($this->payloadWithoutRowCode()), 10));
         $saved = $this->saved($result);
 
         $this->assertSame(10, (int) $saved->head['docState']);
         $this->assertSame([null], array_column($saved->rows, 'vat_code'));
         $this->assertSame([['warning', 'rows.0.vat.code']], self::findings($result, 'vat_code_missing'));
+    }
+
+    /** #166 D27: se součty dokladu (daň 210) řádek bez kódu neprojde ani jako koncept — daň na dokladu není. */
+    public function testRowWithoutCodeAndDeclaredTotalsFailsTheChecksumEvenAsDraft(): void
+    {
+        $payload = $this->options($this->payloadWithoutRowCode(), 10);
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($payload);
+
+        $this->assertFalse($result->success);
+        $this->assertSame(['totals_check_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame(
+            [['error', 'totals.totalVat'], ['error', 'totals.totalAmount']],
+            self::findings($result, 'totals_check_failed'),
+        );
+        $this->assertSame($before, $this->documentCount(), 'nic se neuložilo');
     }
 
     /** D22: importní mód výjimku z validace nemá. */
@@ -212,7 +229,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
 
     public function testGrossRowPricesWithFromBaseKeepTheDeclaredMode(): void
     {
-        $payload = $this->grossRowsPayload();
+        $payload = self::withoutChecksum($this->grossRowsPayload());
 
         $result = $this->applier->apply($this->options($payload, 10));
         $saved = $this->saved($result);
@@ -222,6 +239,26 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(121.00, (float) $saved->head['total_base'], 0.001);
         $this->assertEqualsWithDelta(146.41, (float) $saved->head['total_amount'], 0.001);
         $this->assertSame([], array_intersect(['vat_mode_derived', 'vat_mode_suspect', 'totals_mismatch'], self::codes($result)));
+    }
+
+    /**
+     * #166 D27: týž payload se součty dokladu (100 + 21 = 121). Pokyn režim
+     * neopraví, ale kontrolní součet rozpor odhalí — doklad se neuloží.
+     */
+    public function testGrossRowPricesWithFromBaseAreCaughtByTheChecksum(): void
+    {
+        $payload = $this->options($this->grossRowsPayload(), 10);
+        $before = $this->documentCount();
+
+        $preview = $this->applier->preview($payload);
+        $result = $this->applier->apply($payload);
+
+        $expected = [['error', 'totals.totalBase'], ['error', 'totals.totalVat'], ['error', 'totals.totalAmount']];
+        $this->assertSame($expected, self::findings($preview, 'totals_check_failed'), 'náhled hlásí totéž předem');
+        $this->assertSame(['totals_check_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame($expected, self::findings($result, 'totals_check_failed'));
+        $this->assertSame([], array_intersect(['vat_mode_derived', 'computed_total_mismatch'], self::codes($result)));
+        $this->assertSame($before, $this->documentCount(), 'nic se neuložilo');
     }
 
     /** Týž payload v režimu návrh se chová jako dnes — režim se odvodí ze součtů. */
@@ -294,6 +331,27 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
     {
         foreach ($payload['rows'] as $i => $row) {
             $payload['rows'][$i]['vat'] = $vat;
+        }
+        return $payload;
+    }
+
+    /**
+     * Payload bez číselných `totals` — bez kontrolního součtu (#166 D27).
+     * Příznak automatiky a mód zaokrouhlení zůstávají.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private static function withoutChecksum(array $payload): array
+    {
+        unset(
+            $payload['totals']['totalBase'],
+            $payload['totals']['totalVat'],
+            $payload['totals']['totalAmount'],
+            $payload['totals']['totalRounding'],
+        );
+        if (($payload['totals'] ?? null) === []) {
+            unset($payload['totals']);
         }
         return $payload;
     }

@@ -462,11 +462,14 @@ class DocumentApplier
      * typu dokladu, takže platí přetížení podtříd (účetní doklad sčítá
      * z řádků, rekapitulaci nemá).
      *
-     * D4: částka k úhradě se porovná s dokladem dodavatele → warning
-     * `computed_total_mismatch` (u samovyměření se liší daň, k úhradě
-     * sedí). Heuristický `totals_mismatch` validátoru (odhad z canonicalu)
-     * skutečný výpočet nahrazuje — z issues se vyřadí, dvě hlášky o tomtéž
-     * by mátly. Bez `canonical.totals.totalAmount` se neporovnává.
+     * D4: v návrhu se částka k úhradě porovná s dokladem dodavatele →
+     * warning `computed_total_mismatch` (u samovyměření se liší daň,
+     * k úhradě sedí). Heuristický `totals_mismatch` validátoru (odhad
+     * z canonicalu) skutečný výpočet nahrazuje — z issues se vyřadí, dvě
+     * hlášky o tomtéž by mátly. Bez `canonical.totals.totalAmount` se
+     * neporovnává. V pokynu jsou `totals` kontrolní součet (#166 D27):
+     * každé uvedené pole proti výpočtu, neshoda je chyba
+     * `totals_check_failed` ({@see TotalsCheck}).
      *
      * D6: výjimka náhled neshodí — `null` + info `computed_unavailable`
      * (zalogováno), frontend ukáže data z canonicalu s poznámkou.
@@ -577,6 +580,19 @@ class DocumentApplier
             $issues,
             static fn (array $issue): bool => ($issue['code'] ?? null) !== 'totals_mismatch',
         ));
+        if (!$mode->derives()) {
+            // Pokyn (#166 D27): `totals` jsou kontrolní součet — náhled hlásí
+            // týž nález, kterým by uložení skončilo, jako chybu; varování
+            // o nepoužitém módu zaokrouhlení (D26) jako apply.
+            foreach (TotalsCheck::mismatches($canonical, $data) as $issue) {
+                $issues[] = $issue;
+            }
+            $ignored = TotalsCheck::ignoredMode($canonical, $data);
+            if ($ignored !== null) {
+                $issues[] = $ignored;
+            }
+            return $result;
+        }
         $declared = $canonical['totals']['totalAmount'] ?? null;
         if ($declared !== null && is_numeric($declared)) {
             $declaredF = round((float) $declared, 2);
@@ -595,6 +611,35 @@ class DocumentApplier
         }
 
         return $result;
+    }
+
+    /**
+     * Kontrolní součet pokynu při uložení ({@see TotalsCheck}, #166 D27):
+     * neshoda `totals` s hlavičkou uloženého dokladu = `ApplyAbortedException`
+     * `totals_check_failed` (422) s nálezem za každé pole. Varování
+     * o nepoužitém módu zaokrouhlení (D26) uložení neblokuje.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $head data vrácená `saveDocument()`
+     * @param array<int, array<string, mixed>> $issues
+     * @throws ApplyAbortedException
+     */
+    private function checkDeclaredTotals(array $canonical, array $head, array &$issues): void
+    {
+        $mismatches = TotalsCheck::mismatches($canonical, $head);
+        if ($mismatches !== []) {
+            throw new ApplyAbortedException(
+                TotalsCheck::CODE_FAILED,
+                'Kontrolní součet dokladu nesedí: ' . implode(', ', array_column($mismatches, 'path'))
+                    . ' se liší od výpočtu dokladu. Doklad se neuložil.',
+                422,
+                $mismatches,
+            );
+        }
+        $ignored = TotalsCheck::ignoredMode($canonical, $head);
+        if ($ignored !== null) {
+            $issues[] = $ignored;
+        }
     }
 
     /**
@@ -911,6 +956,14 @@ class DocumentApplier
             $savedValidation = $result->getValidation();
             $savedDocId = (int) $result->getData()['id'];
 
+            // Kontrolní součet (#166 D4, D27): `totals` pokynu proti tomu, co
+            // doklad skutečně spočítal a uložil. Neshoda vrátí transakci —
+            // doklad, založené entity ani číslo z řady nezůstanou. Návrh
+            // `totals` nekontroluje (D28), jsou tam signálem pro review.
+            if (!$mode->derives()) {
+                $this->checkDeclaredTotals($canonical, $result->getData(), $validatorIssues);
+            }
+
             // Per-partner item-code mapping learning — only after we know
             // which row.item ids ended up actually linked. Učení patří
             // interpretaci (#166 D6, D19): pokyn mapování kódů nezapisuje.
@@ -926,6 +979,12 @@ class DocumentApplier
             return [$savedDocId, $sideCreatedIds];
             });
         } catch (ApplyAbortedException $e) {
+            if ($e->issues !== []) {
+                foreach ($e->issues as $issue) {
+                    $validatorIssues[] = $issue;
+                }
+                $enriched = $this->withResolve($canonical, $resolved, $validatorIssues);
+            }
             return ApplyResult::error($e->errorCode, $e->getMessage(), $enriched, statusCode: $e->statusCode);
         } catch (DocumentValidationFailedException $e) {
             // D21 (#166), oba režimy: nálezy dokladu do `_resolve.issues`

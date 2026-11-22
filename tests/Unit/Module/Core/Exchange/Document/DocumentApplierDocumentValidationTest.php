@@ -45,10 +45,16 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         return $this->buildApplier($this->validationDb(), validateOnSave: true);
     }
 
-    /** Přijatá faktura s DPH, řádek s objektem `vat` bez kódu. @return array<string, mixed> */
+    /**
+     * Přijatá faktura s DPH, řádek s objektem `vat` bez kódu. Bez číselných
+     * `totals` — řádek bez kódu daň nenese, součty dokladu dodavatele by
+     * v pokynu neprošly kontrolním součtem (#166 D27).
+     *
+     * @return array<string, mixed>
+     */
     private function payloadWithoutRowCode(int $targetDocState): array
     {
-        $payload = $this->happyPayload();
+        $payload = self::withoutChecksum($this->happyPayload());
         $payload['rows'][0]['vat'] = ['pct' => 21];
         unset($payload['vatRecap'], $payload['rows'][0]['computed']);
         $payload['applyOptions'] = ['targetDocState' => $targetDocState];
@@ -149,7 +155,8 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         unset($payload['rows'][0]['vat'], $payload['rows'][0]['computed'], $payload['vatRecap']);
         $payload['applyOptions'] = ['targetDocState' => 10];
 
-        $instruction = $this->applier()->apply($payload);
+        // Pokyn bez číselných `totals`: řádek bez DPH by neprošel kontrolním součtem (#166 D27).
+        $instruction = $this->applier()->apply(self::withoutChecksum($payload));
         $proposal = $this->applier()->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($instruction->success && $proposal->success);

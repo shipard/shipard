@@ -246,7 +246,9 @@ trait OutOfScopeHarness
             }
             $doc->beforeSave($data);
             $this->savedHeadsData = $data;
-            return DocumentResult::ok(['id' => 1234], $validation);
+            // Jako `TableGateway::saveDocument()`: výsledek nese data po
+            // `beforeSave()` — nad nimi běží kontrolní součet pokynu (#166 D27).
+            return DocumentResult::ok(['id' => 1234] + $data, $validation);
         });
 
         $party = $this->createMock(PartyResolver::class);
@@ -282,6 +284,32 @@ trait OutOfScopeHarness
     }
 
     // ── Payloady ────────────────────────────────────────────────────────────
+
+    /**
+     * Payload bez číselných `totals`. Payloady harnessu nesou součty
+     * z dokladu dodavatele; v pokynu jsou kontrolní součet (#166 D27), který
+     * po úpravě payloadu testem (jiný režim, kód, řádek) nemůže sedět a není
+     * předmětem testu. Příznak automatiky a mód zaokrouhlení zůstávají.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private static function withoutChecksum(array $payload): array
+    {
+        if (!is_array($payload['totals'] ?? null)) {
+            return $payload;
+        }
+        unset(
+            $payload['totals']['totalBase'],
+            $payload['totals']['totalVat'],
+            $payload['totals']['totalAmount'],
+            $payload['totals']['totalRounding'],
+        );
+        if ($payload['totals'] === []) {
+            unset($payload['totals']);
+        }
+        return $payload;
+    }
 
     /** @return array<string, mixed> */
     private function happyPayload(): array
@@ -400,6 +428,15 @@ trait OutOfScopeHarness
         return array_values(array_map(
             static fn (array $i): string => (string) $i['code'],
             $canonical['_resolve']['issues'] ?? [],
+        ));
+    }
+
+    /** @return list<array<string, mixed>> všechny nálezy s kódem */
+    private function issues(array $canonical, string $code): array
+    {
+        return array_values(array_filter(
+            $canonical['_resolve']['issues'] ?? [],
+            static fn (array $issue): bool => ($issue['code'] ?? null) === $code,
         ));
     }
 

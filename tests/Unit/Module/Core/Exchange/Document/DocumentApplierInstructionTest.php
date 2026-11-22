@@ -35,9 +35,14 @@ final class DocumentApplierInstructionTest extends TestCase
         ];
     }
 
-    private function instruction(array $payload, ?Connection $db = null): ApplyResult
+    /**
+     * Apply v režimu pokyn. Číselné `totals` se z payloadu berou jen
+     * s `$checksum` — testy D19 / D20 payload mění a kontrolní součet
+     * (#166 D27) není jejich předmětem ({@see withoutChecksum()}).
+     */
+    private function instruction(array $payload, ?Connection $db = null, bool $checksum = false): ApplyResult
     {
-        return $this->buildApplier($db)->apply($payload, ApplyMode::Instruction);
+        return $this->buildApplier($db)->apply($checksum ? $payload : self::withoutChecksum($payload), ApplyMode::Instruction);
     }
 
     /** @return array<string, mixed> hlavička posledního uložení po `beforeSave()` */
@@ -284,6 +289,14 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertSame(0, $saved['total_rounding_auto']);
         $this->assertSame(0, $saved['total_rounding_mode']);
         $this->assertSame([12499.66, 0.0], [$saved['total_amount'], $saved['total_rounding']]);
+
+        // Se součty z dokladu to pozná kontrolní součet: bez módu vyjde na haléře.
+        $result = $this->instruction($payload, checksum: true);
+        $this->assertSame('totals_check_failed', $result->errorCode);
+        $this->assertSame(
+            ['totals.totalAmount', 'totals.totalRounding'],
+            array_column($this->issues($result->canonical, 'totals_check_failed'), 'path'),
+        );
     }
 
     /** #166 D25, D26: při vypnuté automatice platí mód z payloadu — každý název módu. */
@@ -299,9 +312,13 @@ final class DocumentApplierInstructionTest extends TestCase
         ];
         foreach ($expected as $name => [$code, $amount, $rounding]) {
             $payload = $this->roundedReceivedPayload();
-            $payload['totals']['totalRoundingMode'] = $name;
+            $payload['totals'] = [
+                'totalBase' => 10330.30, 'totalVat' => 2169.36, 'totalAmount' => $amount, 'totalRounding' => $rounding,
+                'totalRoundingMode' => $name,
+            ];
 
-            $saved = $this->savedAfter($this->instruction($payload));
+            // Součty jdou s payloadem — mód musí dát přesně deklarovanou částku.
+            $saved = $this->savedAfter($this->instruction($payload, checksum: true));
             $this->assertSame(
                 [0, $code, $amount, $rounding],
                 [$saved['total_rounding_auto'], $saved['total_rounding_mode'], $saved['total_amount'], $saved['total_rounding']],
@@ -333,9 +350,10 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertSame(0, $this->savedAfter($this->instruction($payload))['vat_rounding_mode'] ?? 0);
 
         $payload['vat']['roundingMode'] = 'unit';
-        $saved = $this->savedAfter($this->instruction($payload));
+        // 10 330,30 × 21 % = 2 169,36 → daň na koruny 2 169,00; součty jako kontrolní součet.
+        $payload['totals'] = ['totalBase' => 10330.30, 'totalVat' => 2169.00, 'totalAmount' => 12499.30, 'totalRounding' => 0.0];
+        $saved = $this->savedAfter($this->instruction($payload, checksum: true));
         $this->assertSame(1, $saved['vat_rounding_mode']);
-        // 10 330,30 × 21 % = 2 169,36 → daň na koruny 2 169,00.
         $this->assertSame([2169.0, 12499.30], [$saved['total_vat'], $saved['total_amount']]);
 
         $payload['vat']['roundingMode'] = 'cent';
@@ -365,15 +383,119 @@ final class DocumentApplierInstructionTest extends TestCase
     public function testTotalRoundingAutoDoesNotDependOnDeclaredTotals(): void
     {
         $payload = $this->issuedPayload();
+        // 10 × 1 033,06 + 21 % — částky, které doklad opravdu spočítá.
+        $payload['totals'] = ['totalBase' => 10330.60, 'totalVat' => 2169.43, 'totalAmount' => 12500.03, 'totalRounding' => 0.0];
 
         $proposal = $this->savedAfter($this->buildApplier()->apply($payload, ApplyMode::Proposal));
         $this->assertSame(0, $proposal['total_rounding_auto'], 'návrh s deklarovanou částkou automatiku vypíná');
 
-        $this->assertSame(1, $this->savedAfter($this->instruction($payload))['total_rounding_auto']);
+        $this->assertSame(1, $this->savedAfter($this->instruction($payload, checksum: true))['total_rounding_auto']);
 
         $payload['totals']['totalRoundingAuto'] = false;
-        $saved = $this->savedAfter($this->instruction($payload));
+        $saved = $this->savedAfter($this->instruction($payload, checksum: true));
         $this->assertSame([0, 0], [$saved['total_rounding_auto'], $saved['total_rounding_mode']]);
+    }
+
+    // ── D27: `totals` jako kontrolní součet ─────────────────────────────────
+
+    /** Každé uvedené pole proti výpočtu dokladu; neshoda = 422 s cestou a hodnotami. */
+    public function testDeclaredTotalsAreAChecksum(): void
+    {
+        $payload = $this->checkedPayload();
+        $this->savedAfter($this->instruction($payload, checksum: true));
+
+        $payload['totals']['totalAmount'] = 12501.03;
+        $result = $this->instruction($payload, checksum: true);
+
+        $this->assertFalse($result->success);
+        $this->assertSame(['totals_check_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertNull($result->savedId);
+        $findings = $this->issues($result->canonical, 'totals_check_failed');
+        $this->assertCount(1, $findings);
+        $this->assertSame(
+            ['error', 'totals.totalAmount', 12501.03, 12500.03],
+            [$findings[0]['severity'], $findings[0]['path'], $findings[0]['declared'], $findings[0]['computed']],
+        );
+    }
+
+    public function testChecksumToleratesOneCent(): void
+    {
+        $payload = $this->checkedPayload();
+        $payload['totals']['totalVat'] = 2169.44;
+        $payload['totals']['totalAmount'] = 12500.02;
+        $this->savedAfter($this->instruction($payload, checksum: true));
+
+        $payload['totals']['totalVat'] = 2169.45;
+        $this->assertSame('totals_check_failed', $this->instruction($payload, checksum: true)->errorCode);
+    }
+
+    /** Pole, které payload neuvádí, se nekontroluje; uvedené ano. */
+    public function testOnlyDeclaredFieldsAreChecked(): void
+    {
+        $payload = $this->checkedPayload();
+        $payload['totals'] = ['totalAmount' => 12500.03];
+        $this->savedAfter($this->instruction($payload, checksum: true));
+
+        $payload['totals'] = ['totalBase' => 1.0];
+        $result = $this->instruction($payload, checksum: true);
+        $this->assertSame(['totals.totalBase'], array_column($this->issues($result->canonical, 'totals_check_failed'), 'path'));
+    }
+
+    /** Součty jsou v měně dokladu — kurz na ně nemá vliv. */
+    public function testChecksumComparesAmountsInDocumentCurrency(): void
+    {
+        $payload = $this->checkedPayload();
+        $payload['currency'] = 'EUR';
+        $payload['exchangeRate'] = 24.565;
+
+        $saved = $this->savedAfter($this->instruction($payload, checksum: true));
+        $this->assertSame(12500.03, $saved['total_amount']);
+        $this->assertNotSame(12500.03, $saved['total_amount_dom']);
+    }
+
+    public function testChecksumAppliesInImportMode(): void
+    {
+        $payload = $this->checkedPayload();
+        $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
+        $this->savedAfter($this->instruction($payload, checksum: true));
+
+        $payload['totals']['totalAmount'] = 12600.00;
+        $this->assertSame('totals_check_failed', $this->instruction($payload, checksum: true)->errorCode);
+    }
+
+    /** Náhled pokynu hlásí týž nález předem jako chybu; `computed_total_mismatch` patří návrhu. */
+    public function testPreviewReportsChecksumFailureBeforeSaving(): void
+    {
+        $payload = $this->checkedPayload();
+        $applier = $this->buildApplier();
+        $this->assertSame([], $this->issues($applier->preview($payload)->canonical, 'totals_check_failed'));
+
+        $payload['totals']['totalAmount'] = 12501.03;
+        $preview = $applier->preview($payload)->canonical;
+
+        $findings = $this->issues($preview, 'totals_check_failed');
+        $this->assertCount(1, $findings);
+        $this->assertSame(
+            ['error', 'totals.totalAmount', 12501.03, $preview['_resolve']['computed']['totals']['totalAmount']],
+            [$findings[0]['severity'], $findings[0]['path'], $findings[0]['declared'], $findings[0]['computed']],
+        );
+        $this->assertNotContains('computed_total_mismatch', $this->issueCodes($preview));
+    }
+
+    /** D28: návrh `totals` nekontroluje — chybný součet dá varování náhledu a doklad se uloží. */
+    public function testProposalDoesNotEvaluateTheChecksum(): void
+    {
+        $payload = $this->checkedPayload();
+        $payload['totals']['totalAmount'] = 12600.00;
+        $applier = $this->buildApplier();
+
+        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $this->assertContains('computed_total_mismatch', $this->issueCodes($preview));
+        $this->assertNotContains('totals_check_failed', $this->issueCodes($preview));
+
+        $result = $applier->apply($payload, ApplyMode::Proposal);
+        $this->assertSame(12500.03, $this->savedAfter($result)['total_amount']);
+        $this->assertNotContains('totals_check_failed', $this->issueCodes($result->canonical));
     }
 
     public function testRowSkipFromResolveIsIgnored(): void
@@ -433,7 +555,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertNotSame([], $learned($proposal), 'návrh mapování kódu dodavatele zapisuje');
 
         $instruction = $this->buildApplier();
-        $this->assertTrue($instruction->apply($this->happyPayload())->success);
+        $this->assertTrue($instruction->apply(self::withoutChecksum($this->happyPayload()))->success);
         $this->assertSame([], $learned($instruction));
     }
 
@@ -616,6 +738,21 @@ final class DocumentApplierInstructionTest extends TestCase
         unset($payload['rows'][0]['computed']);
         $payload['vatRecap'][0] = ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 10330.30, 'tax' => 2169.36, 'total' => 12499.66];
         $payload['totals'] = ['totalBase' => 10330.30, 'totalVat' => 2169.36, 'totalAmount' => 12500.00, 'totalRounding' => 0.34];
+        return $payload;
+    }
+
+    /**
+     * Přijatá faktura se součty, které doklad opravdu spočítá
+     * (10 × 1 033,06 = 10 330,60; daň 2 169,43; celkem 12 500,03).
+     *
+     * @return array<string, mixed>
+     */
+    private function checkedPayload(): array
+    {
+        $payload = $this->happyPayload();
+        unset($payload['vatRecap'], $payload['rows'][0]['computed']);
+        $payload['rows'][0]['totalPrice'] = 10330.60;
+        $payload['totals'] = ['totalBase' => 10330.60, 'totalVat' => 2169.43, 'totalAmount' => 12500.03, 'totalRounding' => 0.0];
         return $payload;
     }
 
