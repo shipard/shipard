@@ -27,7 +27,7 @@ use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
  * Překlad klíčů: řada zakázek kódem a středisko kódem přes
  * `SetupReferences`, zákazník jen identifikátory (`PartyResolver`,
  * nenalezený = chyba — osoba musí být v `persons/`), řada dokladů
- * `{docType, code}` (D37) a účet kódem, položka `ourCode`
+ * kódem (#166 D17) a účet kódem, položka `ourCode`
  * (`ItemResolver`). Zakázka se stejným číslem = `skipped` (applier
  * nepřepisuje), odmítnutí applieru = chyba záznamu s cestou payloadu.
  */

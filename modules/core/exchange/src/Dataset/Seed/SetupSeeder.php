@@ -23,9 +23,8 @@ use Shipard\Module\Core\Exchange\Export\SetupExporter;
  * tabulky (`SetupExporter::upsertKey()`) — default mailbox po resetu existuje
  * a jen se aktualizuje. FK přichází přirozeným klíčem (`SetupReferences`):
  * účet z rozvrhu číslem → id jako dosud (chybějící = null), ostatní
- * přenosné reference (druh názvem, účet kódem, řada dokladů
- * `{docType, code}` — D37) přísně: nenalezená nebo nejednoznačná = chyba
- * řádku.
+ * přenosné reference (druh názvem, účet kódem, řada dokladů kódem —
+ * #166 D17) přísně: nenalezená nebo nejednoznačná = chyba řádku.
  */
 final class SetupSeeder implements SectionSeeder
 {

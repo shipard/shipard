@@ -173,26 +173,11 @@
                         },
                         "numberSeries": {
                             "type": [
-                                "object",
+                                "string",
                                 "null"
                             ],
-                            "additionalProperties": false,
-                            "required": [
-                                "docType"
-                            ],
-                            "properties": {
-                                "docType": {
-                                    "type": "string",
-                                    "minLength": 1
-                                },
-                                "code": {
-                                    "type": [
-                                        "string",
-                                        "null"
-                                    ],
-                                    "maxLength": 10
-                                }
-                            }
+                            "minLength": 1,
+                            "maxLength": 40
                         },
                         "dueDays": {
                             "type": [

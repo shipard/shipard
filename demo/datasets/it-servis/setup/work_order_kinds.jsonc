@@ -20,9 +20,7 @@
             "type": "periodic",
             "notice": null,
             "inv_doc_type": "invno",
-            "inv_number_series": {
-                "docType": "invno"
-            },
+            "inv_number_series": "invno",
             "inv_due_days": 14,
             "inv_timing": "start",
             "inv_vat_mode": 1,

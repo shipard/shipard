@@ -32,12 +32,17 @@ class ExchangeKeyDefinitionsTest extends TestCase
         'economy_work_orders_number_series',
     ];
 
-    /** Klíč cizího klíče v sadách před #166 — soubory sad se nesmí změnit. */
+    /**
+     * Klíč tabulek sekce setup. Až na registraci DPH je to klíč cizího klíče
+     * v sadách před #166 — soubory sad se kvůli němu nesmí změnit; registrace
+     * dostala kód až s #166 D16 (dřív upsert podle země a názvu).
+     */
     private const SETUP_KEYS = [
         'economy_accounting_accounts'       => 'number',
         'economy_codebooks_bank_accounts'   => 'code',
         'economy_codebooks_cash_desks'      => 'code',
         'economy_codebooks_cost_centers'    => 'code',
+        'economy_codebooks_vat_registrations' => 'code',
         'base_registry_binders'             => 'name',
         'core_mail_mailboxes'               => 'mailbox_id',
         'economy_work_orders_kinds'         => 'name',
@@ -47,12 +52,8 @@ class ExchangeKeyDefinitionsTest extends TestCase
         'economy_assets_types'              => 'name',
     ];
 
-    /**
-     * Tabulky sekce setup bez přirozeného klíče. Registrace DPH sloupec
-     * `code` s unikátním indexem už má (#166 D16); `exchangeKey` dostane
-     * spolu s převodem sad, až klíč upsertu (země, název) z mapy zmizí.
-     */
-    private const SETUP_WITHOUT_KEY = ['core_system_settings', 'economy_codebooks_vat_registrations'];
+    /** Tabulky sekce setup bez přirozeného klíče — jen pseudo-tabulka nastavení. */
+    private const SETUP_WITHOUT_KEY = ['core_system_settings'];
 
     /** @var array<string, TableDefinition>|null */
     private static ?array $tables = null;
@@ -104,7 +105,7 @@ class ExchangeKeyDefinitionsTest extends TestCase
             $this->assertSame($column, $tables[$table]->exchangeKey, $table);
         }
         foreach (self::SETUP_WITHOUT_KEY as $table) {
-            $this->assertNull($tables[$table]->exchangeKey, "{$table}: složený klíč, exchangeKey nemá");
+            $this->assertNull($tables[$table]->exchangeKey, "{$table}: exchangeKey nemá");
         }
         // #166 D16, D17: řada dokladů má vlastní kód s unikátním indexem.
         $this->assertSame('code', $tables['docs_core_number_series']->exchangeKey);

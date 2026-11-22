@@ -122,8 +122,8 @@ class DatasetRoundTripTest extends IntegrationTestCase
     private int $bankAccountId = 0;
     /** Sekce workOrders jen s modulem zakázek, vlastním účtem (faktura ve 40) a jedinou aktivní řadou invno. */
     private bool $hasWorkOrders = false;
-    /** @var array{docType: string, code?: string} reference řady invno pro setup (D37) */
-    private array $invnoSeries = ['docType' => 'invno'];
+    /** Kód řady invno — reference řady dokladů v setup/ a v obálce zakázky (#166 D17). */
+    private string $invnoSeries = 'invno';
     private ?string $invnoCode = null;
     /** Sekce assets jen s modulem majetku, úplnou účetní skupinou 022, účtem 042100 a účetním rokem data zařazení. */
     private bool $hasAssets = false;
@@ -181,17 +181,19 @@ class DatasetRoundTripTest extends IntegrationTestCase
         }
 
         // Zakázky (#131 fáze 2b): vydaná faktura ve 40 potřebuje vlastní účet,
-        // druh zakázky odkazuje řadu invno složeným klíčem {docType, code} (D37).
-        $invnoSeries = $dibi->fetchAll("SELECT id, doc_number_code FROM docs_core_number_series WHERE doc_type = 'invno' AND docState IN (10, 40, 80)");
+        // druh zakázky odkazuje řadu invno jejím kódem (#166 D17).
+        $invnoSeries = $dibi->fetchAll("SELECT id, code, doc_number_code FROM docs_core_number_series WHERE doc_type = 'invno' AND docState IN (10, 40, 80)");
         $this->hasWorkOrders = $this->hasBank
             && isset($this->tables['economy_work_orders_heads'], $this->tables['economy_work_orders_rows'],
                 $this->tables['economy_work_orders_periods'], $this->tables['economy_work_orders_kinds'],
                 $this->tables['economy_work_orders_number_series'])
-            && count($invnoSeries) === 1;
+            && count($invnoSeries) === 1
+            // Řada bez kódu = zdroj dat před `ds-upgrade` s doplněním kódů.
+            && trim((string) $invnoSeries[0]['code']) !== '';
         if ($this->hasWorkOrders) {
             $code = trim((string) $invnoSeries[0]['doc_number_code']);
             $this->invnoCode = $code !== '' ? $code : null;
-            $this->invnoSeries = ['docType' => 'invno'] + ($this->invnoCode !== null ? ['code' => $this->invnoCode] : []);
+            $this->invnoSeries = (string) $invnoSeries[0]['code'];
         }
 
         // Majetek (#131 fáze 2c): dlouhodobá karta jde potvrdit jen s úplnou
@@ -436,7 +438,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
             $kind = $dibi->fetch('SELECT * FROM economy_work_orders_kinds WHERE name = %s AND docState <> 90', self::WO_KIND);
             $this->assertNotNull($kind, 'druh ze setup/work_order_kinds.jsonc');
             $invnoSeriesId = (int) $dibi->fetchSingle("SELECT id FROM docs_core_number_series WHERE doc_type = 'invno' AND docState IN (10, 40, 80)");
-            $this->assertSame($invnoSeriesId, (int) $kind['inv_number_series'], 'řada dokladů přes {docType, code} (D37)');
+            $this->assertSame($invnoSeriesId, (int) $kind['inv_number_series'], 'řada dokladů kódem (#166 D17)');
             $this->assertSame($this->bankAccountId, (int) $kind['inv_bank_account'], 'účet kódem');
             $series = $dibi->fetch('SELECT * FROM economy_work_orders_number_series WHERE number_code = %s AND docState <> 90', self::WO_SERIES_CODE);
             $this->assertNotNull($series);

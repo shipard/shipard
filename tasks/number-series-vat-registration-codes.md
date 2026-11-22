@@ -1,6 +1,6 @@
 # Task: Kód číselné řady a registrace DPH jako přirozený klíč
 
-**Stav:** částečně — commity 0–3 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery; formuláře a viewery); zbývají commity 4–5 — datové sady, dokumentace a nápověda (#166 D16, D17)
+**Stav:** částečně — commity 0–4 hotové 2026-11-22 (export bez tabulky dimenze; sloupec `code`, generátory, Document; doplnění existujících a provisionery; formuláře a viewery; datové sady); zbývá commit 5 — dokumentace a nápověda (#166 D16, D17)
 
 **Issue:** #166 (D16, D17; navazuje na etapu 2)
 
@@ -315,3 +315,27 @@ se taková dimenze jen nepřenesla.
 - **Ověřeno 2026-11-22 přes HTTP na `jfpl-7`:** předvyplnění, přepočet,
   uložení samotného kódu u záznamu ve stavu V pořádku, odmítnutá duplicita
   a vymazání, seznam, hledání a detail. V prohlížeči neproklikáno.
+- **Řada dokladů v sadách:** `SetupReferences::PROVISIONED_TABLES` —
+  tabulky, které sada nenese, ale odkazovat je umí, protože jejich záznamy
+  založí provisionery se známým kódem (jen `docs_core_number_series`).
+  Bez toho by řada po zrušení zvláštní větve přestala být přenosná
+  (v `SetupExporter::TABLES` není a být nemá). Řada bez kódu (zdroj před
+  `ds-upgrade`) se z dumpu vynechá s varováním.
+- **Sady v repu:** převod se týkal dvou `work_order_kinds.jsonc` (příběh
+  a sestavená demo sada) a tří `vat_registrations.jsonc` (příběh, demo
+  sada, profil korpusu + z něj sestavená `tests/datasets/cz/vat-payer`).
+  Obě sestavení (`demo/datasets/build.py`, `tests/corpus/cz/build.py`)
+  po úpravě zdrojů dala přesně tyto soubory a nic dalšího.
+- **Ověřeno 2026-11-22:** `dataset-seed` demo sady na `8yft-3` (řady
+  z provisionerů mají kód hned po resetu, druh zakázky řadu dohledal
+  kódem); `setup/vat_registrations.jsonc`, `setup/work_order_kinds.jsonc`
+  a celá sekce `workOrders/` jsou v dumpu byte-shodné s repem; dump → seed
+  → dump se liší jen manifestem a kurzovními lístky, které mezitím stáhl
+  cron; `dataset-verify` tří veřejných sad `ok` (`jfpl-7`, `im3v-h`,
+  `gsbg-b`); integrační `DatasetRoundTripTest`
+  a `DocumentRoundTripMatrixTest` nad `blkm-i` zelené.
+- **Nález mimo rozsah:** dump demo sady není byte-shodný se sestavenou
+  sadou v repu ani bez tohoto tasku — doklady v dumpu nesou
+  `totals.totalRoundingAuto`, které generátor sady nepíše (295 souborů),
+  a `setup/settings.jsonc` v dumpu nese provozní stav stahování kurzů
+  `economy.exchangeRates.downloadState`.

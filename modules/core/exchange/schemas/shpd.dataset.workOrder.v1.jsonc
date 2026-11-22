@@ -11,8 +11,8 @@
     //   - `customer` = identifikace osoby (název, země, IČO, DIČ, VAT ID) —
     //     seed ji dohledá v adresáři jen podle identifikátorů, nenalezená
     //     strana je chyba (osoba musí být v persons/);
-    //   - `invoicing.numberSeries` = řada dokladů objektem {docType, code}
-    //     (D37: výchozí řady z provisioneru kód nemají), `invoicing.bankAccount`
+    //   - `invoicing.numberSeries` = kód řady dokladů (`"invno"`, #166 D16,
+    //     D17 — výchozí řada typu má kód typu dokladu), `invoicing.bankAccount`
     //     = kód vlastního účtu;
     //   - `rows[].item` = ourCode položky, `unit` = system_code / zkratka.
     //
@@ -76,16 +76,8 @@
                         "invoiceFrom":   { "$ref": "#/$defs/dateOrNull" },
                         "docText":       { "type": ["string", "null"], "maxLength": 200 },
                         "docType":       { "enum": ["invno", "invpo", null] },
-                        // Řada dokladů složeným klíčem (D37): bez `code` = řada typu bez kódu.
-                        "numberSeries": {
-                            "type": ["object", "null"],
-                            "additionalProperties": false,
-                            "required": ["docType"],
-                            "properties": {
-                                "docType": { "type": "string", "minLength": 1 },
-                                "code":    { "type": ["string", "null"], "maxLength": 10 }
-                            }
-                        },
+                        // Kód řady dokladů (docs_core_number_series.code, #166 D17).
+                        "numberSeries":  { "type": ["string", "null"], "minLength": 1, "maxLength": 40 },
                         "dueDays":       { "type": ["integer", "null"], "minimum": 0, "maximum": 999 },
                         "timing":        { "enum": ["start", "end", null] },
                         "vatMode":       { "enum": ["none", "fromBase", "fromTotal", null] },

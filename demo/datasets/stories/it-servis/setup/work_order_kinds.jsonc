@@ -1,7 +1,7 @@
 // Druhy zakázek (#131 fáze 2b, D32, D36) — všechny sloupce jako v dumpu.
 // „Správa IT — paušál“ = periodický druh paušálů: vydaná faktura, výchozí
-// řada vydaných faktur složeným klíčem {docType, code} (D37 — řada
-// z provisioneru kód nemá), splatnost 14 dní, fakturace na počátku období,
+// řada vydaných faktur kódem (#166 D17 — výchozí řada typu má kód typu
+// dokladu), splatnost 14 dní, fakturace na počátku období,
 // DPH ze základu (1), převodem (1), účet BU1 (zahraniční zakázky přepisují
 // na BU2). „Projekty“ = externí jednorázová zakázka bez předpisu.
 {
@@ -26,7 +26,7 @@
 			"type": "periodic",
 			"notice": null,
 			"inv_doc_type": "invno",
-			"inv_number_series": { "docType": "invno" },
+			"inv_number_series": "invno",
 			"inv_due_days": 14,
 			"inv_timing": "start",
 			"inv_vat_mode": 1,

@@ -116,7 +116,7 @@ class WorkOrderExporterTest extends TestCase
                 return $id === 3 ? new Row(['code' => 'S01']) : null;
             }
             if (str_contains($query, 'FROM [docs_core_number_series]')) {
-                return $id === 7 ? new Row(['doc_type' => 'invno', 'doc_number_code' => null]) : null;
+                return $id === 7 ? new Row(['code' => 'invno']) : null;
             }
             if (str_contains($query, 'FROM [economy_codebooks_bank_accounts]')) {
                 return $id === 4 ? new Row(['code' => 'BU2']) : null;
@@ -139,7 +139,7 @@ class WorkOrderExporterTest extends TestCase
     public function testExportsNaturalKeysPredpisAndIssuedPeriodsInParentFirstOrder(): void
     {
         $sql = [];
-        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'));
+        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series', 'docs_core_number_series'));
         $this->assertSame('workOrders', $exporter->section());
 
         $records = $exporter->exportAll();
@@ -158,9 +158,9 @@ class WorkOrderExporterTest extends TestCase
             'currency' => 'czk',
             'invoicing' => [
                 'periodicity' => 'month', 'invoiceFrom' => '2026-01-01', 'docText' => 'Správa IT — paušál {období}',
-                'numberSeries' => ['docType' => 'invno'], 'vatMode' => 'fromBase', 'paymentMethod' => 'bankTransfer', 'bankAccount' => 'BU2',
+                'numberSeries' => 'invno', 'vatMode' => 'fromBase', 'paymentMethod' => 'bankTransfer', 'bankAccount' => 'BU2',
             ],
-        ], $periodic['workOrder'], 'štíhlá strana, řada dokladů {docType} bez kódu (D37), účet kódem, bez null hodnot');
+        ], $periodic['workOrder'], 'štíhlá strana, řada dokladů kódem (#166 D17), účet kódem, bez null hodnot');
         $this->assertSame([
             ['item' => 'SPRAVA-IT', 'description' => 'Správa IT — měsíční paušál', 'quantity' => 1.0, 'unit' => 'mnth', 'unitPrice' => 16000.0, 'vatCode' => 'cz-120', 'validTo' => '2026-05-31'],
             ['item' => 'SPRAVA-IT', 'description' => 'Správa IT — měsíční paušál', 'quantity' => 1.0, 'unit' => 'měs', 'unitPrice' => 17500.0, 'vatCode' => 'cz-120', 'operation' => 'sale.services', 'validFrom' => '2026-06-01'],
@@ -197,7 +197,7 @@ class WorkOrderExporterTest extends TestCase
     public function testExportByIdsFiltersAndEmptyListQueriesNothing(): void
     {
         $sql = [];
-        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'));
+        $exporter = new WorkOrderExporter($this->db($sql), $this->config(), ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series', 'docs_core_number_series'));
 
         $this->assertSame([], $exporter->exportByIds([]));
         $this->assertSame([], $sql);

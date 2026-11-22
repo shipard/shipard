@@ -87,7 +87,8 @@ class WorkOrderSeederTest extends TestCase
                 return $params[0] === 'BU2' ? [new Row(['id' => 4])] : [];
             }
             if (str_contains($sql, 'FROM [docs_core_number_series]')) {
-                return $params[0] === 'invno' && !str_contains($sql, '[doc_number_code] = %s') ? [new Row(['id' => 7])] : [];
+                $this->assertStringContainsString('WHERE [code] = %s', $sql);
+                return $params[0] === 'invno' ? [new Row(['id' => 7])] : [];
             }
             $this->fail("unexpected query: {$sql}");
         });
@@ -99,7 +100,7 @@ class WorkOrderSeederTest extends TestCase
             dsConfig: $this->createMock(DataSourceConfig::class),
             registry: new DocumentRegistry(),
             // Cílové tabulky referencí — přirozený klíč říká jejich definice (#166).
-            tables: ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series'),
+            tables: ModuleTables::load('economy_codebooks_bank_accounts', 'economy_codebooks_cost_centers', 'economy_work_orders_number_series', 'docs_core_number_series'),
             dsDir: $this->tmp,
             attachments: $this->createMock(AttachmentService::class),
             dispatcher: null,
@@ -185,7 +186,7 @@ class WorkOrderSeederTest extends TestCase
                 'periodicity' => 'month', 'invoiceFrom' => '2026-01-01', 'docText' => 'Správa IT — paušál {období}',
                 'numberSeries' => 7, 'bankAccount' => 4,
             ],
-        ], $payload['workOrder'], 'řada a účet kódem → id, řada dokladů {docType} → id (D37), zákazník identifikátory → id');
+        ], $payload['workOrder'], 'řada a účet kódem → id, řada dokladů kódem → id (#166 D17), zákazník identifikátory → id');
         $this->assertSame([
             ['description' => 'Správa IT — měsíční paušál', 'quantity' => 1.0, 'unit' => 'mnth', 'unitPrice' => 16000.0, 'vatCode' => 'cz-120', 'item' => 11],
         ], $payload['rows']);

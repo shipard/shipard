@@ -6,6 +6,10 @@
 
     "displayPattern": "{name}",
 
+    // Přirozený klíč registrace mimo zdroj dat (#166 D16, D17) — datové
+    // sady registraci párují kódem.
+    "exchangeKey": "code",
+
     "docStates": {
         "stateColumn": "docState",
         "mainColumn": "docStateMain",

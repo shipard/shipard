@@ -3,6 +3,7 @@
     "table": "vat_registrations",
     "rows": [
         {
+            "code": "cz",
             "name": "Tvarokov s.r.o.",
             "region": "eu",
             "country": "cz",

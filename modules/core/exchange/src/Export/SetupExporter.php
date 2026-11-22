@@ -24,7 +24,7 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
  * `TableDefinition`, aby JSON nesl int/float/bool místo řetězců z MySQL.
  * FK sloupce nesou přirozený klíč cílové tabulky (`exchangeKey` v její
  * definici), pokud ho sada umí přeložit zpět (`SetupReferences`: účet
- * číslem, druh názvem, účet kódem, řada dokladů `{docType, code}` — D37);
+ * číslem, druh názvem, účet kódem, řada dokladů kódem — #166 D17);
  * ostatní se s varováním vynechají. Tabulky modulů, které na DS nejsou aktivní, se přeskočí.
  */
 final class SetupExporter
@@ -56,8 +56,8 @@ final class SetupExporter
     /**
      * Tabulky sekce setup. Klíč upsertu řádku souboru je přirozený klíč
      * z definice tabulky (`exchangeKey`, #166 D8); výslovný `key` má jen
-     * tabulka, která `exchangeKey` nemá (nastavení, registrace DPH se
-     * složeným klíčem) — čte se přes {@see self::upsertKey()}.
+     * tabulka, která `exchangeKey` nemá (nastavení) — čte se přes
+     * {@see self::upsertKey()}.
      *
      * `where` = pevný filtr řádků (sloupec → int), jen pro tabulky, z nichž
      * sada nese podmnožinu.
@@ -77,12 +77,13 @@ final class SetupExporter
         'cash_desks'        => ['table' => 'economy_codebooks_cash_desks'],
         // Dimenze Středisko na dokladech (#110 D20) — doklady v sadě nesou kód.
         'cost_centers'      => ['table' => 'economy_codebooks_cost_centers'],
-        'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations', 'key' => ['country', 'name']],
+        // Registrace DPH kódem (`cz`, #166 D16, D17).
+        'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations'],
         'binders'           => ['table' => 'base_registry_binders'],
         'mailboxes'         => ['table' => 'core_mail_mailboxes'],
         // Druhy a číselné řady zakázek (#131 fáze 2b, D29): sekce workOrders/
         // odkazuje řadu kódem (`number_code`), řada druh názvem, druh řadu
-        // dokladů (D37) a bankovní účet kódem. Seed jde abecedně — druhy
+        // dokladů a bankovní účet kódem. Seed jde abecedně — druhy
         // před řadami, obě za bank_accounts. Řada bez kódu se nepřenese
         // (warning).
         'work_order_kinds'  => ['table' => 'economy_work_orders_kinds'],

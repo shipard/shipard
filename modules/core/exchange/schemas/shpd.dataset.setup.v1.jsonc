@@ -12,7 +12,7 @@
     // interních id a auditních sloupců; FK sloupce nesou přirozený klíč
     // cílové tabulky, pokud ho sada umí přeložit (SetupReferences: účet
     // z rozvrhu číslem, druh zakázky názvem, bankovní účet kódem, řada
-    // dokladů objektem {docType, code} — D37), ostatní se nepřenáší. Klíče
+    // dokladů kódem — #166 D17), ostatní se nepřenáší. Klíče
     // řádků jsou sloupce tabulky, proto `additionalProperties: true` —
     // přesnou sadu určuje TableDefinition DS.
 

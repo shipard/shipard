@@ -49,12 +49,18 @@ class SetupExporterTest extends TestCase
             );
             $this->assertNotSame([], SetupExporter::upsertKey($spec, $def));
         }
+        // #166 D16, D17: registrace DPH se páruje kódem, ne (země, název).
         $this->assertSame(
-            ['country', 'name'],
+            ['code'],
             SetupExporter::upsertKey(
                 SetupExporter::TABLES['vat_registrations'],
                 $this->tableDef('economy/codebooks/tables/economy_codebooks_vat_registrations.jsonc'),
             ),
+        );
+        $this->assertSame(
+            ['settings'],
+            array_keys(array_filter(SetupExporter::TABLES, static fn(array $spec): bool => isset($spec['key']))),
+            'výslovný klíč upsertu má už jen pseudo-tabulka nastavení',
         );
     }
 
@@ -188,12 +194,14 @@ class SetupExporterTest extends TestCase
 
     public function testWorkOrderKindsAndSeriesCarryReferencesByNaturalKey(): void
     {
-        // #131 fáze 2b (D29, D37): druh nese řadu dokladů jako {docType, code}
+        // #131 fáze 2b (D29), #166 D17: druh nese řadu dokladů kódem
         // a účet kódem, řada zakázek nese druh názvem; řada bez kódu se nepřenese.
         $tables = [
             'economy_codebooks_bank_accounts'   => $this->tableDef('economy/codebooks/tables/economy_codebooks_bank_accounts.jsonc'),
             'economy_work_orders_kinds'         => $this->tableDef('economy/workOrders/tables/economy_work_orders_kinds.jsonc'),
             'economy_work_orders_number_series' => $this->tableDef('economy/workOrders/tables/economy_work_orders_number_series.jsonc'),
+            // Řadu dokladů sada nenese (zakládají ji provisionery), jen na ni odkazuje kódem.
+            'docs_core_number_series'           => $this->tableDef('docs/core/tables/docs_core_number_series.jsonc'),
         ];
         $db = $this->createMock(Connection::class);
         $db->method('fetchAll')->willReturnCallback(function (string $sql): array {
@@ -228,7 +236,7 @@ class SetupExporterTest extends TestCase
         });
         $db->method('fetch')->willReturnCallback(static function (string $sql, int $id): ?Row {
             if (str_contains($sql, '[docs_core_number_series]')) {
-                return $id === 7 ? new Row(['doc_type' => 'invno', 'doc_number_code' => null]) : null;
+                return $id === 7 ? new Row(['code' => 'invno']) : null;
             }
             if (str_contains($sql, '[economy_codebooks_bank_accounts]')) {
                 return $id === 4 ? new Row(['code' => 'BU1']) : null;
@@ -244,7 +252,7 @@ class SetupExporterTest extends TestCase
 
         $this->assertSame(['bank_accounts', 'work_order_kinds', 'work_order_series'], array_map(static fn($r) => $r->slug, $records));
         $kind = $records[1]->data['rows'][0];
-        $this->assertSame(['docType' => 'invno'], $kind['inv_number_series'], 'řada dokladů bez kódu (D37)');
+        $this->assertSame('invno', $kind['inv_number_series'], 'řada dokladů kódem (#166 D17)');
         $this->assertSame('BU1', $kind['inv_bank_account']);
         $this->assertSame(14, $kind['inv_due_days']);
         $this->assertSame(40, $kind['docState']);

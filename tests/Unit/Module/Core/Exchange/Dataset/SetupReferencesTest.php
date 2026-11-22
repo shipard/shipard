@@ -13,8 +13,8 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetException;
 use Shipard\Module\Core\Exchange\Dataset\SetupReferences;
 
 /**
- * FK sady přes přirozený klíč (#131 fáze 2b, D29, D37): co je přenosné,
- * jak se hodnota vypisuje a jak přísně se hledá zpět.
+ * FK sady přes přirozený klíč (#131 fáze 2b, D29; #166 D16, D17): co je
+ * přenosné, jak se hodnota vypisuje a jak přísně se hledá zpět.
  */
 class SetupReferencesTest extends TestCase
 {
@@ -53,8 +53,12 @@ class SetupReferencesTest extends TestCase
 
         $this->assertTrue($refs->isPortable('economy_accounting_accounts'), 'účet osnovy číslem');
         $this->assertSame('number', $refs->keyColumn('economy_accounting_accounts'));
-        $this->assertTrue($refs->isPortable('docs_core_number_series'), 'řada dokladů {docType, code} (D37)');
-        $this->assertNull($refs->keyColumn('docs_core_number_series'), 'řada nemá přirozený klíč v definici');
+        // #166 D16, D17: řadu dokladů sada nenese, zakládají ji provisionery
+        // se známým kódem — odkazuje se kódem jako ostatní číselníky.
+        $this->assertNotContains('docs_core_number_series', array_column(\Shipard\Module\Core\Exchange\Export\SetupExporter::TABLES, 'table'));
+        $this->assertSame(['docs_core_number_series'], SetupReferences::PROVISIONED_TABLES);
+        $this->assertTrue($refs->isPortable('docs_core_number_series'));
+        $this->assertSame('code', $refs->keyColumn('docs_core_number_series'));
         $this->assertSame('name', $refs->keyColumn('economy_work_orders_kinds'));
         $this->assertSame('code', $refs->keyColumn('economy_codebooks_bank_accounts'));
         $this->assertSame('code', $refs->keyColumn('economy_codebooks_cost_centers'));
@@ -63,7 +67,7 @@ class SetupReferencesTest extends TestCase
         $this->assertSame('code', $refs->keyColumn('economy_assets_accounting_groups'));
         $this->assertSame('name', $refs->keyColumn('economy_assets_type_groups'));
         $this->assertSame('name', $refs->keyColumn('economy_assets_types'));
-        $this->assertFalse($refs->isPortable('economy_codebooks_vat_registrations'), 'dvousloupcový klíč');
+        $this->assertSame('code', $refs->keyColumn('economy_codebooks_vat_registrations'), 'registrace DPH kódem (#166 D17)');
         $this->assertFalse($refs->isPortable('core_system_settings'), 'pseudo-tabulka settings');
     }
 
@@ -84,10 +88,10 @@ class SetupReferencesTest extends TestCase
         $refs = new SetupReferences($this->createMock(Connection::class), []);
 
         $this->assertFalse($refs->isPortable('economy_codebooks_cost_centers'), 'modul není aktivní');
-        $this->assertTrue($refs->isPortable('docs_core_number_series'));
+        $this->assertFalse($refs->isPortable('docs_core_number_series'), 'bez definice tabulky není klíč odkud vzít');
     }
 
-    public function testExportGivesNaturalKeyOrDocSeriesObject(): void
+    public function testExportGivesNaturalKey(): void
     {
         $db = $this->createMock(Connection::class);
         $db->method('fetch')->willReturnCallback(static function (string $sql, int $id): ?Row {
@@ -99,8 +103,9 @@ class SetupReferencesTest extends TestCase
             }
             if (str_contains($sql, '[docs_core_number_series]')) {
                 return match ($id) {
-                    7 => new Row(['doc_type' => 'invno', 'doc_number_code' => null]),
-                    8 => new Row(['doc_type' => 'cash', 'doc_number_code' => 'POK']),
+                    7 => new Row(['code' => 'invno']),
+                    8 => new Row(['code' => 'cash-POK']),
+                    9 => new Row(['code' => null]),
                     default => null,
                 };
             }
@@ -114,8 +119,9 @@ class SetupReferencesTest extends TestCase
         $this->assertSame('Správa IT — paušál', $refs->export('economy_work_orders_kinds', 3));
         $this->assertSame('Správa IT — paušál', $refs->export('economy_work_orders_kinds', '3'), 'cache a int normalizace');
         $this->assertSame('BU1', $refs->export('economy_codebooks_bank_accounts', 4));
-        $this->assertSame(['docType' => 'invno'], $refs->export('docs_core_number_series', 7), 'prázdný kód se vynechá');
-        $this->assertSame(['docType' => 'cash', 'code' => 'POK'], $refs->export('docs_core_number_series', 8));
+        $this->assertSame('invno', $refs->export('docs_core_number_series', 7), 'řada dokladů kódem (#166 D17)');
+        $this->assertSame('cash-POK', $refs->export('docs_core_number_series', 8));
+        $this->assertNull($refs->export('docs_core_number_series', 9), 'řada bez kódu (před ds-upgrade) se nepřenese');
         $this->assertSame('022', $refs->export('economy_assets_accounting_groups', 2), 'účetní skupina majetku kódem (D39)');
         $this->assertNull($refs->export('economy_work_orders_kinds', 99), 'neexistující řádek');
         $this->assertNull($refs->export('economy_work_orders_kinds', null));
@@ -139,15 +145,11 @@ class SetupReferencesTest extends TestCase
                 return $args[0] === 'Výpočetní technika' ? [new Row(['id' => 5])] : [];
             }
             if (str_contains($sql, '[docs_core_number_series]')) {
-                $this->assertStringContainsString('[docState] <> 90', $sql);
-                if (str_contains($sql, '[doc_number_code] = %s')) {
-                    return $args === ['cash', 'POK'] ? [new Row(['id' => 8])] : [];
-                }
-                $this->assertStringContainsString("([doc_number_code] IS NULL OR [doc_number_code] = '')", $sql);
+                $this->assertStringContainsString('WHERE [code] = %s AND [docState] <> 90 ORDER BY [id]', $sql);
                 return match ($args[0]) {
-                    'invno' => [new Row(['id' => 7])],
-                    'invni' => [new Row(['id' => 9]), new Row(['id' => 10])],
-                    default => [],
+                    'invno'    => [new Row(['id' => 7])],
+                    'cash-POK' => [new Row(['id' => 8])],
+                    default    => [],
                 };
             }
             $this->fail("unexpected query: {$sql}");
@@ -156,18 +158,16 @@ class SetupReferencesTest extends TestCase
 
         $this->assertSame(3, $refs->resolve('economy_work_orders_kinds', 'Správa IT — paušál'));
         $this->assertSame(5, $refs->resolve('economy_assets_types', 'Výpočetní technika'), 'typ majetku názvem (D39)');
-        $this->assertSame(7, $refs->resolve('docs_core_number_series', ['docType' => 'invno']));
-        $this->assertSame(7, $refs->resolve('docs_core_number_series', ['docType' => 'invno', 'code' => null]));
-        $this->assertSame(8, $refs->resolve('docs_core_number_series', ['docType' => 'cash', 'code' => 'POK']));
+        $this->assertSame(7, $refs->resolve('docs_core_number_series', 'invno'), 'řada dokladů kódem (#166 D17)');
+        $this->assertSame(8, $refs->resolve('docs_core_number_series', 'cash-POK'));
 
         foreach ([
             ['economy_work_orders_kinds', 'Neznámý', 'na tomto zdroji dat není'],
             ['economy_work_orders_kinds', 'Projekty', 'není jednoznačná'],
             ['economy_assets_types', 'Nábytek', "economy_assets_types name 'Nábytek': na tomto zdroji dat není"],
-            ['docs_core_number_series', ['docType' => 'invpo'], "typu 'invpo' bez kódu: na tomto zdroji dat není"],
-            ['docs_core_number_series', ['docType' => 'invni'], 'není jednoznačná (2 záznamů'],
-            ['docs_core_number_series', ['docType' => 'cash', 'code' => 'XYZ'], "s kódem 'XYZ': na tomto zdroji dat není"],
-            ['docs_core_number_series', 'invno', 'musí být objekt'],
+            ['docs_core_number_series', 'invpo', "docs_core_number_series code 'invpo': na tomto zdroji dat není"],
+            // Tvar sad před #166 (objekt {docType, code}) už neplatí — bez přechodného období (D14).
+            ['docs_core_number_series', ['docType' => 'invno'], 'neprázdný řetězec'],
             ['economy_work_orders_kinds', '', 'neprázdný řetězec'],
             ['base_persons_persons', 'x', 'nepřenáší'],
         ] as [$table, $value, $fragment]) {

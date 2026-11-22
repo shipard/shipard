@@ -22,7 +22,7 @@ use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
  * Sekce `workOrders/` při dumpu (#131 fáze 2b, D30): jeden soubor per
  * zakázka (`shpd.dataset.workOrder.v1`) — hlavička s přirozenými klíči
  * místo id (řada kódem, zákazník identifikátory, středisko kódem, nadřazená
- * číslem, řada dokladů `{docType, code}` D37, účet kódem), řádky předpisu
+ * číslem, řada dokladů kódem — #166 D17, účet kódem), řádky předpisu
  * (položka `ourCode`, jednotka `system_code`) a evidence období jen
  * s vystaveným dokladem (`docNumber`). Pořadí: nadřazené před podřízenými,
  * jinak podle čísla; slug = číslo zakázky.
@@ -229,7 +229,7 @@ class WorkOrderExporter implements RecordExporter
         $docSeriesId = V::int($head['inv_number_series'] ?? null);
         $docSeries = $this->references->export(SetupReferences::DOC_SERIES_TABLE, $docSeriesId);
         if ($docSeriesId !== null && $docSeriesId > 0 && $docSeries === null) {
-            $this->warnings[] = "workOrders: zakázka {$label}: řada dokladů #{$docSeriesId} neexistuje — přepis řady se nepřenáší";
+            $this->warnings[] = "workOrders: zakázka {$label}: řada dokladů #{$docSeriesId} neexistuje nebo nemá kód — přepis řady se nepřenáší";
         }
         $bankAccountId = V::int($head['inv_bank_account'] ?? null);
         $bankAccount = $this->references->export('economy_codebooks_bank_accounts', $bankAccountId);

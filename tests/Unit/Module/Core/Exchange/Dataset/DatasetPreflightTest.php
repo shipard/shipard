@@ -133,7 +133,7 @@ class DatasetPreflightTest extends TestCase
                 'currency' => 'czk',
                 'invoicing' => [
                     'periodicity' => 'month', 'invoiceFrom' => '2026-01-01', 'docText' => 'Správa IT — paušál {období}',
-                    'numberSeries' => ['docType' => 'invno'], 'bankAccount' => 'BU2',
+                    'numberSeries' => 'invno', 'bankAccount' => 'BU2',
                 ],
             ],
             'rows' => [
@@ -249,6 +249,22 @@ class DatasetPreflightTest extends TestCase
 
         $this->assertSame([], $result['errors'], implode("\n", $result['errors']));
         $this->assertSame([], $result['warnings']);
+    }
+
+    public function testDocSeriesAsObjectIsAnError(): void
+    {
+        // #166 D17: řada dokladů je kód; tvar {docType, code} ze sad před #166 neplatí (D14).
+        $counts = ['setup' => 1, 'persons' => 1, 'items' => 1, 'workOrders' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1];
+        $dir = $this->writeSet(static function (DatasetWriter $w): void {
+            $order = self::workOrder();
+            $order['workOrder']['invoicing']['numberSeries'] = ['docType' => 'invno'];
+            $w->writeJsonc('workOrders/0001-old-shape.jsonc', $order);
+        }, $counts);
+
+        $result = (new DatasetPreflight())->check(DatasetReader::open($dir));
+
+        $this->assertNotSame([], $result['errors']);
+        $this->assertStringContainsString('numberSeries', implode("\n", $result['errors']));
     }
 
     public function testInvalidWorkOrderIsAnError(): void
