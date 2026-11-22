@@ -26,6 +26,12 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
 {
     private const BASE_PROFILE = ['typ_ds' => 'P', 'c_ufo' => '464', 'c_okec' => '620200'];
 
+    /**
+     * Syntetické DIČ registrace — variabilní symbol saldo řádku se bere
+     * z něj, test proto nesmí stát na DIČ zdroje dat (#167).
+     */
+    private const VAT_ID = 'CZ00000019';
+
     private const DATE_BEGIN = '2027-03-01';
     private const DATE_END   = '2027-03-31';
     private const DUZP       = '2027-03-15';
@@ -42,7 +48,7 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
     /** @var list<int> */
     private array $createdFilings = [];
 
-    /** @var array{filing_profile: mixed, tax_office_person: mixed}|null původní hodnoty registrace */
+    /** @var array{vat_id: mixed, filing_profile: mixed, tax_office_person: mixed}|null původní hodnoty registrace */
     private ?array $originalRegistration = null;
 
     protected function setUp(): void
@@ -62,7 +68,7 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
         }
 
         $reg = $this->db->fetchRow(
-            'SELECT id, filing_profile, tax_office_person FROM economy_codebooks_vat_registrations'
+            'SELECT id, vat_id, filing_profile, tax_office_person FROM economy_codebooks_vat_registrations'
             . ' WHERE country = %s AND docState IN (10,40,80) ORDER BY id LIMIT 1',
             'cz',
         );
@@ -71,6 +77,7 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
         }
         $this->registrationId = (int) $reg['id'];
         $this->originalRegistration = [
+            'vat_id'            => $reg['vat_id'],
             'filing_profile'    => $reg['filing_profile'],
             'tax_office_person' => $reg['tax_office_person'],
         ];
@@ -94,6 +101,7 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
 
         $profile = self::BASE_PROFILE + ['_schema' => 'economy.vat.filingProfileCz/2026'];
         $this->db->getDibiConnection()->update('economy_codebooks_vat_registrations', [
+            'vat_id'            => self::VAT_ID,
             'filing_profile'    => json_encode($profile, JSON_UNESCAPED_UNICODE),
             'tax_office_person' => $this->taxOfficeId,
         ])->where('id = %i', $this->registrationId)->execute();
@@ -159,7 +167,11 @@ class VatReturnAccountingServiceTest extends IntegrationTestCase
             $docId, '343801',
         );
         $this->assertSame($this->taxOfficeId, (int) $balance['partner']);
-        $this->assertSame('63478714', $balance['payment_reference']);
+        $this->assertSame(
+            preg_replace('/\D+/', '', self::VAT_ID),
+            $balance['payment_reference'],
+            'VS = číslice DIČ registrace',
+        );
         $this->assertSame('705202703', $balance['specific_symbol']);
         $this->assertSame('1148', $balance['constant_symbol']);
         $this->assertSame('2027-04-25', self::isoDate($balance['due_date']));
