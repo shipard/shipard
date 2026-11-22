@@ -1,8 +1,8 @@
 # Task: `totals` jako kontrolní součet a výslovný mód zaokrouhlení
 
-**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část B; D4, D25–D28); až po `tasks/doc-apply-instruction-mode.md`
+**Stav:** naplánováno — zadání 2026-11-22 (#166 etapa 3, část B; D4, D25–D29); část A je hotová
 
-**Issue:** #166 (etapa 3; D4, D25–D28)
+**Issue:** #166 (etapa 3; D4, D25–D29)
 
 **Cíl:** Dvě věci, které pokynu po části A chybí, aby šel doklad uložit
 přesně tak, jak vznikl ve formuláři:
@@ -14,6 +14,9 @@ přesně tak, jak vznikl ve formuláři:
 
 Tím se zavře poslední mezera matice round-tripu
 (`issued-rounding-manual`).
+
+Navíc drobnost z ověření části A: prázdná hodnota ve snapshotu osoby je
+vždy `null`, ať snapshot vznikl z formuláře, nebo z importu (D29).
 
 ## Před implementací přečti
 
@@ -66,6 +69,9 @@ Tím se zavře poslední mezera matice round-tripu
 - ✓ **D25–D28** — upřesnění U1–U4 níže (pole formátu, automatika
   nezávislá na `totals`, kontrola každého uvedeného pole, návrh beze
   změny), potvrzená 2026-11-22.
+- ✓ **D29** — prázdná hodnota ve snapshotu osoby je vždy `null`
+  (formulář i import); jedno pravidlo na jednom místě. Nahrazuje část
+  D23, která u identifikátorů nechávala prázdný řetězec.
 
 ## Upřesnění pro implementaci
 
@@ -116,6 +122,16 @@ Tím se zavře poslední mezera matice round-tripu
     „nahoru na 1“; automatika zapnutá + jiný uvedený mód → varování;
     `totals` v cizí měně; týž chybný payload v režimu návrh → uloží se
     s varováním jako dnes.
+- **U9 (D29) — Snapshot osoby.** `PersonSnapshotBuilder::shape()` převádí
+  prázdný řetězec (i samé mezery) u všech textových hodnot na `null`:
+  identifikátory, zápis v rejstříku, kontakt včetně webu a ID datové
+  schránky, adresa. `name` zůstává řetězec. Platí pro snapshot partnera
+  i vlastní firmy, z formuláře i z importního módu (obě cesty už `shape()`
+  volají). Uložené snapshoty se nepřepisují. Čtenáři snapshotu (tisky,
+  ISDOC, kontrolní a souhrnné hlášení, detail dokladu) musí brát `null`
+  a `""` stejně — projdi je cíleným grepem a kde porovnávají s `''`,
+  oprav. Matice: fixtura partnera s prázdnými řetězci ve sloupcích
+  adresáře (`web`, `gov_e_box_id`, `tax_id`) — případ musí držet.
 - **U8 — Datové sady v repu.** Sekce `docs/` nese `totals` z exportu,
   takže seed je nově kontroluje. Doklad sady, který neprojde, je nález:
   buď chyba v ručně psané šabloně (oprav data), nebo rozdíl výpočtu
@@ -146,8 +162,18 @@ Tím se zavře poslední mezera matice round-tripu
 1. Matice a payloady.
 2. Sady v repu.
 
-### Commit 4 — dokumentace a stav
+### Commit 4 — snapshot osoby (U9)
 
+1. `PersonSnapshotBuilder::shape()` + unit testy (prázdný řetězec,
+   mezery, `null`, vyplněná hodnota; partner i vlastní firma).
+2. Čtenáři snapshotu; snímky kontraktu tisků se smí změnit jen v těchto
+   polích (`""` → `null`).
+3. Matice podle U9.
+
+### Commit 5 — dokumentace a stav
+
+0. `docs/document-system.md` / `docs/docs-mvp.md` (snapshoty stran):
+   pravidlo prázdné hodnoty (D29).
 1. `docs/exchange-format.md` § 5 („`vatRecap` a `totals`“ přepsat:
    `totals` = kontrolní součet v pokynu, signál v návrhu; nová pole),
    § 10, tabulka issue kódů (`totals_check_failed`,
@@ -205,4 +231,6 @@ a u dokladu se zaokrouhlením `totalRoundingAuto: false`
 - [ ] sady v repu projdou seedem a dump → seed → dump byte-shodně;
       `dataset-verify` beze změny
 - [ ] cílené testy, pak celá unit sada
-- [ ] dokumentace podle commitu 4, stav tasku
+- [ ] snapshot osoby nese prázdnou hodnotu jako `null` z obou cest;
+      čtenáři berou `null` a `""` stejně
+- [ ] dokumentace podle commitu 5, stav tasku
