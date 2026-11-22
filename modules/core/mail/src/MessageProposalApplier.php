@@ -8,6 +8,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 
@@ -245,7 +246,9 @@ final class MessageProposalApplier
             'targetDocState' => $targetDocState,
         ];
 
-        $result = $this->applier->apply($canonical);
+        // Návrh z pošty je interpretace (#166 D18, U10): režim určuje kód —
+        // `applyOptions` se výš skládají znovu, `interpret` z payloadu se nečte.
+        $result = $this->applier->apply($canonical, ApplyMode::Proposal);
         if (!$result->success) {
             return ProposalApplyOutcome::error(
                 $messageNdx, $analysisNdx,

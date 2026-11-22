@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Exchange;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Api\DocumentLoader;
 use Shipard\Api\Request;
 use Shipard\Core\Config\ConfigRuntime;
@@ -119,7 +120,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
     public function testValidateAcceptsHappyFixture(): void
     {
         $payload = $this->loadFixture('invoiceReceived_happy.json');
-        $result = $this->applier->validate($payload);
+        $result = $this->applier->validate($payload, ApplyMode::Proposal);
         $this->assertTrue(
             $result->success,
             'Issues: ' . json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_PRETTY_PRINT),
@@ -129,7 +130,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
     public function testValidateRejectsMissingDataFixture(): void
     {
         $payload = $this->loadFixture('invoiceReceived_missingData.json');
-        $result = $this->applier->validate($payload);
+        $result = $this->applier->validate($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('validation_failed', $result->errorCode);
@@ -145,7 +146,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         $payload['supplier']['name'] = self::TEST_PARTNER_NAME_PREFIX . ' Preview ' . uniqid();
         $payload['supplier']['companyId'] = '99' . substr((string) (microtime(true) * 10000), -6);
 
-        $result = $this->applier->preview($payload);
+        $result = $this->applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
 
         $supplier = $result->canonical['_resolve']['supplier'] ?? [];
@@ -160,7 +161,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         $payload['supplier']['name'] = self::TEST_PARTNER_NAME_PREFIX . ' NoAction ' . uniqid();
         $payload['supplier']['companyId'] = '88' . substr((string) (microtime(true) * 10000), -6);
 
-        $result = $this->applier->apply($payload);
+        $result = $this->applier->apply($payload, ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
     }
@@ -187,7 +188,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         // Stay in Draft so we don't need own-company / number series assignment.
         $payload['applyOptions'] = ['targetDocState' => 10];
 
-        $result = $this->applier->apply($payload);
+        $result = $this->applier->apply($payload, ApplyMode::Proposal);
         $this->assertTrue(
             $result->success,
             "Apply failed: code={$result->errorCode}, msg={$result->errorMessage}\n"

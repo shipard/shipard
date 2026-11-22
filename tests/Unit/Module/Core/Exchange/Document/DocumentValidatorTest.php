@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
@@ -47,7 +48,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'dimensions' => ['project' => 'P1']],
                 ['rowKind' => 'item', 'dimensions' => ['costCenter' => 'V01']],
             ],
-        ]);
+        ], ApplyMode::Proposal);
 
         $unknown = array_values(array_filter($issues, static fn(array $i): bool => $i['code'] === 'dimension_unknown'));
         $this->assertSame(['dimensions.costcenter', 'rows.0.dimensions.project'], array_column($unknown, 'path'));
@@ -63,7 +64,7 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-04-15'],
             'dimensions' => ['whatever' => 'X'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotContains('dimension_unknown', array_column($issues, 'code'));
     }
 
@@ -73,7 +74,7 @@ class DocumentValidatorTest extends TestCase
             'docType' => 'invoiceReceived',
             'supplier' => ['name' => 'Vendor'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $paths = array_column($issues, 'path');
         $this->assertContains('dates.issueDate', $paths);
         $required = $this->findByPath($issues, 'dates.issueDate');
@@ -88,7 +89,7 @@ class DocumentValidatorTest extends TestCase
             'supplier' => ['name' => 'Vendor'],
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [],
-        ]);
+        ], ApplyMode::Proposal);
         $paths = array_column($issues, 'path');
         $this->assertContains('rows', $paths);
     }
@@ -99,7 +100,7 @@ class DocumentValidatorTest extends TestCase
             'docType' => 'invoiceReceived',
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $supplierIssue = $this->findByPath($issues, 'supplier');
         $this->assertNotNull($supplierIssue);
         $this->assertSame('error', $supplierIssue['severity']);
@@ -111,7 +112,7 @@ class DocumentValidatorTest extends TestCase
             'docType' => 'invoiceIssued',
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $customerIssue = $this->findByPath($issues, 'customer');
         $this->assertNotNull($customerIssue);
         $this->assertSame('error', $customerIssue['severity']);
@@ -124,7 +125,7 @@ class DocumentValidatorTest extends TestCase
             'docType' => 'proformaIssued',
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $customerIssue = $this->findByPath($issues, 'customer');
         $this->assertNotNull($customerIssue);
         $this->assertSame('error', $customerIssue['severity']);
@@ -134,7 +135,7 @@ class DocumentValidatorTest extends TestCase
             'customer' => ['name' => 'Odběratel a.s.'],
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByPath($issues, 'customer'));
     }
 
@@ -145,7 +146,7 @@ class DocumentValidatorTest extends TestCase
             'docType' => 'proformaReceived',
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $supplierIssue = $this->findByPath($issues, 'supplier');
         $this->assertNotNull($supplierIssue);
         $this->assertSame('error', $supplierIssue['severity']);
@@ -156,7 +157,7 @@ class DocumentValidatorTest extends TestCase
             'supplier' => ['name' => 'Dodavatel a.s.'],
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByPath($issues, 'supplier'));
     }
 
@@ -169,7 +170,7 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
             'applyOptions' => ['targetDocState' => 40],
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'partner_doc_number_missing');
         $this->assertNotNull($w);
         $this->assertSame('warning', $w['severity']);
@@ -180,8 +181,31 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
             'applyOptions' => ['targetDocState' => 40],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'partner_doc_number_missing'), 'vydaná strana číslo dodavatele nemá');
+    }
+
+    /** Pokyn (#166 D19) čísla předlohy neposuzuje — heuristiky běží jen v návrhu; výchozí režim je pokyn. */
+    public function testHeuristicChecksRunOnlyInProposalMode(): void
+    {
+        $canonical = [
+            'docType' => 'invoiceReceived',
+            'supplier' => ['name' => 'V'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [
+                ['totalPrice' => 1000.00, 'vat' => ['pct' => 21]],
+                ['totalPrice' => 500.00, 'vat' => ['pct' => 21]],
+            ],
+            'vatRecap' => [['vatPct' => 21, 'base' => 900.00, 'tax' => 1.00, 'total' => 950.00]],
+            'totals' => ['totalAmount' => 1499.50],
+        ];
+        $heuristics = ['totals_mismatch', 'rows_recap_mismatch', 'vat_mode_suspect', 'vat_recap_inconsistent'];
+
+        $proposal = array_column($this->v->validate($canonical, ApplyMode::Proposal), 'code');
+        $this->assertNotSame([], array_intersect($heuristics, $proposal));
+
+        $this->assertSame([], array_intersect($heuristics, array_column($this->v->validate($canonical, ApplyMode::Instruction), 'code')));
+        $this->assertSame([], array_intersect($heuristics, array_column($this->v->validate($canonical), 'code')));
     }
 
     public function testTotalsMismatchProducesWarningWhenNoVariantFits(): void
@@ -197,7 +221,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 500.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1499.50],
-        ]);
+        ], ApplyMode::Proposal);
         $mismatch = $this->findByCode($issues, 'totals_mismatch');
         $this->assertNotNull($mismatch);
         $this->assertSame('warning', $mismatch['severity']);
@@ -220,7 +244,7 @@ class DocumentValidatorTest extends TestCase
                 ['operation' => 'acc.record', 'account' => '331100', 'accSide' => 'credit', 'totalPrice' => 1300.00],
             ],
             'totals' => ['totalAmount' => 1300.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -235,7 +259,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 1000.00],
             ],
             'totals' => ['totalAmount' => 1000.005],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -252,7 +276,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 500.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1815.00], // 1500 * 1.21
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -274,7 +298,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 15, 'base' => 200.00, 'tax' => 30.00, 'total' => 230.00],
             ],
             'totals' => ['totalAmount' => 1198.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -290,7 +314,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 100.00],
             ],
             'totals' => ['totalAmount' => 350.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -306,7 +330,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 1000.00],
             ],
             'totals' => ['totalAmount' => 1000.005],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -327,7 +351,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 1375.25, 'tax' => 288.80, 'total' => 1664.05],
             ],
             'totals' => ['totalAmount' => 1709.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -343,7 +367,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 1000.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1209.95], // sumWithVat = 1210.00
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -359,7 +383,7 @@ class DocumentValidatorTest extends TestCase
                 ['totalPrice' => 1000.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1209.00], // sumWithVat = 1210.00
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -377,7 +401,7 @@ class DocumentValidatorTest extends TestCase
             ],
             'vatRecap' => [['vatPct' => 20, 'total' => 12.33]],
             'totals' => ['totalAmount' => 12.35],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -393,7 +417,7 @@ class DocumentValidatorTest extends TestCase
             ],
             'vatRecap' => [['vatPct' => 20, 'total' => 12.33]],
             'totals' => ['totalAmount' => 12.36],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -411,7 +435,7 @@ class DocumentValidatorTest extends TestCase
             ],
             'vatRecap' => [['vatPct' => 20, 'total' => 12.31]],
             'totals' => ['totalAmount' => 12.35],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotNull($this->findByCode($issues, 'totals_mismatch'));
     }
 
@@ -428,7 +452,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 1746.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1746.00],
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'vat_mode_suspect');
         $this->assertNotNull($w);
         $this->assertSame('warning', $w['severity']);
@@ -451,7 +475,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 1442.98, 'tax' => 303.02, 'total' => 1746.00],
             ],
             'totals' => ['totalAmount' => 1746.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_mode_suspect'));
     }
 
@@ -467,7 +491,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 1746.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalBase' => 1442.98, 'totalAmount' => 1746.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_mode_suspect'));
     }
 
@@ -484,7 +508,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 100.00],
             ],
             'totals' => ['totalAmount' => 1846.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_mode_suspect'));
     }
 
@@ -499,7 +523,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 1746.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalAmount' => 1746.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_mode_suspect'));
     }
 
@@ -515,7 +539,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 1000.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalBase' => 1000.00, 'totalAmount' => 1000.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_mode_suspect'));
     }
 
@@ -525,7 +549,7 @@ class DocumentValidatorTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $issues = $this->v->validate($payload);
+        $issues = $this->v->validate($payload, ApplyMode::Proposal);
         $errors = array_filter($issues, static fn($i) => $i['severity'] === 'error');
         $this->assertSame([], $errors, 'Happy fixture should produce no errors: ' . json_encode($errors));
     }
@@ -539,7 +563,7 @@ class DocumentValidatorTest extends TestCase
             'rows' => [['rowKind' => 'item']],
             'applyOptions' => ['targetDocState' => 40],
             // docNumber omitted
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'partner_doc_number_missing');
         $this->assertNotNull($w);
         $this->assertSame('warning', $w['severity']);
@@ -554,7 +578,7 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
             'applyOptions' => ['targetDocState' => 80],
-        ]);
+        ], ApplyMode::Proposal);
         $e = $this->findByCode($issues, 'target_state_80_requires_import');
         $this->assertNotNull($e);
         $this->assertSame('error', $e['severity']);
@@ -571,7 +595,7 @@ class DocumentValidatorTest extends TestCase
                 'targetDocState' => 80,
                 'importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'target_state_80_requires_import'));
     }
 
@@ -585,19 +609,19 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-10-01'],
             'rows' => [['rowKind' => 'item']],
         ];
-        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 40]]);
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 40]], ApplyMode::Proposal);
         $e = $this->findByCode($issues, 'replace_concept_requires_draft');
         $this->assertNotNull($e);
         $this->assertSame('error', $e['severity']);
         $this->assertSame('applyOptions.targetDocState', $e['path']);
 
-        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'importNumber' => ['docNumber' => 'X', 'sequenceNumber' => 1]]]);
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'importNumber' => ['docNumber' => 'X', 'sequenceNumber' => 1]]], ApplyMode::Proposal);
         $this->assertNotNull($this->findByCode($issues, 'replace_concept_with_import'));
 
-        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 10]]);
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 10]], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'replace_concept_requires_draft'));
         $this->assertNull($this->findByCode($issues, 'replace_concept_with_import'));
-        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605]]);
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605]], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'replace_concept_requires_draft'));
     }
 
@@ -609,7 +633,7 @@ class DocumentValidatorTest extends TestCase
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item']],
             'applyOptions' => ['targetDocState' => 10],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'partner_doc_number_missing'));
     }
 
@@ -637,7 +661,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 22082.55, 'tax' => 4637.34, 'total' => 26719.89],
             ],
             'totals' => ['totalBase' => 22082.55, 'totalVat' => 4637.34, 'totalAmount' => 26719.89],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'), 'recap sedí na totalAmount, totals check mlčí');
         $w = $this->findByCode($issues, 'rows_recap_mismatch');
         $this->assertNotNull($w);
@@ -665,7 +689,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 15, 'base' => 200.00, 'tax' => 30.00, 'total' => 230.00],
             ],
             'totals' => ['totalAmount' => 1198.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
     }
 
@@ -685,7 +709,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1210.00],
             ],
             'totals' => ['totalAmount' => 1210.00],
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'rows_recap_mismatch');
         $this->assertNotNull($w);
         $this->assertStringContainsString('celků', $w['message']);
@@ -705,7 +729,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1210.00],
             ],
             'totals' => ['totalAmount' => 1210.00],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
     }
 
@@ -719,7 +743,7 @@ class DocumentValidatorTest extends TestCase
             'rows' => [
                 ['rowKind' => 'item', 'totalPrice' => 500.00, 'vat' => ['pct' => 21]],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
     }
 
@@ -739,7 +763,7 @@ class DocumentValidatorTest extends TestCase
             'vatRecap' => [
                 ['vatPct' => 21, 'base' => 22082.55, 'tax' => 4637.34, 'total' => 26719.89],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
     }
 
@@ -760,7 +784,7 @@ class DocumentValidatorTest extends TestCase
             'vatRecap' => [
                 ['vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 1210.00],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
     }
 
@@ -775,7 +799,7 @@ class DocumentValidatorTest extends TestCase
                 ['rowKind' => 'item', 'totalPrice' => 500.00, 'vat' => ['pct' => 21]],
             ],
             'totals' => ['totalBase' => 1000.00, 'totalAmount' => 1210.00],
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'rows_recap_mismatch');
         $this->assertNotNull($w);
         $this->assertStringContainsString('základů', $w['message']);
@@ -800,7 +824,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 387.00, 'tax' => 81.40, 'total' => 468.60],
             ],
             'totals' => ['totalAmount' => 468.60],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'));
         $w = $this->findByCode($issues, 'vat_recap_inconsistent');
         $this->assertNotNull($w);
@@ -822,7 +846,7 @@ class DocumentValidatorTest extends TestCase
             'vatRecap' => [
                 ['vatPct' => 21, 'base' => 10330.58, 'tax' => 2169.42, 'total' => 12500.00],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'));
     }
 
@@ -834,7 +858,7 @@ class DocumentValidatorTest extends TestCase
      */
     public function testSelfAssessedRecapPairIsSkippedInBothChecks(): void
     {
-        $issues = $this->v->validate($this->euServicesDumpDocument());
+        $issues = $this->v->validate($this->euServicesDumpDocument(), ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'rows_recap_mismatch'), 'párový řádek do součtu základů nepatří');
         $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'), 'samovyměření: celkem = základ');
         $this->assertNull($this->findByCode($issues, 'totals_mismatch'));
@@ -847,7 +871,7 @@ class DocumentValidatorTest extends TestCase
         $doc['vatRecap'][0]['tax'] = 12.00;
         $doc['vatRecap'][1]['tax'] = 12.00;
         $doc['vatRecap'][1]['total'] = 200.00;
-        $issues = $this->v->validate($doc);
+        $issues = $this->v->validate($doc, ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'vat_recap_inconsistent');
         $this->assertNotNull($w);
         $this->assertSame('vatRecap[0]', $w['path']);
@@ -857,7 +881,7 @@ class DocumentValidatorTest extends TestCase
         // Bez páru je týž řádek obyčejný: základ + daň ≠ celkem varuje.
         $plain = $this->euServicesDumpDocument();
         unset($plain['vatRecap'][1]);
-        $w = $this->findByCode($this->v->validate($plain), 'vat_recap_inconsistent');
+        $w = $this->findByCode($this->v->validate($plain, ApplyMode::Proposal), 'vat_recap_inconsistent');
         $this->assertNotNull($w);
         $this->assertStringContainsString('≠ celkem 188', $w['message']);
     }
@@ -908,7 +932,7 @@ class DocumentValidatorTest extends TestCase
             'vatRecap' => [
                 ['vatPct' => 21, 'base' => 387.00, 'tax' => 60.00, 'total' => 447.00],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $w = $this->findByCode($issues, 'vat_recap_inconsistent');
         $this->assertNotNull($w);
         $this->assertStringContainsString('sazbě', $w['message']);
@@ -929,7 +953,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 1000.00, 'tax' => 210.00, 'total' => 0.00, 'isReversePair' => true],
                 ['vatPct' => 0, 'base' => 500.00, 'tax' => 50.00, 'total' => 550.00],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'));
     }
 
@@ -948,7 +972,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.02],
                 ['vatPct' => 21, 'base' => 10.00, 'tax' => 2.15, 'total' => 12.15],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'vat_recap_inconsistent'));
 
         // Krok za hranici u obou podmínek už warnuje.
@@ -963,7 +987,7 @@ class DocumentValidatorTest extends TestCase
                 ['vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.03],
                 ['vatPct' => 21, 'base' => 10.00, 'tax' => 2.16, 'total' => 12.16],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotNull($this->findByPath($issues, 'vatRecap[0]'));
         $this->assertNotNull($this->findByPath($issues, 'vatRecap[1]'));
     }
@@ -1004,7 +1028,7 @@ class DocumentValidatorTest extends TestCase
             ],
             'rows' => [['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 100, 'totalPrice' => 100]],
             'totals' => ['totalAmount' => 100],
-        ]);
+        ], ApplyMode::Proposal);
 
         $iban = $this->findByCode($issues, 'iban_invalid');
         $this->assertNotNull($iban);

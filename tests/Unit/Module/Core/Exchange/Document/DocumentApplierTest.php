@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -266,7 +267,7 @@ class DocumentApplierTest extends TestCase
         if ($rowDimensions !== null) {
             $payload['rows'][0]['dimensions'] = $rowDimensions;
         }
-        return [$applier->apply($payload), $saved];
+        return [$applier->apply($payload, ApplyMode::Proposal), $saved];
     }
 
     public function testDimensionsAreWrittenToHeadAndRowColumns(): void
@@ -516,7 +517,7 @@ class DocumentApplierTest extends TestCase
         $result = $applier->validate([
             'format' => 'shpd.docs.document',
             // missing formatVersion + docType
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('schema_invalid', $result->errorCode);
         $this->assertSame(400, $result->statusCode);
@@ -530,7 +531,7 @@ class DocumentApplierTest extends TestCase
             'formatVersion' => '1.0',
             'docType' => 'invoiceReceived',
             // missing supplier + dates + rows
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame(422, $result->statusCode);
@@ -545,7 +546,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->validate($payload);
+        $result = $applier->validate($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, 'Errors: ' . json_encode($result->canonical['_resolve']['issues'] ?? []));
     }
 
@@ -584,7 +585,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -622,7 +623,7 @@ class DocumentApplierTest extends TestCase
                 ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'debit', 'account' => '568001', 'totalPrice' => 120.0, 'description' => 'Poplatek za vedení účtu'],
                 ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'credit', 'account' => '221001', 'totalPrice' => 120.0],
             ],
-        ]);
+        ], ApplyMode::Proposal);
 
         $rows = $result->canonical['_resolve']['rows'];
         $this->assertSame('Poplatek za vedení účtu', $rows[0]['rowText']);
@@ -658,7 +659,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('canCreate', $resolve['supplier']['status']);
@@ -695,7 +696,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -739,7 +740,7 @@ class DocumentApplierTest extends TestCase
         $payload['_resolve'] = [
             'supplier' => ['userAction' => 'useExisting:99'],
         ];
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('conflict', $result->errorCode);
@@ -809,7 +810,7 @@ class DocumentApplierTest extends TestCase
             'format' => 'shpd.docs.document',
             'formatVersion' => '1.0',
             // missing docType
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('schema_invalid', $result->errorCode);
         $this->assertSame(400, $result->statusCode);
@@ -840,7 +841,7 @@ class DocumentApplierTest extends TestCase
             'supplier' => ['name' => 'Vendor', 'companyId' => '12345678'],
             // dates.issueDate is missing → validation_failed
             'rows' => [['rowKind' => 'item', 'item' => ['name' => 'X']]],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('validation_failed', $result->errorCode);
     }
@@ -916,7 +917,7 @@ class DocumentApplierTest extends TestCase
 
         // No applyOptions → defaults to strict
         $payload = $this->payloadWithCanCreateSupplier(['full_name' => 'X']);
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -955,7 +956,7 @@ class DocumentApplierTest extends TestCase
             ['full_name' => 'X', 'company_id' => '12345678'],
             applyOptions: ['autoCreateMode' => 'safe'],
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue(
             $result->success,
@@ -1001,7 +1002,7 @@ class DocumentApplierTest extends TestCase
         $db->expects($this->once())->method('commit')->with(null);
         $db->expects($this->never())->method('rollback');
 
-        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']), ApplyMode::Proposal);
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertSame(1234, $result->savedId);
     }
@@ -1012,7 +1013,7 @@ class DocumentApplierTest extends TestCase
         $db->expects($this->once())->method('begin')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
         $db->expects($this->once())->method('commit')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
 
-        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']), ApplyMode::Proposal);
         $this->assertTrue($result->success, (string) $result->errorMessage);
     }
 
@@ -1022,7 +1023,7 @@ class DocumentApplierTest extends TestCase
         $db->expects($this->once())->method('rollback')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
         $db->expects($this->never())->method('commit');
 
-        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']), ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('internal_error', $result->errorCode);
         $this->assertSame(500, $result->statusCode);
@@ -1086,7 +1087,7 @@ class DocumentApplierTest extends TestCase
     {
         $saved = null;
         [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
-        $result = $applier->apply($this->replacePayload());
+        $result = $applier->apply($this->replacePayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertSame(605, $result->savedId);
@@ -1113,7 +1114,7 @@ class DocumentApplierTest extends TestCase
         $saved = null;
         $config = $this->configWithDimensions();
         [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], $config, $saved);
-        $result = $applier->apply($this->replacePayload());
+        $result = $applier->apply($this->replacePayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertArrayHasKey('cost_center', $saved);
@@ -1126,7 +1127,7 @@ class DocumentApplierTest extends TestCase
     {
         $saved = null;
         [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
-        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'author' => 7]));
+        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'author' => 7]), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertArrayNotHasKey('author', $saved);
@@ -1147,7 +1148,7 @@ class DocumentApplierTest extends TestCase
             $db->expects($this->never())->method('commit');
             $heads->expects($this->never())->method('saveDocument');
 
-            $result = $applier->apply($this->replacePayload());
+            $result = $applier->apply($this->replacePayload(), ApplyMode::Proposal);
             $this->assertFalse($result->success, $code);
             $this->assertSame($code, $result->errorCode);
             $this->assertSame($status, $result->statusCode, $code);
@@ -1160,7 +1161,7 @@ class DocumentApplierTest extends TestCase
         $db->expects($this->never())->method('begin');
         $heads->expects($this->never())->method('saveDocument');
 
-        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'targetDocState' => 40]));
+        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'targetDocState' => 40]), ApplyMode::Proposal);
         $this->assertSame('validation_failed', $result->errorCode);
         $codes = array_column($result->canonical['_resolve']['issues'] ?? [], 'code');
         $this->assertContains('replace_concept_requires_draft', $codes);
@@ -1172,7 +1173,7 @@ class DocumentApplierTest extends TestCase
         [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
         $payload = $this->replacePayload();
         $payload['source']['message'] = 678;
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertSame(605, $saved['id']);
@@ -1183,11 +1184,11 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildApplier();
         $payload = $this->happyPayload();
         $payload['applyOptions'] = ['replaceConcept' => 5];
-        $this->assertNotSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertNotSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
         $payload['applyOptions'] = ['replaceConcept' => 0];
-        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
         $payload['applyOptions'] = ['replaceConcept' => '5'];
-        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
     }
 
     public function testControlStatementModeMapsToCsModeOnlyWhenManual(): void
@@ -1219,7 +1220,7 @@ class DocumentApplierTest extends TestCase
             if ($mode !== null) {
                 $payload['vat']['controlStatementMode'] = $mode;
             }
-            $result = $applier->apply($payload);
+            $result = $applier->apply($payload, ApplyMode::Proposal);
 
             $this->assertTrue($result->success, "mode '{$mode}': {$result->errorCode} {$result->errorMessage}");
             $this->assertIsArray($saved);
@@ -1268,7 +1269,7 @@ class DocumentApplierTest extends TestCase
             [],
             applyOptions: ['autoCreateMode' => 'safe'] + $applyOptions,
         );
-        return [$applier->apply($payload), $saved];
+        return [$applier->apply($payload, ApplyMode::Proposal), $saved];
     }
 
     public function testExplicitAuthorIsWrittenToHead(): void
@@ -1320,12 +1321,12 @@ class DocumentApplierTest extends TestCase
 
         $payload = $this->happyPayload();
         $payload['applyOptions'] = ['author' => 555];
-        $result = $applier->validate($payload);
+        $result = $applier->validate($payload, ApplyMode::Proposal);
         $this->assertSame('validation_failed', $result->errorCode);
         $this->assertContains('author_not_found', array_column($result->canonical['_resolve']['issues'], 'code'));
 
         $payload['applyOptions'] = ['author' => 'jana'];
-        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
     }
 
     public function testSafeModeRejectsPartyWithoutCompanyId(): void
@@ -1344,7 +1345,7 @@ class DocumentApplierTest extends TestCase
             ['full_name' => 'X'],
             applyOptions: ['autoCreateMode' => 'safe'],
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -1376,7 +1377,7 @@ class DocumentApplierTest extends TestCase
             [],
             applyOptions: ['autoCreateMode' => 'safe'],
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -1414,7 +1415,7 @@ class DocumentApplierTest extends TestCase
             [],
             applyOptions: ['autoCreateMode' => 'liberal'],
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue(
             $result->success,
@@ -1445,7 +1446,7 @@ class DocumentApplierTest extends TestCase
             db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
             vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads, persons: $persons,
         );
-        $result = $applier->apply($this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']));
+        $result = $applier->apply($this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']), ApplyMode::Proposal);
         $this->assertTrue($result->success, (string) $result->errorMessage);
 
         // Adresy jdou s osobou do gateway — zapíše je PersonDocument::afterPersist
@@ -1484,13 +1485,13 @@ class DocumentApplierTest extends TestCase
 
         $payload = $this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']);
         $payload['payment']['method'] = 'cash';
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertSame(5, $saved['cash_desk']);
         $this->assertContains('cash_desk_defaulted', array_column($result->canonical['_resolve']['issues'] ?? [], 'code'));
 
         $payload['payment']['method'] = 'bankTransfer';
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertNull($saved['cash_desk'] ?? null, 'převodem pokladna nepatří');
     }
@@ -1509,7 +1510,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload = $this->payloadWithCanCreateSupplier([]);
         $payload['supplier']['bankAccount'] = ['accountNumber' => null, 'iban' => null, 'bic' => null];
-        $canonical = $applier->preview($payload)->canonical;
+        $canonical = $applier->preview($payload, ApplyMode::Proposal)->canonical;
 
         $this->assertArrayNotHasKey('supplierBank', $canonical['_resolve']);
     }
@@ -1532,7 +1533,7 @@ class DocumentApplierTest extends TestCase
 
         $payload = $this->payloadWithCanCreateSupplier(['full_name' => 'X']);
         $payload['source']['message'] = 678;
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $this->assertSame(1234, $result->savedId);
@@ -1554,7 +1555,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->payloadWithCanCreateSupplier(['full_name' => 'X']);
         $payload['source']['message'] = 678;
         // No applyOptions → strict mode → expected to fail with unresolved_required
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -1576,7 +1577,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload = $this->payloadWithCanCreateSupplier(['full_name' => 'X']);
         $payload['source']['message'] = 678;
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
@@ -1646,7 +1647,7 @@ class DocumentApplierTest extends TestCase
         $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
 
         $ref = new \ReflectionMethod($applier, 'transform');
-        return $ref->invoke($applier, $canonical, $plan, $sideIds, null);
+        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Proposal);
     }
 
     public function testTransformPassesImportNumberAsVirtualField(): void
@@ -1757,14 +1758,14 @@ class DocumentApplierTest extends TestCase
             'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [], 'resolvedRowVatCodes' => [],
         ];
         $sideIds = ['supplier' => null, 'customer' => null, 'balanceParty' => null, 'supplierBank' => null, 'rowItems' => []];
-        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null);
+        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Proposal);
 
         $this->assertSame(77, $data['partner_balance']);
         $this->assertSame(1, $data['partner_balance_manual']);
 
         // Side-create má přednost před plánem (nově založená osoba).
         $sideIds['balanceParty'] = 78;
-        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null);
+        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Proposal);
         $this->assertSame(78, $data['partner_balance']);
 
         // Bez plátce klíče vypadnou — odvození je na DocDocument.
@@ -2101,7 +2102,7 @@ class DocumentApplierTest extends TestCase
 
         $issues = [];
         $ref = new \ReflectionMethod($applier, 'appendRecapSourceIssue');
-        $ref->invokeArgs($applier, [$canonical, &$issues]);
+        $ref->invokeArgs($applier, [$canonical, &$issues, [], ApplyMode::Proposal]);
         return $issues;
     }
 
@@ -2717,7 +2718,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload = array_merge($payload, $this->receiptVatFragment());
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $issues = $result->canonical['_resolve']['issues'] ?? [];
@@ -2739,7 +2740,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $issues = $result->canonical['_resolve']['issues'] ?? [];
         $this->assertNull($this->findIssueByCode($issues, 'vat_mode_derived'));
@@ -2839,7 +2840,7 @@ class DocumentApplierTest extends TestCase
             ['full_name' => 'X', 'company_id' => '12345678'],
             applyOptions: ['autoCreateMode' => 'safe', 'numberSeriesCode' => 'FV', 'numberSeriesId' => 3],
         );
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('number_series_conflict', $result->errorCode);
@@ -2851,11 +2852,11 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildApplier();
         $payload = $this->happyPayload();
         $payload['applyOptions'] = ['numberSeriesId' => 5];
-        $this->assertNotSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertNotSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
         $payload['applyOptions'] = ['numberSeriesId' => 0];
-        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
         $payload['applyOptions'] = ['numberSeriesId' => '5'];
-        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $this->assertSame('schema_invalid', $applier->validate($payload, ApplyMode::Proposal)->errorCode);
     }
 
     public function testResolveNumberSeriesByUnknownCodeThrows(): void
@@ -2894,7 +2895,7 @@ class DocumentApplierTest extends TestCase
     {
         $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
         $ref = new \ReflectionMethod($applier, 'transform');
-        return $ref->invoke($applier, $canonical, $plan, $sideIds, null);
+        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Proposal);
     }
 
     public function testValidateAcceptsAccountingDocumentWithoutParty(): void
@@ -2909,7 +2910,7 @@ class DocumentApplierTest extends TestCase
                 ['operation' => 'acc.record', 'account' => '518100', 'accSide' => 'debit', 'totalPrice' => 1000.0],
                 ['operation' => 'acc.record', 'account' => '321100', 'accSide' => 'credit', 'totalPrice' => 1000.0],
             ],
-        ]);
+        ], ApplyMode::Proposal);
         // Žádný požadavek na partnera/selfParty — accountingDocument je
         // party-agnostický (DocumentValidator switch default).
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? []));
@@ -3025,7 +3026,7 @@ class DocumentApplierTest extends TestCase
         ];
         $payload['_resolve'] = ['rows' => [['index' => 0, 'enrichment' => $enrichment]]];
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $rowResolve = $result->canonical['_resolve']['rows'][0];
@@ -3080,7 +3081,7 @@ class DocumentApplierTest extends TestCase
         );
         unset($payload['vat']);
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -3119,7 +3120,7 @@ class DocumentApplierTest extends TestCase
         // Rekapitulace jde stejnou kaskádou — bez prefixu také země dodavatele.
         $payload['vatRecap'][0]['vatCode'] = 'special110';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload);
+        $applier->preview($payload, ApplyMode::Proposal);
     }
 
     /** Explicitní vat.registrationCountry má přednost před prefixem kódu (zdroj bez registrace DPH). */
@@ -3148,14 +3149,14 @@ class DocumentApplierTest extends TestCase
         );
         $payload['vat']['registrationCountry'] = 'DE';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload);
+        $applier->preview($payload, ApplyMode::Proposal);
     }
 
     // ── Kód DPH přijatého dokladu ze signálů (VatCodeDerivation, D1–D5) ────
 
     public function testReceivedEuServicesDerivesReverseChargeCode(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload());
+        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
@@ -3191,7 +3192,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->euServicesPayload();
         $payload['rows'][0]['vat']['code'] = 'eu-reverse';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-217', $vatCode['createPayload']['code']);
@@ -3209,7 +3210,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->euServicesPayload();
         $payload['rows'][0]['vat']['code'] = 'cz-110';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $issue = $this->issueByCode($result, 'vat_code_derived');
@@ -3223,7 +3224,7 @@ class DocumentApplierTest extends TestCase
     {
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($this->happyPayload());
+        $result = $applier->preview($this->happyPayload(), ApplyMode::Proposal);
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-110', $vatCode['createPayload']['code']);
         $this->assertSame('cfgItem', $vatCode['matchedBy']);
@@ -3231,7 +3232,7 @@ class DocumentApplierTest extends TestCase
 
         $payload = $this->happyPayload();
         $payload['rows'][0]['vat']['code'] = 'cz-118';
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertSame('cz-118', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
     }
@@ -3245,7 +3246,7 @@ class DocumentApplierTest extends TestCase
         $payload['vat']['reverseCharge'] = false;
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-110', $vatCode['createPayload']['code']);
         $this->assertSame('derived', $vatCode['matchedBy']);
@@ -3263,7 +3264,7 @@ class DocumentApplierTest extends TestCase
         $payload['vat']['registrationCountry'] = 'DE';
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         // cz-110 se hledá v našem číselníku (cz), ne v DE → matched.
         $this->assertSame('matched', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
         $issue = $this->issueByCode($result, 'vat_registration_country_derived');
@@ -3282,7 +3283,7 @@ class DocumentApplierTest extends TestCase
         $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => '4'];
         $payload['vatRecap'] = [['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58]];
         $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-115', $vatCode['createPayload']['code']);
@@ -3306,7 +3307,7 @@ class DocumentApplierTest extends TestCase
         $this->assertTrue($canonical['vat']['reverseCharge']);
         $this->assertSame('4', $canonical['rows'][0]['vat']['reverseChargeCode']);
 
-        $result = $this->buildVatDerivingApplier()->preview($canonical);
+        $result = $this->buildVatDerivingApplier()->preview($canonical, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         foreach ([0, 1] as $i) {
@@ -3334,7 +3335,7 @@ class DocumentApplierTest extends TestCase
         $canonical['rows'][0]['vat']['code'] = 'cz-217';
 
         $applier = $this->buildVatDerivingApplier();
-        $result = $applier->preview($canonical);
+        $result = $applier->preview($canonical, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
@@ -3362,7 +3363,7 @@ class DocumentApplierTest extends TestCase
         $canonical = (new IsdocReader())->fromXmlString($xml);
         $this->assertTrue($canonical['vat']['reverseCharge']);
 
-        $result = $this->buildVatDerivingApplier()->preview($canonical);
+        $result = $this->buildVatDerivingApplier()->preview($canonical, ApplyMode::Proposal);
 
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame('cz-115', $row['vatCode']['createPayload']['code']);
@@ -3378,7 +3379,7 @@ class DocumentApplierTest extends TestCase
         $payload['rows'][0]['vat']['supplyKind'] = null;
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
         $issue = $this->issueByCode($result, 'vat_code_unknown');
@@ -3387,7 +3388,7 @@ class DocumentApplierTest extends TestCase
         $this->assertStringContainsString('druh plnění', $issue['message']);
         $this->assertStringContainsString('ručně', $issue['message']);
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertFalse($applied->success);
         $this->assertSame('validation_failed', $applied->errorCode);
     }
@@ -3399,7 +3400,7 @@ class DocumentApplierTest extends TestCase
         $payload['vat']['mode'] = 'none';
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $issue = $this->issueByCode($result, 'vat_mode_derived');
         $this->assertNotNull($issue);
         $this->assertSame('warning', $issue['severity']);
@@ -3421,7 +3422,7 @@ class DocumentApplierTest extends TestCase
         $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertNotContains('vat_mode_derived', $this->issueCodes($result));
         $this->assertSame(0, $this->invokeTransform($applier, $payload)['vat_mode']);
     }
@@ -3436,7 +3437,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->euServicesPayload();
         $payload['vat']['reverseCharge'] = false;
         $payload['rows'][0]['vat']['pct'] = 19;
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -3459,7 +3460,7 @@ class DocumentApplierTest extends TestCase
         ];
         $applier = $this->buildVatDerivingApplier();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertNotContains('recap_source_computed_fallback', $this->issueCodes($result));
         $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
 
@@ -3497,10 +3498,10 @@ class DocumentApplierTest extends TestCase
     private function vatIssueCodes(DocumentApplier $applier, array $canonical): array
     {
         $issues = [];
-        foreach (['appendVatModeIssue', 'appendRecapSourceIssue'] as $method) {
-            $ref = new \ReflectionMethod($applier, $method);
-            $ref->invokeArgs($applier, [$canonical, &$issues]);
-        }
+        (new \ReflectionMethod($applier, 'appendVatModeIssue'))
+            ->invokeArgs($applier, [$canonical, &$issues, ApplyMode::Proposal]);
+        (new \ReflectionMethod($applier, 'appendRecapSourceIssue'))
+            ->invokeArgs($applier, [$canonical, &$issues, [], ApplyMode::Proposal]);
         return array_column($issues, 'code');
     }
 
@@ -3787,12 +3788,12 @@ class DocumentApplierTest extends TestCase
         $suspect['totals'] = ['totalAmount' => 12500.0];
         $this->assertContains(
             'vat_mode_suspect',
-            $this->issueCodes($this->buildVatDerivingApplier()->preview($suspect)),
+            $this->issueCodes($this->buildVatDerivingApplier()->preview($suspect, ApplyMode::Proposal)),
             'u plátce podezření zůstává',
         );
 
         $applier = $this->buildVatDerivingApplier($this->createMock(Connection::class));
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -3809,7 +3810,7 @@ class DocumentApplierTest extends TestCase
         foreach (['vat_mode_derived', 'vat_mode_suspect', 'recap_source_computed_fallback', 'vat_code_unknown', 'non_payer_reverse_charge'] as $code) {
             $this->assertNotContains($code, $codes);
         }
-        $this->assertNotContains('vat_mode_suspect', $this->issueCodes($applier->preview($suspect)));
+        $this->assertNotContains('vat_mode_suspect', $this->issueCodes($applier->preview($suspect, ApplyMode::Proposal)));
     }
 
     /** D9: doklad se samovyměřením u neplátce → jen upozornění, daň se nevyměří. */
@@ -3817,7 +3818,7 @@ class DocumentApplierTest extends TestCase
     {
         $applier = $this->buildVatDerivingApplier($this->createMock(Connection::class));
 
-        $result = $applier->preview($this->euServicesPayload());
+        $result = $applier->preview($this->euServicesPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $issue = $this->issueByCode($result, 'non_payer_reverse_charge');
@@ -3939,7 +3940,7 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildApplier();
         $issues = [];
         $ref = new \ReflectionMethod($applier, 'appendVatHeaderIssues');
-        $ref->invokeArgs($applier, [['selfParty' => 'customer', 'vat' => ['place' => 'eu', 'mode' => 'reverseCharge']], &$issues]);
+        $ref->invokeArgs($applier, [['selfParty' => 'customer', 'vat' => ['place' => 'eu', 'mode' => 'reverseCharge']], &$issues, ApplyMode::Proposal]);
 
         $byCode = array_column($issues, null, 'code');
         $this->assertSame('warning', $byCode['vat_place_unknown']['severity']);
@@ -3949,7 +3950,7 @@ class DocumentApplierTest extends TestCase
 
         $payload = $this->euServicesPayload();
         $payload['vat']['place'] = 'eu';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertSame('schema_invalid', $result->errorCode);
     }
@@ -3979,7 +3980,7 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildVatDerivingApplier();
         $payload = $this->nonEuSupplierWithEuVatIdPayload();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? null));
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
@@ -4008,7 +4009,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->nonEuSupplierWithEuVatIdPayload();
         $payload['vat']['place'] = null;
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4022,7 +4023,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->nonEuSupplierWithEuVatIdPayload();
         $payload['supplier']['vatId'] = null;
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4036,7 +4037,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->nonEuSupplierWithEuVatIdPayload();
         $payload['supplier']['vatId'] = 'US12-3456789';
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4049,7 +4050,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->euServicesPayload();
         unset($payload['vat']['place']);
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4059,7 +4060,7 @@ class DocumentApplierTest extends TestCase
     /** Regrese: dodavatel z EU s DIČ své země — jako dřív, bez vat_place_derived. */
     public function testReceivedEuSupplierWithMatchingVatIdHasNoPlaceIssue(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload());
+        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload(), ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4077,7 +4078,7 @@ class DocumentApplierTest extends TestCase
             'supplier'  => ['name' => 'Fiktivní dodavatel', 'vatId' => 'IE1234567X'],
             'dates'     => ['issueDate' => '2026-04-15'],
             'rows'      => [],
-        ], &$issues]);
+        ], &$issues, ApplyMode::Proposal]);
 
         $codes = array_column($issues, 'code');
         $this->assertContains('vat_place_derived', $codes);
@@ -4099,7 +4100,7 @@ class DocumentApplierTest extends TestCase
             'customer'  => ['name' => 'Odběratel', 'vatId' => 'US12-3456789'],
             'dates'     => ['issueDate' => '2026-04-15'],
             'rows'      => [],
-        ]);
+        ], ApplyMode::Proposal);
 
         $this->assertFalse($ctx['derive']);
         $this->assertSame('thirdCountry', $ctx['place']);
@@ -4115,7 +4116,7 @@ class DocumentApplierTest extends TestCase
         $payload['supplier']['vatId'] = 'CZ12345678';
         $payload['customer'] = ['name' => 'Naše firma s.r.o.', 'country' => 'cz', 'vatId' => 'CZ 12345678'];
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? null));
         $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
@@ -4130,9 +4131,9 @@ class DocumentApplierTest extends TestCase
         $withoutVatId = $withVatId;
         $withoutVatId['supplier']['vatId'] = null;
 
-        $first = $applier->preview($withVatId);
+        $first = $applier->preview($withVatId, ApplyMode::Proposal);
         $this->assertSame('cz-217', $first->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
-        $second = $applier->preview($withoutVatId);
+        $second = $applier->preview($withoutVatId, ApplyMode::Proposal);
         $this->assertSame('cz-417', $second->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($second));
     }
@@ -4336,7 +4337,7 @@ class DocumentApplierTest extends TestCase
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
         );
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $issues = $result->canonical['_resolve']['issues'] ?? [];
@@ -4378,7 +4379,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload['applyOptions'] = ['importOwnBankAccount' => 'MAIN'];
 
-        $result = $this->buildApplierForOwnBankTests($db)->apply($payload);
+        $result = $this->buildApplierForOwnBankTests($db)->apply($payload, ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame('own_bank_account_not_found', $result->errorCode);
@@ -4408,7 +4409,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload['applyOptions'] = ['importOwnBankAccount' => 'MAIN'];
 
-        $result = $this->buildApplierForOwnBankTests($db, $heads)->apply($payload);
+        $result = $this->buildApplierForOwnBankTests($db, $heads)->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "Expected success; got {$result->errorCode}: {$result->errorMessage}");
         $this->assertSame(100, $result->savedId);
@@ -4421,7 +4422,7 @@ class DocumentApplierTest extends TestCase
             'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceReceived',
             'selfParty' => 'customer', 'supplier' => ['name' => 'X'], 'dates' => ['issueDate' => '2026-06-01'],
             'applyOptions' => ['importOwnBankAccount' => 'MAIN'],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNotSame('schema_invalid', $result->errorCode);
     }
 
@@ -4432,7 +4433,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->thirdCountrySoftwarePayload();
         $applier = $this->buildVatDerivingApplier();
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
@@ -4464,7 +4465,7 @@ class DocumentApplierTest extends TestCase
     /** Bez bloku contentTag (pokrytý doklad, žádný LLM běh) žádný fallback — chyba jako dřív. */
     public function testReceivedThirdCountryWithoutSupplyKindAndWithoutTagStaysUnknown(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: null));
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: null), ApplyMode::Proposal);
 
         $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
         $issue = $this->issueByCode($result, 'vat_code_unknown');
@@ -4476,7 +4477,7 @@ class DocumentApplierTest extends TestCase
     /** Štítek bez atributu crossBorderSupply fallback nedává. */
     public function testReceivedTagWithoutCrossBorderSupplyGivesNoFallback(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'vehicle.fuel'));
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'vehicle.fuel'), ApplyMode::Proposal);
 
         $this->assertNotNull($this->issueByCode($result, 'vat_code_unknown'));
         $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
@@ -4489,7 +4490,7 @@ class DocumentApplierTest extends TestCase
             tag: 'it.hardware',
             rowExceptions: [['rowIndex' => 0, 'tag' => 'it.software']],
         );
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $issue = $this->issueByCode($result, 'supply_kind_derived');
@@ -4501,7 +4502,7 @@ class DocumentApplierTest extends TestCase
     /** D3: zboží ze třetí země (štítek hardware) — druh se doplní, ale dovoz se neodvozuje. */
     public function testReceivedThirdCountryGoodsTagReportsImportAndDerivedKind(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'it.hardware'));
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'it.hardware'), ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('notFound', $vatCode['status']);
@@ -4521,7 +4522,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->euServicesPayload();
         $payload['rows'][0]['vat']['supplyKind'] = null;
         $payload['_resolve']['contentTag'] = ['tag' => 'office.supplies', 'tagSource' => 'rule', 'ruleId' => 1];
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $this->assertSame('cz-215', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $issue = $this->issueByCode($result, 'supply_kind_derived');
@@ -4535,7 +4536,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->euServicesPayload();
         $payload['_resolve']['contentTag'] = ['tag' => 'it.hardware', 'tagSource' => 'llm', 'rowExceptions' => []];
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-217', $vatCode['createPayload']['code']);
@@ -4548,7 +4549,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->thirdCountrySoftwarePayload(tag: 'it.hardware');
         $payload['rows'][0]['vat']['code'] = 'cz-417';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-417', $vatCode['createPayload']['code']);
@@ -4569,7 +4570,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->thirdCountrySoftwarePayload(tag: 'travel.accommodation');
         $payload['rows'][0]['vat']['supplyKind'] = 'services';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('specialPlace', $resolve['vat']['mode']['reason']);
@@ -4586,7 +4587,7 @@ class DocumentApplierTest extends TestCase
         $payload = $this->happyPayload();
         $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 21];
         $payload['_resolve']['contentTag'] = ['tag' => 'travel.accommodation', 'tagSource' => 'llm', 'rowExceptions' => []];
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('cz-110', $vatCode['createPayload']['code']);
@@ -4625,7 +4626,7 @@ class DocumentApplierTest extends TestCase
     public function testPreviewReturnsNormalizedCanonicalWithValueFindings(): void
     {
         // Happy fixture: země velkými, telefon s mezerami, IČO 12345678 bez platného součtu.
-        $result = $this->valueRulesApplier()->preview($this->happyPayload());
+        $result = $this->valueRulesApplier()->preview($this->happyPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $this->assertSame('cz', $result->canonical['supplier']['country']);
@@ -4644,7 +4645,7 @@ class DocumentApplierTest extends TestCase
         ];
         $applier = $this->valueRulesApplier();
 
-        $preview = $applier->preview($payload);
+        $preview = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertSame('CZ8520100000002308417557', $preview->canonical['supplier']['bankAccount']['iban']);
         $this->assertSame([[
             'path' => 'supplier.bankAccount.iban', 'from' => 'CZ8520100000002308417558',
@@ -4654,12 +4655,12 @@ class DocumentApplierTest extends TestCase
         $this->assertNull($this->issueByCode($preview, 'iban_invalid'));
 
         // Náhled nad výsledkem náhledu (klient vrací celý payload): blok zůstává, nezdvojí se.
-        $again = $applier->preview($preview->canonical);
+        $again = $applier->preview($preview->canonical, ApplyMode::Proposal);
         $this->assertCount(1, $again->canonical['_resolve']['valueRepairs']);
         $this->assertCount(1, array_keys($this->issueCodes($again), 'bank_account_repaired', true));
 
         // /validate zachovává příchozí _resolve včetně bloku.
-        $validated = $applier->validate($preview->canonical);
+        $validated = $applier->validate($preview->canonical, ApplyMode::Proposal);
         $this->assertCount(1, $validated->canonical['_resolve']['valueRepairs']);
     }
 
@@ -4686,7 +4687,7 @@ class DocumentApplierTest extends TestCase
         $payload['supplier']['bankAccount'] = [
             'accountNumber' => '2308417557/2010', 'iban' => 'CZ8520100000002308417558', 'bic' => 'FIOBCZPP', 'currency' => 'CZK',
         ];
-        $result = $applier->apply($applier->preview($payload)->canonical);
+        $result = $applier->apply($applier->preview($payload)->canonical, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
         $this->assertCount(1, $result->canonical['_resolve']['valueRepairs']);
@@ -4715,7 +4716,7 @@ class DocumentApplierTest extends TestCase
 
     public function testReverseChargeSubjectOutsideFourAndFiveIsTakenFromDocument(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('14'));
+        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('14'), ApplyMode::Proposal);
 
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame('cz-115', $row['vatCode']['createPayload']['code'], 'obecný kód přenesení, předmět kód nevybírá');
@@ -4731,7 +4732,7 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildVatDerivingApplier();
         $payload = $this->domesticReverseChargePayload(null);
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame('cz-115', $row['vatCode']['createPayload']['code']);
         $this->assertSame('notFound', $row['reverseChargeCode']['status']);
@@ -4741,14 +4742,14 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('rows.0.vat.reverseChargeCode', $issue['path']);
         $this->assertSame('needsAttention', $result->canonical['_resolve']['summary']['status']);
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertFalse($applied->success);
         $this->assertSame('validation_failed', $applied->errorCode);
     }
 
     public function testUnknownReverseChargeSubjectIsReportedWithItsValue(): void
     {
-        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('99'));
+        $result = $this->buildVatDerivingApplier()->preview($this->domesticReverseChargePayload('99'), ApplyMode::Proposal);
 
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame(['value' => '99', 'source' => 'document', 'status' => 'notFound'], $row['reverseChargeCode']);
@@ -4764,7 +4765,7 @@ class DocumentApplierTest extends TestCase
     {
         $payload = $this->happyPayload();
         $payload['rows'][0]['vat']['reverseChargeCode'] = '4';
-        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $result = $this->buildVatDerivingApplier()->preview($payload, ApplyMode::Proposal);
 
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame('cz-110', $row['vatCode']['createPayload']['code']);
@@ -4805,7 +4806,7 @@ class DocumentApplierTest extends TestCase
             $payload['applyOptions'] = self::IMPORT_OPTIONS;
             $payload['rows'][0]['vat'] = $rowVat;
             // DB bez registrace DPH + import mód = cesta mimo derivaci.
-            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload);
+            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload, ApplyMode::Proposal);
             return [$result->canonical['_resolve']['rows'][0], $this->issueCodes($result)];
         };
 

@@ -8,6 +8,7 @@ use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\AbstractInvoiceContributor;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionContext;
@@ -644,14 +645,17 @@ class FakeApplier extends DocumentApplier
     public array $failFor = [];
     /** @var list<array<string, mixed>> */
     public array $canonicals = [];
+    /** @var list<ApplyMode> režim každého volání — generátor dokladů volá pokyn (#166 U10) */
+    public array $modes = [];
 
     public function __construct()
     {
     }
 
-    public function apply(array $canonical): ApplyResult
+    public function apply(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
     {
         $this->canonicals[] = $canonical;
+        $this->modes[] = $mode;
         if (in_array($canonical['dates']['periodFrom'] ?? '', $this->failFor, true)) {
             return ApplyResult::error('validation_failed', 'Doklad neprošel validací', $canonical, statusCode: 422);
         }

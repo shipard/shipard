@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -32,7 +33,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
 
     public function testForeignVatPreviewIsWithoutVatWithSupplierTaxInRowPrices(): void
     {
-        $result = $this->buildApplier()->preview($this->hotelPayload());
+        $result = $this->buildApplier()->preview($this->hotelPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -75,9 +76,9 @@ class DocumentApplierOutOfScopeTest extends TestCase
     {
         $applier = $this->buildApplier();
         $payload = $this->hotelPayload();
-        $computed = $applier->preview($payload)->canonical['_resolve']['computed'];
+        $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
@@ -112,7 +113,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload['rows'][1]['unitPrice'] = 17.85;
         $payload['rows'][1]['totalPrice'] = 35.70;
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -130,7 +131,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         unset($payload['vatRecap']);
         $payload['totals'] = ['totalAmount' => 249.71];
 
-        $computed = $this->buildApplier()->preview($payload)->canonical['_resolve']['computed'];
+        $computed = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
 
         $this->assertSame(214.01, $computed['rows'][0]['totalPrice']);
         $this->assertSame(249.71, $computed['totals']['totalAmount']);
@@ -154,7 +155,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         ];
         $payload['totals'] = ['totalBase' => 133.33, 'totalVat' => 25.34, 'totalAmount' => 158.67, 'totalRounding' => 0];
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame([39.66, 79.35, 39.66], array_column($computed['rows'], 'totalPrice'));
@@ -170,7 +171,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload['exchangeRate'] = 25.0;
         $applier = $this->buildApplier();
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
@@ -198,8 +199,8 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $withoutTax['totals'] = ['totalBase' => 230.00, 'totalVat' => 0, 'totalAmount' => 230.00, 'totalRounding' => 0];
         $applier = $this->buildApplier();
 
-        $first = $applier->preview($withTax)->canonical['_resolve'];
-        $second = $applier->preview($withoutTax)->canonical['_resolve'];
+        $first = $applier->preview($withTax, ApplyMode::Proposal)->canonical['_resolve'];
+        $second = $applier->preview($withoutTax, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertSame('outOfScope', $first['vat']['mode']['source']);
         $this->assertNotSame('outOfScope', $second['vat']['mode']['source']);
@@ -213,7 +214,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $applier = $this->buildApplier();
         $payload = $this->specialPlacePayload();
 
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame(
@@ -245,7 +246,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->specialPlacePayload();
         $payload['applyOptions'] = ['autoCreateMode' => 'safe', 'targetDocState' => 10];
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $this->assertContains('vat_special_place', $this->issueCodes($applied->canonical));
@@ -260,7 +261,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->specialPlacePayload();
         $payload['vat']['reverseCharge'] = true;
 
-        $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+        $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertSame('specialPlace', $resolve['vat']['mode']['reason']);
     }
@@ -273,7 +274,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->hotelPayload();
         $payload['vat']['reverseCharge'] = true;
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -287,7 +288,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         foreach ([$this->hotelPayload(), $this->specialPlacePayload()] as $payload) {
             $payload = $this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-217']);
 
-            $result = $this->buildApplier()->preview($payload);
+            $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
             $resolve = $result->canonical['_resolve'];
             $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -307,7 +308,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     {
         $payload = $this->withPins($this->hotelPayload(), ['vat.mode' => 'useValue:fromBase']);
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('user', $resolve['vat']['mode']['source']);
@@ -325,7 +326,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload['rows'][0]['vat']['pct'] = 21;
         $payload = $this->withPins($payload, ['vat.place' => 'useValue:domestic']);
 
-        $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+        $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertSame('domestic', $resolve['vat']['place']['value']);
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -342,7 +343,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $special['rows'][0]['vat']['code'] = 'cz-217';
 
         foreach ([$foreignVat, $special] as $payload) {
-            $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+            $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
             $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
             $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
@@ -355,7 +356,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     {
         $payload = $this->specialPlacePayload(rowExceptions: [['rowIndex' => 1, 'tag' => 'it.software']]);
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -370,7 +371,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     /** Služba z EU bez daně a bez štítku special: samovyměření jako dřív. */
     public function testOrdinaryEuServiceStaysSelfAssessed(): void
     {
-        $result = $this->buildApplier()->preview($this->specialPlacePayload(tag: 'it.software'));
+        $result = $this->buildApplier()->preview($this->specialPlacePayload(tag: 'it.software'), ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -384,7 +385,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->happyPayload();
         $payload['_resolve']['contentTag'] = ['tag' => 'travel.accommodation', 'tagSource' => 'llm', 'rowExceptions' => []];
 
-        $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+        $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertSame('fromBase', $resolve['vat']['mode']['value']);
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -397,7 +398,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->hotelPayload();
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $result = $this->buildApplier()->preview($payload);
+        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
 
         $this->assertNotSame('outOfScope', $result->canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_foreign_tax', $this->issueCodes($result->canonical));
@@ -406,7 +407,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     /** Neplátce se nepohnul: zdroj bez registrace k datu zůstává ve větvi #97. */
     public function testNonPayerKeepsItsOwnBranch(): void
     {
-        $result = $this->buildApplier($this->dbWithoutVatRegistration())->preview($this->hotelPayload());
+        $result = $this->buildApplier($this->dbWithoutVatRegistration())->preview($this->hotelPayload(), ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame(['value' => 'none', 'source' => 'nonPayer', 'auto' => 'none'], $resolve['vat']['mode']);
@@ -423,7 +424,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     /** D20: `special` z položky se chová jako štítek řádku — doklad je mimo české DPH. */
     public function testSpecialPlaceFromItemTagsIsWithoutVatWithWarning(): void
     {
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'MYTO']));
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'MYTO']), ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame(
@@ -450,7 +451,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->coveredPayload();
         $payload['applyOptions'] = ['autoCreateMode' => 'safe', 'targetDocState' => 10];
 
-        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload);
+        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $this->assertContains('vat_special_place', $this->issueCodes($applied->canonical));
@@ -469,7 +470,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
             'rowExceptions' => [['rowIndex' => 0, 'tag' => 'travel.accommodation']],
         ];
 
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('specialPlace', $resolve['vat']['mode']['reason'] ?? null);
@@ -481,7 +482,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     /** D20: veto ze štítků položky u smíšeného dokladu — řádek zůstává bez kódu jako dřív. */
     public function testPartlySpecialItemRowsKeepVeto(): void
     {
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'SOFT']));
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['CEST', 'SOFT']), ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -502,7 +503,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     /** D21: nejednoznačná položka — samovyměření jako dřív, varování na řádku s odvozeným kódem. */
     public function testAmbiguousItemWarnsOnRowWithDerivedCode(): void
     {
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['OSTAT', 'SOFT']));
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload(['OSTAT', 'SOFT']), ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -528,7 +529,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->coveredPayload(['OSTAT', 'OSTAT']);
         $payload['applyOptions'] = ['autoCreateMode' => 'safe', 'targetDocState' => 10];
 
-        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload);
+        $applied = $this->buildApplier($this->db(self::TAGGED_ITEMS))->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $this->assertContains('vat_special_place_ambiguous', $this->issueCodes($applied->canonical));
@@ -543,7 +544,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload['rows'][0]['vat']['code'] = 'cz-217';
         $payload['rows'][1]['vat']['code'] = 'cz-217';
 
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame('cz-217', $resolve['rows'][0]['vatCode']['createPayload']['code']);
@@ -557,7 +558,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->coveredPayload(['OSTAT', 'OSTAT']);
 
         $rowPin = $this->buildApplier($this->db(self::TAGGED_ITEMS))
-            ->preview($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-217']));
+            ->preview($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-217']), ApplyMode::Proposal);
         $warned = array_column(array_filter(
             $rowPin->canonical['_resolve']['issues'],
             static fn (array $issue): bool => $issue['code'] === 'vat_special_place_ambiguous',
@@ -566,7 +567,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
 
         foreach (['fromBase', 'none'] as $mode) {
             $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))
-                ->preview($this->withPins($payload, ['vat.mode' => "useValue:{$mode}"]));
+                ->preview($this->withPins($payload, ['vat.mode' => "useValue:{$mode}"]), ApplyMode::Proposal);
             $this->assertNotContains('vat_special_place_ambiguous', $this->issueCodes($result->canonical), $mode);
         }
     }
@@ -575,7 +576,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     public function testItemWithoutSpecialTagChangesNothing(): void
     {
         foreach ([['SOFT', 'SOFT'], ['NEZNAMA', 'NEZNAMA']] as $codes) {
-            $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload($codes));
+            $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($this->coveredPayload($codes), ApplyMode::Proposal);
 
             $resolve = $result->canonical['_resolve'];
             $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -593,7 +594,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $payload = $this->coveredPayload(['CEST', 'CEST']);
         $payload['_resolve']['rows'][0]['item']['userAction'] = 'useExisting:18';
 
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload);
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($payload, ApplyMode::Proposal);
 
         $resolve = $result->canonical['_resolve'];
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
@@ -606,7 +607,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
     {
         $domestic = $this->happyPayload();
         $domestic['rows'][0]['item']['ourCode'] = 'OSTAT';
-        $resolve = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($domestic)->canonical['_resolve'];
+        $resolve = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($domestic, ApplyMode::Proposal)->canonical['_resolve'];
         $this->assertSame('fromBase', $resolve['vat']['mode']['value']);
         $this->assertSame('cz-110', $resolve['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertSame([], array_intersect(
@@ -618,7 +619,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         $foreignVat = $this->hotelPayload();
         $foreignVat['rows'][0]['item']['ourCode'] = 'OSTAT';
         $foreignVat['rows'][1]['item']['ourCode'] = 'CEST';
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($foreignVat);
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($foreignVat, ApplyMode::Proposal);
         $this->assertSame('foreignVat', $result->canonical['_resolve']['vat']['mode']['reason'] ?? null);
         $this->assertSame([], array_intersect(
             ['vat_special_place', 'vat_special_place_ambiguous'],
@@ -628,7 +629,7 @@ class DocumentApplierOutOfScopeTest extends TestCase
         // Daň dodavatele i příznak přenesení (smíšený doklad, D5): samovyměření bez varování.
         $mixed = $foreignVat;
         $mixed['vat']['reverseCharge'] = true;
-        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($mixed);
+        $result = $this->buildApplier($this->db(self::TAGGED_ITEMS))->preview($mixed, ApplyMode::Proposal);
         $this->assertNotSame('outOfScope', $result->canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_special_place_ambiguous', $this->issueCodes($result->canonical));
     }

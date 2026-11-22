@@ -40,19 +40,26 @@ final class DocumentValidator
     ) {}
 
     /**
+     * Heuristická varování nad čísly předlohy (`totals_mismatch`,
+     * `vat_mode_suspect`, `rows_recap_mismatch`, `vat_recap_inconsistent`)
+     * patří interpretaci — běží jen v režimu návrh (#166 D19). Pokyn čísla
+     * neposuzuje: počítá je `DocDocument`.
+     *
      * @param array<string, mixed> $canonical
      * @return array<int, array{severity: string, path: string, code: string, message: string}>
      */
-    public function validate(array $canonical): array
+    public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): array
     {
         $issues = [];
 
         $this->checkCommonRequired($canonical, $issues);
         $this->checkPerDocType($canonical, $issues);
-        $this->checkTotalsCoherence($canonical, $issues);
-        $this->checkVatModeSuspect($canonical, $issues);
-        $this->checkRowsVsRecap($canonical, $issues);
-        $this->checkVatRecapArithmetic($canonical, $issues);
+        if ($mode->derives()) {
+            $this->checkTotalsCoherence($canonical, $issues);
+            $this->checkVatModeSuspect($canonical, $issues);
+            $this->checkRowsVsRecap($canonical, $issues);
+            $this->checkVatRecapArithmetic($canonical, $issues);
+        }
         $this->checkPartnerDocNumber($canonical, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);

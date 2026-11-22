@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -164,7 +165,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '518100', 'useExisting:77'));
+        $result = $applier->apply($this->payload('518100', '518100', 'useExisting:77'), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $row = $this->savedHeadsData['rows'][0] ?? null;
@@ -179,7 +180,7 @@ class DocumentApplierItemPinTest extends TestCase
         // Účet řádku 518100 od AI / uživatele; historie navrhovala 501300.
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '501300', 'useExisting:77'));
+        $result = $applier->apply($this->payload('518100', '501300', 'useExisting:77'), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame(55, $this->savedHeadsData['rows'][0]['account']);
@@ -189,7 +190,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '518100', null));
+        $result = $applier->apply($this->payload('518100', '518100', null), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame(18, $this->savedHeadsData['rows'][0]['item']);
@@ -200,7 +201,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, 'useExisting:77'));
+        $result = $applier->apply($this->payload(null, null, 'useExisting:77'), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $sql = $this->supplierCodeSql($applier);
@@ -214,7 +215,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, null));
+        $result = $applier->apply($this->payload(null, null, null), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $sql = $this->supplierCodeSql($applier);
@@ -225,7 +226,7 @@ class DocumentApplierItemPinTest extends TestCase
     public function testSkipWritesNoMapping(): void
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), 55);
-        $result = $applier->apply($this->payload('518100', null, 'skip'));
+        $result = $applier->apply($this->payload('518100', null, 'skip'), ApplyMode::Proposal);
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame([], $this->supplierCodeSql($applier));
     }
@@ -234,7 +235,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, 'skip', rowCount: 2));
+        $result = $applier->apply($this->payload(null, null, 'skip', rowCount: 2), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $rows = $this->savedHeadsData['rows'] ?? [];
@@ -248,7 +249,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, null, rowCount: 2, rowAction: 'skip'));
+        $result = $applier->apply($this->payload(null, null, null, rowCount: 2, rowAction: 'skip'), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $rows = $this->savedHeadsData['rows'] ?? [];

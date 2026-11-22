@@ -10,6 +10,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentResult;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
@@ -155,8 +156,10 @@ class MessageProposalApplierTest extends TestCase
         $canonical = $this->happyCanonical();
         $db = $this->db($this->messageRow(), $this->analysisRow());
 
+        // Návrh z pošty volá applier v režimu návrh (#166 D18, U10).
         $applier = $this->createMock(DocumentApplier::class);
         $applier->expects($this->once())->method('apply')
+            ->with($this->isArray(), ApplyMode::Proposal)
             ->willReturn(ApplyResult::ok($canonical, savedId: 9999));
 
         // Zápis verdiktu je po úspěšném uložení dokladu warn-only — outcome

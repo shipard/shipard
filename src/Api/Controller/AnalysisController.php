@@ -19,6 +19,7 @@ use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Mail\IncomingMessageCode;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Base\Registry\RegistryApplier;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
@@ -637,7 +638,9 @@ class AnalysisController
             );
         }
 
-        $result = $this->applier->preview($canonical);
+        // Náhled návrhu z pošty = interpretace (#166 D18): režim určuje kód,
+        // ne payload.
+        $result = $this->applier->preview($canonical, ApplyMode::Proposal);
         if (!$result->success) {
             // preview() should always succeed (resolve issues live in
             // _resolve.issues, not errorCode), but propagate defensively.

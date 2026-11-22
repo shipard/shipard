@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
@@ -160,7 +161,7 @@ class DocumentApplierRowDisplayTest extends TestCase
     /** @return array<string, mixed> */
     private function previewRow(DocumentApplier $applier, array $payload, int $pos = 0): array
     {
-        $result = $applier->preview($payload);
+        $result = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success);
         $row = $result->canonical['_resolve']['rows'][$pos] ?? null;
         $this->assertIsArray($row);
@@ -318,7 +319,7 @@ class DocumentApplierRowDisplayTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->preview($this->payload('503100', null, 5));
+        $result = $applier->preview($this->payload('503100', null, 5), ApplyMode::Proposal);
         $this->assertTrue($result->success);
 
         $displayQueries = array_values(array_filter(

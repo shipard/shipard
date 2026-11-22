@@ -15,6 +15,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
@@ -263,16 +264,20 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $enriched['_resolve'] = ['summary' => ['status' => 'ok'], 'issues' => []];
 
         $captured = null;
+        $capturedMode = null;
         $applier = $this->createMock(DocumentApplier::class);
         $applier->expects($this->once())
             ->method('preview')
-            ->willReturnCallback(function (array $c) use (&$captured, $enriched) {
+            ->willReturnCallback(function (array $c, ApplyMode $mode) use (&$captured, &$capturedMode, $enriched) {
                 $captured = $c;
+                $capturedMode = $mode;
                 return ApplyResult::ok($enriched);
             });
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
         $this->assertSame(200, $this->statusOf($resp));
+        // Náhled návrhu z pošty = režim návrh (#166 D18, U10).
+        $this->assertSame(ApplyMode::Proposal, $capturedMode);
 
         // Server-controlled injection happened (source.message, ne extractedDoc)
         $this->assertSame(100, $captured['source']['message']);

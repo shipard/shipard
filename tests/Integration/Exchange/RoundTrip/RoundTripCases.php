@@ -113,8 +113,16 @@ final class RoundTripCases
                 ]) + ['rows' => [
                     $f->row(true, 'práce', 1, 100.50, $f->vatCode('output', 'domestic', 'standard')),
                 ]],
-                // Export mód nenese, applier ho odhaduje z částek — matematický má přednost.
-                ['diff' => ['head.total_rounding_mode' => [RoundingModes::UP_UNIT, RoundingModes::MATH_UNIT]]],
+                // Export mód nenese a pokyn ho neodhaduje (#166 U4): bez automatiky
+                // je na haléře, takže se liší i částka. Zavře výslovný mód ve
+                // formátu (tasks/doc-totals-rounding-explicit.md).
+                ['diff' => [
+                    'head.total_amount'        => ['122.00', '121.61'],
+                    'head.total_amount_dom'    => ['122.00', '121.61'],
+                    'head.total_rounding'      => ['0.39', '0.00'],
+                    'head.total_rounding_dom'  => ['0.39', '0.00'],
+                    'head.total_rounding_mode' => [RoundingModes::UP_UNIT, RoundingModes::ON_CENT],
+                ]],
             ),
 
             RoundTripCase::holds(
@@ -193,8 +201,8 @@ final class RoundTripCases
                     'partner'  => $f->person('euSupplier'),
                     'vat_mode' => 0,
                 ]) + ['rows' => [$f->row(false, 'služby', 1, 300.00, null)]],
-                // Místo plnění applier znovu odvodí z prefixu DIČ dodavatele (0 tuzemsko → 1 EU).
-                ['diff' => ['head.vat_place' => [0, 1]] + self::snapshotEmpty('company_id')],
+                // Místo plnění pokyn neodvozuje (#166 D19) — zůstává tuzemsko z dokladu.
+                ['diff' => self::snapshotEmpty('company_id')],
             ),
 
             RoundTripCase::gap(

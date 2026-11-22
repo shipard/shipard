@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Mail;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
 use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;
@@ -104,7 +105,7 @@ final class SpecialPlaceCapTest extends TestCase
         $specialPlace = 0;
 
         foreach ($this->variants() as $name => [$payload, $expectedCap]) {
-            $reason = $applier->preview($payload)->canonical['_resolve']['vat']['mode']['reason'] ?? null;
+            $reason = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['vat']['mode']['reason'] ?? null;
             $itemTags = ItemContentTags::forCodes($db, SpecialPlaceSupply::itemCodes($payload));
             $cap = AnalysisConfidenceResolver::capsSpecialPlace($payload, $taxonomy, $itemTags);
 
@@ -158,7 +159,7 @@ final class SpecialPlaceCapTest extends TestCase
             'tuzemský doklad'                 => [$domestic, false],
         ];
         foreach ($variants as $name => [$payload, $expected]) {
-            $issues = $applier->preview($payload)->canonical['_resolve']['issues'] ?? [];
+            $issues = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['issues'] ?? [];
             $warned = in_array('vat_special_place_ambiguous', array_column($issues, 'code'), true);
             $itemTags = ItemContentTags::forCodes($db, SpecialPlaceSupply::itemCodes($payload));
 

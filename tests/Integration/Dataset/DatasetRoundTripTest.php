@@ -679,7 +679,7 @@ class DatasetRoundTripTest extends IntegrationTestCase
         $this->assertSame('sale.goods', $cashregOut['rows'][0]['operation']);
         $this->assertSame(self::ITEM_CODE, $cashregOut['rows'][0]['item']['ourCode']);
         $this->assertSame(500.0, $cashregOut['rows'][0]['unitPrice']);
-        // Seed s deklarovanou částkou → automatika vypnutá (#73 D8), dump ji vyváží explicitně.
+        // Seed s výslovně vypnutou automatikou (#73 D8, #166 U4) → dump ji vyváží stejně.
         $this->assertSame(
             ['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0, 'totalRoundingAuto' => false],
             $cashregOut['totals'],
@@ -908,7 +908,9 @@ class DatasetRoundTripTest extends IntegrationTestCase
                 'vat' => ['code' => 'cz-110', 'pct' => 21.0], 'description' => 'Prodej IT-DS',
             ]],
             'vatRecap' => [['vatCode' => 'cz-110', 'vatPct' => 21.0, 'base' => 500.0, 'tax' => 105.0, 'total' => 605.0]],
-            'totals' => ['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0],
+            // Automatika zaokrouhlení výslovně (#166 U4, U11): pokyn ji z přítomnosti
+            // částky neodvozuje — bez pole by byla u prodejky zapnutá.
+            'totals' => ['totalBase' => 500.0, 'totalVat' => 105.0, 'totalAmount' => 605.0, 'totalRounding' => 0.0, 'totalRoundingAuto' => false],
             'applyOptions' => [
                 'targetDocState' => 40,
                 'importNumber' => ['docNumber' => self::CASHREG_NUMBER, 'sequenceNumber' => 1],

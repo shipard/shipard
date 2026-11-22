@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -131,7 +132,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         $heads->method('saveDocument')->willReturnCallback(function (array $data): DocumentResult {
             // Jen nálezy data sazby: plná validace hlavičky potřebuje řadu,
             // partnera a registraci z databáze, kterou test nemá.
-            $validation = $this->headDocument()->validate($data);
+            $validation = $this->headDocument()->validate($data, ApplyMode::Proposal);
             $rateErrors = array_values(array_filter(
                 $validation->getErrors(),
                 static fn ($e): bool => str_starts_with((string) $e->code, 'vat_rate_'),
@@ -296,10 +297,10 @@ class DocumentApplierVatRateDateTest extends TestCase
         );
         $applier = $this->applier();
 
-        $preview = $applier->preview($payload);
+        $preview = $applier->preview($payload, ApplyMode::Proposal);
         $this->assertSame(200.0, $preview->canonical['_resolve']['computed']['totals']['totalVat'], 'náhled počítá stejnou sazbou');
 
-        $result = $applier->apply($payload);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, self::describe($result));
         $codes = self::issueCodes($result);
         $this->assertNotContains('vat_code_unknown', $codes);
@@ -317,7 +318,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         $result = $this->applier()->apply(self::received(
             ['issueDate' => '2013-01-04', 'taxPointDate' => '2013-01-04'],
             [self::row(['code' => 'cz-110', 'pct' => 20])],
-        ));
+        ), ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertContains('vat_code_unknown', self::issueCodes($result), 'sazba 20 % k lednu 2013 neexistuje');
@@ -332,7 +333,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2013-01-04', 'taxPointDate' => '2013-01-04', 'vatRateDate' => '2012-12-31'],
             [self::row(['code' => 'cz-110', 'pct' => 20])],
             ['rateSource' => 'document'],
-        ));
+        ), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertNotContains('vat_rate_date_ignored', self::issueCodes($result));
@@ -362,7 +363,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         ];
         $payload['applyOptions'] = self::IMPORT;
 
-        $result = $this->applier()->apply($payload);
+        $result = $this->applier()->apply($payload, ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertNotContains('recap_source_computed_fallback', self::issueCodes($result));
@@ -385,7 +386,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'rateDate' => '2023-12-15'])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT]);
+        ) + ['applyOptions' => self::IMPORT], ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame('cz-311', $this->saved['rows'][0]['vat_code']);
@@ -401,7 +402,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'pct' => 10])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT]);
+        ) + ['applyOptions' => self::IMPORT], ApplyMode::Proposal);
 
         $this->assertFalse($result->success);
         $this->assertSame(['vat_rate_missing'], $this->validationCodes);
@@ -417,7 +418,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2024-01-10', 'taxPointDate' => '2024-01-10'],
             [self::row(['code' => null, 'pct' => 15, 'rateDate' => '2023-12-20'])],
             ['rateSource' => 'rows'],
-        ));
+        ), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame('derived', $result->canonical['_resolve']['rows'][0]['vatCode']['matchedBy']);
@@ -437,7 +438,7 @@ class DocumentApplierVatRateDateTest extends TestCase
 
         // Kód se sazbou jen k datu řádku: v nabídce dokladu není, pin projde.
         $payload['_resolve']['rows'][0]['vatCode']['userAction'] = 'useCode:cz-302';
-        $result = $this->applier()->apply($payload);
+        $result = $this->applier()->apply($payload, ApplyMode::Proposal);
         $this->assertTrue($result->success, self::describe($result));
         $this->assertNotContains('cz-302', array_column($result->canonical['_resolve']['vatCodeOptions'], 'code'), 'nabídka klienta je k datu dokladu');
         $this->assertSame('user', $result->canonical['_resolve']['rows'][0]['vatCode']['matchedBy']);
@@ -446,7 +447,7 @@ class DocumentApplierVatRateDateTest extends TestCase
 
         // Kód platný jen k datu dokladu (cz-111: 12 % od 2024, v roce 2023 bez sazby).
         $payload['_resolve']['rows'][0]['vatCode']['userAction'] = 'useCode:cz-111';
-        $result = $this->applier()->apply($payload);
+        $result = $this->applier()->apply($payload, ApplyMode::Proposal);
         $this->assertFalse($result->success);
         $this->assertContains('cz-111', array_column($result->canonical['_resolve']['vatCodeOptions'], 'code'));
         $this->assertCount(1, self::issuesOf($result, 'vat_code_pin_invalid'));
@@ -463,7 +464,7 @@ class DocumentApplierVatRateDateTest extends TestCase
                 self::row(['code' => 'cz-120'], 1.0, 1000.0, 1),
                 self::row(['code' => 'cz-120', 'rateDate' => '2012-06-30'], 1.0, 1000.0, 2),
             ],
-        ));
+        ), ApplyMode::Proposal);
 
         $this->assertTrue($result->success, self::describe($result));
         $ignored = self::issuesOf($result, 'vat_rate_date_ignored');
@@ -484,7 +485,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         );
         $payload['vatRecap'] = [['vatCode' => 'cz-120', 'vatPct' => 21, 'base' => 1000.0, 'tax' => 210.0, 'total' => 1210.0]];
 
-        $result = $this->applier()->preview($payload);
+        $result = $this->applier()->preview($payload, ApplyMode::Proposal);
 
         $ignored = self::issuesOf($result, 'vat_rate_date_ignored');
         $this->assertCount(1, $ignored);
@@ -494,7 +495,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         $payload['dates']['vatRateDate'] = '2014-03-10';
         $payload['vat']['rateSource'] = 'document';
         $payload['vatRecap'][0]['rateDate'] = '2012-06-30';
-        $ignored = self::issuesOf($this->applier()->preview($payload), 'vat_rate_date_ignored');
+        $ignored = self::issuesOf($this->applier()->preview($payload, ApplyMode::Proposal), 'vat_rate_date_ignored');
         $this->assertSame(['vatRecap.0.rateDate'], array_column($ignored, 'path'));
     }
 
@@ -509,13 +510,13 @@ class DocumentApplierVatRateDateTest extends TestCase
         $rows = [self::row(['code' => 'cz-120'])];
         $applier = $this->applier();
 
-        $result = $applier->apply(self::issued($dates, $rows, ['rateSource' => 'document'], 'proformaIssued'));
+        $result = $applier->apply(self::issued($dates, $rows, ['rateSource' => 'document'], 'proformaIssued'), ApplyMode::Proposal);
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(21.0, (float) $this->saved['rows'][0]['vat_pct']);
         $this->assertSame(0, $this->saved['vat_rate_source'], 'nedaňový doklad má vždy automatiku');
         $this->assertNull($this->saved['vat_rate_date']);
 
-        $result = $applier->apply(self::issued($dates, $rows, ['rateSource' => 'document']));
+        $result = $applier->apply(self::issued($dates, $rows, ['rateSource' => 'document']), ApplyMode::Proposal);
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(20.0, (float) $this->saved['rows'][0]['vat_pct']);
         $this->assertSame(1, $this->saved['vat_rate_source']);

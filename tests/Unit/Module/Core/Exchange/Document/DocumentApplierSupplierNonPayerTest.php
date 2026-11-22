@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -55,7 +56,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
 
     public function testDocumentFromNonPayerPreviewIsWithoutVatCodesAndRecap(): void
     {
-        $result = $this->buildApplier()->preview($this->nonPayerPayload());
+        $result = $this->buildApplier()->preview($this->nonPayerPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -86,7 +87,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
 
     public function testDocumentFromNonPayerIsSavedWithoutVat(): void
     {
-        $applied = $this->buildApplier()->apply($this->nonPayerPayload());
+        $applied = $this->buildApplier()->apply($this->nonPayerPayload(), ApplyMode::Proposal);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
@@ -112,11 +113,11 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $applier = $this->buildApplier();
 
         // Bez volby: doklad s DPH, řádek bez sazby nejde odvodit.
-        $plain = $applier->preview($payload)->canonical;
+        $plain = $applier->preview($payload, ApplyMode::Proposal)->canonical;
         $this->assertNotSame('outOfScope', $plain['_resolve']['vat']['mode']['source']);
         $this->assertContains('vat_code_unknown', $this->issueCodes($plain));
 
-        $pinned = $applier->preview($this->withPins($payload, ['vat.mode' => 'useValue:none']))->canonical;
+        $pinned = $applier->preview($this->withPins($payload, ['vat.mode' => 'useValue:none']), ApplyMode::Proposal)->canonical;
         $this->assertSame($this->nonPayerMode('fromBase'), $pinned['_resolve']['vat']['mode']);
         $this->assertSame(self::OUT_OF_SCOPE_BLOCK, $pinned['_resolve']['rows'][0]['vatCode']);
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($pinned));
@@ -126,7 +127,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $both = $applier->preview($this->withPins($payload, [
             'vat.mode'        => 'useValue:none',
             'rows[0].vatCode' => 'useCode:cz-110',
-        ]))->canonical;
+        ]), ApplyMode::Proposal)->canonical;
         $this->assertSame('supplierNonPayer', $both['_resolve']['vat']['mode']['reason']);
         $this->assertContains('vat_pin_ignored', $this->issueCodes($both));
     }
@@ -138,7 +139,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
     {
         $payload = $this->withPins($this->nonPayerPayload(), ['rows[0].vatCode' => 'useCode:cz-110']);
 
-        $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+        $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
         $this->assertSame('user', $resolve['rows'][0]['vatCode']['matchedBy']);
@@ -149,7 +150,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
     {
         $payload = $this->withPins($this->nonPayerPayload(), ['vat.mode' => 'useValue:fromBase']);
 
-        $canonical = $this->buildApplier()->preview($payload)->canonical;
+        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
 
         $this->assertSame('user', $canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_supplier_non_payer', $this->issueCodes($canonical));
@@ -161,7 +162,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload = $this->nonPayerPayload();
         $payload['rows'][0]['vat']['code'] = 'cz-110';
 
-        $resolve = $this->buildApplier()->preview($payload)->canonical['_resolve'];
+        $resolve = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
 
         $this->assertNotSame('outOfScope', $resolve['vat']['mode']['source']);
         $this->assertSame('cz-110', $resolve['rows'][0]['vatCode']['createPayload']['code']);
@@ -173,7 +174,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload = $this->nonPayerPayload();
         $payload['rows'][0]['vat']['pct'] = 21;
 
-        $canonical = $this->buildApplier()->preview($payload)->canonical;
+        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
 
         $this->assertNotSame('outOfScope', $canonical['_resolve']['vat']['mode']['source']);
         $this->assertSame('cz-110', $canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
@@ -190,7 +191,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $byRow['rows'][0]['vat']['reverseChargeCode'] = '4';
 
         foreach ([$byHead, $byRow] as $payload) {
-            $canonical = $this->buildApplier()->preview($payload)->canonical;
+            $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
             $mode = $canonical['_resolve']['vat']['mode'];
 
             $this->assertSame('fromBase', $mode['value']);
@@ -206,7 +207,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload = $this->nonPayerPayload();
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $canonical = $this->buildApplier()->preview($payload)->canonical;
+        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
 
         $this->assertNotSame('outOfScope', $canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_supplier_non_payer', $this->issueCodes($canonical));
@@ -225,7 +226,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
             'vat' => ['code' => null, 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => null],
         ];
 
-        $canonical = $this->buildApplier()->preview($payload)->canonical;
+        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
 
         $vatCode = $canonical['_resolve']['rows'][1]['vatCode'];
         $this->assertSame('derived', $vatCode['matchedBy']);
@@ -245,7 +246,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
                 'rows[0].vatCode' => 'useCode:cz-000',
             ]);
 
-            $canonical = $this->buildApplier()->preview($payload)->canonical;
+            $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
             $resolve = $canonical['_resolve'];
 
             $this->assertSame($place, $resolve['vat']['place']['value']);
@@ -274,7 +275,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload['totals'] = ['totalBase' => 7830.58, 'totalVat' => 2169.42, 'totalAmount' => 10000.0, 'totalRounding' => 0.0];
         $applier = $this->buildApplier();
 
-        $canonical = $applier->preview($payload)->canonical;
+        $canonical = $applier->preview($payload, ApplyMode::Proposal)->canonical;
         $vatCode = $canonical['_resolve']['rows'][1]['vatCode'];
         $this->assertSame('matched', $vatCode['status']);
         $this->assertSame('cz-000', $vatCode['createPayload']['code']);
@@ -285,7 +286,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $this->assertSame(['cz-110'], array_column($canonical['_resolve']['computed']['vatRecap'], 'vatCode'));
         $this->assertSame(10000.0, $canonical['_resolve']['computed']['totals']['totalAmount']);
 
-        $applied = $applier->apply($payload);
+        $applied = $applier->apply($payload, ApplyMode::Proposal);
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
         $this->assertSame('cz-000', $saved['rows'][1]['vat_code']);
