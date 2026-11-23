@@ -81,9 +81,20 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
   podle cílového stavu (422 `validation_failed` i týž nález v náhledu),
   opravný doklad bez důvodu v importu, převzatá rekapitulace s kódy a bez
   nich, neznámý kód, ceny s daní při `fromBase` v pokynu a v návrhu,
-  `importNumber` v návrhu. Payload vzniká exportem konceptu pořízeného
-  cestou formuláře a úpravou zkoumaného pole. Prostředí, fixtury a úklid
-  sdílí s maticí (`RoundTrip/RoundTripEnvironment`).
+  `importNumber` v návrhu; výchozí hodnoty pokynu (#166 D40–D50:
+  `_resolve.defaults`, hodnota z payloadu vyhrává, výslovné `null`,
+  importní mód, jeden nález na pole). Payload vzniká exportem konceptu
+  pořízeného cestou formuláře a úpravou zkoumaného pole, u výchozích hodnot
+  ručně (minimální pokyn). Prostředí, fixtury a úklid sdílí s maticí
+  (`RoundTrip/RoundTripEnvironment`).
+- `Exchange/DocumentFormInstructionInvariantTest.php` — invariant
+  „minimální pokyn = doklad z formuláře bez zásahu uživatele“ (#166 U10):
+  doklad cestou formuláře přes skutečný `FormController`
+  (`RoundTrip/FormPath` — otevření nového záznamu, výběr partnera
+  a položky, uložení, potvrzení) proti pokynu `{docType, partner, rows:
+  [{item}]}`, shoda ve všech porovnávaných sloupcích; faktura vydaná
+  a přijatá, pokladní a účetní doklad. Selhání = výchozí hodnota žije mimo
+  `Defaults\DocHeadDefaults` / `DocRowDefaults`.
 
 - `Mail/MailEndpointTest.php` — procedurální pokrytí `MailController::receiveIncoming`
   s reálnou DB + file storage:

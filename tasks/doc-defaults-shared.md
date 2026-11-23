@@ -1,6 +1,6 @@
 # Task: Výchozí hodnoty dokladu na jednom místě — formulář i pokyn doplní totéž
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 4, část 1; D1, D40–D45, D48–D50)
+**Stav:** hotovo — implementováno 2026-11-23 (#166 etapa 4, část 1; D1, D40–D45, D48–D50)
 
 **Issue:** #166 (etapa 4)
 
@@ -247,11 +247,154 @@ a generátor sad.
 
 ## Hotovo když
 
-- [ ] výchozí hodnoty hlavičky a řádku jsou na jednom místě v `docs.core`;
+- [x] výchozí hodnoty hlavičky a řádku jsou na jednom místě v `docs.core`;
       formulář i pokyn je volají, applier vlastní kopie nemá
-- [ ] minimální pokyn dá stejný doklad jako formulář bez zásahu uživatele
-- [ ] `_resolve.defaults` v náhledu i po uložení
-- [ ] importní mód podle U5, `null` podle U6, jeden nález na pole
-- [ ] návrh beze změny (`dataset-verify`), matice drží
-- [ ] cílené testy, pak celá unit sada
-- [ ] dokumentace, stav tasku
+- [x] minimální pokyn dá stejný doklad jako formulář bez zásahu uživatele
+- [x] `_resolve.defaults` v náhledu i po uložení
+- [x] importní mód podle U5, `null` podle U6, jeden nález na pole
+- [x] návrh beze změny (`dataset-verify`), matice drží
+- [x] cílené testy, pak celá unit sada
+- [x] dokumentace, stav tasku
+
+## Poznámky k implementaci
+
+Implementováno 2026-11-23 ve čtyřech commitech kódu (společné třídy
+a formulář; pokyn; `null` a export; testy invariantu) a commitu
+dokumentace.
+
+### Jak je to postavené
+
+- **`Defaults\DocHeadDefaults` a `Defaults\DocRowDefaults`** (docs.core)
+  pracují nad sloupci a doplňují jen **chybějící klíč** — přítomný vyhrává
+  i s `null`. Formulář si „nezadáno“ odstraní sám
+  (`DocsHeadsFormBase::dropUnspecifiedDefaults()`: prázdné pole a hodnota
+  rovná výchozí hodnotě sloupce ze schématu, kterou `FormController` vkládá
+  před hookem).
+- **Atributy typu místo podtříd formuláře:** `docTypes[].vat: false`
+  (`cmnbkp`), `own_bank_account: false` (`cmnbkp`, `cash`, `cashreg`),
+  hotovost a měna pokladny podle `series_binding: "cash_desk"`.
+  `AccountingDocsForm` hook ani `newRecordUsesBankAccount()` už nemá.
+  Zdroj dat potřebuje `ds-upgrade` (nové atributy v kompilované
+  konfiguraci) — do té doby nový účetní doklad ve formuláři ukáže režim
+  s DPH; při uložení ho `AccountingDocument` srovná jako dřív.
+- **Pokyn doplňuje do pracovní kopie payloadu** (`InstructionDefaults`,
+  hned po normalizaci tvarů), ne až do sloupců po `transform()`: výchozí
+  registrace, datum a měna vstupují do kontextu DPH, dat sazeb, kurzu
+  a účetního data. Odpověď nese payload, jak přišel.
+- **`_resolve.defaults` je `[{path, value}]`**, ne jen seznam cest (odchylka
+  od textu U4, rozhodnuto při plánování): výchozí kód DPH mění částky
+  a hodnotu má skript vidět přímo. `totals.totalRoundingAuto` ve výčtu není.
+- **Exporter a `null`:** podmínky bere z `DocTypes`
+  a `DocRowDefaults::defaultableColumns()`; `null` píše jen u sloupce,
+  který je na dokladu prázdný (záznam bez klíče — účet bez kódu, jednotka
+  bez systémového kódu — se nepočítá, tam zůstává varování).
+
+### Odchylky od zadání
+
+- **Pohyb řádku bez položky** (U3): zadání říká „`applyRowOperations`
+  s pádem na první pohyb nabídky“. Výchozí pohyb mapy (`default`) ale
+  u přijaté faktury dává *Účetní položku*, která bez položky nejde
+  potvrdit (`item_required_for_acc_entry`) — řádek jen s textem a cenou by
+  ve formuláři ani v pokynu nikdy nešel dát do V pořádku. Pravidlo proto
+  mapu používá **jen u řádku s položkou**; řádek bez položky a typ dokladu
+  bez záznamu v mapě berou první pohyb nabídky. Návrh z pošty si `default`
+  drží (obohacení tam účetní položku doplňuje).
+- **Výchozí pohyb i pro řádek kontace** (U3 mluví jen o řádku bez kontační
+  strany): nový řádek účetního dokladu ve formuláři pohyb dostává, takže
+  pokyn `{account, accSide, totalPrice}` bez něj by nešel potvrdit
+  a invariant by u účetního dokladu neplatil. Obsah (položka, množství,
+  kód DPH) řádek kontace nedostává.
+- **Pokladna vázaného typu** (D45): výchozí hodnotu mít nemůže (řada se
+  nikdy nevybírá potichu), validátor ji v pokynu vyžaduje dál — jedním
+  nálezem `required` na `cashDesk`; stejně tak směr pokladního dokladu.
+  Ostatní kontroly povinnosti validátoru v pokynu skončily.
+- **`null` u polí, která prázdná být nemohou** (`currency`,
+  `payment.method`, `vat.mode`, `totals.totalRoundingAuto`): znamená „bez
+  výchozí hodnoty pokynu“, platí výchozí hodnota sloupce.
+  `totalRoundingAuto: null` v pokynu tedy automatiku vypne (dřív
+  „nerozhodnuto“ = zapnuto); návrh beze změny.
+
+### Změny chování formuláře
+
+1. **Registrace DPH se vybírá s platností k datu vystavení** (dřív první
+   položka roletky bez ohledu na platnost).
+2. **Výběr položky přenastaví automatický pohyb podle typu položky** —
+   prázdný, hodnota mapy typu dokladu nebo první pohyb nabídky; ručně
+   zvolený zvláštní pohyb (odpočet zálohy, majetek) zůstane. Na vydané
+   faktuře tedy *Zásoba* přepne *Prodej služeb* na *Prodej zboží*, na
+   přijaté *Služba* přepne *Nákup zboží a materiálu* na *Nákup služeb*.
+3. Nový řádek **bez položky** začíná stejným pohybem jako dřív (první
+   pohyb nabídky) — viz odchylka výš.
+4. Měna nového dokladu: výchozí hodnota sloupce ze schématu (`czk`) se
+   bere jako nezadaná a doplní se domácí měna zdroje dat. Na zdroji
+   s domácí měnou CZK beze změny; zdroj s jinou domácí měnou dřív dostával
+   `czk` ze schématu (na volných zdrojích dev serveru takový není —
+   neověřeno prokliknutím).
+
+### Změny chování pokynu
+
+- Chybějící datum vystavení, registrace DPH, vlastní účet, způsob úhrady,
+  měna a režim DPH se doplní jako ve formuláři; neplátce dostane režim
+  `none` (dřív `fromBase` a chyba na registraci); pokladní doklad měnu
+  pokladny (dřív domácí měnu).
+- Řádek s položkou bez textu, ceny, jednotky dostane hodnoty z karty,
+  řádek bez množství 1, řádek bez kódu DPH první kód nabídky (dřív
+  `vat_code_missing`). Mimo importní mód.
+- Pohyb dostanou i typy bez záznamu v mapě (zálohové faktury, pokladní
+  a účetní doklad) — i v importním módu. Runner starého Shipardu pohyb
+  posílá výslovně.
+- Řádek bez položky na přijaté faktuře dostane *Nákup zboží a materiálu*
+  místo *Účetní položky* (viz odchylka).
+- Povinná pole: pokyn bez data, řádků nebo partnera už neodmítá validátor;
+  koncept se uloží, potvrzení zastaví `DocDocument` jedním nálezem na pole
+  (strana dokladu má cestu podle typu i bez `selfParty`).
+
+### Kurz
+
+`DocsHeadsFormBase::applyExchangeRate()` a
+`DocumentApplier::exchangeRateDecision()` dávají pro nový doklad totéž:
+domácí měna kurz 1 (v applieru `DocDocument::applyHomeCurrencyRate`), cizí
+měna kurz z lístku k účetnímu datu — to je u dokladu bez zadaných dat
+v obou cestách datum vystavení —, opravný doklad lístek nečte, nenalezený
+kurz zůstane prázdný s upozorněním. Ponecháno beze změny. Rozdíl je jen
+v importním módu, kde applier kurz nedohledává záměrně.
+
+### Generátory dokladů
+
+- **Periodická fakturace a opravný doklad** nad demo sadou (10 faktur za
+  období + 3 opravné doklady): hlavičky, řádky i rekapitulace **totožné**
+  s kódem před taskem. `InvoiceBuilder` posílá datum, režim DPH, úhradu,
+  vlastní účet i kód DPH řádku sám.
+- **`CorrectiveDocBuilder`** posílá pohyb, jednotku, text a kód DPH řádku
+  vždy, prázdné výslovným `null` — kopie původního dokladu se z karty
+  položky nedoplňuje.
+- **Demo sada:** 59 přijatých faktur nese `"ownBankAccount": null`
+  (formulář přijaté faktury výchozí účet dává); jiný rozdíl v sadě není.
+
+### Ověření (volné zdroje dat)
+
+- Unit sada 12 152 testů bez selhání; generátor sad 330 testů.
+- Integrační sada nad zdrojem se sadou Plátce DPH (doklady, DPH,
+  účetnictví, saldokonto, výměnný formát, reporty, tisky, majetek,
+  zakázky, sady, pošta): 547 testů bez selhání (16 přeskočených). Matice
+  round-tripu 20 / 20, případy payloadů 46 (osm nových), invariant
+  formulář × pokyn 4 / 4 — shoda ve všech sloupcích kromě variabilního
+  symbolu odvozeného z čísla dokladu.
+- `dataset-verify --json` tří veřejných sad po čerstvém seedu: výstup
+  bajtově shodný s kódem před taskem (worktree); u sady Plátce DPH shodné
+  i uložené hlavičky, řádky, rekapitulace a deník.
+- Demo sada: seed → dump se od sady v repu liší jen `manifest.created`
+  a provozním stavem stahování kurzů v `setup/settings.jsonc` (zdroj má
+  zapnuté periodické úlohy); druhé kolo seed → dump stabilní.
+- REST: minimální payload z § 11 (`docType`, `customer`, `rows: [{item}]`)
+  — `/preview` bez nálezů s dvanácti doplněnými poli, `/apply` s cílem
+  V pořádku uložil fakturu 6 500 + 1 365 = 7 865.
+
+### Otevřené body
+
+- **Runner starého Shipardu** (etapa 6): v importním módu se obsah řádku
+  nedoplňuje a datum vystavení je povinné — beze změny proti dnešku;
+  hlavička bez vlastního účtu, registrace nebo úhrady nově dostane výchozí
+  hodnotu. Co má zůstat prázdné, musí runner poslat výslovným `null`
+  (přijatá faktura bez vlastního účtu).
+- **Idempotence pokynu** (`tasks/doc-apply-idempotence.md`) navazuje.

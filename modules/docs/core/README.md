@@ -169,6 +169,32 @@ z `ReadOnlyPolicy`). Akce detailu `createCorrectiveDoc` v `DocsHeadsViewer`
 (popisek `action.createCorrectiveDoc` z `viewerLabels`), obsluha
 ve `Viewer.svelte` otevře koncept ve formuláři.
 
+### Výchozí hodnoty nového dokladu — jedno místo (#166, `tasks/doc-defaults-shared.md`)
+
+Co má nový doklad a nový řádek předvyplněné, říkají `src/Defaults/`:
+`DocHeadDefaults` (měna, způsob úhrady, režim DPH, datum vystavení,
+registrace DPH platná k datu, výchozí vlastní účet, automatické
+zaokrouhlení) a `DocRowDefaults` (pohyb, text / cena / jednotka z karty
+položky, množství 1, první kód DPH nabídky). Volá je **hook formuláře**
+i **pokyn výměnného formátu** — minimální pokyn `{docType, partner, rows:
+[{item}]}` dá stejný doklad jako formulář bez zásahu uživatele
+(`DocumentFormInstructionInvariantTest`).
+
+- Doplňuje se jen sloupec, jehož klíč v datech chybí; přítomný klíč vyhrává
+  i s `null`. Formulář si „nezadáno“ odstraní sám
+  (`DocsHeadsFormBase::dropUnspecifiedDefaults()` — prázdné pole a výchozí
+  hodnota sloupce ze schématu).
+- Rozdíly mezi typy řídí atributy `docTypes` (`vat`, `own_bank_account`,
+  `series_binding`), ne podtřída formuláře.
+- Pohyb: řádek s položkou podle mapy `applyRowOperations` a typu položky,
+  jinak první pohyb nabídky. Formulář ho při výběru položky přenastaví, jen
+  je-li automatický — ručně zvolený zvláštní pohyb zůstává.
+- Nová výchozí hodnota patří do společné třídy, ne do hooku ani do
+  applieru; co dopočítává `DocDocument::beforeSave()` (účetní datum, DUZP,
+  splatnost, autor), sem nepatří.
+
+Pravidla a tabulky: `docs/document-system.md` § 12c.
+
 ### Server-driven UI s formuláři
 
 Formulář dokladu HTML neposílá (#150 D82). Tab **Rekapitulace DPH**
@@ -188,7 +214,10 @@ Modul registruje cfgItem soubory — viz `config/` (výčet v `module.jsonc`,
 zde ty podstatné):
 
 - `docs.core.docTypes` — typy dokladů a jejich příznaky (`tax_document`,
-  `total_rounding_auto`, `corrective`; čte jen `src/DocTypes.php`)
+  `total_rounding_auto`, `corrective`, `vat`, `own_bank_account`,
+  `series_binding`; čte jen `src/DocTypes.php`)
+- `docs.core.applyRowOperations` — výchozí pohyb řádku podle typu položky
+  (`src/Defaults/DocRowDefaults.php`; návrh z pošty i pro řádek bez položky)
 - `docs.core.docStates` — stavový automat (Koncept → Potvrzeno → V pořádku
   → V opravě → Storno → Smazáno)
 - `docs.core.vatModes` — režim DPH na hlavičce

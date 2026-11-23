@@ -114,9 +114,10 @@ vstup" — transformační vrstva nad existujícím dokumentovým systémem.
 jedno a totéž.
 
 - **Pokyn** (`ApplyMode::Instruction`, výchozí) — volající ví, co chce
-  uložit. Applier dohledá reference, doplní výchozí hodnoty, nechá
-  `DocDocument` validovat a počítat — a **nic neodvozuje ze signálů**. Co
-  uloží formulář, uloží i pokyn („Invariant ukládání“, § 10).
+  uložit. Applier dohledá reference, doplní výchozí hodnoty **týmž kódem
+  jako formulář** („Výchozí hodnoty pokynu“ níž), nechá `DocDocument`
+  validovat a počítat — a **nic neodvozuje ze signálů**. Co uloží formulář,
+  uloží i pokyn („Invariant ukládání“, § 10).
 - **Návrh** (`ApplyMode::Proposal`) — interpretace papírové podoby dokladu:
   odvozování z § 8.4, volby uživatele v `_resolve`, heuristická varování.
 
@@ -143,18 +144,103 @@ vůbec (#166 D32): payload, který ho nese, projde s jedním info nálezem
 | Pole | Hodnota v pokynu |
 |---|---|
 | `vat.place` | z payloadu; chybí = tuzemsko |
-| `vat.mode` | z payloadu; chybí = `fromBase`. Doklad s `none` kódy řádků nenese (jako ve formuláři) a neověřují se |
-| `rows[].vat.code` | z payloadu, ověřený proti číselníku země registrace k datu sazby řádku; neznámý = chyba `vat_code_unknown`. Řádek bez kódu (i s objektem `vat` bez `code`) je „nevyplněno“ a rozhodne `DocDocument` (`vat_code_missing`, `docs/vat-calculation.md` § 1.1) |
+| `vat.mode` | z payloadu; chybí = výchozí hodnota jako ve formuláři (`fromBase`, u neplátce a účetního dokladu `none`). Doklad s `none` kódy řádků nenese (jako ve formuláři) a neověřují se |
+| `rows[].vat.code` | z payloadu, ověřený proti číselníku země registrace k datu sazby řádku; neznámý = chyba `vat_code_unknown`. Chybí-li (i objekt `vat` bez klíče `code`), doplní se první kód nabídky jako ve formuláři; výslovné `"code": null` je „záměrně bez kódu“ a rozhodne `DocDocument` (`vat_code_missing`, `docs/vat-calculation.md` § 1.1). Importní mód kód nedoplňuje |
 | `rows[].vat.pct` | nepoužije se — procento je vždy z kódu a data sazby |
-| registrace DPH | reference `vat.registration` (`"@cz"`, #166 D36); bez ní výchozí registrace zdroje dat jako ve formuláři (první podle země a id), jen u dokladu s DPH. Signál `vat.registrationCountry` pokyn odmítá (`signal_not_allowed`). Mimo importní mód musí platit k datu dokladu |
+| registrace DPH | reference `vat.registration` (`"@cz"`, #166 D36); chybí = výchozí registrace zdroje dat jako ve formuláři (první podle země a id, platná k datu dokladu), jen u dokladu s DPH; `null` = bez registrace. Signál `vat.registrationCountry` pokyn odmítá (`signal_not_allowed`). Mimo importní mód musí platit k datu dokladu |
 | `vat.recapSource` | z payloadu; chybí = `computed`. `declared` vyžaduje `vatRecap` s kódem DPH na každém řádku — chybějící rekapitulace (`vat_recap_missing`), chybějící kód (`vat_recap_code_missing`) i neznámý kód (`vat_code_unknown`) je chyba, ne tichý přepočet z řádků |
-| `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto. Na přítomnosti `totals.totalAmount` nezáleží (D26) |
+| `totals.totalRoundingAuto` | z payloadu; chybí = zapnuto tam, kde automatika platí (prodejní typy, #73), jinak vypnuto; `null` = vypnuto. Na přítomnosti `totals.totalAmount` nezáleží (D26) |
 | `totals.totalRoundingMode` | při vypnuté automatice z payloadu, chybí = `cent`; mód se neodhaduje. Při zapnuté automatice ho určí způsob úhrady — liší-li se uvedený, varování `total_rounding_mode_ignored` (§ 5) |
 | `vat.roundingMode` | z payloadu; chybí = `cent` |
 | `totals` — částky | **kontrolní součet** (D4, D27): každé uvedené pole se porovná s výpočtem dokladu, rozdíl nad 0,01 = `totals_check_failed` a doklad se neuloží (§ 5) |
 
 Importní mód (`applyOptions.importNumber`) je vždy pokyn a nese jen
 historii — § 10 „Importní mód“.
+
+### Výchozí hodnoty pokynu — jedno místo s formulářem (#166 D40–D50)
+
+**Co formulář předvyplní novému dokladu a řádku, to doplní i pokyn, když
+to payload neuvádí** — jedním kódem v `docs.core`
+(`Defaults\DocHeadDefaults`, `Defaults\DocRowDefaults`;
+`docs/document-system.md` § 12c). Minimální pokyn — typ dokladu, partner
+a položka — tak dá stejný doklad, jaký vznikne ve formuláři bez zásahu
+uživatele (§ 11 „Doklad skriptem“). Hodnota z payloadu vždy vyhrává; návrh
+(pošta, ISDOC) výchozí hodnoty nedostává a nemění se.
+
+| Pole | Výchozí hodnota |
+|---|---|
+| `currency` | u dokladu vázaného na pokladnu měna pokladny, jinak domácí měna zdroje dat |
+| `payment.method` | doklad vázaný na pokladnu `cash`, jinak `bankTransfer` |
+| `vat.mode` | účetní doklad a zdroj dat bez agendy DPH (`economy.vatAgenda` vypnutá) `none`, jinak `fromBase` |
+| `dates.issueDate` | dnes — **ne v importním módu** (níž) |
+| `vat.registration` | první aktivní registrace zdroje dat podle země a id, platná k datu dokladu (DUZP, jinak datum vystavení); jen u dokladu s DPH |
+| `payment.ownBankAccount` | výchozí vlastní účet zdroje dat; jen typy, které účet nesou (ne účetní doklad, pokladní doklad a prodejka) |
+| `totals.totalRoundingAuto` | zapnuto u prodejních typů (tabulka výš) |
+| `rows[].operation` | u řádku s položkou podle typu položky (`docs.core.applyRowOperations`), jinak první pohyb nabídky typu dokladu (u pokladního dokladu podle směru); i u řádku kontace |
+| `rows[].description`, `unitPrice`, `unit` | z karty položky (název, prodejní cena bez DPH, jednotka), má-li je; jen řádek s položkou |
+| `rows[].quantity` | 1 |
+| `rows[].vat.code` | první kód nabídky hlavičky k datu sazby řádku (nikdy „Mimo DPH“); jen u dokladu s DPH |
+
+Řádkové hodnoty se týkají položkového řádku; textový řádek nedostane nic,
+řádek kontace (`accSide` nebo pohyb se stranou) jen pohyb. Účetní datum,
+DUZP, DPPD, splatnost a autora doplňuje `DocDocument` jako dosud a ve výčtu
+doplněných polí nejsou.
+
+**Chybějící klíč × `null`** (D50): chybějící klíč (a prázdný text) = doplní
+se výchozí hodnota; klíč s hodnotou **`null` = „záměrně prázdné“** — pole
+zůstane prázdné. Objekt `vat` řádku bez klíče `code` je „chybí“;
+`"vat": {"code": null}` je záměrně bez kódu. U polí, která prázdná být
+nemohou (`currency`, `payment.method`, `vat.mode`,
+`totals.totalRoundingAuto`), `null` znamená „bez výchozí hodnoty pokynu“
+a platí výchozí hodnota sloupce. Export (`DocumentExporter`) proto píše
+`null` výslovně u pole s výchozí hodnotou, které je na dokladu prázdné —
+doklad uložený bez vlastního účtu, řádek konceptu bez kódu DPH —, jinak by
+round-trip doklad změnil. Stejně to dělají generátory datových sad
+a opravný doklad (kopie řádků původního dokladu).
+
+**Importní mód** (D48, D49): výchozí hodnoty platí i v něm, kromě data
+vystavení — historie datum nést musí, chybějící je chyba `required`.
+**Obsah řádku se nedoplňuje** (kód DPH, cena, text, jednotka, množství):
+historický řádek bez kódu by jinak tiše dostal základní sazbu a cenu
+z dnešní karty položky. Pohyb řádku se doplňuje i v importu; registrace DPH
+bez ohledu na platnost k datu.
+
+**Odpověď říká, co pokyn doplnil sám** (D44): `_resolve.defaults` je seznam
+`{path, value}` — cesta pole ve formátu a doplněná hodnota (název režimu
+a úhrady, kód DPH, kód pohybu, systémový kód jednotky, u reference id
+záznamu) — v `/preview` i po `/apply`, i když apply skončí chybou. Payload
+v odpovědi zůstává, jak přišel. Výchozí kód DPH mění částky: skript, který
+kód neposílá, dostane základní sazbu, a `defaults` s `_resolve.computed`
+jsou místo, kde to uvidí.
+
+```jsonc
+"_resolve": {
+  "defaults": [
+    { "path": "currency",               "value": "CZK" },
+    { "path": "payment.method",         "value": "bankTransfer" },
+    { "path": "vat.mode",               "value": "fromBase" },
+    { "path": "dates.issueDate",        "value": "2026-11-23" },
+    { "path": "vat.registration",       "value": 1 },
+    { "path": "payment.ownBankAccount", "value": 1 },
+    { "path": "rows.0.operation",       "value": "sale.services" },
+    { "path": "rows.0.description",     "value": "Správa IT — měsíční paušál" },
+    { "path": "rows.0.unitPrice",       "value": 6500 },
+    { "path": "rows.0.unit",            "value": "mnth" },
+    { "path": "rows.0.quantity",        "value": 1 },
+    { "path": "rows.0.vat.code",        "value": "cz-120" }
+  ]
+}
+```
+
+**Povinná pole** (D1, D45): schéma vyžaduje obálku a `docType`. Všechno
+ostatní má výchozí hodnotu, nebo ho hlídá `DocDocument::validate()` **pro
+cílový stav** jako u formuláře — pokyn bez partnera nebo bez řádků jde
+uložit jako koncept, potvrzení ho zastaví. Vlastní kontroly povinnosti
+`DocumentValidator` v pokynu nemá a nález je na pole jeden (chybějící datum
+vystavení v importu nehlásí zároveň odvozené účetní datum). Dvě pole
+výchozí hodnotu mít nemohou a validátor je vyžaduje dál: **pokladnu**
+dokladu vázaného na pokladnu (`cashDesk` — řada se nikdy nevybírá potichu)
+a **směr** pokladního dokladu (`cashDirection`).
 
 ## 4. Životní cyklus
 
@@ -1095,9 +1181,12 @@ nebo import mezi dvěma cizími subjekty.
   "operation": null,               // key z docs.core.rowOperations (pohyb
                                     //   řádku). AI extraktory nevyplňují —
                                     //   interní účetní koncept, na předloze
-                                    //   není; null applier při apply doplní
+                                    //   není; návrh ho při apply doplní
                                     //   podle typu položky / docTypu, viz
-                                    //   §10 „Doplnění pohybu řádků".
+                                    //   §10 „Doplnění pohybu řádků". V pokynu:
+                                    //   chybějící klíč = výchozí pohyb jako
+                                    //   ve formuláři, null = záměrně bez
+                                    //   pohybu (§ 3 „Výchozí hodnoty pokynu“).
   "orderPos": 1,
 
   // Položka: reference sama ("item": "@K-001", "item": 18), nebo objekt
@@ -1903,6 +1992,11 @@ která se nenašla, `status: "notFound"` s příznakem `referenceError: true`
 `item.ref`, takže i její blok má `matchedBy: "ref"` — zdroj napárování
 říká `enrichment.matchedBy`.
 
+**`defaults`** (#166 D44) nese jen odpověď pokynu: seznam `{path, value}`
+polí, která applier doplnil výchozí hodnotou, protože je payload neuváděl
+(§ 3 „Výchozí hodnoty pokynu“) — v `/preview` i po `/apply`. Návrh klíč
+nenese.
+
 ```jsonc
 {
   "summary": {
@@ -2191,7 +2285,10 @@ Errors blokují `/apply`, warningy jen informují v UI.
 `vat_foreign_tax`, `vat_special_place`, `vat_special_place_ambiguous`,
 `vat_out_of_scope_user`, `vat_supplier_non_payer`,
 `non_payer_reverse_charge`, `bank_account_repaired`
-a `computed_total_mismatch`. **Jen v pokynu:** `vat_recap_missing`,
+a `computed_total_mismatch`, a také `required` validátoru na datu
+vystavení, řádcích a straně dokladu — v pokynu povinnost hlídá doklad pro
+cílový stav (#166 D45), validátor jen `required` na `cashDesk` dokladu
+vázaného na pokladnu. **Jen v pokynu:** `vat_recap_missing`,
 `vat_recap_code_missing`, `totals_check_failed`,
 `total_rounding_mode_ignored`, `document_validation_unavailable` a nálezy
 dokladu v `/preview`.
@@ -2375,7 +2472,8 @@ Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
 | Krok | Návrh | Pokyn |
 |---|---|---|
 | normalizace hodnot (před validací) | tvary + oprava IBAN ↔ číslo účtu | jen tvary |
-| `DocumentValidator` | včetně heuristik nad čísly předlohy | bez heuristik; `importNumber` povolené |
+| výchozí hodnoty | — (návrh si drží vlastní větve v transformu) | `InstructionDefaults` nad `DocHeadDefaults` / `DocRowDefaults`: co payload neuvádí, doplní se do **pracovní kopie** payloadu; zbytek pipeline běží nad ní, odpověď nese původní payload a `_resolve.defaults` (§ 3) |
+| `DocumentValidator` | včetně heuristik nad čísly předlohy a povinných polí | bez heuristik a bez povinných polí (jen `cashDesk` vázaného typu a `cashDirection`); `importNumber` povolené |
 | resolve — strany, položky | `ref` má přednost, jinak hledání podle údajů (§ 8.1, § 8.2) | jen reference (`ReferenceResolver`); objekt bez `ref` s údaji = `reference_missing` (#166 D31) |
 | resolve — účet řádku, jednotka | reference, nebo signál holým číslem (nenalezený = warning); jednotka i zkratkou a aliasem | jen reference (nenalezená = chyba); jednotka jen přesným systémovým kódem (`unit_not_found` = chyba) |
 | resolve — řada, pokladna, vlastní účet, dimenze, registrace DPH, původní doklad | reference | reference |
@@ -2383,7 +2481,7 @@ Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
 | resolve — partner účetního a pokladního dokladu (`partner`, `rows[].partner`) | jen reference; bez pole volba `_resolve…partner` | jen reference |
 | reconcile | čte `userAction` vč. vynechání řádků | `_resolve` se nečte vůbec (D32) — blok se zahodí před validací, info `resolve_ignored`; řádky se nevynechávají |
 | side-creates | podle `autoCreateMode` / `userAction` + učení dodavatelských kódů | **žádné** — pokyn osoby, položky ani účty partnerů nezakládá; `autoCreateMode` nečte |
-| transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5 | hodnoty z payloadu a výchozí hodnoty (§ 3, tabulka D20) |
+| transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5; výchozí úhrada a pohyb řádku vlastní větví | hodnoty z payloadu (výchozí hodnoty už nese pracovní kopie); pole, které chybí i tam, je záměrně prázdné |
 | po uložení (v transakci) | — | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
 | po uložení | — | varování dokladu do `_resolve.issues`, `total_rounding_mode_ignored` |
 
@@ -2392,8 +2490,8 @@ stav z `applyOptions.targetDocState` — nález, který by apply odmítl (řáde
 bez kódu DPH při cíli V pořádku, opravný doklad bez důvodu), je vidět před
 uložením; stejně tak neshodu kontrolního součtu `totals`
 (`totals_check_failed` nad `_resolve.computed`). Data skládá stejnou cestou
-jako apply (reconcile, dohledání
-pokladny a řady, výchozí pohyby řádků, transform) a nic nezapisuje; chybu
+jako apply (výchozí hodnoty, reconcile, dohledání
+pokladny a řady, transform) a nic nezapisuje; chybu
 dohledání pokladny, řady nebo vlastního účtu hlásí týmž kódem, jaký vrátí
 apply. Nehlásí, co posoudit nemůže: řadu vázanou na pokladnu, kterou apply
 teprve zkusí založit, zámky záznamu a nález dokladu na poli, jehož
@@ -2402,9 +2500,18 @@ pracuje s konceptem a chybu uložení vrátí až apply.
 
 ### Doplnění pohybu řádků (`operation`)
 
+**Pokyn** dostává pohyb mezi výchozími hodnotami společným pravidlem
+s formulářem (`DocRowDefaults::operationFor()`, § 3 „Výchozí hodnoty
+pokynu“): u řádku s položkou mapa `docs.core.applyRowOperations` podle typu
+položky, jinak první pohyb nabídky typu dokladu — tedy i pro typy bez
+záznamu v mapě (zálohové faktury, pokladní a účetní doklad) a i pro řádek
+kontace. Výchozí pohyb mapy (`default`) řádek bez položky v pokynu
+nedostane: u přijaté faktury je to *Účetní položka*, která bez položky
+nejde potvrdit. Zbytek oddílu popisuje **návrh**, který si svou větev drží.
+
 Item řádek bez pohybu nesmí na docState 40 („Pohyb je povinný",
 `DocRowOperationRules::validateRow`) — a AI pohyb správně nevrací
-(interní účetní koncept, na předloze není). Applier proto item řádkům
+(interní účetní koncept, na předloze není). Applier proto v návrhu item řádkům
 s `operation = null` pohyb doplní dvoustupňově podle cfgItem
 **`docs.core.applyRowOperations`** (`modules/docs/core/config/`,
 klíč = docType):
@@ -2462,6 +2569,10 @@ Importní mód je **pokyn** (v režimu návrh chyba
 `import_requires_instruction`) a nese **jen historii** dokladu (#166 D5,
 D22) — tohle je úplný seznam toho, co mění:
 
+- **výchozí hodnoty** (#166 D48, D49, § 3): datum vystavení se nedoplňuje
+  (chybějící je chyba) a obsah řádku — kód DPH, cena, text, jednotka,
+  množství — se z karty položky a z nabídky nebere; ostatní výchozí
+  hodnoty platí, výchozí registrace DPH bez ohledu na platnost k datu;
 - **vnucené číslo** dokladu a pořadové číslo (`importNumber.docNumber`,
   `sequenceNumber`; `null` = číslo mimo vzorec řady);
 - **dobový snapshot partnera** z payloadu místo dnešního adresáře (níže);
@@ -2704,9 +2815,21 @@ Matice hlídá tvar, jaký vyrobí export. Tvary, které export nevyrobí —
 převzatá rekapitulace bez kódů, ceny řádků s daní při `fromBase`, `totals`
 v rozporu s výpočtem, mód zaokrouhlení v rozporu s automatikou, reference
 (nenalezená, nejednoznačná, špatně zapsaná, strana jen údaji, signály
-návrhu, řada a registrace DPH referencí) — drží
+návrhu, řada a registrace DPH referencí), výchozí hodnoty pokynu (hodnota
+z payloadu vyhrává, výslovné `null`, importní mód, `_resolve.defaults`,
+jeden nález na pole) — drží
 `tests/Integration/Exchange/DocumentInstructionPayloadTest.php`
-(„payload → uložený doklad“, #166 D24, D27, D30–D39).
+(„payload → uložený doklad“, #166 D24, D27, D30–D39, D40–D50).
+
+**Minimální pokyn = doklad z formuláře bez zásahu uživatele** (#166 D40):
+druhá polovina invariantu. `DocumentFormInstructionInvariantTest` pořídí
+doklad cestou formuláře — skutečný `FormController`: otevření nového
+záznamu, výběr partnera a položky, uložení, potvrzení — a týž doklad
+pokynem `{docType, partner, rows: [{item}]}`; oba se musí shodnout ve všech
+porovnávaných sloupcích (faktura vydaná a přijatá, pokladní a účetní
+doklad). Rozdíl znamená, že se výchozí hodnoty formuláře a pokynu rozešly —
+nová výchozí hodnota patří do `Defaults\DocHeadDefaults` /
+`DocRowDefaults`, ne do hooku formuláře ani do applieru.
 
 ## 11. REST API endpointy
 
@@ -2729,9 +2852,11 @@ u pošty) si klient vyžádá výslovně:
 ### Doklad skriptem — minimální pokyn
 
 Nejmenší payload, kterým skript (nebo jiný systém) založí vydanou fakturu:
-odběratel a položka **referencí**, bez `totals` — částky, daň, splatnost,
-účetní datum, DUZP, řadu, registraci DPH i výchozí pohyb řádku doplní
-doklad stejně jako formulář.
+**typ dokladu, odběratel a položka referencí**. Všechno ostatní doplní
+pokyn stejně jako formulář (§ 3 „Výchozí hodnoty pokynu“) — datum
+vystavení, registraci DPH, vlastní účet, způsob úhrady, měnu, řadu, pohyb
+řádku, text, cenu a jednotku z karty položky, množství 1 a kód DPH — a
+doklad dopočítá částky, daň, splatnost, účetní datum a DUZP.
 
 ```jsonc
 POST /api/v1/_exchange/docs/document/apply
@@ -2739,15 +2864,27 @@ POST /api/v1/_exchange/docs/document/apply
   "format": "shpd.docs.document",
   "formatVersion": "1.0",
   "docType": "invoiceIssued",
-  "selfParty": "supplier",
   "customer": "@F00001",                    // nebo id: 42, nebo "@company_id:12345678"
+  "rows": [
+    { "item": "@SPRAVA-IT" }                // kód položky
+  ]
+}
+```
+
+Co se liší od karty položky a od výchozích hodnot, payload uvede — hodnota
+z payloadu vždy vyhrává:
+
+```jsonc
+{
+  "format": "shpd.docs.document", "formatVersion": "1.0",
+  "docType": "invoiceIssued",
+  "customer": "@F00001",
   "dates": { "issueDate": "2026-11-20" },
   "rows": [
     {
-      "item": "@SPRAVA-IT",                 // kód položky
+      "item": "@SPRAVA-IT",
       "description": "Správa IT — listopad 2026",
-      "unit": "mnth",                       // systémový kód jednotky
-      "quantity": 1,
+      "quantity": 2,
       "unitPrice": 5000,
       "vat": { "code": "cz-120" }           // procento se neposílá
     }
@@ -2757,20 +2894,30 @@ POST /api/v1/_exchange/docs/document/apply
 
 - Vznikne **koncept** (výchozí `applyOptions.targetDocState` je 10);
   odpověď nese `savedDocId`. Pro stav V pořádku přidej
-  `"applyOptions": {"targetDocState": 40}` a vlastní účet
-  `"payment": {"ownBankAccount": "@BU1"}` — bez něj vydaná faktura
-  potvrdit nejde.
-- **Nejdřív `/preview`**: nic nezapíše a vrátí v `_resolve.issues` vše, co by
-  apply odmítl (nenalezená reference, chybějící účet pro cílový stav),
-  a v `_resolve.computed` částky, které doklad spočítá.
+  `"applyOptions": {"targetDocState": 40}` — vydanou fakturu jde potvrdit,
+  má-li zdroj dat výchozí vlastní účet (jinak ho uveď:
+  `"payment": {"ownBankAccount": "@BU1"}`).
+- **Nejdřív `/preview`**: nic nezapíše a vrátí v `_resolve.defaults`, co
+  pokyn doplnil sám (cesta a hodnota), v `_resolve.issues` vše, co by apply
+  odmítl (nenalezená reference, chybějící partner pro cílový stav),
+  a v `_resolve.computed` částky, které doklad spočítá. Výchozí kód DPH
+  je základní sazba — jinou sazbu uveď kódem.
+- **`null` je „záměrně prázdné“**: `"payment": {"ownBankAccount": null}`
+  uloží doklad bez vlastního účtu, `"vat": {"code": null}` řádek bez kódu.
+  Chybějící klíč se doplní.
 - Osoby a položky musí existovat předem (`/_exchange/persons/person/`,
   `/_exchange/items/item/`) — pokyn je nezakládá ani nehledá podle jména.
   Reference, která se nenajde nebo není jednoznačná, je 422
   `validation_failed` s nálezem na cestě pole.
 - `totals` neposílej, pokud částky sám nepočítáš — uvedené jsou kontrolní
   součet (§ 5) a neshoda doklad odmítne.
-- Text řádku jde z `description`; položka zadaná jen referencí text nenese.
+- Text řádku jde z `description`; bez něj z názvu na kartě položky. Řádek
+  bez položky text potřebuje — z karty nemá co převzít.
 - Jednotka je systémový kód (`pcs`, `hr`, `mnth`, …), ne zkratka z tisku.
+- Pokladní doklad a prodejka potřebují navíc pokladnu (`cashDesk`),
+  pokladní doklad i směr (`cashDirection`) — ty výchozí hodnotu nemají.
+- Import historie (`applyOptions.importNumber`) datum vystavení ani obsah
+  řádku nedoplňuje (§ 10 „Importní mód“).
 
 ### POST `/validate`
 
@@ -2792,7 +2939,8 @@ Validate + resolve. Bez DB writes.
 takže `userAction` se v ní neobjeví — mapu rozhodnutí drží klient.
 
 **Response:** enriched canonical s vyplněným `_resolve` na top-level a
-issues uvnitř `_resolve.issues`. V pokynu nese i nálezy validace dokladu
+issues uvnitř `_resolve.issues`. V pokynu nese i `_resolve.defaults` (pole
+doplněná výchozí hodnotou, § 3) a nálezy validace dokladu
 pro cílový stav (§ 10 „Pipeline pokynu vedle návrhu“) — náhled vždy vrací
 200, o tom, zda apply projde, vypovídají issues se `severity: error`.
 

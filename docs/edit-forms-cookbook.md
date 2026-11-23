@@ -544,13 +544,18 @@ public function applyNewRecordDefaults(array &$data): void
 
 Hlavička dokladu (`DocsHeadsFormBase`) hook používá pro vše, co má uživatel
 vidět předvyplněné hned po otevření modalu: `issue_date` = dnes,
-`vat_registration` = první z roletky (jen u dokladu s DPH), `bank_account`
-= výchozí účet (jen formuláře, které pole renderují —
-`newRecordUsesBankAccount()`). Řádek dokladu (`DocRowsForm`) stejnou cestou
-předvybírá `vat_code` včetně dopočtu `vat_pct`, položka (`ItemsForm`) druh
-a jednotku. Subclass, která potřebuje změnit gating (účetní doklad →
-`vat_mode = 0`, pokladní doklad → `payment_method = 0`), nastaví hodnotu
-**před** `parent::applyNewRecordDefaults()`.
+`vat_registration` = první platná k datu (jen u dokladu s DPH),
+`bank_account` = výchozí účet (jen typy, které účet nesou). Řádek dokladu
+(`DocRowsForm`) stejnou cestou předvybírá pohyb, množství a `vat_code`
+včetně dopočtu `vat_pct`, položka (`ItemsForm`) druh a jednotku.
+
+**Výchozí hodnoty dokladu a jeho řádku nejsou v hooku** — hook je bere ze
+společných tříd `Defaults\DocHeadDefaults` / `DocRowDefaults` (docs.core),
+které volá i pokyn výměnného formátu (#166 D40, `docs/document-system.md`
+§ 12c). Rozdíl mezi typy dokladu (účetní doklad bez DPH, pokladní doklad
+Hotově) je atribut typu v `docs.core.docTypes`, ne podtřída formuláře.
+Novou výchozí hodnotu dokladu přidej do společné třídy — jinak se formulář
+a pokyn rozejdou a zastaví to `DocumentFormInstructionInvariantTest`.
 
 Pozor na schéma defaulty: `FormController` je do `$data` vloží **před**
 hookem, takže „když neprefillnuto" přes `isset()` nefunguje (`payment_method`
@@ -562,9 +567,10 @@ ne podle přítomnosti klíče. `vat_mode = 0` je platná hodnota — guardy př
 renderování**: běží nad kopií dat při každém buildu (GET meta i recalculate,
 kde hook neběží) a řídí `hidden`/options. Proto se hodnoty, které ovlivňují
 gating i to, co uživatel vidí (`vat_mode = 0` účetního dokladu,
-`payment_method = 0` pokladního), vyskytují na obou místech — duplikují se,
-nepřesouvají. Default, který stojí **jen** v `applyClientDefaults`, je mrtvý
-(issue #24 A).
+`payment_method = 0` pokladního), vyskytují na obou místech — u dokladu je
+obě berou z téhož pravidla (`DocHeadDefaults::vatMode()` /
+`paymentMethod()`), jinde se duplikují, nepřesouvají. Default, který stojí
+**jen** v `applyClientDefaults`, je mrtvý (issue #24 A).
 
 ---
 

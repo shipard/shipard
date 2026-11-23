@@ -41,7 +41,9 @@ stavů. Jediné místo pravidla je `VatLineScope` (docs.core):
   (`DocDocument::validateVatCodesFilled()`) — **i v importním módu**, který
   výjimku z kontroly nemá (#166 D22: zdroj posílá validní kód, u řádku,
   který není plněním, „Mimo DPH“). Výměnný formát v režimu pokyn kód
-  neodvozuje — řádek s objektem `vat` bez kódu jde na doklad bez kódu
+  neodvozuje. Chybějící kód ale doplní **výchozí hodnotou jako formulář**
+  (první kód nabídky, #166 D43) — mimo importní mód; řádek s výslovným
+  `"vat": {"code": null}` a řádek importu jdou na doklad bez kódu
   a rozhodne tahle kontrola (`docs/exchange-format.md` § 3). Netýká se
   kontačních řádků (operace s vlajkou `rowSide` — formulář jim pole Kód DPH
   nenabízí) a dokladu, u kterého se nedohledala země registrace.

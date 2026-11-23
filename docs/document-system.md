@@ -736,11 +736,16 @@ hlavičky a řádků mimo applier — druhá implementace by se rozešla.
 Generátor volá applier v režimu **pokyn** (`ApplyMode::Instruction`, #166
 D18 — `docs/exchange-format.md` § 3): ví, co chce uložit, takže applier
 nic neodvozuje ze signálů. Místo plnění, režim a kódy DPH jdou na doklad
-tak, jak je generátor napsal; co nenapíše, dostane výchozí hodnotu jako
-nový doklad ve formuláři (tuzemsko, Ze základu, výchozí registrace DPH,
-automatické zaokrouhlení tam, kde platí — proto generátor nepředává
-`totals`). Řádek dokladu s DPH má nést kód DPH: bez něj koncept vznikne
-s varováním a nepůjde potvrdit.
+tak, jak je generátor napsal; co nenapíše, dostane **výchozí hodnotu jako
+nový doklad ve formuláři** — týmž kódem (§ 12c): datum vystavení,
+registraci DPH, vlastní účet, způsob úhrady, pohyb řádku, obsah z karty
+položky, kód DPH, automatické zaokrouhlení tam, kde platí (proto generátor
+nepředává `totals`). **Pozor na dvě věci:** řádek dokladu s DPH bez kódu
+dostane první kód nabídky (základní sazbu) — generátor, který sazbu zná,
+kód posílá; a co má na dokladu zůstat prázdné, i když pro to výchozí
+hodnota existuje (kopie dokladu bez jednotky, řádek záměrně bez kódu),
+posílá **výslovným `null`** — chybějící klíč by se doplnil
+(`CorrectiveDocBuilder` u řádků opravného dokladu).
 
 **Záznamy, které generátor zná, posílá referencí id** (#166 D30,
 `docs/exchange-format.md` § 5 „Reference na záznamy“): partnera jako stranu
@@ -756,6 +761,63 @@ Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
 přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku
 (`AssetPostingDocuments`) jdou přes `TableGateway` přímo; sjednotí je
 samostatný task.
+
+## 12c. Výchozí hodnoty nového dokladu — jedno místo (#166 D40–D50)
+
+Co má nový doklad a nový řádek předvyplněné, říkají dvě třídy v
+`modules/docs/core/src/Defaults/`. Volá je **hook formuláře**
+(`DocsHeadsFormBase` / `DocRowsForm::applyNewRecordDefaults()`) i **pokyn
+výměnného formátu** (`DocumentApplier` přes adaptér
+`Exchange\Document\InstructionDefaults`) — minimální pokyn proto dá stejný
+doklad jako formulář bez zásahu uživatele (`docs/exchange-format.md` § 3
+„Výchozí hodnoty pokynu“, § 11). Nová výchozí hodnota patří **sem**, ne do
+hooku formuláře ani do applieru; invariant hlídá
+`DocumentFormInstructionInvariantTest`.
+
+**Kontrakt:** třídy pracují nad sloupci tabulek, bez znalosti formuláře
+i formátu, a vrací seznam sloupců, které doplnily. Doplňuje se jen sloupec,
+jehož **klíč v datech chybí**; přítomný klíč vyhrává i s hodnotou `null`
+(„záměrně prázdné“) — stejně jako u autora dokladu. Co volající považuje za
+„nezadáno“, si odstraní sám: formulář prázdné pole a hodnotu rovnou výchozí
+hodnotě sloupce ze schématu, kterou `FormController` vkládá před hookem
+(`DocsHeadsFormBase::dropUnspecifiedDefaults()`); pokyn chybějící klíč
+a prázdný text.
+
+`DocHeadDefaults::apply()` — hlavička, v tomto pořadí:
+
+| Sloupec | Pravidlo |
+|---|---|
+| `doc_currency` | typ vázaný na pokladnu: měna pokladny (z `cash_desk`, jinak z řady); jinak `economy.homeCurrency` |
+| `payment_method` | typ vázaný na pokladnu Hotově, jinak Převodem |
+| `vat_mode` | typ bez DPH (`docTypes[].vat: false`) a zdroj bez agendy DPH (`economy.vatAgenda === false`) 0, jinak 1 |
+| `issue_date` | dnes (import ho nedoplňuje) |
+| `vat_registration` | první aktivní podle země a id, platná k datu dokladu (DUZP → datum vystavení → dnes; import bez ohledu na platnost); jen s DPH |
+| `bank_account` | `DefaultBankAccountResolver`; jen typ, který účet nese (`docTypes[].own_bank_account`) |
+| `total_rounding_auto` | `docTypes[].total_rounding_auto`; směr pokladního dokladu srovná `DocDocument` při uložení |
+
+`DocRowDefaults::apply()` — položkový řádek (`row_kind` 1):
+
+| Sloupec | Pravidlo |
+|---|---|
+| `operation` | řádek s položkou: mapa `docs.core.applyRowOperations` podle typu položky (typ mimo mapu její `default`); řádek bez položky a typ dokladu bez záznamu: první pohyb nabídky. Formulář pohyb při výběru položky přenastaví, jen je-li automatický (`isAutomaticOperation()`) |
+| `description`, `unit_price`, `unit` | z karty položky (název, `sales_price_no_vat` je-li vyplněná, jednotka). Formulář jimi při výběru položky přepisuje vždy, pokyn jen doplňuje |
+| `quantity` | 1 |
+| `vat_code` | první kód nabídky `DocHeadVatContext::vatCodeOptions()` k datu sazby řádku, bez „Mimo DPH“; jen u hlavičky s DPH |
+
+Řádek kontace (`acc_side`, pohyb s `rowSide`) dostane jen pohyb; importní
+mód pokynu obsah řádku nedoplňuje (`$content = false`). Kontext hlavičky
+pro řádek dává `DocHeadVatContext` — `load()` z uložené hlavičky
+(sub-formulář), `fromHead()` z dat hlavičky, která ještě uložená není
+(pokyn).
+
+Rozdíly mezi typy dokladu řídí **atributy typu** (`docs.core.docTypes`,
+čte jen `DocTypes`): `vat`, `own_bank_account`, `series_binding`,
+`total_rounding_auto` — formulář ani pokyn se podle typu nevětví samy.
+
+Sem **nepatří**, co dopočítává `DocDocument::beforeSave()` (účetní datum,
+DUZP, DPPD, splatnost, autor): dokument nepozná „uživatel pole vymazal“ od
+„nikdo ho neuvedl“ — a právě proto výchozí hodnoty z tohoto místa do
+`beforeSave` nepatří (formulář by vymazaný účet dostal zpět).
 
 ## 13. Tok dat — saveDocument
 
