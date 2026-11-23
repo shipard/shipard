@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 479 tasků: **naplánováno** 7 · **částečně** 24 · **zrušeno** 1 · **hotovo** 447.
+Celkem 479 tasků: **naplánováno** 6 · **částečně** 25 · **zrušeno** 1 · **hotovo** 447.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,7 +28,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `doc-interpretation-extract.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 1; D51, D52, D54, D57) |
 | `doc-interpretation-switch.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 2; D53–D55); až po `tasks/doc-interpretation-extract.md` |
 | `doc-layers-documentation.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 3; D56); až po `tasks/doc-interpretation-switch.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -38,6 +37,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `ai-bedrock-eu.md` | částečně | kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); ověření 1–7 s reálným klíčem odloženo: přihlášení klíčem i tvar chyb ověřeny, ale testovací účet AWS nemá přístup k žádnému modelu Anthropicu (403 „not available for this account“ i přímo v konzoli AWS) — řeší se na straně AWS; po zpřístupnění stačí `shpd-ds ai-test` a body 2–5, 7, výsledek do #85 |
+| `doc-interpretation-extract.md` | částečně | commit 1 (přesun kódu návrhu) hotový 2026-11-23; zbývá hotový doklad (`interpret()`), stínový test a dokumentace (#166 etapa 5, část 1; D51, D52, D54, D57) |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |

@@ -1,6 +1,6 @@
 # Task: Interpretace dokladu jako samostatná část — hotový doklad vedle dnešní cesty návrhu
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 5, část 1; D51, D52, D54, D57)
+**Stav:** částečně — commit 1 (přesun kódu návrhu) hotový 2026-11-23; zbývá hotový doklad (`interpret()`), stínový test a dokumentace (#166 etapa 5, část 1; D51, D52, D54, D57)
 
 **Issue:** #166 (etapa 5)
 
@@ -173,10 +173,85 @@ hotový doklad) — plný přepis dokumentace je
 
 ## Hotovo když
 
-- [ ] kód návrhu je ve třídách interpretace, applier ho jen volá; žádná
+- [x] kód návrhu je ve třídách interpretace, applier ho jen volá; žádná
       logika odvozování není dvakrát
 - [ ] `interpret()` vrací úplný hotový doklad, zprávu, `pending`,
       `rowMap`, `learn`
 - [ ] stínový test bez rozdílu nad veřejnými sadami i unit fixturami
 - [ ] `dataset-verify` a testy invariantu beze změny
 - [ ] cílené testy, pak celá unit sada; stav tasku
+
+## Poznámky k implementaci
+
+### Commit 1 — přesun kódu návrhu (2026-11-23)
+
+Rozdělený na čtyři commity, každý čistý přesun se zelenou unit sadou:
+`aa9caefd` (kontext z payloadu), `b47cd485` (DPH, rekapitulace,
+zaokrouhlení), `d8601026` (hledání záznamů, volby, zakládání), `8318170c`
+(zpráva návrhu, kontroly papíru).
+
+**Sdílená vrstva** (`Document\`, čte ji pokyn i interpretace) — vznikla
+proto, že metody, které návrh i pokyn volají obě, byly v applieru privátní
+a třídy interpretace by je nezavolaly (past „kontext z payloadu ×
+odvození“):
+
+- `PayloadContext` — typ dokladu, importní mód, registrace DPH z reference,
+  hlavička a datum sazby, původní doklad opravy, kurz, země číselníku kódů,
+  jejich nálezy a **kontext DPH pokynu** (`vatContext()`); cache per
+  canonical, které dřív držel applier.
+- `PayloadResolve` — kroky resolve nad tím, co payload říká: blok reference,
+  partner jen přes `ref`, účet řádku referencí, dimenze, kód DPH řádku
+  ověřený proti číselníku, předmět plnění, řádek převzaté rekapitulace.
+
+**Třídy interpretace** (`Document\Interpret\`):
+
+| Třída | Obsah |
+|---|---|
+| `VatInterpretation` | kontext DPH návrhu (`context()` — dřívější větev odvozování ve `vatContext()`), volby DPH z `_resolve`, druh plnění ze štítků, rozhodnutí o kódu řádku, doklad neplátce a mimo české DPH, režim ověřený proti číslům, ceny řádků s daní dodavatele, registrace podle signálu země, nálezy režimu a hlavičky |
+| `RecapInterpretation` | převzít × přepočítat rekapitulaci, kód rekapitulace z řádků, aritmetika, důvod přepočtu |
+| `RoundingInterpretation` | odhad módu zaokrouhlení z čísel, automatika podle `totals.totalAmount` |
+| `RecordMatching` | `resolveAll()` návrhu (strany a položky podle údajů, účet partnera, účet holým číslem, jednotka aliasem), vynechané řádky, `reconcile()` s volbami uživatele a `autoCreateMode` |
+| `PendingRecords` | zakládání osob, účtu dodavatele a položek (zapisuje — mimo samotnou interpretaci) |
+| `SupplierCodeLearning` | učení dodavatelských kódů (zápis přes `executeSql()` applieru, aby ho testovací podtřídy dál zachytávaly) |
+| `ProposalDefaults` | pohyb řádku podle typu položky, výchozí způsob úhrady |
+| `ProposalReport` | `item.display` / `effectiveAccount` řádků, přenos auditu obohacení, `computed_total_mismatch` |
+| `PaperChecks` | z `DocumentValidator`: povinná pole návrhu, čtyři heuristiky nad čísly, `import_requires_instruction` |
+
+**Applier:** 6 987 → 3 260 řádků. Režim se v něm čte na 24 místech
+v 18 metodách (dřív 32 ve 22) a všechna jsou buď přepínač „návrh se ptá
+interpretace, pokyn payloadu“ (`vatContext()`, `effectiveVatMode()`,
+`resolveAll()`, `resolveRecapSource()`, …), nebo krok pořadí v `preview()`
+/ `apply()` / `transform()`. `resolveAll()` má dvě varianty: návrh
+v `RecordMatching`, pokyn (jen reference) v applieru; společné kroky drží
+`PayloadResolve`.
+
+**Co pokyn dál volá z interpretace** (k rozhodnutí v navazujícím tasku —
+tady se tok neměnil):
+
+- `RecordMatching::reconcile()` — pokyn `_resolve` nenese, takže je to jen
+  projekce nalezených referencí do plánu;
+- `ProposalReport::annotateRowDisplay()` a `carryOverEnrichment()` — náhled
+  pokynu dnes nese `item.display` a `effectiveAccount` stejně jako návrh.
+
+**Testy:** očekávání beze změny. Dva testy `DocumentApplierTest`, které
+reflexí volaly `resolveOne()` a `resolvePin()` na applieru, míří na
+`RecordMatching`. Ostatní metody, na které testy sahají reflexí
+(`vatContext`, `resolveAll`, `reconcile`, `runSideCreates`, `transform`,
+`appendVatModeIssue`, …), v applieru zůstaly jako přepínače se stejnou
+signaturou.
+
+**Ověření** (výchozí stav = commit `b462e89f`, zachycený před změnou):
+
+- celá unit sada 12 175 testů zelená; cílená sada výměnného formátu, pošty
+  a `docs.core` 4 600 testů se stejným počtem asercí (21 482) před i po;
+- integrační testy dokladů, DPH, účtování, pošty a sad nad volným zdrojem
+  `blkm-i8`: 554 testů, 16 přeskočených, bez selhání;
+- tři veřejné sady nad zdroji testovacího kola (čerstvý seed →
+  `dataset-verify --json`): výstup bajtově shodný s výchozím stavem;
+  uložené hlavičky, řádky, rekapitulace, deník, osoby, položky, dodavatelské
+  kódy a účty partnerů shodné (bez časových sloupců).
+
+**Strážní test vázaný na cestu souboru:** `DisplayDateUsageTest` drží
+výjimku pro formát data ve zprávě o kurzu podle cesty souboru — kód se
+přestěhoval do `PayloadContext.php`, výjimka s ním. Cílený běh testů
+výměnného formátu to neukáže; po přesunu mezi soubory pouštět celou sadu.

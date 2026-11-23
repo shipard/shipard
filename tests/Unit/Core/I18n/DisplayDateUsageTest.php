@@ -42,7 +42,7 @@ class DisplayDateUsageTest extends TestCase
         'modules/economy/bank/src/Checks/BankAccountingErrorsCheck.php' => 'text upozornění uložený při běhu kontroly',
         'modules/economy/workOrders/src/Checks/PeriodCheckBase.php'   => 'text upozornění uložený při běhu kontroly',
         'modules/economy/assets/src/Posting/AssetPostingBuilder.php'  => 'popis účetního zápisu uložený v dokladu',
-        'modules/core/exchange/src/Document/DocumentApplier.php'      => 'zpráva výsledku importu uložená u návrhu dokladu',
+        'modules/core/exchange/src/Document/PayloadContext.php'       => 'zpráva výsledku importu uložená u návrhu dokladu',
     ];
 
     private const HINT = 'datum pro obrazovku jde přes Shipard\\Core\\I18n\\DisplayDate'
