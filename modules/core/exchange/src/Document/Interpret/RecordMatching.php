@@ -330,7 +330,7 @@ final class RecordMatching
      * položková `rows[i].item.userAction = skip` u řádku s blokem položky
      * („Vynechat řádek“ z review modalu). Jediný zdroj pro {@see reconcile()}
      * (`rowSkips` plánu), {@see DocumentApplier::previewPlan()}, {@see RecapInterpretation::recapSource()}
-     * (D12) i {@see DocumentApplier::annotateRowDisplay()} — náhled a apply vynechávají
+     * (D12) i {@see ProposalReport::annotateRowDisplay()} — náhled a apply vynechávají
      * stejně. Pozice v `_resolve.rows` = index canonicalu ({@see resolveAll()}
      * vyrábí záznam pro každý řádek). Jede nad canonicalem, protože ho
      * {@see DocumentApplier::appendRecapSourceIssue()} potřebuje před resolve.
