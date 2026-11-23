@@ -13,6 +13,13 @@
             "additionalProperties": false,
             "properties": {
                 "kind":          { "type": "string" },
+                "ref": {
+                    "type": ["string", "null"],
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "pattern": "^\\S(.*\\S)?$",
+                    "description": "Identifier of the document in the source system. Together with kind it is the idempotence key: a repeated instruction with the same pair returns the existing document unchanged. Written by scripts and imports — never fill this field from a paper document."
+                },
                 "extractedAt":   { "type": ["string", "null"], "format": "date-time" },
                 "confidence":    { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
                 "message":       { "type": ["integer", "null"] },

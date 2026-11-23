@@ -41,6 +41,19 @@
             "additionalProperties": false,
             "properties": {
                 "kind":          { "type": "string" },
+                // Identifikátor dokladu ve zdrojovém systému (#166 D46) — s `kind`
+                // klíč idempotence: opakovaný pokyn se stejnou dvojicí vrátí
+                // existující živý doklad beze změny (koš neblokuje). Bez `kind`
+                // chyba `source_kind_missing`. Bez mezer na krajích, shoda je
+                // přesná včetně velikosti písmen. Návrh z pošty ho nenese —
+                // server ho ze zdroje zprávy zahazuje.
+                "ref": {
+                    "type": ["string", "null"],
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "pattern": "^\\S(.*\\S)?$",
+                    "description": "Identifier of the document in the source system. Together with kind it is the idempotence key: a repeated instruction with the same pair returns the existing document unchanged. Written by scripts and imports — never fill this field from a paper document."
+                },
                 "extractedAt":   { "type": ["string", "null"], "format": "date-time" },
                 "confidence":    { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
                 // Lineage: zdrojová zpráva došlé pošty (core_mail_incoming_messages).

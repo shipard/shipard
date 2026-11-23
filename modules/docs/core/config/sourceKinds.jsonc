@@ -25,6 +25,14 @@
         "name:cs": "Ručně pořízeno",
         "name:en": "Manual entry"
     },
+    "api": {
+        // Doklad poslaný skriptem nebo jiným systémem přes REST
+        // (/_exchange/docs/document/apply, #166 D46). S `source.ref` je
+        // opakované odeslání bezpečné — vrátí existující doklad.
+        "name": "API",
+        "name:cs": "API",
+        "name:en": "API"
+    },
     "workOrder": {
         // Doklad vystavený periodickou fakturací zakázky (economy.workOrders,
         // docs/work-orders.md D5) — InvoiceBuilder::SOURCE_KIND.

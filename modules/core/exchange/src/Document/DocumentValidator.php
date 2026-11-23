@@ -78,6 +78,7 @@ final class DocumentValidator
         $this->checkImportRequiresInstruction($canonical, $mode, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);
+        $this->checkSourceRef($canonical, $issues);
         $this->checkDimensions($canonical, $issues);
         // Tvar a platnost IČO, DIČ, PSČ, účtu, IBAN a BIC stran + opravy
         // z redundance (#118 D13, D14) — vše warning, apply neblokuje.
@@ -208,6 +209,26 @@ final class DocumentValidator
                 'path'     => 'applyOptions.importNumber',
                 'code'     => 'replace_concept_with_import',
                 'message'  => 'Přegenerování (replaceConcept) se nekombinuje s importNumber — koncept číslo nemá.',
+            ];
+        }
+    }
+
+    /**
+     * `source.ref` (#166 D46) je klíč idempotence jen spolu se `source.kind`:
+     * identifikátor bez druhu zdroje nejde dohledat a opakovaný pokyn by
+     * doklad založil podruhé — chyba, ne tiché uložení bez pojistky.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkSourceRef(array $canonical, array &$issues): void
+    {
+        if (SourceRef::hasRefWithoutKind($canonical)) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => 'source.ref',
+                'code'     => 'source_kind_missing',
+                'message'  => 'Identifikátor ve zdroji (source.ref) vyžaduje druh zdroje (source.kind) — bez něj nejde opakovaný pokyn rozpoznat.',
             ];
         }
     }

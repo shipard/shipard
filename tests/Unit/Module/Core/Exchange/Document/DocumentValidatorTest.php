@@ -619,6 +619,28 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByCode($issues, 'target_state_80_requires_import'));
     }
 
+    // ── source.ref — klíč idempotence (#166 D46) ─────────────────────────────
+
+    public function testSourceRefWithoutKindIsAnErrorInBothModes(): void
+    {
+        $base = [
+            'docType' => 'invoiceIssued',
+            'customer' => ['name' => 'Z'],
+            'dates' => ['issueDate' => '2026-10-01'],
+            'rows' => [['rowKind' => 'item']],
+        ];
+        foreach ([ApplyMode::Instruction, ApplyMode::Proposal] as $mode) {
+            $e = $this->findByCode($this->v->validate($base + ['source' => ['ref' => 'A-1']], $mode), 'source_kind_missing');
+            $this->assertNotNull($e);
+            $this->assertSame('error', $e['severity']);
+            $this->assertSame('source.ref', $e['path']);
+
+            $this->assertNull($this->findByCode($this->v->validate($base + ['source' => ['kind' => 'api', 'ref' => 'A-1']], $mode), 'source_kind_missing'));
+            $this->assertNull($this->findByCode($this->v->validate($base + ['source' => ['kind' => 'api']], $mode), 'source_kind_missing'));
+            $this->assertNull($this->findByCode($this->v->validate($base + ['source' => ['ref' => null]], $mode), 'source_kind_missing'));
+        }
+    }
+
     // ── applyOptions.replaceConcept (#110 D24, Q2) ───────────────────────────
 
     public function testReplaceConceptRequiresDraftTargetStateAndNoImportNumber(): void

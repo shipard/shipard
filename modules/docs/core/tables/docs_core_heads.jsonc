@@ -775,6 +775,22 @@
             "system": true,
             "group": "lineage"
         },
+        // Identifikátor dokladu ve zdrojovém systému (#166 D46) — s druhem
+        // zdroje klíč idempotence pokynu: opakovaný pokyn se stejnou dvojicí
+        // vrátí existující živý doklad (DocumentApplier, koš neblokuje).
+        // Shodu hledá applier přesně (velikost písmen rozhoduje), collation
+        // sloupce dává jen kandidáty z indexu idx_source_ref.
+        {
+            "id": "source_ref",
+            "name": "Source reference",
+            "name:cs": "Identifikátor ve zdroji",
+            "name:en": "Source reference",
+            "type": "varchar",
+            "length": 60,
+            "nullable": true,
+            "system": true,
+            "group": "lineage"
+        },
         {
             "id": "source_message",
             "name": "Source mail message",
@@ -999,6 +1015,14 @@
             "id": "idx_source_message",
             "type": "index",
             "columns": [{"column": "source_message"}]
+        },
+
+        // lineage — idempotence pokynu podle source.kind + source.ref (#166 D46).
+        // Unikátní být nemůže: doklad v koši nový pokyn neblokuje.
+        {
+            "id": "idx_source_ref",
+            "type": "index",
+            "columns": [{"column": "source_kind"}, {"column": "source_ref"}]
         },
 
         // fulltext on doc_text
