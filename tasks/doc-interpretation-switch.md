@@ -1,6 +1,6 @@
 # Task: Návrh = interpretace → pokyn; applier ukládá jen pokyn, endpoint `/interpret`
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 5, část 2; D53–D55); až po `tasks/doc-interpretation-extract.md`
+**Stav:** naplánováno — zadání 2026-11-23, doplněno po ověření části 1 (#166 etapa 5, část 2; D53–D55, D59–D62)
 
 **Issue:** #166 (etapa 5)
 
@@ -44,6 +44,27 @@ pokyn. Přibude endpoint, který vrátí hotový doklad bez uložení.
 - ✓ **D55 — Endpoint `/interpret`** vrátí hotový doklad a zprávu bez
   uložení; `/apply` s `interpret: true` zůstává jako obojí najednou.
 
+- ✓ **D59 — Přijatá výjimka z D54:** návrh v režimu Bez DPH s daní
+  dodavatele na řádku vznikne po přepnutí bez kódů DPH a bez rekapitulace
+  (podrobně v U5).
+
+Meze formátu, které našla část 1 — bez nich by přepnutí změnilo chování
+návrhu:
+
+- ✓ **D60 — Jednotka i číslem.** `rows[].unit`: text = systémový kód
+  (D37), číslo = id jednotky. Jednotka bez systémového kódu (založená
+  uživatelem) se jinak do formátu zapsat nedá a hotový doklad by ji
+  ztratil. Export píše dál systémový kód; jednotku bez něj vynechá
+  s varováním jako dnes.
+- ✓ **D61 — Bankovní účet partnera referencí.** `supplier.bankAccount.ref`
+  = id účtu partnera. S `ref` pokyn použije ten účet; bez něj přesná
+  shoda s účtem osoby jako dnes. Interpretace ho píše vždy, když účet
+  zná (shoda nebo volba uživatele). Export `ref` nepíše — účet nemá
+  přirozený klíč a data stačí.
+- ✓ **D62 — Applier nezávisí na interpretaci.** `item.display`
+  a `effectiveAccount` řádků jsou zpráva návrhu; z náhledu pokynu zmizí.
+  Co pokyn potřebuje k uložení, je ve sdílené vrstvě.
+
 ## Upřesnění pro implementaci
 
 - **U1 — Vstup návrhu.** Třída ve jmenném prostoru interpretace (návrh
@@ -77,6 +98,20 @@ pokyn. Přibude endpoint, který vrátí hotový doklad bez uložení.
   Kritérium: v `Document/DocumentApplier.php` a `DocumentValidator.php`
   není `ApplyMode` ani `derives()`; do poznámek napiš počet řádků před
   a po.
+- **U3b — Meze formátu (D60, D61) a závislosti (D62).**
+  - schéma (tři kopie): `rows[].unit` text nebo kladné celé číslo;
+    `Party.bankAccount.ref` (definice reference). Pokyn: jednotka číslem
+    = id, neexistující = `unit_not_found`; `bankAccount.ref` přes
+    `ReferenceResolver`, účet jiné osoby = chyba. Přirozený klíč účet
+    partnera nemá — `"@…"` je `reference_invalid`.
+  - `FinishedDocument` píše jednotku bez systémového kódu číslem a účet
+    partnera referencí; `limitations` `unit_without_system_code`
+    a `partner_bank_pin` zanikají. Zůstane-li v `limitations` cokoli
+    jiného, přepnutí nedělej a zapiš to.
+  - v `Document/DocumentApplier.php` není žádný `use …\Interpret\…`:
+    projekci nalezených referencí do plánu (`reconcile()` pokynu) drží
+    sdílená vrstva; `annotateRowDisplay()` a `carryOverEnrichment()` volá
+    jen vstup návrhu.
 - **U4 — REST `/interpret`.**
   `POST /api/v1/_exchange/docs/document/interpret`, tělo = papírová podoba
   (s volitelným `_resolve`), oprávnění jako `/preview`. Odpověď
@@ -146,7 +181,8 @@ pokyn. Přibude endpoint, který vrátí hotový doklad bez uložení.
 
 - [ ] návrh běží cestou interpretace → pokyn; odpovědi mají stejný tvar
 - [ ] `DocumentApplier` a `DocumentValidator` nemají režim ani větve
-      odvozování
+      odvozování a nezávisí na jmenném prostoru interpretace
+- [ ] hotový doklad nemá `limitations` (D60, D61)
 - [ ] `/interpret` vrací hotový doklad a zprávu
 - [ ] `dataset-verify` a uložené doklady z návrhů shodné s kódem před
       taskem; testy invariantu beze změny
