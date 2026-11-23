@@ -1,6 +1,6 @@
 # Task: Idempotence pokynu — `source.ref` vrátí existující doklad
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 4, část 2; D7, D46); až po `tasks/doc-defaults-shared.md`
+**Stav:** hotovo — 2026-11-23 (#166 etapa 4, část 2; D7, D46)
 
 **Issue:** #166 (etapa 4)
 
@@ -93,9 +93,52 @@ běh pak doklady nezdvojí. Druh zdroje pro import určí etapa 6.
 
 ## Hotovo když
 
-- [ ] `source.ref` ve schématu, sloupec `source_ref` na hlavičce
-- [ ] opakovaný pokyn vrátí existující doklad; koš neblokuje; souběh
+- [x] `source.ref` ve schématu, sloupec `source_ref` na hlavičce
+- [x] opakovaný pokyn vrátí existující doklad; koš neblokuje; souběh
       nezaloží duplicitu
-- [ ] `/preview` existující doklad hlásí
-- [ ] testy podle U7; cílené testy, pak celá unit sada
-- [ ] dokumentace, stav tasku
+- [x] `/preview` existující doklad hlásí
+- [x] testy podle U7; cílené testy, pak celá unit sada
+- [x] dokumentace, stav tasku
+
+## Poznámky k implementaci (2026-11-23)
+
+- **Klíč** čte jediná třída `Document\SourceRef` (obě hodnoty neprázdné
+  řetězce). Validátor hlásí `ref` bez `kind` kódem `source_kind_missing`.
+- **Dohledání (U2)** běží hned za idempotencí podle zprávy, **před
+  schématem a validací obsahu** — opakování po výpadku projde, i když se
+  mezitím ve zdroji dat něco změnilo. Odpověď nese navíc info nález
+  `already_applied` s `docId` a `docNumber` (koncept má jen zástupné
+  číslo → `null`). Víc živých dokladů se stejnou dvojicí (obnova z koše)
+  = nejnovější.
+- **Přesná shoda** (nad rámec zadání): collation databáze nerozlišuje
+  velikost písmen, `INV-1` a `inv-1` by byly tentýž doklad a druhý by
+  tiše nevznikl. Index dává kandidáty, shodu rozhoduje `SourceRef::matches()`
+  v PHP; schéma zakazuje mezery na krajích. Přetížení collation na sloupci
+  nepoužito — `SqlGenerator` z pole `collation` skládá `CHARACTER SET
+  <hodnota>`, pro název collation tedy neplatné SQL (nikde se nepoužívá;
+  oprava mimo rozsah).
+- **Souběh (U3)**: pojmenovaný zámek MariaDB `GET_LOCK(CONCAT(DATABASE(),
+  ':docsrc:<sha1 dvojice>'), 10)` vzatý před `NestedTransaction::run`
+  a uvolněný ve `finally` po commitu; první dotaz transakce doklad dohledá
+  znovu (čerstvý snímek). Vypršení = 409 `source_ref_busy`. Zamykací čtení
+  `FOR UPDATE` zavrženo — na neexistujícím klíči drží zámek mezery indexu
+  a souběžné importy sousedních identifikátorů by se blokovaly navzájem;
+  zamykací tabulka by byla druhý zdroj pravdy. **Mez**: uvnitř cizí
+  transakce se zámek uvolní před commitem volajícího — souběh hlídá
+  volající (dnes žádný takový `ref` neposílá).
+- **Pošta** (nad rámec zadání): schéma má kopii v `output_schema` profilu,
+  pole tedy vidí i model. `MessageProposalApplier::apply()` a náhled
+  zprávy v `AnalysisController` `source.ref` zahazují; REST
+  s `interpret: true` ho čte (U5).
+- **`replaceConcept` (U5)** doslovně: cílový koncept se vylučuje, jiný
+  živý doklad se stejnou dvojicí se vrátí jako `alreadyApplied` a koncept
+  zůstane nepřegenerovaný. `REPLACE_RESET_HEAD` nuluje i `source_ref`.
+- **Sady (U6)**: veřejné sady ani demo sada `source.ref` nenesou; matice
+  round-tripu to u každého případu ověřuje. `dataset-seed --no-reset`
+  hlásí existující číslo dokladu dřív, než dojde na klíč (beze změny).
+- **Ověření**: unit sada 12 170 testů; `Integration\\Exchange` nad `blkm`
+  140 testů (4 přeskočené jako dřív); přes REST na `8yft` dvojí odeslání
+  minimálního pokynu = jeden doklad a `alreadyApplied`, čtyři kola
+  8–16 souběžných `/apply` se stejným `ref` = pokaždé jeden doklad;
+  testovací kolo `test-round --only=datasets` nad třemi veřejnými sadami
+  (seed, `dataset-verify`, proklikání) 9 kroků `ok`.

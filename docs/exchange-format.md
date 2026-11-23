@@ -76,7 +76,7 @@ plánované formáty (samostatné dokumenty / iterace) popisuje sekce 13.
 | **Schema** | Definice struktury konkrétního formátu (`shpd.docs.document.v1`). JSON Schema draft-2020-12 + PHP `DocumentValidator` pro logiku, kterou schema neumí (např. polymorfismus podle `docType`). |
 | **Resolve** | Proces propojení referencí v canonical (Party, Item, Unit, VAT code, BankAccount) s entitami v lokální DB. |
 | **Apply** | Proces uložení canonical dokumentu do DB — orchestruje resolve, transformuje na interní `$data`, deleguje na `TableGateway::saveDocument()`. |
-| **Lineage** | Stopy, odkud doklad vznikl — `source.kind` + `source_message` v `docs_core_heads`, zpětně `target_*` na zdrojové zprávě. |
+| **Lineage** | Stopy, odkud doklad vznikl — `source.kind`, `source.ref` (identifikátor ve zdrojovém systému, klíč idempotence pokynu) + `source_message` v `docs_core_heads`, zpětně `target_*` na zdrojové zprávě. |
 
 ## 3. Architektura — tři vrstvy
 
@@ -304,7 +304,11 @@ Top-level struktura:
   // ── Source (audit / lineage) ─────────────────────────────────────────────
   "source": {
     "kind": "aiExtraction",      // aiExtraction | isdoc | xml.peppol | manual
-                                  //   | import.flexibee | import.pohoda | …
+                                  //   | api | import.flexibee | import.pohoda | …
+    "ref": "ORD-2026-0042",       // string|null, do 60 znaků — identifikátor
+                                  //   dokladu ve zdrojovém systému; s `kind`
+                                  //   klíč idempotence pokynu (viz „Idempotence
+                                  //   pokynu“ níže, #166 D46)
     "extractedAt": "2026-05-14T10:30:00Z",
     "confidence": 0.92,           // jen pro aiExtraction (overall_confidence)
     "message": 12345,             // int|null — FK na core_mail_incoming_messages.
@@ -566,6 +570,53 @@ Top-level struktura:
   "_resolve": { /* viz sekce 9 */ }
 }
 ```
+
+### Idempotence pokynu — `source.ref` (#166 D46)
+
+Skript nebo import, který pošle tentýž doklad podruhé (opakovaný běh,
+výpadek spojení po odeslání), nesmí založit duplicitu. Doklad proto nese
+**identifikátor ze zdrojového systému** `source.ref` vedle `source.kind`;
+obojí se uloží na hlavičku (`source_kind`, `source_ref`).
+
+```jsonc
+"source": { "kind": "api", "ref": "ORD-2026-0042" }
+```
+
+- **Opakovaný pokyn se stejnou dvojicí vrátí existující doklad beze
+  změny**: 200, `savedDocId` existujícího dokladu,
+  `_resolve.summary.status = "alreadyApplied"` a info nález
+  `already_applied` s `docId` a `docNumber`. **Obsah se neporovnává** —
+  druhý pokyn s jiným obsahem doklad nezmění (aktualizace dokladu pokynem
+  neexistuje, #166 D7) a jeho obsah se ani neposuzuje: dohledání běží před
+  validací, takže opakování po výpadku projde i poté, co se ve zdroji dat
+  něco změnilo.
+- **Živé doklady**: doklad v koši nový pokyn neblokuje — vznikne nový.
+  Žije-li dokladů se stejnou dvojicí víc (doklad obnovený z koše vedle
+  novějšího), vrací se nejnovější.
+- **Shoda je přesná**: velikost písmen i diakritika rozhodují (`INV-1`
+  a `inv-1` jsou dva doklady). Identifikátor je text do 60 znaků bez mezer
+  na krajích; prázdný řetězec schéma odmítne, `null` = bez klíče.
+- **`ref` bez `kind`** je chyba validace `source_kind_missing` — dvojice
+  se hledá celá, identifikátor sám nic neurčuje. Pro skript nebo jiný
+  systém přes REST je druh `api`; import si volí vlastní.
+- **Jiný typ dokladu**: existující doklad jiného typu, než je `docType`
+  payloadu, je chyba `source_ref_conflict` (422) — stejný identifikátor
+  pro jiný doklad je chyba volajícího.
+- **Oba režimy** (pokyn i návrh přes `applyOptions.interpret`) se chovají
+  stejně, importní mód také: opakovaný běh importu vrátí existující doklad.
+  **Návrh z pošty klíč nenese** — server `source.ref` ze zdroje zprávy
+  zahazuje (pole je ve schématu, které vidí i model; vyplněné číslem
+  faktury by druhé zprávě vrátilo doklad té první). Opakovaný apply návrhu
+  hlídá vazba zprávy na doklad (§ 12).
+- **`/preview`** existující doklad hlásí nálezem `already_applied` (jiný
+  typ chybou `source_ref_conflict`); zbytek náhledu běží jako obvykle.
+- **Přegenerování** (`applyOptions.replaceConcept`): cílový koncept se
+  z dohledání vylučuje a `source_ref` přebírá z payloadu (§ 10).
+- **Export** píše `source.ref`, je-li vyplněný — sady nesou původ. Apply
+  takové sady nad zdrojem dat, kde doklad s touž dvojicí žije, vrátí ten
+  existující.
+
+Souběh a zámek popisuje § 10 „Idempotence a souběh“.
 
 ### Reference na záznamy — jedno pole na odkaz (#166 D30–D39)
 
@@ -2327,6 +2378,9 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce — i u předmětu plnění řádku, kde se čeká `useValue:<kód>`); path dle volby (#87 B, #89 D12). |
 | `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). Jen návrh — pokyn `_resolve` nečte a hlásí `resolve_ignored`. |
+| `already_applied` | info | Živý doklad se stejným `source.kind` + `source.ref` už existuje (#166 D46). Path `source.ref`, nese `docId` a `docNumber` (koncept číslo nemá → `null`). V odpovědi `/apply` provází `_resolve.summary.status = "alreadyApplied"`, v `/preview` říká, že apply doklad vrátí beze změny. § 5 „Idempotence pokynu“. |
+| `source_ref_conflict` | error | Doklad se stejným `source.kind` + `source.ref` existuje, ale je jiného typu než `docType` payloadu (#166 D46). Path `source.ref`, nese `docId` a `docNumber`. `/apply` končí 422 `source_ref_conflict`, `/preview` hlásí totéž. |
+| `source_kind_missing` | error | `source.ref` bez `source.kind` — klíč idempotence je dvojice (#166 D46). Path `source.ref`. |
 | `resolve_ignored` | info | Jen pokyn: payload nese blok `_resolve` — pokyn ho celý ignoruje (volby DPH, položek, partnerů i vynechání řádků; #166 D32). Jeden nález na payload, path `_resolve`. |
 | `vat_recap_missing` | error | Jen pokyn: `vat.recapSource: "declared"` bez řádků `vatRecap` (#166 D20). Path `vatRecap`. |
 | `vat_recap_code_missing` | error | Jen pokyn: řádek převzaté rekapitulace nemá kód DPH — kód se z řádků nedohledává (#166 D20). Path `vatRecap.N.vatCode`. |
@@ -2388,6 +2442,9 @@ nebo není typu dokladu),
 jinou řadu, než jakou určuje pokladna),
 `replace_target_not_found` / `replace_target_type_mismatch` (422)
 a `replace_target_not_concept` (409) u `replaceConcept`,
+`source_ref_conflict` (422 — identifikátor ve zdroji už nese doklad jiného
+typu) a `source_ref_busy` (409 — jiný pokyn se stejným `source.ref` se
+právě ukládá a do 10 s nedoběhl; opakování je bezpečné),
 **`cash_desk_not_found`** (pokladna mimo stav V pořádku (40), takže jí nelze
 založit řadu typu `cash`/`cashreg`; pokladně ve stavu 40 applier chybějící
 řadu založí sám). Pokladna, řada ani vlastní účet, které se podle reference
@@ -2398,6 +2455,11 @@ pod `validation_failed`.
 
 ```
 POST /api/v1/_exchange/docs/document/apply
+  │
+  ├─ 0. Idempotence — bez ukládání vrátí existující doklad:
+  │      - source.message už ukazuje na doklad (návrh z pošty, § 12)
+  │      - živý doklad se stejným source.kind + source.ref (#166 D46;
+  │        jiný typ → 422 source_ref_conflict)
   │
   ├─ 1. Schema validation (statická struktura)
   │
@@ -2411,9 +2473,15 @@ POST /api/v1/_exchange/docs/document/apply
   ├─ 4. Validation gate
   │      - blok `issues` s severity="error" → 422 s payloadem
   │
+  ├─ 4b. Zámek podle source.kind + source.ref (jen s klíčem; drží se do
+  │      commitu, 409 source_ref_busy po 10 s čekání)
+  │
   ├─ 5. NestedTransaction — vlastní transakce, nebo SAVEPOINT uvnitř
   │      transakce volajícího (generátory dokladů, které na výsledek
   │      atomicky navazují — periodická fakturace, #110)
+  │
+  ├─ 5a. Idempotence pod zámkem: doklad se stejným klíčem vznikl mezitím
+  │      → rollback vlastní práce a odpověď alreadyApplied
   │
   ├─ 5b. replaceConcept: zámek cílového konceptu FOR UPDATE + kontrola
   │      stavu 10 a typu (replace_target_* → rollback vlastní práce)
@@ -2432,8 +2500,8 @@ POST /api/v1/_exchange/docs/document/apply
   │      - canonical field names → DB column names (camelCase → snake_case)
   │      - currency uppercase → lowercase (cfgItem expects "czk")
   │      - vatRecap, totals vypustit (přepočte beforeSave)
-  │      - source.* → docs_core_heads.source_kind / source_message /
-  │        source_extracted_at
+  │      - source.* → docs_core_heads.source_kind / source_ref /
+  │        source_message / source_extracted_at
   │
   ├─ 8. TableGateway.saveDocument('docs_core_heads', $data)
   │      → DocDocument::validate (+ subclass per docType); chyba =
@@ -2665,6 +2733,36 @@ a apply skončí `replace_target_not_concept` (409), chybějící
 (422). Idempotence podle `source.message` se při přegenerování přeskočí
 (zpráva už na doklad ukazuje); `writeLineageTargets` propíše stejné id.
 Provenience (`source_*`) sleduje payload — volající je autorita.
+Z dohledání podle `source.kind` + `source.ref` se **cílový koncept
+vylučuje** (nesmí se najít sám) a `source_ref` přebírá z payloadu — bez
+klíče v payloadu se sloupec vynuluje. Jiný živý doklad se stejnou dvojicí
+platí jako u běžného pokynu: apply vrátí ten (`alreadyApplied`), cílový
+koncept zůstane, jak byl.
+
+### Idempotence a souběh — `source.ref` (#166 D46)
+
+Dohledání existujícího dokladu (§ 5 „Idempotence pokynu“) běží dvakrát
+týmž dotazem: hned na začátku `apply()` (rychlá cesta bez zámku, před
+validací obsahu) a znovu jako první dotaz transakce uložení, pod zámkem.
+
+**Zámek** je pojmenovaný zámek MariaDB (`GET_LOCK`) se jménem z databáze
+a otisku dvojice. Bere se **před** transakcí a uvolňuje po jejím commitu,
+takže druhý pokyn se stejným klíčem po uvolnění zámku začíná transakci
+s čerstvým snímkem a doklad prvního najde — dva současné pokyny založí
+jeden doklad, druhý odpoví `alreadyApplied`. Čekání je nejvýš 10 s, pak
+409 `source_ref_busy`. Pokyny s různými klíči se nezdržují.
+
+Proč ne jinak: unikátní index nejde (koš neblokuje); zamykací čtení
+(`SELECT … FOR UPDATE`) nad neexistujícím klíčem drží v InnoDB zámek
+mezery indexu, o který by se dva souběžné importy se sousedními
+identifikátory zablokovaly navzájem; zamykací tabulka by byla druhý zdroj
+pravdy o tom, které doklady existují.
+
+**Mez — apply uvnitř cizí transakce**: zámek patří spojení, ne transakci.
+Běží-li `apply()` v transakci volajícího (viz níže), uvolní se před jejím
+commitem a druhé dohledání čte snímek vnější transakce. Souběh si pak
+hlídá volající — jako periodická fakturace zámkem řádku období.
+Top-level volající (REST, import, datové sady) mají záruku celou.
 
 ### Apply uvnitř cizí transakce
 
@@ -2919,6 +3017,25 @@ z payloadu vždy vyhrává:
 - Import historie (`applyOptions.importNumber`) datum vystavení ani obsah
   řádku nedoplňuje (§ 10 „Importní mód“).
 
+**Bezpečné opakování.** Přidej dokladu identifikátor ze svého systému:
+
+```jsonc
+{
+  "format": "shpd.docs.document", "formatVersion": "1.0",
+  "source": { "kind": "api", "ref": "ORD-2026-0042" },   // číslo objednávky, id řádku…
+  "docType": "invoiceIssued",
+  "customer": "@F00001",
+  "rows": [ { "item": "@SPRAVA-IT" } ]
+}
+```
+
+Když odpověď nedorazí (výpadek spojení, timeout) nebo skript běží znovu,
+pošli **tentýž pokyn** — doklad nevznikne podruhé. Odpověď je 200 se
+stejným `savedDocId` a `_resolve.summary.status = "alreadyApplied"`
+(§ 5 „Idempotence pokynu“). Existující doklad se nemění ani při jiném
+obsahu; smazaný (v koši) nový pokyn neblokuje. 409 `source_ref_busy`
+znamená, že tentýž pokyn právě ukládá jiné volání — opakuj za chvíli.
+
 ### POST `/validate`
 
 Statická + dynamická validace bez resolve a bez DB writes.
@@ -2943,6 +3060,9 @@ issues uvnitř `_resolve.issues`. V pokynu nese i `_resolve.defaults` (pole
 doplněná výchozí hodnotou, § 3) a nálezy validace dokladu
 pro cílový stav (§ 10 „Pipeline pokynu vedle návrhu“) — náhled vždy vrací
 200, o tom, zda apply projde, vypovídají issues se `severity: error`.
+Existuje-li živý doklad se stejným `source.kind` + `source.ref`, nese
+odpověď info nález `already_applied` s jeho `docId` a `docNumber` (apply
+ho vrátí beze změny, § 5 „Idempotence pokynu“).
 
 ### POST `/apply`
 
@@ -2958,6 +3078,12 @@ Validate + resolve + reconcile s klientským `_resolve.*.userAction` + uložit.
 - `_resolve.summary.status = "applied"`
 - Nově vytvořené entity mají `_resolve.*.personId` / `itemId` / atd. vyplněné
 - Pokud `targetDocState: 40`: `docNumber` doplněn z přidělené series
+
+**Opakovaný pokyn** (živý doklad se stejným `source.kind` + `source.ref`,
+§ 5 „Idempotence pokynu“; u návrhu z pošty zpráva, která už na doklad
+ukazuje): 200, payload jak přišel, `savedDocId` existujícího dokladu
+a `_resolve.summary.status = "alreadyApplied"`; nic se neuloží ani
+nezmění.
 
 **Chybové stavy:**
 
@@ -2975,6 +3101,10 @@ Validate + resolve + reconcile s klientským `_resolve.*.userAction` + uložit.
   v `_resolve.issues`, nic se neuložilo.
 - `409 conflict` — jen návrh: během reconcile se zjistilo, že entita
   mezitím zmizela (`useExisting:42` ale person 42 už neexistuje).
+- `422 source_ref_conflict` — doklad se stejným `source.kind`
+  + `source.ref` existuje, ale je jiného typu než `docType` payloadu.
+- `409 source_ref_busy` — jiný pokyn se stejným `source.ref` se právě
+  ukládá; opakování je bezpečné.
 
 ## 12. Source lineage
 
@@ -2991,7 +3121,8 @@ target = opakovaný apply vrátí existující entitu, nevzniká duplicita.
 
 | Sloupec | Typ | Význam |
 |---------|-----|--------|
-| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
+| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `api` (skript nebo jiný systém přes REST) / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
+| `source_ref` | `varchar(60) nullable`, index `idx_source_ref` (`source_kind`, `source_ref`) | Identifikátor dokladu ve zdrojovém systému (`source.ref`, #166 D46). S `source_kind` klíč **idempotence pokynu**: opakovaný pokyn se stejnou dvojicí vrátí existující živý doklad. Index není unikátní — doklad v koši nový pokyn neblokuje; shodu rozhoduje applier přesně (collation sloupce dává jen kandidáty). |
 | `source_message` | `int nullable` ref `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty; plní server-side injection `source.message` při apply návrhu. |
 | `source_extracted_at` | `datetime nullable` | Časový bod extrakce / importu. |
 
