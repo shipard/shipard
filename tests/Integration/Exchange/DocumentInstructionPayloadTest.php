@@ -25,6 +25,9 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * tasks/doc-format-references.md U8): reference — nenalezená, nejednoznačná
  * a špatně zapsaná, strana jen údaji, signály návrhu v pokynu, řada
  * a registrace DPH referencí; kde to dává smysl, týž payload i v návrhu.
+ * Čtvrtá skupina (#166 D40–D50, tasks/doc-defaults-shared.md U10): výchozí
+ * hodnoty pokynu — minimální payload, hodnota z payloadu vyhrává, výslovné
+ * `null`, importní mód, `_resolve.defaults`, jeden nález na pole.
  *
  * Payload vzniká z dokladu pořízeného cestou formuláře (koncept → export)
  * a úpravou toho, co případ zkoumá; po apply se čte uložený doklad
@@ -768,7 +771,205 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame($f->person('customer'), (int) $withField->rows[1]['partner'], 'pole má přednost před volbou');
     }
 
+    // ── Výchozí hodnoty pokynu (#166 D40–D45, D48–D50) ──────────────────────
+
+    /** D44: odpověď říká, co pokyn doplnil — stejně v náhledu i po uložení; doklad to nese. */
+    public function testDefaultsAreListedInPreviewAndAfterSave(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->options($this->minimalIssuedPayload(), 40);
+
+        $preview = self::defaults($this->applier->preview($payload));
+        $result = $this->applier->apply($payload);
+        $saved = $this->saved($result);
+
+        $this->assertSame($preview, self::defaults($result), 'náhled a uložení doplní totéž');
+        $this->assertSame(
+            [
+                'currency', 'payment.method', 'vat.mode', 'dates.issueDate', 'vat.registration', 'payment.ownBankAccount',
+                'rows.0.operation', 'rows.0.description', 'rows.0.unitPrice', 'rows.0.unit', 'rows.0.quantity', 'rows.0.vat.code',
+            ],
+            array_keys($preview),
+        );
+        $this->assertSame(date('Y-m-d'), $preview['dates.issueDate']);
+        $this->assertSame($f->vatRegistrationId(), $preview['vat.registration']);
+        $this->assertSame(1250.0, (float) $preview['rows.0.unitPrice']);
+
+        $this->assertSame(40, (int) $saved->head['docState']);
+        $this->assertSame($f->vatRegistrationId(), (int) $saved->head['vat_registration']);
+        $this->assertNotNull($saved->head['bank_account'], 'výchozí vlastní účet — bez něj fakturu nejde potvrdit');
+        $this->assertSame(1, (int) $saved->head['total_rounding_auto']);
+        $this->assertSame('sale.services', $saved->rows[0]['operation']);
+        $this->assertSame([1250.0, 262.5, 1512.5], self::amounts($saved, 'total_base', 'total_vat', 'total_amount'));
+        // Odpověď vrací payload, jak přišel — bez doplněných hodnot.
+        $this->assertArrayNotHasKey('dates', $result->canonical);
+        $this->assertSame(['ref' => '@' . $f->itemCode($f->pricedItem())], $result->canonical['rows'][0]['item']);
+    }
+
+    /** D40: hodnota z payloadu vždy vyhrává — výchozí hodnota ji nepřepíše a ve výčtu není. */
+    public function testPayloadValuesWinOverDefaults(): void
+    {
+        $payload = $this->minimalIssuedPayload();
+        $payload['dates'] = ['issueDate' => F::DATE];
+        $payload['payment'] = ['method' => 'card'];
+        $payload['vat'] = ['mode' => 'fromTotal'];
+        $payload['rows'][0] += ['description' => F::PREFIX . ' vlastní text', 'unitPrice' => 990.0, 'quantity' => 3];
+
+        $result = $this->applier->apply($this->options($payload, 10));
+        $saved = $this->saved($result);
+
+        $this->assertSame(F::DATE, substr((string) $saved->head['issue_date'], 0, 10));
+        $this->assertSame([2, 2], [(int) $saved->head['payment_method'], (int) $saved->head['vat_mode']]);
+        $this->assertSame(F::PREFIX . ' vlastní text', $saved->rows[0]['description']);
+        $this->assertSame([990.0, 3.0], [(float) $saved->rows[0]['unit_price'], (float) $saved->rows[0]['quantity']]);
+        $this->assertSame(
+            [],
+            array_intersect(
+                ['dates.issueDate', 'payment.method', 'vat.mode', 'rows.0.description', 'rows.0.unitPrice', 'rows.0.quantity'],
+                array_keys(self::defaults($result)),
+            ),
+        );
+    }
+
+    /** D50: výslovné `null` = záměrně prázdné — vlastní účet ani jednotka z karty se nedoplní. */
+    public function testExplicitNullKeepsFieldsEmpty(): void
+    {
+        $f = $this->fixtures;
+        $payload = [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceReceived',
+            'supplier' => '@' . $f->personNumber($f->person('supplier')),
+            'payment'  => ['ownBankAccount' => null],
+            'totals'   => ['totalRoundingAuto' => null],
+            'rows'     => [['item' => '@' . $f->itemCode($f->pricedItem()), 'unit' => null, 'unitPrice' => null]],
+        ];
+
+        $result = $this->applier->apply($this->options($payload, 10));
+        $saved = $this->saved($result);
+
+        $this->assertNull($saved->head['bank_account']);
+        $this->assertNull($saved->rows[0]['unit']);
+        $this->assertSame(0.0, (float) $saved->rows[0]['unit_price'], 'bez ceny z karty');
+        $defaults = self::defaults($result);
+        $this->assertArrayNotHasKey('payment.ownBankAccount', $defaults);
+        $this->assertArrayNotHasKey('rows.0.unit', $defaults);
+        $this->assertArrayNotHasKey('rows.0.unitPrice', $defaults);
+        $this->assertArrayHasKey('rows.0.description', $defaults, 'co payload neuvádí, se doplní dál');
+    }
+
+    /** D50: `totals.totalRoundingAuto` — chybí = zapnuto jako ve formuláři, `null` = vypnuto. */
+    public function testNullTotalRoundingAutoTurnsAutomaticOff(): void
+    {
+        $on = $this->saved($this->applier->apply($this->options($this->minimalIssuedPayload(), 10)));
+        $payload = $this->minimalIssuedPayload();
+        $payload['totals'] = ['totalRoundingAuto' => null];
+        $off = $this->saved($this->applier->apply($this->options($payload, 10)));
+
+        $this->assertSame([1, 0], [(int) $on->head['total_rounding_auto'], (int) $off->head['total_rounding_auto']]);
+    }
+
+    /** D42, D43: řádek bez položky dostane pohyb, množství 1 a kód DPH — z karty nemá co převzít. */
+    public function testRowWithoutItemGetsOperationQuantityAndCode(): void
+    {
+        $payload = $this->minimalIssuedPayload();
+        $payload['rows'] = [['description' => F::PREFIX . ' práce', 'unitPrice' => 800.0]];
+
+        $result = $this->applier->apply($this->options($payload, 40));
+        $saved = $this->saved($result);
+
+        $this->assertSame(
+            ['rows.0.operation', 'rows.0.quantity', 'rows.0.vat.code'],
+            array_values(array_filter(array_keys(self::defaults($result)), static fn (string $p): bool => str_starts_with($p, 'rows.'))),
+        );
+        $this->assertSame(1.0, (float) $saved->rows[0]['quantity']);
+        $this->assertSame($this->fixtures->vatCode('output', 'domestic', 'standard', date: date('Y-m-d')), $saved->rows[0]['vat_code']);
+        $this->assertSame([800.0, 168.0, 968.0], self::amounts($saved, 'total_base', 'total_vat', 'total_amount'));
+    }
+
+    /** D48: import historie datum vystavení nést musí — chybějící je chyba, a to jediná na to pole. */
+    public function testImportWithoutIssueDateIsASingleError(): void
+    {
+        $payload = $this->options($this->minimalIssuedPayload(), 10, import: true);
+        $before = $this->documentCount();
+
+        $preview = $this->applier->preview($payload);
+        $this->assertSame([['error', 'dates.issueDate']], self::findings($preview, 'required'));
+        $this->assertArrayNotHasKey('dates.issueDate', self::defaults($preview));
+
+        $result = $this->applier->apply($payload);
+        $this->assertFalse($result->success);
+        $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame([['error', 'dates.issueDate']], self::findings($result, 'required'), 'bez odvozeného nálezu na účetním datu');
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /**
+     * D49: importní mód obsah řádku nedoplňuje — historický řádek by jinak
+     * tiše dostal cenu z dnešní karty položky a základní sazbu. Pohyb ano.
+     */
+    public function testImportDoesNotFillRowContent(): void
+    {
+        $payload = $this->minimalIssuedPayload();
+        $payload['dates'] = ['issueDate' => F::DATE];
+
+        $result = $this->applier->apply($this->options($payload, 10, import: true));
+        $saved = $this->saved($result);
+        $row = $saved->rows[0];
+
+        $this->assertSame(
+            ['rows.0.operation'],
+            array_values(array_filter(array_keys(self::defaults($result)), static fn (string $p): bool => str_starts_with($p, 'rows.'))),
+        );
+        $this->assertSame('sale.services', $row['operation']);
+        $this->assertNull($row['vat_code']);
+        $this->assertNull($row['unit']);
+        $this->assertNull($row['quantity']);
+        $this->assertSame(0.0, (float) $row['total_price']);
+        // Hlavička výchozí hodnoty v importu dostává (D48).
+        $this->assertNotNull($saved->head['bank_account']);
+        $this->assertNotNull($saved->head['vat_registration']);
+    }
+
+    /**
+     * D45, U7: povinnost hlídá doklad pro cílový stav — pokyn bez partnera
+     * jde uložit jako koncept, potvrzení zastaví jediný nález na pole.
+     */
+    public function testMissingPartnerIsOneFindingOnConfirmationAndNoneForDraft(): void
+    {
+        $f = $this->fixtures;
+        $payload = [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceIssued',
+            'docText' => F::PREFIX . ' bez partnera',
+            'rows'    => [['item' => '@' . $f->itemCode($f->pricedItem())]],
+        ];
+
+        $preview = $this->applier->preview($this->options($payload, 40));
+        $this->assertSame([['error', 'customer']], self::findings($preview, 'required'));
+
+        $confirm = $this->applier->apply($this->options($payload, 40));
+        $this->assertSame(['validation_failed', 422], [$confirm->errorCode, $confirm->statusCode]);
+        $this->assertSame([['error', 'customer']], self::findings($confirm, 'required'));
+
+        $draft = $this->saved($this->applier->apply($this->options($payload, 10)));
+        $this->assertSame(10, (int) $draft->head['docState']);
+        $this->assertNull($draft->head['partner']);
+    }
+
     // ── Payloady ────────────────────────────────────────────────────────────
+
+    /**
+     * Minimální pokyn vydané faktury: typ dokladu, odběratel a položka —
+     * všechno ostatní jsou výchozí hodnoty. @return array<string, mixed>
+     */
+    private function minimalIssuedPayload(): array
+    {
+        $f = $this->fixtures;
+        return [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0', 'docType' => 'invoiceIssued',
+            'customer' => '@' . $f->personNumber($f->person('customer')),
+            'rows'     => [['item' => '@' . $f->itemCode($f->pricedItem())]],
+        ];
+    }
+
 
     /** Účetní doklad se dvěma kontačními řádky, bez partnera — export. @return array<string, mixed> */
     private function accountingPayload(): array

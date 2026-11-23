@@ -21,8 +21,9 @@ use Shipard\Module\Docs\Core\VatRateDates;
  * sloupec, jehož klíč v datech **chybí**; přítomný klíč vyhrává i s hodnotou
  * `null` („záměrně prázdné“, D50).
  *
- * Týká se jen položkového řádku (`row_kind` 1) bez kontační strany
- * (`acc_side`); textový řádek a řádek kontace výchozí hodnoty nemají.
+ * Týká se jen položkového řádku (`row_kind` 1); textový řádek výchozí
+ * hodnoty nemá. Řádek kontace (strana `acc_side`, pohyb s `rowSide`)
+ * dostane jen pohyb — částku a účet zadává uživatel přímo.
  *
  *  - **Pohyb** ({@see operationFor()}): u řádku s položkou mapa
  *    `docs.core.applyRowOperations` podle typu položky; u řádku bez položky
@@ -55,7 +56,7 @@ final class DocRowDefaults
      */
     public function apply(array &$row, ?array $headContext, bool $content = true): array
     {
-        if ((int) ($row['row_kind'] ?? 1) !== 1 || ($row['acc_side'] ?? null) !== null) {
+        if ((int) ($row['row_kind'] ?? 1) !== 1) {
             return [];
         }
         $filled = [];
@@ -68,7 +69,7 @@ final class DocRowDefaults
                 $filled[] = 'operation';
             }
         }
-        if ($this->hasRowSide((string) ($row['operation'] ?? '')) || !$content) {
+        if (!$content || $this->isContation($row)) {
             return $filled;
         }
 
@@ -95,9 +96,9 @@ final class DocRowDefaults
 
     /**
      * Sloupce, které by řádek dostal výchozí hodnotou, kdyby v něm chyběly —
-     * stejné podmínky jako {@see apply()}: jen položkový řádek bez kontační
-     * strany; obsah z karty jen u řádku s položkou, kód DPH jen u hlavičky
-     * s DPH, řádek s pohybem se stranou (`rowSide`) jen pohyb.
+     * stejné podmínky jako {@see apply()}: jen položkový řádek; obsah z karty
+     * jen u řádku s položkou, kód DPH jen u hlavičky s DPH, řádek kontace
+     * jen pohyb.
      *
      * Čte je export dokladu: prázdný sloupec z tohoto výčtu píše výslovným
      * `null` („záměrně prázdné“, D50), jinak by ho pokyn při načtení
@@ -108,11 +109,11 @@ final class DocRowDefaults
      */
     public function defaultableColumns(array $row, bool $headHasVat): array
     {
-        if ((int) ($row['row_kind'] ?? 1) !== 1 || ($row['acc_side'] ?? null) !== null) {
+        if ((int) ($row['row_kind'] ?? 1) !== 1) {
             return [];
         }
         $columns = ['operation'];
-        if ($this->hasRowSide((string) ($row['operation'] ?? ''))) {
+        if ($this->isContation($row)) {
             return $columns;
         }
         if (!empty($row['item'])) {
@@ -258,6 +259,17 @@ final class DocRowDefaults
             static fn (array $e): array => ['value' => $e['value'], 'label' => $e['label']],
             $entries,
         );
+    }
+
+    /**
+     * Řádek kontace: nese stranu (`acc_side`), nebo pohyb se stranou
+     * (`rowSide`). Obsah z položky, množství ani kód DPH nedostává.
+     *
+     * @param array<string, mixed> $row
+     */
+    private function isContation(array $row): bool
+    {
+        return ($row['acc_side'] ?? null) !== null || $this->hasRowSide((string) ($row['operation'] ?? ''));
     }
 
     /** Nese pohyb stranu účtování na řádku (`rowSide` — kontační řádek účetního dokladu)? */

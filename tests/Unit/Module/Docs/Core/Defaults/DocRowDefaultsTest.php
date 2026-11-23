@@ -190,14 +190,23 @@ class DocRowDefaultsTest extends TestCase
         $this->assertSame(['item' => 1, 'operation' => 'sale.services'], $row);
     }
 
-    public function testTextRowAndContationRowGetNothing(): void
+    public function testTextRowGetsNothing(): void
     {
         $text = ['row_kind' => 0];
         $this->assertSame([], $this->defaults()->apply($text, $this->head('invno')));
         $this->assertSame(['row_kind' => 0], $text);
+    }
 
+    /** Řádek kontace (strana na řádku): jen pohyb — jako nový řádek účetního dokladu ve formuláři. */
+    public function testContationRowGetsOnlyOperation(): void
+    {
         $contation = ['acc_side' => 0, 'account' => 12];
-        $this->assertSame([], $this->defaults()->apply($contation, $this->head('cmnbkp', vatMode: 0)));
+        $this->assertSame(['operation'], $this->defaults()->apply($contation, $this->head('cmnbkp', vatMode: 0)));
+        $this->assertSame(['acc_side' => 0, 'account' => 12, 'operation' => 'acc.record'], $contation);
+
+        $explicit = ['acc_side' => 1, 'operation' => 'acc.item'];
+        $this->assertSame([], $this->defaults()->apply($explicit, $this->head('cmnbkp', vatMode: 0)));
+        $this->assertSame(['operation'], $this->defaults()->defaultableColumns(['acc_side' => 0], true));
     }
 
     /** Pohyb se stranou na řádku (účetní doklad): doplní se pohyb a dál nic. */

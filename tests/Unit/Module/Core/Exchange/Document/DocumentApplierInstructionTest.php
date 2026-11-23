@@ -605,6 +605,28 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertSame(['fromBase', 'default'], [$vat['mode']['value'], $vat['mode']['source']]);
     }
 
+    /**
+     * #166 D44, U8: pokyn vyjmenuje doplněná pole v `_resolve.defaults`
+     * a odpovídá payloadem, jak přišel; návrh výchozí hodnoty nedostává
+     * a klíč `defaults` nenese — jeho výstup se nemění.
+     */
+    public function testDefaultsBelongToInstructionOnly(): void
+    {
+        $payload = $this->happyPayload();
+        unset($payload['vat'], $payload['vatRecap'], $payload['payment']['method']);
+
+        $instruction = $this->buildApplier()->preview(self::withoutChecksum(self::asInstruction($payload)))->canonical;
+        $defaults = array_column($instruction['_resolve']['defaults'], 'value', 'path');
+        $this->assertSame('fromBase', $defaults['vat.mode']);
+        $this->assertSame('bankTransfer', $defaults['payment.method']);
+        $this->assertSame(5, $defaults['vat.registration']);
+        $this->assertArrayNotHasKey('vat', $instruction, 'odpověď nese payload, jak přišel');
+        $this->assertArrayNotHasKey('method', $instruction['payment'] ?? []);
+
+        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $this->assertArrayNotHasKey('defaults', $proposal['_resolve']);
+    }
+
     public function testUnknownRowCodeIsAnError(): void
     {
         $payload = $this->happyPayload();

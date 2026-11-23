@@ -865,6 +865,7 @@ class DocumentExporterTest extends TestCase
         foreach (['vat', 'unit', 'unitPrice', 'description'] as $key) {
             $this->assertArrayNotHasKey($key, $rows[2], "kontace: {$key}");
         }
+        $this->assertSame('acc.record', $rows[2]['operation']);
     }
 
     /** Doklad Bez DPH kódy řádků nenese — `vat.code: null` na něm nevzniká. */

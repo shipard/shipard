@@ -26,6 +26,7 @@ trait RoundTripEnvironment
     private RoundTripFixtures $fixtures;
     private DocumentApplier $applier;
     private ConfigRuntime $configRuntime;
+    private FormPath $formPath;
 
     /** Volat ze `setUp()` po `parent::setUp()`; přeskočí test, když zdroj dat nestačí. */
     private function bootRoundTripEnvironment(): void
@@ -66,6 +67,11 @@ trait RoundTripEnvironment
             $registry,
             $this->tables,
             $dispatcher,
+        );
+
+        // Cesta formuláře přes skutečný FormController (invariant U10).
+        $this->formPath = new FormPath(
+            $this->db, $this->tables, $this->configRuntime, $this->dsConfig, $resolver, $registry, $dispatcher,
         );
 
         $this->fixtures = new RoundTripFixtures($this->db, $gateway, $this->configRuntime, $this->dsConfig);

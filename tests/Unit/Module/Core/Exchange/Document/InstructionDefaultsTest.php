@@ -296,14 +296,14 @@ class InstructionDefaultsTest extends TestCase
         $this->assertSame(['rows.0.operation' => 'sale.services'], self::byPath($result['defaults']));
     }
 
-    /** Textový řádek, řádek kontace a doklad bez DPH. */
+    /** Textový řádek nic; řádek kontace jen pohyb; doklad bez DPH bez kódu. */
     public function testTextContationAndNoVatRows(): void
     {
         $result = $this->rows([
             ['rowKind' => 'text', 'description' => 'Poznámka'],
             ['accSide' => 'debit', 'account' => '@518100', 'totalPrice' => 100],
-        ]);
-        $this->assertSame([], $result['defaults']);
+        ], head: ['doc_type' => 'cmnbkp', 'vat_mode' => 0] + self::HEAD);
+        $this->assertSame(['rows.1.operation' => 'acc.record'], self::byPath($result['defaults']));
 
         $noVat = $this->rows([['item' => '@SLUZBA']], head: ['vat_mode' => 0] + self::HEAD);
         $this->assertArrayNotHasKey('rows.0.vat.code', self::byPath($noVat['defaults']));

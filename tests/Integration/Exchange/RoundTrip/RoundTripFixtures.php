@@ -296,6 +296,43 @@ final class RoundTripFixtures
         return $this->items[$code] = $id;
     }
 
+    /**
+     * Položka s kartou, ze které řádek přebírá obsah (#166 D42): služba
+     * s prodejní cenou a jednotkou — typ „Služba“ dává pohyb podle mapy
+     * `applyRowOperations` (prodej / nákup služeb).
+     */
+    public function pricedItem(): int
+    {
+        $code = self::PREFIX . '-CENIK';
+        if (isset($this->items[$code])) {
+            return $this->items[$code];
+        }
+        $id = $this->db->insertRow('economy_items', [
+            'code'               => $code,
+            'name'               => self::PREFIX . ' služba s cenou',
+            'item_kind'          => 3,
+            'item_type'          => 0,
+            'unit'               => $this->unitId(),
+            'sales_price_no_vat' => 1250.00,
+            'docState'           => 40,
+            'docStateMain'       => 3,
+        ]);
+        $this->labels['economy_items'][$id] = '@item.priced';
+        return $this->items[$code] = $id;
+    }
+
+    /** Kód položky (přirozený klíč) pro referenci `"@kód"`. */
+    public function itemCode(int $itemId): string
+    {
+        return (string) $this->db->fetchSingle('SELECT [code] FROM [economy_items] WHERE [id] = %i', $itemId);
+    }
+
+    /** Číslo osoby (přirozený klíč) pro referenci `"@číslo"`. */
+    public function personNumber(int $personId): string
+    {
+        return (string) $this->db->fetchSingle('SELECT [person_id] FROM [base_persons_persons] WHERE [id] = %i', $personId);
+    }
+
     public function unitId(): ?int
     {
         $id = $this->db->fetchSingle('SELECT [id] FROM [core_units] WHERE [system_code] = %s LIMIT 1', 'pcs');
