@@ -9,7 +9,7 @@ use Shipard\Api\AuthContext;
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Mail\Mcp\MailDraftDocumentTool;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 
@@ -58,7 +58,7 @@ final class MailDraftDocumentToolTest extends TestCase
     }
 
     /** @return array<string, mixed> výsledek nástroje */
-    private function call(?DocumentApplier $applier, ?DataSourceConnection $db = null): array
+    private function call(?DocumentProposal $applier, ?DataSourceConnection $db = null): array
     {
         $db ??= $this->db();
         $tool = new MailDraftDocumentTool(new MessageProposalApplier($db, $applier));
@@ -69,11 +69,11 @@ final class MailDraftDocumentToolTest extends TestCase
     /**
      * @param list<array<string, string>> $issues
      */
-    private function applierReturning(array $issues, bool $success = true): DocumentApplier
+    private function applierReturning(array $issues, bool $success = true): DocumentProposal
     {
         $canonical = $this->canonical();
         $canonical['_resolve'] = ['issues' => $issues];
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())->method('apply')->willReturn(
             $success
                 ? ApplyResult::ok($canonical, savedId: 9999)
@@ -128,7 +128,7 @@ final class MailDraftDocumentToolTest extends TestCase
 
     public function testAlreadyDraftedDocumentIsSkippedWithoutWarnings(): void
     {
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $result = $this->call($applier, $this->db(targetRow: 9999));

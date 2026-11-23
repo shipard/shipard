@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Exchange;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Api\DocumentLoader;
 use Shipard\Api\Request;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Module\ModulePathResolver;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
@@ -26,7 +25,8 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
     private const TEST_DOC_NUMBER_PREFIX = 'IT-EX-';
 
     private ConfigRuntime $config;
-    private DocumentApplier $applier;
+    /** Papírová podoba dokladu jde vstupem návrhu (#166 D53). */
+    private DocumentProposal $applier;
 
     /** @var list<int> */
     private array $createdDocIds = [];
@@ -56,7 +56,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
             $this->markTestSkipped('DS is missing invni number_series — run bin/shpd-ds ds-upgrade with provisioners.');
         }
 
-        $this->applier = DocumentApplier::create(
+        $this->applier = DocumentProposal::create(
             $this->db->getDibiConnection(),
             $this->config,
             $this->dsConfig,
@@ -120,7 +120,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
     public function testValidateAcceptsHappyFixture(): void
     {
         $payload = $this->loadFixture('invoiceReceived_happy.json');
-        $result = $this->applier->validate($payload, ApplyMode::Proposal);
+        $result = $this->applier->validate($payload);
         $this->assertTrue(
             $result->success,
             'Issues: ' . json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_PRETTY_PRINT),
@@ -130,7 +130,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
     public function testValidateRejectsMissingDataFixture(): void
     {
         $payload = $this->loadFixture('invoiceReceived_missingData.json');
-        $result = $this->applier->validate($payload, ApplyMode::Proposal);
+        $result = $this->applier->validate($payload);
 
         $this->assertFalse($result->success);
         $this->assertSame('validation_failed', $result->errorCode);
@@ -146,7 +146,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         $payload['supplier']['name'] = self::TEST_PARTNER_NAME_PREFIX . ' Preview ' . uniqid();
         $payload['supplier']['companyId'] = '99' . substr((string) (microtime(true) * 10000), -6);
 
-        $result = $this->applier->preview($payload, ApplyMode::Proposal);
+        $result = $this->applier->preview($payload);
         $this->assertTrue($result->success);
 
         $supplier = $result->canonical['_resolve']['supplier'] ?? [];
@@ -161,7 +161,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         $payload['supplier']['name'] = self::TEST_PARTNER_NAME_PREFIX . ' NoAction ' . uniqid();
         $payload['supplier']['companyId'] = '88' . substr((string) (microtime(true) * 10000), -6);
 
-        $result = $this->applier->apply($payload, ApplyMode::Proposal);
+        $result = $this->applier->apply($payload);
         $this->assertFalse($result->success);
         $this->assertSame('unresolved_required', $result->errorCode);
     }
@@ -188,7 +188,7 @@ class DocumentExchangeEndpointTest extends IntegrationTestCase
         // Stay in Draft so we don't need own-company / number series assignment.
         $payload['applyOptions'] = ['targetDocState' => 10];
 
-        $result = $this->applier->apply($payload, ApplyMode::Proposal);
+        $result = $this->applier->apply($payload);
         $this->assertTrue(
             $result->success,
             "Apply failed: code={$result->errorCode}, msg={$result->errorMessage}\n"

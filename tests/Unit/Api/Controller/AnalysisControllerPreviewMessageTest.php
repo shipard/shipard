@@ -15,8 +15,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
@@ -78,7 +77,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
 
     private function controller(
         DataSourceConnection $db,
-        ?DocumentApplier $applier = null,
+        ?DocumentProposal $applier = null,
         ?RowEnrichmentPipeline $enricher = null,
         ?ConfigRuntime $configRuntime = null,
     ): AnalysisController {
@@ -196,7 +195,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
     {
         $db = $this->db(null, null);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('preview');
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 999);
@@ -243,7 +242,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         ];
         $db = $this->db($this->message(200), $this->analysis((string) json_encode($wrapper)));
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('preview');
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 200);
@@ -263,21 +262,18 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $enriched = $canonical;
         $enriched['_resolve'] = ['summary' => ['status' => 'ok'], 'issues' => []];
 
+        // Náhled návrhu z pošty jde vstupem návrhu (#166 D53).
         $captured = null;
-        $capturedMode = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('preview')
-            ->willReturnCallback(function (array $c, ApplyMode $mode) use (&$captured, &$capturedMode, $enriched) {
+            ->willReturnCallback(function (array $c) use (&$captured, $enriched) {
                 $captured = $c;
-                $capturedMode = $mode;
                 return ApplyResult::ok($enriched);
             });
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
         $this->assertSame(200, $this->statusOf($resp));
-        // Náhled návrhu z pošty = režim návrh (#166 D18, U10).
-        $this->assertSame(ApplyMode::Proposal, $capturedMode);
 
         // Server-controlled injection happened (source.message, ne extractedDoc)
         $this->assertSame(100, $captured['source']['message']);
@@ -313,7 +309,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $enricher = new RowEnrichmentPipeline(new RowHistoryEnricher($dibi, $party), new ContentTagResolver($dibi));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('preview')
             ->willReturnCallback(function (array $c) use (&$captured) {
@@ -342,7 +338,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             $this->analysis((string) json_encode($canonical), resolution: 50),
         );
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())->method('preview')->willReturn(ApplyResult::ok($canonical));
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
@@ -425,7 +421,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             $this->analysis((string) json_encode($canonical), proposedType: 'insurance'),
         );
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('preview');
 
         $resp = $this->controller($db, $applier, configRuntime: $configRuntime)
@@ -468,7 +464,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
                 ['id' => 43, 'name' => 'scan.jpg', 'mime_type' => 'image/jpeg', 'file_size' => 67890],
             ]);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
@@ -490,7 +486,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
             $this->message(100, extra: $this->sourceMessageColumns()),
             $this->analysis((string) json_encode($canonical)),
         );
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
 
         $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
@@ -533,7 +529,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
     public function testPreviewMessageSenderFallsBackToEmailThenNull(): void
     {
         $canonical = $this->happyCanonical();
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
         $analysis = $this->analysis((string) json_encode($canonical));
 
@@ -554,7 +550,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         // Starší řádek bez sloupců (výchozí fixture) — blok existuje,
         // kód je prázdný řetězec, datum a odesílatel null.
         $canonical = $this->happyCanonical();
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
         $db = $this->db($this->message(100), $this->analysis((string) json_encode($canonical)));
 
@@ -569,7 +565,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
     {
         // Dibi může vracet DATETIME jako objekt — formát je stejný.
         $canonical = $this->happyCanonical();
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
         $db = $this->db(
             $this->message(100, extra: $this->sourceMessageColumns([
@@ -599,7 +595,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         );
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('preview')
             ->willReturnCallback(function (array $c) use (&$captured) {
@@ -622,7 +618,7 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $db = $this->db($this->message(100), $this->analysis((string) json_encode($canonical)));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('preview')->willReturnCallback(function (array $c) use (&$captured) {
             $captured = $c;
             return ApplyResult::ok($c);

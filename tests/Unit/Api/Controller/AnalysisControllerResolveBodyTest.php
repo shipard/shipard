@@ -14,7 +14,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 
@@ -70,7 +70,7 @@ class AnalysisControllerResolveBodyTest extends TestCase
 
     private function controller(
         DataSourceConnection $db,
-        ?DocumentApplier $applier = null,
+        ?DocumentProposal $applier = null,
     ): AnalysisController {
         return new AnalysisController(
             $db, $this->config, $this->tmpDir, [],
@@ -148,12 +148,12 @@ class AnalysisControllerResolveBodyTest extends TestCase
      * Applier mock, který zachytí canonical předaný do apply().
      *
      * @param array<string, mixed> $canonical
-     * @return array{0: DocumentApplier, 1: \Closure}
+     * @return array{0: DocumentProposal, 1: \Closure}
      */
     private function captureApplier(array $canonical): array
     {
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(
             function (array $passed) use (&$captured) {
                 $captured = $passed;

@@ -15,7 +15,7 @@ use Shipard\Module\Base\Persons\Mcp\PersonsGetTool;
 use Shipard\Module\Base\Persons\Mcp\PersonsSearchTool;
 use Shipard\Module\Base\Registry\Mcp\RegistrySearchTool;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 use Shipard\Module\Core\Mail\Mcp\MailDraftDocumentTool;
 use Shipard\Module\Core\Mail\Mcp\MailListPendingTool;
@@ -668,7 +668,7 @@ class McpControllerTest extends TestCase
 	}
 
 	/** Postaví controller s registrovaným draft nástrojem a vyvolá tools/call. */
-	private function callDraftTool(DataSourceConnection $db, ?DocumentApplier $applier, array $args): array
+	private function callDraftTool(DataSourceConnection $db, ?DocumentProposal $applier, array $args): array
 	{
 		$registry = new McpToolRegistry();
 		$service = $applier !== null ? new MessageProposalApplier($db, $applier) : null;
@@ -719,7 +719,7 @@ class McpControllerTest extends TestCase
 			['id' => 5, 'resolution' => null, 'canonical_json' => json_encode($canonical), 'proposed_type' => 'invoiceReceived'],
 		);
 
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->expects($this->once())->method('apply')
 			->willReturn(ApplyResult::ok($canonical, savedId: 777));
 
@@ -740,7 +740,7 @@ class McpControllerTest extends TestCase
 			['id' => 5, 'resolution' => null, 'canonical_json' => json_encode($canonical), 'proposed_type' => 'invoiceReceived'],
 		);
 
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->method('apply')->willReturn(ApplyResult::error(
 			'unresolved_required', 'Doplň userAction',
 			['_resolve' => ['issues' => [
@@ -768,7 +768,7 @@ class McpControllerTest extends TestCase
 			['id' => 5, 'resolution' => 40, 'canonical_json' => '{}', 'proposed_type' => 'invoiceReceived'],
 		);
 
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->expects($this->never())->method('apply');
 
 		$result = $this->callDraftTool($db, $applier, ['message_id' => 100]);
@@ -789,7 +789,7 @@ class McpControllerTest extends TestCase
 			['id' => 5, 'resolution' => null, 'canonical_json' => $wrapper, 'proposed_type' => 'invoiceReceived'],
 		);
 
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->expects($this->never())->method('apply');
 
 		$result = $this->callDraftTool($db, $applier, ['message_id' => 100]);
@@ -805,7 +805,7 @@ class McpControllerTest extends TestCase
 			['id' => 100, 'docState' => 20, 'analysis_state' => 30, 'target_row' => null],
 			['id' => 5, 'resolution' => 50, 'canonical_json' => '{}', 'proposed_type' => 'invoiceReceived'],
 		);
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->expects($this->never())->method('apply');
 
 		$result = $this->callDraftTool($db, $applier, ['message_id' => 100]);
@@ -827,7 +827,7 @@ class McpControllerTest extends TestCase
 			['id' => 100, 'docState' => 20, 'analysis_state' => 30, 'target_row' => null],
 			['id' => 5, 'resolution' => null, 'canonical_json' => null, 'proposed_type' => null],
 		);
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->expects($this->never())->method('apply');
 
 		$result = $this->callDraftTool($db, $applier, ['message_id' => 100]);
@@ -845,7 +845,7 @@ class McpControllerTest extends TestCase
 		);
 
 		$captured = null;
-		$applier = $this->createMock(DocumentApplier::class);
+		$applier = $this->createMock(DocumentProposal::class);
 		$applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
 			$captured = $passed;
 			return ApplyResult::error('unresolved_required', 'X', [], 422);

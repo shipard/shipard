@@ -15,7 +15,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
@@ -72,7 +72,7 @@ class AnalysisControllerExchangeTest extends TestCase
 
     private function controller(
         DataSourceConnection $db,
-        ?DocumentApplier $applier = null,
+        ?DocumentProposal $applier = null,
         ?RowEnrichmentPipeline $enricher = null,
         ?ConfigRuntime $configRuntime = null,
     ): AnalysisController {
@@ -201,7 +201,7 @@ class AnalysisControllerExchangeTest extends TestCase
     {
         $db = $this->dbForProposal(null, null);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -220,7 +220,7 @@ class AnalysisControllerExchangeTest extends TestCase
         ]);
         $db = $this->dbForProposal($this->openMessage(), $this->openAnalysis($wrapper));
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -236,7 +236,7 @@ class AnalysisControllerExchangeTest extends TestCase
         $analysis['resolution'] = 50;
         $db = $this->dbForProposal($this->openMessage(), $analysis);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -251,7 +251,7 @@ class AnalysisControllerExchangeTest extends TestCase
         // Poslední úspěšná analýza bez dokumentového návrhu (canonical NULL).
         $db = $this->dbForProposal($this->openMessage(), $this->openAnalysis(null));
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -270,7 +270,7 @@ class AnalysisControllerExchangeTest extends TestCase
         $analysis['resolution'] = 40;
         $db = $this->dbForProposal($message, $analysis);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -292,7 +292,7 @@ class AnalysisControllerExchangeTest extends TestCase
         $db = $this->dbForProposal($message, $this->openAnalysis('{}'));
         $this->wireResolutionDibi($db);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -312,7 +312,7 @@ class AnalysisControllerExchangeTest extends TestCase
             $this->openAnalysis((string) json_encode($canonical)),
         );
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('apply')
             ->willReturn(ApplyResult::error('unresolved_required', 'Doplň userAction', ['x' => 1], 422));
@@ -328,7 +328,7 @@ class AnalysisControllerExchangeTest extends TestCase
     {
         $db = $this->dbForProposal($this->openMessage(), $this->openAnalysis('not-json'));
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $resp = $this->controller($db, $applier)->applyMessage(
@@ -350,7 +350,7 @@ class AnalysisControllerExchangeTest extends TestCase
         );
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('apply')
             ->willReturnCallback(function (array $passed) use (&$captured) {
@@ -378,7 +378,7 @@ class AnalysisControllerExchangeTest extends TestCase
         );
         $this->wireResolutionDibi($db);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())
             ->method('apply')
             ->willReturn(ApplyResult::ok($canonical, savedId: 777));

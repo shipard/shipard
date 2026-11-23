@@ -19,8 +19,7 @@ use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Mail\IncomingMessageCode;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Base\Registry\RegistryApplier;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
@@ -81,7 +80,7 @@ class AnalysisController
     private ?AnalysisServices $services = null;
 
     /**
-     * SchemaValidator, DocumentApplier a enricher jsou nullable kvůli
+     * SchemaValidator, vstup návrhu (`DocumentProposal`) a enricher jsou nullable kvůli
      * jednotkovým testům a degradaci bez kompilované konfigurace: bez
      * applieru `previewMessage` / `applyMessage` vrací chybu nastavení,
      * bez enricheru se náhled neobohacuje.
@@ -98,7 +97,7 @@ class AnalysisController
         private readonly array $tables,
         private readonly DocumentRegistry $documentRegistry,
         private readonly ?SchemaValidator $schemaValidator = null,
-        private readonly ?DocumentApplier $applier = null,
+        private readonly ?DocumentProposal $applier = null,
         private readonly ?ConfigRuntime $configRuntime = null,
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
         private readonly ?RowEnrichmentPipeline $enricher = null,
@@ -478,8 +477,8 @@ class AnalysisController
     /**
      * Sestaví sdílený apply/reject/unapply servis včetně mapy target
      * applierů (registrace napevno ve wiringu, vzor FeedSources — žádný
-     * plugin registr). Docs target jede interně přes exchange
-     * DocumentApplier, `registry` přes RegistryApplier (jen když je modul
+     * plugin registr). Docs target jede interně přes vstup návrhu
+     * (`DocumentProposal`), `registry` přes RegistryApplier (jen když je modul
      * base.registry aktivní — poznáme podle přítomnosti tabulky
      * v definicích).
      */
@@ -642,9 +641,9 @@ class AnalysisController
             );
         }
 
-        // Náhled návrhu z pošty = interpretace (#166 D18): režim určuje kód,
-        // ne payload.
-        $result = $this->applier->preview($canonical, ApplyMode::Proposal);
+        // Náhled návrhu z pošty jde vstupem návrhu (#166 D53): zpráva
+        // interpretace a částky spočítané pokynem nad hotovým dokladem.
+        $result = $this->applier->preview($canonical);
         if (!$result->success) {
             // preview() should always succeed (resolve issues live in
             // _resolve.issues, not errorCode), but propagate defensively.

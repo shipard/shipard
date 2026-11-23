@@ -10,8 +10,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentResult;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
@@ -125,7 +124,7 @@ class MessageProposalApplierTest extends TestCase
         $db->method('getDibiConnection')->willReturn($dibi);
     }
 
-    private function service(DataSourceConnection $db, ?DocumentApplier $applier): MessageProposalApplier
+    private function service(DataSourceConnection $db, ?DocumentProposal $applier): MessageProposalApplier
     {
         return new MessageProposalApplier($db, $applier);
     }
@@ -157,9 +156,9 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow());
 
         // Návrh z pošty volá applier v režimu návrh (#166 D18, U10).
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())->method('apply')
-            ->with($this->isArray(), ApplyMode::Proposal)
+            ->with($this->isArray())
             ->willReturn(ApplyResult::ok($canonical, savedId: 9999));
 
         // Zápis verdiktu je po úspěšném uložení dokladu warn-only — outcome
@@ -197,7 +196,7 @@ class MessageProposalApplierTest extends TestCase
         );
         $this->withWorkingDibi($db);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturn(ApplyResult::ok($this->happyCanonical(), savedId: 9999));
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -218,7 +217,7 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow());
         $this->withWorkingDibi($db);
 
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturn(ApplyResult::ok($this->happyCanonical(), savedId: 9999));
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -233,7 +232,7 @@ class MessageProposalApplierTest extends TestCase
     public function testApplyNotFound(): void
     {
         $db = $this->db(null, null);
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(999, 7, null);
@@ -244,7 +243,7 @@ class MessageProposalApplierTest extends TestCase
 
     public function testApplyRejectsArchivedOrTrashedMessage(): void
     {
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         foreach ([80, 90] as $docState) {
@@ -260,7 +259,7 @@ class MessageProposalApplierTest extends TestCase
     public function testApplyRejectsMessageWithoutSuccessfulAnalysis(): void
     {
         $db = $this->db($this->messageRow(), null);
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -273,7 +272,7 @@ class MessageProposalApplierTest extends TestCase
     {
         // Analýza existuje, ale zpráva je zpět ve frontě (reanalýza běží).
         $db = $this->db($this->messageRow(['analysis_state' => 20]), $this->analysisRow());
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -289,7 +288,7 @@ class MessageProposalApplierTest extends TestCase
             $this->messageRow(['target_row' => 1234]),
             $this->analysisRow(['resolution' => 40]),
         );
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -308,7 +307,7 @@ class MessageProposalApplierTest extends TestCase
             $this->analysisRow(),
         );
         $this->withWorkingDibi($db);
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -337,7 +336,7 @@ class MessageProposalApplierTest extends TestCase
         );
         $this->withFailingDibi($db);
 
-        $outcome = $this->service($db, $this->createMock(DocumentApplier::class))
+        $outcome = $this->service($db, $this->createMock(DocumentProposal::class))
             ->apply(self::MESSAGE_NDX, 7, null);
 
         $this->assertFalse($outcome->ok);
@@ -349,7 +348,7 @@ class MessageProposalApplierTest extends TestCase
     {
         // resolution=50 (zamítnuto) bez target_row → 409.
         $db = $this->db($this->messageRow(), $this->analysisRow(['resolution' => 50]));
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -360,7 +359,7 @@ class MessageProposalApplierTest extends TestCase
 
     public function testApplyNoProposal(): void
     {
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         foreach ([null, ''] as $canonicalJson) {
@@ -376,7 +375,7 @@ class MessageProposalApplierTest extends TestCase
     public function testApplyCorruptedJson(): void
     {
         $db = $this->db($this->messageRow(), $this->analysisRow(['canonical_json' => 'not-json']));
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -390,7 +389,7 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow([
             'canonical_json' => json_encode(['_validationError' => ['issues' => ['x']]]),
         ]));
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->never())->method('apply');
 
         $outcome = $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
@@ -412,7 +411,7 @@ class MessageProposalApplierTest extends TestCase
     public function testApplyForwardsUnresolvedRequired(): void
     {
         $db = $this->db($this->messageRow(), $this->analysisRow());
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->expects($this->once())->method('apply')->willReturn(
             ApplyResult::error('unresolved_required', 'Doplň userAction', ['_resolve' => ['issues' => [['x' => 1]]]], 422),
         );
@@ -432,7 +431,7 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow());
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -458,7 +457,7 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow(['canonical_json' => json_encode($canonical)]));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -482,7 +481,7 @@ class MessageProposalApplierTest extends TestCase
         $db = $this->db($this->messageRow(), $this->analysisRow(['canonical_json' => json_encode($canonical)]));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -498,7 +497,7 @@ class MessageProposalApplierTest extends TestCase
     {
         $db = $this->db($this->messageRow(), $this->analysisRow());
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -514,7 +513,7 @@ class MessageProposalApplierTest extends TestCase
     {
         $db = $this->db($this->messageRow(), $this->analysisRow());
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -548,7 +547,7 @@ class MessageProposalApplierTest extends TestCase
         $enricher = new RowEnrichmentPipeline(new RowHistoryEnricher($dibi, $party), new ContentTagResolver($dibi));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -576,7 +575,7 @@ class MessageProposalApplierTest extends TestCase
         $enricher = new RowEnrichmentPipeline(new RowHistoryEnricher($dibi, $party), new ContentTagResolver($dibi));
 
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::ok($passed, savedId: 9999);
@@ -624,7 +623,7 @@ class MessageProposalApplierTest extends TestCase
             'canonical_json' => json_encode($canonical),
         ]));
 
-        $docsApplier = $this->createMock(DocumentApplier::class);
+        $docsApplier = $this->createMock(DocumentProposal::class);
         $docsApplier->expects($this->never())->method('apply');
 
         $targetApplier = $this->createMock(ProposalTargetApplier::class);
@@ -1272,7 +1271,7 @@ class MessageProposalApplierTest extends TestCase
         $saved = ['rows[0].vatCode' => 'useCode:cz-218', 'supplier' => 'useExisting:42'];
         $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => json_encode($saved)]));
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -1291,7 +1290,7 @@ class MessageProposalApplierTest extends TestCase
         $saved = ['supplier' => 'useExisting:42', 'rows[0].vatCode' => 'useCode:cz-218'];
         $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => json_encode($saved)]));
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);
@@ -1309,7 +1308,7 @@ class MessageProposalApplierTest extends TestCase
     {
         $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => null]));
         $captured = null;
-        $applier = $this->createMock(DocumentApplier::class);
+        $applier = $this->createMock(DocumentProposal::class);
         $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
             $captured = $passed;
             return ApplyResult::error('unresolved_required', 'X', [], 422);

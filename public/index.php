@@ -477,7 +477,7 @@ function buildMcpRegistry(
 	$draftApplier = $configRuntime !== null
 		? new \Shipard\Module\Core\Mail\MessageProposalApplier(
 			$db,
-			\Shipard\Module\Core\Exchange\Document\DocumentApplier::create(
+			\Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal::create(
 				$db->getDibiConnection(),
 				$configRuntime,
 				$resolved->config,
@@ -1197,7 +1197,18 @@ function dispatchExchange(
 			$tables,
 		)
 		: null;
-	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier, $assetDocLinks, $workOrderApplier);
+	// Vstup návrhu pro `applyOptions.interpret: true` (#166 D53) — ukládá
+	// týmž pokynem jako endpoint bez interpretace.
+	$proposal = \Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal::create(
+		$db->getDibiConnection(),
+		$configRuntime,
+		$resolved->config,
+		$documentRegistry,
+		$tables,
+		$documentEventDispatcher,
+		$applier,
+	);
+	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier, $assetDocLinks, $workOrderApplier, $proposal);
 	$auth ??= AuthContext::anonymous();
 
 	return match ($route->action) {
@@ -1396,14 +1407,14 @@ function dispatchAnalysis(
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 
-	// Exchange wiring: SchemaValidator + DocumentApplier pro preview /
-	// apply návrhu. Obojí chce ConfigRuntime; bez kompilované konfigurace
+	// Exchange wiring: SchemaValidator + vstup návrhu (DocumentProposal) pro
+	// preview / apply návrhu. Obojí chce ConfigRuntime; bez kompilované konfigurace
 	// se degraduje (controller vrátí chybu nastavení místo pádu).
 	$schemaValidator = new \Shipard\Module\Core\Exchange\Schema\SchemaValidator(
 		\Shipard\Module\Core\Exchange\Schema\SchemaLoader::default(),
 	);
 	$applier = $configRuntime !== null
-		? \Shipard\Module\Core\Exchange\Document\DocumentApplier::create(
+		? \Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal::create(
 			$db->getDibiConnection(),
 			$configRuntime,
 			$resolved->config,

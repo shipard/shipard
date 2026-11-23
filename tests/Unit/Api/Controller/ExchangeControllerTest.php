@@ -10,8 +10,8 @@ use Shipard\Api\Controller\ExchangeController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
@@ -108,35 +108,54 @@ class ExchangeControllerTest extends TestCase
 
     /**
      * REST je pokyn (#166 D2, D18); interpretaci si klient vyžádá
-     * `applyOptions.interpret: true` — na všech třech endpointech.
+     * `applyOptions.interpret: true` — pak jde payload vstupem návrhu
+     * (D53), na všech třech endpointech.
      */
     public function testDocumentEndpointsCallInstructionUnlessInterpretIsRequested(): void
     {
         $cases = [
-            'bez applyOptions'   => [[], ApplyMode::Instruction],
-            'interpret false'    => [['applyOptions' => ['interpret' => false]], ApplyMode::Instruction],
-            'interpret true'     => [['applyOptions' => ['interpret' => true]], ApplyMode::Proposal],
-            'interpret jako text' => [['applyOptions' => ['interpret' => 'true']], ApplyMode::Instruction],
+            'bez applyOptions'    => [[], 'pokyn'],
+            'interpret false'     => [['applyOptions' => ['interpret' => false]], 'pokyn'],
+            'interpret true'      => [['applyOptions' => ['interpret' => true]], 'návrh'],
+            'interpret jako text' => [['applyOptions' => ['interpret' => 'true']], 'pokyn'],
         ];
         foreach ($cases as $label => [$extra, $expected]) {
-            $modes = [];
-            $capture = static function (array $canonical, ApplyMode $mode) use (&$modes): ApplyResult {
-                $modes[] = $mode;
-                return ApplyResult::ok($canonical);
+            $calls = [];
+            $capture = static function (string $who) use (&$calls): \Closure {
+                return static function (array $canonical) use (&$calls, $who): ApplyResult {
+                    $calls[] = $who;
+                    return ApplyResult::ok($canonical);
+                };
             };
             $applier = $this->createMock(DocumentApplier::class);
-            $applier->method('validate')->willReturnCallback($capture);
-            $applier->method('preview')->willReturnCallback($capture);
-            $applier->method('apply')->willReturnCallback($capture);
-            $controller = new ExchangeController($applier);
+            $proposal = $this->createMock(DocumentProposal::class);
+            foreach (['validate', 'preview', 'apply'] as $step) {
+                $applier->method($step)->willReturnCallback($capture('pokyn'));
+                $proposal->method($step)->willReturnCallback($capture('návrh'));
+            }
+            $controller = new ExchangeController($applier, proposal: $proposal);
             $body = ['format' => 'shpd.docs.document'] + $extra;
 
             $controller->validate($this->buildRequest('POST', '/api/v1/_exchange/docs/document/validate', $body));
             $controller->preview($this->buildRequest('POST', '/api/v1/_exchange/docs/document/preview', $body));
             $controller->apply($this->buildRequest('POST', '/api/v1/_exchange/docs/document/apply', $body));
 
-            $this->assertSame([$expected, $expected, $expected], $modes, $label);
+            $this->assertSame([$expected, $expected, $expected], $calls, $label);
         }
+    }
+
+    /** Bez zapojeného vstupu návrhu je `interpret: true` chyba nastavení, ne tichý pokyn. */
+    public function testInterpretWithoutProposalWiringIsAnError(): void
+    {
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->expects($this->never())->method('apply');
+
+        $response = (new ExchangeController($applier))->apply($this->buildRequest('POST', '/api/v1/_exchange/docs/document/apply', [
+            'format'       => 'shpd.docs.document',
+            'applyOptions' => ['interpret' => true],
+        ]));
+
+        $this->assertSame(500, $this->getStatus($response));
     }
 
     public function testApplyReturnsSavedDocId(): void

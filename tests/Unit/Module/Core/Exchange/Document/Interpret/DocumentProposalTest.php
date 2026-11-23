@@ -140,6 +140,25 @@ final class DocumentProposalTest extends TestCase
         }
     }
 
+    /** `/validate` návrhu: schéma a kontroly předlohy, bez hledání záznamů. */
+    public function testValidateChecksThePaperFormWithoutLookingAnythingUp(): void
+    {
+        $party = $this->createMock(PartyResolver::class);
+        $party->expects($this->never())->method('resolve');
+        $proposal = self::proposalOf($this->buildApplier(party: $party));
+
+        $result = $proposal->validate($this->happyPayload());
+        $this->assertTrue($result->success, json_encode(self::codes($result)));
+        $this->assertSame([], array_diff_key($result->canonical['_resolve'], ['issues' => 1, 'summary' => 1]), 'jen nálezy a souhrn');
+
+        // Předloha bez data vystavení: kontrola papíru, ne výchozí hodnota pokynu.
+        $payload = $this->happyPayload();
+        unset($payload['dates']['issueDate']);
+        $result = $proposal->validate($payload);
+        $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertContains('required', self::codes($result));
+    }
+
     // ── Uložení ─────────────────────────────────────────────────────────────
 
     public function testApplySavesTheFinishedDocumentAsAnInstruction(): void

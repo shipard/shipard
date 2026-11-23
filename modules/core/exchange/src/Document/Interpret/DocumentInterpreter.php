@@ -141,6 +141,21 @@ final class DocumentInterpreter
     }
 
     /**
+     * Statická kontrola papírové podoby (`/validate` návrhu): tvary hodnot
+     * a kontroly předlohy, bez hledání záznamů a bez odvozování.
+     *
+     * @param array<string, mixed> $canonical schéma už ověřené
+     * @return array{paper: array<string, mixed>, issues: list<array<string, mixed>>}
+     */
+    public function check(array $canonical): array
+    {
+        $canonical = CanonicalValueNormalizer::normalize(CanonicalReferences::expand($canonical));
+        $issues = $this->validator->validate($canonical, ApplyMode::Proposal);
+        $this->payload->appendAuthorIssue($canonical, $issues);
+        return ['paper' => $canonical, 'issues' => $issues];
+    }
+
+    /**
      * @param array<string, mixed> $canonical papírová podoba dokladu
      *        (`shpd.docs.document.v1`, schéma už ověřené) s volbami uživatele
      *        v `_resolve`

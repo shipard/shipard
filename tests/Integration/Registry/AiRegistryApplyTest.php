@@ -13,7 +13,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
@@ -71,9 +71,9 @@ class AiRegistryApplyTest extends IntegrationTestCase
             $this->markTestSkipped('compiled config missing registry targets — run ds-upgrade.');
         }
 
-        // DocumentApplier je pro registry cestu nevyužitý, ale wiring musí
+        // Vstup návrhu je pro registry cestu nevyužitý, ale wiring musí
         // odpovídat produkci (docs větev MessageProposalApplier ho vyžaduje).
-        $applier = DocumentApplier::create(
+        $applier = DocumentProposal::create(
             $this->db->getDibiConnection(),
             $this->configRuntime,
             $this->dsConfig,

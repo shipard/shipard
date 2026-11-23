@@ -11,7 +11,7 @@ use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Module\ModulePathResolver;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
@@ -19,7 +19,7 @@ use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
  * End-to-end pokrytí message-centrického apply (tasks/mail-message-centric.md):
- * analýza s canonical návrhem → applyMessage → DocumentApplier →
+ * analýza s canonical návrhem → applyMessage → vstup návrhu (pokyn) →
  * docs_core_heads + partner + supplier_codes mapping + lineage
  * (heads.source_message ↔ messages.target_*) + verdikt na analýze
  * (resolution 40) — a unapply reverz. Spustitelné s
@@ -61,7 +61,7 @@ class AiProposalApplyTest extends IntegrationTestCase
             $this->markTestSkipped('DS missing invni number_series — run ds-upgrade.');
         }
 
-        $applier = DocumentApplier::create(
+        $applier = DocumentProposal::create(
             $this->db->getDibiConnection(),
             $this->configRuntime,
             $this->dsConfig,

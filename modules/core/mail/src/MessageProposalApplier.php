@@ -8,8 +8,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Logging\ErrorLogger;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 
 /**
@@ -24,8 +23,8 @@ use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
  * Response).
  *
  * Target seam: podle `primaryTypes[proposed_type].target` se apply/unapply
- * větví — `docs` (default) jede přes exchange DocumentApplier (enrichment,
- * `_resolve`, applyOptions); ostatní targety deleguje na mapu
+ * větví — `docs` (default) jede přes vstup návrhu `DocumentProposal`
+ * (enrichment, `_resolve`, applyOptions); ostatní targety deleguje na mapu
  * `$targetAppliers` ({@see ProposalTargetApplier}). Sdílený zápis verdiktu
  * (resolution + docState zprávy) je pro všechny targety společný.
  */
@@ -82,7 +81,7 @@ final class MessageProposalApplier
      */
     public function __construct(
         private readonly DataSourceConnection $db,
-        private readonly ?DocumentApplier $applier,
+        private readonly ?DocumentProposal $applier,
         private readonly ?RowEnrichmentPipeline $enricher = null,
         private readonly ?ConfigRuntime $config = null,
         private readonly array $targetAppliers = [],
@@ -252,9 +251,10 @@ final class MessageProposalApplier
             'targetDocState' => $targetDocState,
         ];
 
-        // Návrh z pošty je interpretace (#166 D18, U10): režim určuje kód —
+        // Návrh z pošty jde vstupem návrhu (#166 D53): interpretace →
+        // založení chybějících záznamů → pokyn → učení, v jedné transakci.
         // `applyOptions` se výš skládají znovu, `interpret` z payloadu se nečte.
-        $result = $this->applier->apply($canonical, ApplyMode::Proposal);
+        $result = $this->applier->apply($canonical);
         if (!$result->success) {
             return ProposalApplyOutcome::error(
                 $messageNdx, $analysisNdx,
@@ -268,7 +268,7 @@ final class MessageProposalApplier
         $savedDocId = (int) ($result->savedId ?? 0);
 
         // Verdikt: resolution=40 na analýze + zpráva → Hotovo. Když selže,
-        // doklad už existuje a zpráva má target_row (zapsal DocumentApplier
+        // doklad už existuje a zpráva má target_row (zapsal vstup návrhu
         // v transakci uložení) — opakovaný apply doběhne přes recovery cestu
         // výše, proto jen warn a hlásí se úspěch.
         if (!$this->writeApplyResolution($analysisNdx, $messageNdx, $userId, $this->targetPartnerId($messageNdx))) {

@@ -9,8 +9,8 @@ use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
@@ -57,49 +57,50 @@ final class ExchangeController
         private readonly ?AssetImportApplier $assetApplier = null,
         private readonly ?AssetDocLinkService $assetDocLinks = null,
         private readonly ?WorkOrderImportApplier $workOrderApplier = null,
+        /** Vstup návrhu pro `applyOptions.interpret: true` (#166 D53). */
+        private readonly ?DocumentProposal $proposal = null,
     ) {}
 
     // ── Document flow ──────────────────────────────────────────────────
 
     public function validate(Request $request): Response
     {
-        $payload = $this->extractPayload($request);
-        if ($payload instanceof Response) {
-            return $payload;
-        }
-        return $this->respond($this->applier->validate($payload, self::documentMode($payload)), 'savedDocId');
+        return $this->documentFlow($request, 'validate');
     }
 
     public function preview(Request $request): Response
     {
-        $payload = $this->extractPayload($request);
-        if ($payload instanceof Response) {
-            return $payload;
-        }
-        return $this->respond($this->applier->preview($payload, self::documentMode($payload)), 'savedDocId');
+        return $this->documentFlow($request, 'preview');
     }
 
     public function apply(Request $request): Response
     {
+        return $this->documentFlow($request, 'apply');
+    }
+
+    /**
+     * Dokladový endpoint (#166 D2, D18, D53): REST je **pokyn** — doklad se
+     * uloží, jak ho payload říká (`DocumentApplier`). Interpretaci papírové
+     * podoby (jako u pošty) si klient vyžádá výslovně
+     * `applyOptions.interpret: true` — pak jde payload vstupem návrhu
+     * (`DocumentProposal`): interpretace → založení chybějících záznamů →
+     * pokyn → učení.
+     *
+     * @param 'validate'|'preview'|'apply' $step
+     */
+    private function documentFlow(Request $request, string $step): Response
+    {
         $payload = $this->extractPayload($request);
         if ($payload instanceof Response) {
             return $payload;
         }
-        return $this->respond($this->applier->apply($payload, self::documentMode($payload)), 'savedDocId');
-    }
-
-    /**
-     * Režim dokladového endpointu (#166 D2, D18): REST je **pokyn** — doklad
-     * se uloží, jak ho payload říká. Interpretaci (odvození ze signálů jako
-     * u pošty) si klient vyžádá výslovně `applyOptions.interpret: true`.
-     *
-     * @param array<string, mixed> $payload
-     */
-    private static function documentMode(array $payload): ApplyMode
-    {
-        return ($payload['applyOptions']['interpret'] ?? null) === true
-            ? ApplyMode::Proposal
-            : ApplyMode::Instruction;
+        if (($payload['applyOptions']['interpret'] ?? null) !== true) {
+            return $this->respond($this->applier->{$step}($payload), 'savedDocId');
+        }
+        if ($this->proposal === null) {
+            return Response::error('INTERNAL_ERROR', 'Document interpretation is not wired in this dispatcher.', 500);
+        }
+        return $this->respond($this->proposal->{$step}($payload), 'savedDocId');
     }
 
     // ── Person flow ────────────────────────────────────────────────────

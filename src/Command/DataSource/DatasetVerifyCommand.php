@@ -30,7 +30,7 @@ use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyExpectations;
 use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyPreflight;
 use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyReport;
 use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyWiring;
-use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 use Shipard\Module\Economy\Accounting\Dataset\CostsCheck;
@@ -187,7 +187,7 @@ class DatasetVerifyCommand extends Command
         if ($w->config === null || $w->registry === null) {
             throw new \RuntimeException('Wiring bez konfigurace nebo registru Document tříd.');
         }
-        $applier = DocumentApplier::create($w->db, $w->config, $w->dsConfig, $w->registry, $w->tables, $w->dispatcher);
+        $applier = DocumentProposal::create($w->db, $w->config, $w->dsConfig, $w->registry, $w->tables, $w->dispatcher);
         $enricher = RowEnrichmentPipeline::create($w->dsConnection, $w->config, $w->dsConfig);
         $proposals = new MessageProposalApplier($w->dsConnection, $applier, $enricher, $w->config);
         return (new ProposalApplyStep($proposals))->run($documents);

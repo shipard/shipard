@@ -34,7 +34,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
  * `savedDocId`. Cesty nálezů a indexy řádků míří do **původního** payloadu
  * — nálezy pokynu nad hotovým dokladem se převádějí přes `rowMap`.
  */
-final class DocumentProposal
+class DocumentProposal
 {
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
 
@@ -87,6 +87,26 @@ final class DocumentProposal
             $applier ?? DocumentApplier::create($db, $config, $dsConfig, $registry, $tables, $eventDispatcher),
             PendingRecords::forDataSource($db, $config, $dsConfig, $registry, $tables),
         );
+    }
+
+    /**
+     * Statická kontrola návrhu: schéma a kontroly předlohy, bez hledání
+     * záznamů. Chyba v nálezech = 422 `validation_failed`.
+     *
+     * @param array<string, mixed> $canonical papírová podoba
+     */
+    public function validate(array $canonical): ApplyResult
+    {
+        $invalid = $this->schemaError($canonical);
+        if ($invalid !== null) {
+            return $invalid;
+        }
+        $checked = $this->interpreter->check($canonical);
+        $enriched = self::withIssues($checked['paper'], $checked['issues']);
+
+        return self::hasErrors($checked['issues'])
+            ? ApplyResult::error('validation_failed', 'Validace dokumentu selhala.', $enriched, statusCode: 422)
+            : ApplyResult::ok($enriched);
     }
 
     /**
@@ -273,12 +293,28 @@ final class DocumentProposal
         if ($schemaIssues === []) {
             return null;
         }
+        return ApplyResult::error(
+            'schema_invalid',
+            'Struktura dokumentu neodpovídá schématu.',
+            self::withIssues($canonical, $schemaIssues),
+            statusCode: 400,
+        );
+    }
+
+    /**
+     * Payload s nálezy přidanými do `_resolve.issues` (bez bloků hledání).
+     *
+     * @param array<string, mixed> $canonical
+     * @param list<array<string, mixed>> $issues
+     * @return array<string, mixed>
+     */
+    private static function withIssues(array $canonical, array $issues): array
+    {
         $resolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
-        $resolve['issues'] = array_merge(is_array($resolve['issues'] ?? null) ? $resolve['issues'] : [], $schemaIssues);
+        $resolve['issues'] = array_merge(is_array($resolve['issues'] ?? null) ? $resolve['issues'] : [], $issues);
         $resolve['summary'] = PayloadResolve::summary([], $resolve['issues']);
         $canonical['_resolve'] = $resolve;
-
-        return ApplyResult::error('schema_invalid', 'Struktura dokumentu neodpovídá schématu.', $canonical, statusCode: 400);
+        return $canonical;
     }
 
     /**
