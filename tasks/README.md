@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 476 tasků: **naplánováno** 4 · **částečně** 24 · **zrušeno** 1 · **hotovo** 447.
+Celkem 479 tasků: **naplánováno** 7 · **částečně** 24 · **zrušeno** 1 · **hotovo** 447.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,9 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `doc-interpretation-extract.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 1; D51, D52, D54, D57) |
+| `doc-interpretation-switch.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 2; D53–D55); až po `tasks/doc-interpretation-extract.md` |
+| `doc-layers-documentation.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 3; D56); až po `tasks/doc-interpretation-switch.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -303,6 +306,9 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `doc-format-partner-fields.md` | Pole `partner` na hlavičce účetního a pokladního dokladu a `rows[].partner` ve formátu dokladu; pokyn přestane číst `_resolve`; sady přenášejí partnera účetního dokladu (#166 etapa 3, D30, D32) |
 | `doc-defaults-shared.md` | Výchozí hodnoty dokladu a řádku na jednom místě v `docs.core` — formulář i pokyn doplní totéž (datum, režim DPH, vlastní účet, hodnoty z položky, kód DPH); `_resolve.defaults`, povinnost polí hlídá jen doklad, výslovné `null` = záměrně prázdné (#166 etapa 4, D40–D45, D48–D50) |
 | `doc-apply-idempotence.md` | Idempotence pokynu: `source.ref` + sloupec `source_ref` na hlavičce, opakovaný pokyn vrátí existující doklad beze změny (#166 etapa 4, D46) |
+| `doc-interpretation-extract.md` | Interpretace dokladu jako samostatná část `core.exchange`: kód návrhu ven z `DocumentApplier`, `interpret()` vrací hotový doklad (payload platný jako pokyn), zprávu a záznamy k založení; stínový test proti dnešní cestě návrhu (#166 etapa 5, D51, D52) |
+| `doc-interpretation-switch.md` | Návrh = interpretace → pokyn: přepnutí pošty, ISDOC a REST na novou cestu, `DocumentApplier` bez režimu a větví odvozování, endpoint `/interpret` (#166 etapa 5, D53–D55) |
+| `doc-layers-documentation.md` | Dokumentace ukládání dokladů po vrstvách: doklad, formát a ukládací API, nový `docs/document-interpretation.md`; importní mód na jednom místě, obrázek cílového modelu, úklid schématu (#166 etapa 5, D56) |
 | `exchange-format-phase3a.md` | Vizualizace canonical + PDF split-view |
 | `exchange-format-phase3b.md` | Interakce s `_resolve` |
 | `exchange-resolve-decision-ui.md` | Rebuild rozhodování canCreate/ambiguous/notFound + smart totals |
