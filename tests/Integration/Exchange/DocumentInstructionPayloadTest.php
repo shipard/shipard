@@ -654,7 +654,108 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame([['error', 'vat.registrationCountry']], self::findings($result, 'signal_not_allowed'));
     }
 
+    // ── Partner účetního a pokladního dokladu (D30, D32) ────────────────────
+
+    /** D30: `partner` na faktuře je chyba — partnerem faktury je strana. Nic se neuloží. */
+    public function testPartnerFieldOnInvoiceIsAnError(): void
+    {
+        $payload = $this->referencePayload();
+        $payload['partner'] = $payload['supplier']['ref'];
+        $before = $this->documentCount();
+
+        $result = $this->applier->apply($this->options($payload, 10));
+
+        $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame([['error', 'partner']], self::findings($result, 'partner_not_supported'));
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /** D30: partner hlavičky i řádku účetního dokladu polem; nenalezená reference je chyba a nic se neuloží. */
+    public function testAccountingDocumentPartnerFieldsAndUnknownReference(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->accountingPayload();
+        $this->assertArrayNotHasKey('partner', $payload, 'doklad bez partnera pole nenese');
+
+        $payload['partner'] = $f->person('supplier');
+        $payload['rows'][1]['partner'] = ['ref' => $f->person('customer')];
+        $saved = $this->saved($this->applier->apply($this->options($payload, 10)));
+        $this->assertSame($f->person('supplier'), (int) $saved->head['partner']);
+        $this->assertNull($saved->rows[0]['partner']);
+        $this->assertSame($f->person('customer'), (int) $saved->rows[1]['partner']);
+
+        $payload['rows'][1]['partner'] = '@it-rt-neni';
+        $before = $this->documentCount();
+        $result = $this->applier->apply($this->options($payload, 10));
+        $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame([['error', 'rows.1.partner']], self::findings($result, 'reference_not_found'));
+        $this->assertSame($before, $this->documentCount());
+    }
+
+    /** D32: pokyn `_resolve` nečte — payload projde s jedním info nálezem a volba partnera se neuplatní. */
+    public function testResolveBlockIsIgnoredInInstruction(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->accountingPayload();
+        $payload['_resolve'] = [
+            'partner' => ['userAction' => 'useExisting:' . $f->person('supplier')],
+            'rows'    => [1 => ['partner' => ['userAction' => 'useExisting:' . $f->person('customer')]]],
+            'vat'     => ['mode' => ['userAction' => 'useValue:fromTotal']],
+        ];
+
+        $result = $this->applier->apply($this->options($payload, 10));
+        $saved = $this->saved($result);
+
+        $this->assertSame([['info', '_resolve']], self::findings($result, 'resolve_ignored'));
+        $this->assertNotContains('vat_pin_ignored', self::codes($result));
+        $this->assertNull($saved->head['partner']);
+        $this->assertNull($saved->rows[1]['partner']);
+
+        // Náhled hlásí totéž; payload bez bloku nález nemá.
+        $this->assertSame([['info', '_resolve']], self::findings($this->applier->preview($this->options($payload, 10)), 'resolve_ignored'));
+        unset($payload['_resolve']);
+        $this->assertSame([], self::findings($this->applier->apply($this->options($payload, 10)), 'resolve_ignored'));
+    }
+
+    /** U3: v návrhu volby partnera fungují dál; uvedené pole má přednost. */
+    public function testPartnerPinsStillWorkInProposalAndFieldWins(): void
+    {
+        $f = $this->fixtures;
+        $payload = $this->accountingPayload();
+        $payload['_resolve'] = [
+            'partner' => ['userAction' => 'useExisting:' . $f->person('supplier')],
+            'rows'    => [1 => ['partner' => ['userAction' => 'useExisting:' . $f->person('supplier')]]],
+        ];
+
+        $pinned = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $this->assertSame($f->person('supplier'), (int) $pinned->head['partner']);
+        $this->assertSame($f->person('supplier'), (int) $pinned->rows[1]['partner']);
+
+        $payload['rows'][1]['partner'] = $f->person('customer');
+        $withField = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $this->assertSame($f->person('supplier'), (int) $withField->head['partner'], 'hlavička dál z volby');
+        $this->assertSame($f->person('customer'), (int) $withField->rows[1]['partner'], 'pole má přednost před volbou');
+    }
+
     // ── Payloady ────────────────────────────────────────────────────────────
+
+    /** Účetní doklad se dvěma kontačními řádky, bez partnera — export. @return array<string, mixed> */
+    private function accountingPayload(): array
+    {
+        $f = $this->fixtures;
+        return $this->payload([
+            'doc_type' => 'cmnbkp', 'number_series' => $f->seriesId('cmnbkp'),
+            'issue_date' => F::DATE, 'accounting_date' => F::DATE, 'doc_currency' => $f->homeCurrency(),
+            'doc_text' => F::PREFIX . ' účetní doklad — partner',
+            'rows' => [
+                ['row_kind' => 1, 'operation' => 'acc.record', 'account' => $f->accountId('518'), 'acc_side' => 0,
+                 'total_price' => 800.00, 'price_calc_mode' => 1, 'description' => F::PREFIX . ' náklad'],
+                ['row_kind' => 1, 'operation' => 'acc.record', 'account' => $f->accountId('321'), 'acc_side' => 1,
+                 'total_price' => 800.00, 'price_calc_mode' => 1, 'description' => F::PREFIX . ' závazek',
+                 'payment_reference' => '2026000088'],
+            ],
+        ]);
+    }
 
     /** Přijatá faktura s DPH a položkou — export s referencemi, bez kontrolního součtu. @return array<string, mixed> */
     private function referencePayload(): array

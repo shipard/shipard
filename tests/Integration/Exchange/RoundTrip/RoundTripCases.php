@@ -237,6 +237,53 @@ final class RoundTripCases
             ),
 
             RoundTripCase::holds(
+                'accounting-doc-partners',
+                'účetní doklad s partnerem na hlavičce i řádku (#166 D30)',
+                static fn (F $f): array => [
+                    'doc_type'        => 'cmnbkp',
+                    'number_series'   => $f->seriesId('cmnbkp'),
+                    'partner'         => $f->person('supplier'),
+                    'issue_date'      => F::DATE,
+                    'accounting_date' => F::DATE,
+                    'doc_currency'    => $f->homeCurrency(),
+                    'doc_text'        => F::PREFIX . ' účetní doklad s partnerem',
+                    'rows'            => [
+                        ['row_kind' => 1, 'operation' => 'acc.record', 'account' => $f->accountId('518'), 'acc_side' => 0,
+                         'total_price' => 1500.00, 'price_calc_mode' => 1, 'description' => F::PREFIX . ' náklad'],
+                        ['row_kind' => 1, 'operation' => 'acc.record', 'account' => $f->accountId('321'), 'acc_side' => 1,
+                         'total_price' => 1500.00, 'price_calc_mode' => 1, 'description' => F::PREFIX . ' závazek',
+                         'partner' => $f->person('customer'), 'payment_reference' => '2026000077'],
+                    ],
+                ],
+            ),
+
+            RoundTripCase::holds(
+                'cash-doc-payment-partner',
+                'pokladní doklad, výdej — úhrada závazku s partnerem řádku (#166 D30)',
+                static function (F $f): array {
+                    $desk = $f->cashDeskId();
+                    return [
+                        'doc_type'         => 'cash',
+                        'cash_dir'         => 2,
+                        'cash_desk'        => $desk,
+                        'number_series'    => $f->seriesId('cash', $desk),
+                        'vat_registration' => $f->vatRegistrationId(),
+                        'vat_mode'         => 1,
+                        'doc_currency'     => $f->homeCurrency(),
+                        'payment_method'   => 0,
+                        'issue_date'       => F::DATE,
+                        'accounting_date'  => F::DATE,
+                        'doc_text'         => F::PREFIX . ' pokladní výdej — úhrada',
+                        'rows'             => [
+                            ['row_kind' => 1, 'operation' => 'payment.payable', 'total_price' => 605.00, 'price_calc_mode' => 1,
+                             'description' => F::PREFIX . ' úhrada faktury hotově', 'partner' => $f->person('supplier'),
+                             'payment_reference' => '2026000011'],
+                        ],
+                    ];
+                },
+            ),
+
+            RoundTripCase::holds(
                 'cash-doc',
                 'pokladní doklad, příjem',
                 static function (F $f): array {
