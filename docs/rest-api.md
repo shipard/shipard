@@ -186,6 +186,8 @@ http://{ip-adresa}/{ds-id}/api/v1/{tabulka}
 | `POST` | `/api/v1/_setup/bank-accounts` | Překlop vybraných spojení do číselníku bankovních účtů (auth) |
 | `GET` | `/api/v1/_setup/accounting-items-offer` | Nabídka účetních položek dle varianty osnovy (auth) |
 | `POST` | `/api/v1/_setup/accounting-items` | Jednorázové vygenerování vybraných účetních položek (auth) |
+| `POST` | `/api/v1/_exchange/docs/document/{validate\|preview\|apply}` | Doklad výměnného formátu `shpd.docs.document.v1` jako **pokyn**; s `applyOptions.interpret: true` jako návrh — interpretace papírové podoby (auth; `docs/exchange-format.md` § 11) |
+| `POST` | `/api/v1/_exchange/docs/document/interpret` | Interpretace papírové podoby dokladu **bez uložení** — `{document, report}`: hotový doklad platný jako pokyn a zpráva včetně záznamů k založení (auth, #166 D55) |
 | `POST` | `/api/v1/_exchange/content-tags/materialize` | Založení účetní položky pro obsahový štítek (auth) |
 | `GET` | `/api/v1/_exchange/content-tags/overview` | Stav mapování taxonomie štítků + reverzní návrhy (auth) |
 | `POST` | `/api/v1/_exchange/content-tags/tag-items` | Hromadné otagování položek obsahovými štítky (auth) |

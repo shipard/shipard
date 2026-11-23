@@ -83,10 +83,13 @@ plánované formáty (samostatné dokumenty / iterace) popisuje sekce 13.
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  REST API     /api/v1/_exchange/docs/document/{validate,    │
-│                                                preview,     │
-│                                                apply}       │
+│                                    preview, apply,          │
+│                                    interpret}               │
 ├─────────────────────────────────────────────────────────────┤
-│  Applier      DocumentApplier                               │
+│  Vstup návrhu DocumentProposal (jen papírová podoba)        │
+│    - interpretace → založení záznamů → pokyn → učení       │
+├─────────────────────────────────────────────────────────────┤
+│  Pokyn        DocumentApplier                               │
 │    - orchestruje validate → resolve → transform → save     │
 ├─────────────────────────────────────────────────────────────┤
 │  Resolvers    PartyResolver, ItemResolver, UnitResolver,    │
@@ -107,28 +110,33 @@ Veškerá business logika (přidělení čísla, snapshoty, recap, totals, round
 state transitions) zůstává v `DocDocument`. Exchange formát je pouze "lepší
 vstup" — transformační vrstva nad existujícím dokumentovým systémem.
 
-### Dva režimy volání: pokyn × návrh (#166 D18–D20)
+### Pokyn × návrh — dvě vstupní třídy, jedno uložení (#166 D18–D20, D53)
 
-`DocumentApplier::validate()`, `preview()` a `apply()` berou **režim**
-(`ApplyMode`). Režim je parametr volání, ne obsah payloadu — schéma je
-jedno a totéž.
+Doklad ve výměnném formátu přichází dvěma způsoby. Schéma je jedno
+a totéž; liší se **vstupní třída**, ne parametr volání.
 
-- **Pokyn** (`ApplyMode::Instruction`, výchozí) — volající ví, co chce
-  uložit. Applier dohledá reference, doplní výchozí hodnoty **týmž kódem
-  jako formulář** („Výchozí hodnoty pokynu“ níž), nechá `DocDocument`
-  validovat a počítat — a **nic neodvozuje ze signálů**. Co uloží formulář,
-  uloží i pokyn („Invariant ukládání“, § 10).
-- **Návrh** (`ApplyMode::Proposal`) — interpretace papírové podoby dokladu:
-  odvozování z § 8.4, volby uživatele v `_resolve`, heuristická varování.
+- **Pokyn** — `DocumentApplier` (`validate()` / `preview()` / `apply()`).
+  Volající ví, co chce uložit. Applier dohledá reference, doplní výchozí
+  hodnoty **týmž kódem jako formulář** („Výchozí hodnoty pokynu“ níž),
+  nechá `DocDocument` validovat a počítat — a **nic neodvozuje ze signálů
+  a nic nezakládá**. Co uloží formulář, uloží i pokyn („Invariant
+  ukládání“, § 10). Režim ani větve odvozování applier nemá a na jmenném
+  prostoru interpretace nezávisí (D62).
+- **Návrh** — `Interpret\DocumentProposal` (`validate()` / `preview()` /
+  `apply()` / `interpret()`), vstup pro **papírovou podobu** dokladu
+  (pošta, ISDOC). Cesta je *interpretace → založení chybějících záznamů →
+  pokyn → učení*: `DocumentInterpreter` udělá z předlohy a voleb uživatele
+  (`_resolve`) **hotový doklad** a `DocumentApplier` ho uloží jako každý
+  jiný pokyn („Interpretace jako samostatná část“ níž).
 
-| Volající | Režim |
+| Volající | Vstup |
 |---|---|
-| REST `/_exchange/docs/document/*` (API klient, import ze starého Shipardu) | pokyn; návrh na vyžádání `applyOptions.interpret: true` (§ 11) |
+| REST `/_exchange/docs/document/*` (API klient, import ze starého Shipardu) | pokyn; s `applyOptions.interpret: true` návrh; `/interpret` vrátí hotový doklad bez uložení (§ 11) |
 | datové sady — sekce `docs/` (`DocumentSeeder`) | pokyn |
 | generátory dokladů — periodická fakturace, opravný doklad | pokyn |
-| pošta — náhled návrhu (`AnalysisController`) a jeho použití (`MessageProposalApplier`), tedy i ISDOC z přílohy a `dataset-verify` | návrh (určuje kód; `interpret` z payloadu se nečte) |
+| pošta — náhled návrhu (`AnalysisController`) a jeho použití (`MessageProposalApplier`, MCP `mail_draft_document`), tedy i ISDOC z přílohy a `dataset-verify` | návrh (určuje kód; `interpret` z payloadu se nečte) |
 
-**V pokynu neběží** (D19): místo plnění z DIČ; odvození ani náhrada kódu
+**Pokyn nedělá** (D19) — je to práce interpretace: místo plnění z DIČ; odvození ani náhrada kódu
 DPH; doklad neplátce a doklad mimo české DPH (ceny řádků s daní dodavatele,
 zahozená rekapitulace); korekce režimu DPH ze součtů a kvůli samovyměření;
 druh plnění ze štítků; odvození `recapSource` a dohledání kódu rekapitulace
@@ -161,12 +169,13 @@ historii — § 10 „Importní mód“.
 
 Kód, který „přemýšlí“ nad papírovou podobou dokladu — hledání podle údajů,
 odvozování DPH, volby uživatele —, žije ve jmenném prostoru
-`Document\Interpret\`. `DocumentApplier` ho v režimu návrh jen volá
-a vlastní kopii pravidel nemá. Co čtou obě strany, drží dvě sdílené třídy
-v `Document\`: `PayloadContext` (typ dokladu, registrace DPH z reference,
-datum sazby, původní doklad opravy, kurz, kontext DPH pokynu)
-a `PayloadResolve` (reference, dimenze, ověření kódu DPH a předmětu plnění
-z payloadu, řádek převzaté rekapitulace).
+`Document\Interpret\`. `DocumentApplier` ho nevolá a nezná (D62). Co čtou
+obě strany, drží sdílená vrstva v `Document\`: `PayloadContext` (typ
+dokladu, registrace DPH z reference, datum sazby, původní doklad opravy,
+kurz, kontext DPH pokynu), `PayloadResolve` (reference, dimenze, ověření
+kódu DPH a předmětu plnění z payloadu, řádek převzaté rekapitulace, **plán
+uložení** — `basePlan()` / `plan()` — z nalezených referencí)
+a `SourceRefLookup` (dohledání dokladu podle `source.ref`).
 
 | Třída | Co rozhoduje |
 |---|---|
@@ -177,7 +186,8 @@ z payloadu, řádek převzaté rekapitulace).
 | `PendingRecords`, `SupplierCodeLearning` | zakládání chybějících záznamů a učení dodavatelských kódů — **zapisují**, proto stojí mimo samotnou interpretaci |
 | `ProposalDefaults` | pohyb řádku podle typu položky, výchozí způsob úhrady |
 | `ProposalReport` | bloky náhledu návrhu navíc k resolve, `computed_total_mismatch` |
-| `PaperChecks` | povinná pole předlohy a heuristiky nad čísly (`DocumentValidator` je pouští jen v návrhu) |
+| `PaperChecks` | povinná pole předlohy a heuristiky nad čísly; `validate()` je prokládá kontrolami payloadu z `DocumentValidator` (pokladna vázaného typu, `applyOptions`, `source.ref`, dimenze, tvary hodnot) |
+| `DocumentProposal` | **vstup návrhu** — skládá kroky a odpověď (níž) |
 
 **`DocumentInterpreter::interpret(array $canonical): InterpretedDocument`**
 čte databázi a nic nezapisuje. Z papírové podoby a voleb uživatele udělá:
@@ -192,18 +202,20 @@ z payloadu, řádek převzaté rekapitulace).
   řádky v hotovém dokladu nejsou);
 - `learn` — dodavatelské kódy položek k naučení po uložení;
 - `decisionError` — reference čeká na rozhodnutí (`unresolved_required`)
-  nebo volba neplatí (`conflict`); `limitations` — co formát nevyjádří
-  (níž).
+  nebo volba neplatí (`conflict`); doklad v této podobě uložit nejde.
 
 **Hotový doklad je úplný** (D52) — výchozí hodnoty pokynu se na doklad
 z papíru neuplatní, pokyn nad ním vrací prázdné `_resolve.defaults`:
 
 - každý odkaz je reference číslem (id); strana nebo položka, která se
-  teprve založí, zůstává objektem s daty bez `ref`;
+  teprve založí, zůstává objektem s daty bez `ref`. Účet partnera nese
+  `supplier.bankAccount.ref` vždy — id (shoda, volba uživatele, po založení
+  z `pending`), nebo výslovné `null` = bez vazby (D61);
 - `vat.mode`, `vat.place`, `vat.registration` (i `null`), `vat.recapSource`
   a u převzaté rekapitulace `vatRecap` s kódy; přepočítaná se nepředává;
 - řádky nesou výslovně `vat.code`, `operation`, `description`, `unitPrice`,
-  `unit` (systémovým kódem) a `quantity` — hodnotu, nebo `null`; ceny jsou
+  `unit` (systémovým kódem; jednotka bez něj číslem = id, D60)
+  a `quantity` — hodnotu, nebo `null`; ceny jsou
   už převedené (doklad neplátce a doklad mimo české DPH: `totalPrice`
   s daní dodavatele, `priceCalcMode: fromTotal`);
 - `totals` nesou jen `totalRoundingAuto` a `totalRoundingMode` — **žádné
@@ -219,27 +231,43 @@ Blok `computed` náhledu počítá pokyn nad hotovým dokladem;
 `ProposalReport::withComputed()` ho vrátí do zprávy s indexy řádků
 původního payloadu a porovná s částkou z papíru.
 
-**Co hotový doklad nevyjádří:**
+Formát vyjádří vše, o čem interpretace rozhoduje — meze, které našla
+část 1 (jednotka bez systémového kódu, zvolený účet partnera), zavřely
+D60 a D61 (§ 5 „Reference na záznamy“).
 
-- bankovní účet partnera nemá ve formátu referenci — pokyn ho váže přesnou
-  shodou s účtem osoby (po založení z `pending` se najde); účet zvolený
-  uživatelem (`useExisting`) jiný než shoda je `limitations`
-  `partner_bank_pin`;
-- jednotku bez systémového kódu (`unit_without_system_code`);
-- **přijatý rozdíl** (rozhodnuto 2026-11-23): návrh, který zůstane
-  v režimu Bez DPH, aniž ho applier považuje za doklad neplátce nebo
-  doklad mimo české DPH (předloha říká `none`, ale řádky nesou daň), dnes
-  uloží řádky s kódem DPH a řádek rekapitulace; pokyn doklad Bez DPH
-  ukládá bez kódů (D20, #164). Po přepnutí návrhu na cestu interpretace →
-  pokyn takový doklad vznikne bez kódů a bez rekapitulace. Ve veřejných
-  sadách se nevyskytuje.
+**Vstup návrhu `DocumentProposal`** (D53):
 
-**Stav:** cesta návrhu v applieru (`ApplyMode::Proposal`) zatím běží dál.
-Že pokyn nad hotovým dokladem dává totéž — odpověď náhledu i data předaná
-k uložení —, hlídá stínový test (`ProposalShadowTest` nad unit fixturami,
-`DatasetProposalShadowTest` nad návrhy veřejných sad). Přepnutí návrhu na
-cestu interpretace → pokyn a endpoint `/interpret` je
-`tasks/doc-interpretation-switch.md`.
+- `preview()` — `interpret()` + náhled pokynu nad hotovým dokladem. Odtud
+  blok `computed` (částky, které skončí na dokladu); `ProposalReport::withComputed()`
+  ho vrátí do zprávy s indexy řádků původního payloadu a porovná s částkou
+  z papíru (`computed_total_mismatch`). Validaci dokladu pro cílový stav
+  náhled návrhu nenese.
+- `apply()` — v **jedné transakci** (vlastní, nebo SAVEPOINT uvnitř cizí):
+  založení záznamů z `pending` (`PendingRecords`) → `DocumentApplier::apply()`
+  nad hotovým dokladem s jejich referencemi → učení dodavatelských kódů
+  (`SupplierCodeLearning`) → vazba zprávy pošty na doklad. Chyba
+  kteréhokoli kroku vrátí vše, i založené osoby. Před transakcí: doklad,
+  na který zpráva už ukazuje, a doklad se stejným `source.ref` se vracejí
+  beze změny; `unresolved_required` / `conflict` a chyby v nálezech
+  interpretace uložení zastaví.
+- `interpret()` — hotový doklad a zpráva bez uložení (`/interpret`, § 11).
+- `validate()` — schéma a kontroly předlohy.
+
+**Odpověď návrhu** má tvar, který čte review modal pošty: papírová podoba
+po normalizaci hodnot + `_resolve` (zpráva interpretace, v náhledu
+`computed`) + po uložení `savedDocId`. Cesty nálezů a indexy bloků řádků
+míří do **původního** payloadu; nálezy pokynu nad hotovým dokladem (cíle
+uložení — pokladna, řada, vlastní účet —, chyby validace dokladu) se
+převádějí přes `rowMap` a co zpráva interpretace hlásí sama, se neopakuje.
+`resolve_ignored`, `_resolve.defaults` ani varování úspěšně uloženého
+dokladu odpověď návrhu nenese (ta ukazuje review).
+
+**Přijatá výjimka z „chování návrhu se nemění“** (D59, rozhodnuto
+2026-11-23): návrh, který zůstane v režimu Bez DPH, aniž ho interpretace
+považuje za doklad neplátce nebo doklad mimo české DPH (předloha říká
+`none`, ale řádky nesou daň), dřív uložil řádky s kódem DPH a řádek
+rekapitulace; pokyn doklad Bez DPH ukládá bez kódů (D20, #164), takže
+vznikne bez kódů a bez rekapitulace. Ve veřejných sadách se nevyskytuje.
 
 ### Výchozí hodnoty pokynu — jedno místo s formulářem (#166 D40–D50)
 
@@ -733,13 +761,24 @@ nenalezeno i nejednoznačné je chyba — nikdy první nalezený.
 - **Návrh** (pošta, ISDOC) hledá strany a položky podle údajů jako dřív
   (§ 8); uvedený `ref` má přednost a hledání se přeskočí (nenalezený `ref`
   je chyba i tady). Ostatní místa z tabulky bere návrh stejně jako pokyn.
-- **Jednotka** (`rows[].unit`) referencí není — je to holý systémový kód
-  jednotky (D37). Pokyn bere jen přesnou shodu, neznámá jednotka je chyba
-  `unit_not_found`; zkratky a aliasy zná jen návrh (§ 8.3).
+- **Jednotka** (`rows[].unit`, D37, D60): **text** = holý systémový kód
+  jednotky (`"hr"`, `"pcs"`), **kladné celé číslo** = id jednotky — tak se
+  zapíše jednotka založená uživatelem, která systémový kód nemá. Pokyn bere
+  jen přesnou shodu, neznámá jednotka je chyba `unit_not_found`; zkratky
+  a aliasy zná jen návrh (§ 8.3). Export píše systémový kód; jednotku bez
+  něj s varováním vynechá.
+- **Účet partnera** (`supplier.bankAccount.ref`, D61): reference na záznam
+  účtu osoby — jen **id** (přirozený klíč účet nemá, `"@…"` je
+  `reference_invalid`). S referencí pokyn doklad naváže na ten účet; účet
+  jiné osoby, než je dodavatel dokladu, je chyba
+  `bank_account_person_mismatch`. **Chybí-li klíč**, vznikne vazba jen
+  přesnou shodou čísla s existujícím účtem osoby (jako dřív); **výslovné
+  `null`** = účet se k záznamu neváže. Údaje účtu (`accountNumber`, `iban`,
+  `bic`) jdou do sloupců hlavičky vždy. Export `ref` nepíše (data stačí);
+  interpretace ho do hotového dokladu píše vždy. Návrh z pošty referenci
+  z předlohy zahazuje stejně jako `source.ref` — pole vidí i model.
 - **Autor** zůstává id v `applyOptions.author` (D38). Strana vlastní firmy
-  (`selfParty`) referenci nenese. `supplier.bankAccount` jsou data: jdou do
-  sloupců hlavičky, vazba na účet partnera vznikne v pokynu jen přesnou
-  shodou s jeho existujícím účtem.
+  (`selfParty`) referenci nenese.
 - **Partner účetního a pokladního dokladu** (`partner`, `rows[].partner`,
   `tasks/doc-format-partner-fields.md`) má tvar strany, ale hledá se **jen
   přes `ref`**, v obou režimech — pole je nové, žádný uložený návrh ho
@@ -1246,6 +1285,10 @@ a daty (#166 D30, D34, D35):
                                     //   (kam my platíme)
                                     // pro invoiceIssued: náš účet
                                     //   (kam customer platí)
+    "ref":           null,               // reference na účet osoby (id, #166 D61):
+                                         //   id = ten účet, null = bez vazby,
+                                         //   klíč chybí = přesná shoda čísla;
+                                         //   čte se u dodavatele (§ 5)
     "accountNumber": "1234567890/0100",  // CZ/SK domestic form s bank kódem
     "iban":          "CZ6508000000001234567890",
     "bic":           "GIBACZPX",
@@ -1347,9 +1390,11 @@ nebo import mezi dvěma cizími subjekty.
   // Quantity & price
   "unit":          "hr",           // systémový kód jednotky (core_units
                                     //   .system_code) — holý kód, ne reference
-                                    //   (D37). Pokyn bere jen přesnou shodu
-                                    //   (jinak chyba unit_not_found); návrh
-                                    //   zná i zkratky a aliasy ("h", "ks")
+                                    //   (D37); číslo = id jednotky (jednotka
+                                    //   bez systémového kódu, D60). Pokyn bere
+                                    //   jen přesnou shodu (jinak chyba
+                                    //   unit_not_found); návrh zná i zkratky
+                                    //   a aliasy ("h", "ks")
   "quantity":      10,
   "unitPrice":     1033.06,
   "totalPrice":    10330.58,       // informative; applier recomputes z
@@ -1550,8 +1595,10 @@ Postup v **návrhu**:
 V **pokynu** (#166 D37) platí jen přesná shoda na systémový kód jednotky
 (`core_units.system_code`, např. `"hr"`, `"pcs"`, `"mnth"`) — bez aliasů,
 zkratek a úprav hodnoty; neznámá jednotka je **chyba** `unit_not_found`.
-Jednotka bez systémového kódu se ve formátu vyjádřit nedá (exportér ji
-s varováním vynechá).
+Jednotku bez systémového kódu nese formát **číslem** — id aktivní jednotky
+(`UnitResolver::resolveId()`, #166 D60); tak ji píše interpretace do
+hotového dokladu. Exportér jednotku bez kódu dál s varováním vynechá (id
+není přenosné mezi zdroji dat).
 
 ### 8.4 VatCodeResolver
 
@@ -2012,8 +2059,16 @@ nepoužívají.
 
 Vstup: `Party.bankAccount` object + resolved `personId` (pokud existuje).
 
-Postup pro **partner's bank** (resolved person je partner, ne my),
-#118 D16:
+**Reference `bankAccount.ref`** (#166 D61) má přednost před hledáním:
+`PayloadResolve::partnerBankReference()` ji dohledá `ReferenceResolver`em
+(jen id) a ověří, že účet patří dodavateli dokladu
+(`BankAccountResolver::partnerAccountBelongsTo()`); doklad bez osoby
+dodavatele nemá s čím porovnat a referenci přijme. V pokynu výslovné
+`null` hledání vypíná; v návrhu prázdná reference nic neříká a hledá se
+podle čísla.
+
+Postup pro **partner's bank** bez reference (resolved person je partner,
+ne my), #118 D16:
 
 1. Načíst aktivní účty osoby (`base_persons_bank_accounts` podle
    `person`) a porovnat v PHP přes **klíč účtu**
@@ -2026,7 +2081,7 @@ Postup pro **partner's bank** (resolved person je partner, ne my),
    pak číslo účtu (`accountNumber`).
 2. Žádný match, ale partner existuje → `canCreate` (přidat účet
    partnerovi; payload nese normalizované a případně opravené hodnoty
-   z canonicalu).
+   z canonicalu). Zakládá jen návrh; pokyn vazbu bez shody nevytvoří.
 3. Partner ještě neexistuje (sám `canCreate`) → odložit do Apply fáze.
 
 Postup pro **vlastní účet** (`resolveOwnBank`, dnes bez produkčního
@@ -2492,7 +2547,8 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `partner_not_supported` | error / warning | Pole `partner` na hlavičce typu, který ho nenese (faktury — partnerem je strana; #166 D30). V pokynu chyba, v návrhu varování a pole se ignoruje. Path `partner`. |
 | `partner_conflict` | error | Jen pokyn: u pokladního dokladu / prodejky určují pole `partner` a strana podle směru různé osoby. Path `partner`. |
 | `signal_not_allowed` | error | Jen pokyn: dočasný signál návrhu (#166 D39) — `rows.N.item.ourCode`, účet řádku holým číslem (`rows.N.account`), `vat.registrationCountry`. Zpráva radí, které pole použít. |
-| `unit_not_found` | warning / error | Jednotka řádku: návrh ji nerozpoznal (warning, doplní se výchozí); v pokynu není přesným systémovým kódem jednotky (error, #166 D37). Path `rows.N.unit`. |
+| `unit_not_found` | warning / error | Jednotka řádku: návrh ji nerozpoznal (warning, doplní se výchozí); v pokynu není přesným systémovým kódem jednotky, nebo jednotka s uvedeným id není (error, #166 D37, D60). Path `rows.N.unit`. |
+| `bank_account_person_mismatch` | error | Reference `supplier.bankAccount.ref` (#166 D61) ukazuje na účet jiné osoby, než je dodavatel dokladu. Path `supplier.bankAccount.ref`. Reference textem (`"@…"`) je `reference_invalid` — účet partnera přirozený klíč nemá. |
 | `account_not_found` | warning | Jen návrh: účet řádku holým číslem (signál) není v rozvrhu — řádek bude bez účtu. V pokynu je nenalezený účet `reference_not_found`. |
 | `vat_registration_not_valid` | error | Reference `vat.registration` míří na registraci, která k datu dokladu neplatí (mimo importní mód). Path `vat.registration`. |
 | `correction_original_not_supported` | error | `correction.originalDoc` míří na doklad typu, ke kterému nejde vystavit opravný doklad. |
@@ -2537,32 +2593,34 @@ pod `validation_failed`.
 
 ## 10. Apply pipeline
 
+**Pokyn** — `DocumentApplier::apply()`:
+
 ```
 POST /api/v1/_exchange/docs/document/apply
   │
-  ├─ 0. Idempotence — bez ukládání vrátí existující doklad:
-  │      - source.message už ukazuje na doklad (návrh z pošty, § 12)
-  │      - živý doklad se stejným source.kind + source.ref (#166 D46;
-  │        jiný typ → 422 source_ref_conflict)
+  ├─ 0. Idempotence — bez ukládání vrátí existující doklad: živý doklad
+  │      se stejným source.kind + source.ref (#166 D46; jiný typ → 422
+  │      source_ref_conflict)
   │
   ├─ 1. Schema validation (statická struktura)
   │
-  ├─ 2. Resolve (znovu — i když /preview ho udělal, mohly se mezitím
-  │      změnit DB data; idempotentní)
+  ├─ 2. Tvary hodnot, výchozí hodnoty pokynu (pracovní kopie payloadu),
+  │      DocumentValidator
   │
-  ├─ 3. Reconcile s klientským _resolve
-  │      - validate userAction proti aktuálnímu resolve
-  │      - sestaví execution plan: které entity vytvořit, které linkovat
+  ├─ 3. Resolve — jen reference (ReferenceResolver); plán uložení je
+  │      projekce nalezených referencí (PayloadResolve::plan())
   │
   ├─ 4. Validation gate
   │      - blok `issues` s severity="error" → 422 s payloadem
+  │
+  ├─ 4a. Cíle uložení: pokladna, číselná řada, vlastní účet
   │
   ├─ 4b. Zámek podle source.kind + source.ref (jen s klíčem; drží se do
   │      commitu, 409 source_ref_busy po 10 s čekání)
   │
   ├─ 5. NestedTransaction — vlastní transakce, nebo SAVEPOINT uvnitř
   │      transakce volajícího (generátory dokladů, které na výsledek
-  │      atomicky navazují — periodická fakturace, #110)
+  │      atomicky navazují — periodická fakturace, #110; vstup návrhu)
   │
   ├─ 5a. Idempotence pod zámkem: doklad se stejným klíčem vznikl mezitím
   │      → rollback vlastní práce a odpověď alreadyApplied
@@ -2570,24 +2628,14 @@ POST /api/v1/_exchange/docs/document/apply
   ├─ 5b. replaceConcept: zámek cílového konceptu FOR UPDATE + kontrola
   │      stavu 10 a typu (replace_target_* → rollback vlastní práce)
   │
-  ├─ 6. Side-creates (per execution plan)
-  │      - canCreate Party → PersonDocument::saveDocument(...)
-  │      - canCreate Item  → ItemDocument::saveDocument(...)
-  │      - canCreate Bank  → BankAccountDocument::saveDocument(...)
-  │      - per-partner item mapping → INSERT economy_items_supplier_codes
-  │        (učení — jen režim návrh, #166 D6)
-  │
-  ├─ 7. Transform canonical → interní $data
-  │      - item řádky bez operation → pohyb dle
-  │        docs.core.applyRowOperations (viz níže)
+  ├─ 6. Transform canonical → interní $data
   │      - reference → resolved id (partner, item, unit, vat_code)
   │      - canonical field names → DB column names (camelCase → snake_case)
   │      - currency uppercase → lowercase (cfgItem expects "czk")
-  │      - vatRecap, totals vypustit (přepočte beforeSave)
   │      - source.* → docs_core_heads.source_kind / source_ref /
   │        source_message / source_extracted_at
   │
-  ├─ 8. TableGateway.saveDocument('docs_core_heads', $data)
+  ├─ 7. TableGateway.saveDocument('docs_core_heads', $data)
   │      → DocDocument::validate (+ subclass per docType); chyba =
   │        rollback a 422 validation_failed s nálezy dokladu (#166 D21)
   │      → DocDocument::beforeSave (snapshoty, recap, totals, čísla)
@@ -2595,54 +2643,86 @@ POST /api/v1/_exchange/docs/document/apply
   │        update hlavičky (id cíle, sloupce mimo payload explicitně
   │        resetované) a náhrada řádků (bez id = staré smazat, nové vložit)
   │
-  ├─ 9. Attachments — u dokladu z pošty se přílohy NEkopírují: zůstávají
-  │      na zdrojové zprávě a detail dokladu je zobrazuje jako skupinu
-  │      „mail" přes lineage (DocsHeadsViewer::sourceAttachmentGroups,
-  │      heads.source_message + reverzní message.target_*)
+  ├─ 8. Kontrolní součet `totals` proti uložené hlavičce (neshoda =
+  │      rollback a 422 totals_check_failed)
   │
-  ├─ 10. Lineage update (writeLineageTargets — jen pokud source.message
-  │      je vyplněn; D6 z mail-message-centric)
-  │      - core_mail_incoming_messages.target_table_id = 'docs_core_heads'
-  │      - core_mail_incoming_messages.target_row      = $newDocId
-  │      (druhá strana vazby k heads.source_message; zapisuje se atomicky
-  │       v téže transakci. Verdikt analýzy — resolution — a docState
-  │       zprávy sem záměrně NEpatří, ty píše MessageProposalApplier)
+  ├─ 9. COMMIT / RELEASE SAVEPOINT
   │
-  ├─ 11. COMMIT / RELEASE SAVEPOINT
-  │
-  └─ 12. Vrátí enriched canonical JSON
-        - _resolve aktualizován: status="matched" pro všechny canCreate
-          s novými id
-        - docNumber doplněn z přidělené series (jen pokud confirm — viz níže)
-        - savedDocId v top-level (FK na docs_core_heads.id)
+  └─ 10. Vrátí payload, jak přišel, s `_resolve` (bloky referencí,
+        `defaults`, nálezy včetně varování dokladu) a `savedDocId`
 ```
+
+Pokyn **nic nezakládá**, nečte `_resolve`, neučí dodavatelské kódy
+a nezapisuje vazbu na zprávu pošty.
+
+**Návrh** — `DocumentProposal::apply()` (pošta, ISDOC, REST
+s `applyOptions.interpret: true`):
+
+```
+  ├─ 0. Idempotence — bez ukládání vrátí existující doklad:
+  │      - source.message už ukazuje na doklad (návrh z pošty, § 12;
+  │        neplatí pro výslovné replaceConcept)
+  │      - živý doklad se stejným source.kind + source.ref
+  │
+  ├─ 1. Schema validation
+  │
+  ├─ 2. Interpretace (DocumentInterpreter::interpret — čte, nezapisuje):
+  │      hledání záznamů podle údajů, odvození DPH, volby uživatele
+  │      z `_resolve`, `autoCreateMode` → hotový doklad, zpráva, pending
+  │
+  ├─ 3. Rozhodnutí chybí / neplatí → 422 unresolved_required / 409
+  │      conflict; chyba v nálezech → 422 validation_failed
+  │
+  ├─ 4. Zámek podle source.ref (drží se přes commit celé transakce)
+  │
+  ├─ 5. NestedTransaction:
+  │      5a. znovu dohledání podle source.ref
+  │      5b. založení záznamů z pending (osoby, účet dodavatele, položky)
+  │      5c. pokyn nad hotovým dokladem s jejich referencemi (kroky
+  │          pokynu výš, uvnitř jako SAVEPOINT); neúspěch → rollback
+  │          všeho včetně založených záznamů
+  │      5d. učení dodavatelských kódů (economy_items_supplier_codes)
+  │      5e. vazba zprávy na doklad (core_mail_incoming_messages.target_*);
+  │          verdikt analýzy a stav zprávy píše MessageProposalApplier
+  │
+  └─ 6. Vrátí papírovou podobu s `_resolve` (zpráva interpretace,
+        založené záznamy jako matched / `matchedBy: created`) a `savedDocId`
+```
+
+Přílohy dokladu z pošty se nekopírují: zůstávají na zdrojové zprávě
+a detail dokladu je zobrazuje jako skupinu „mail“ přes lineage
+(`DocsHeadsViewer::sourceAttachmentGroups`, `heads.source_message`
++ reverzní `message.target_*`).
 
 ### Pipeline pokynu vedle návrhu (#166)
 
-Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
+Co se s payloadem děje ve vstupu návrhu (interpretace, § 3) a co v pokynu.
+Návrh pokyn na konci volá — sloupec „Návrh“ říká, co se stane **před
+ním** a navíc:
 
 | Krok | Návrh | Pokyn |
 |---|---|---|
 | normalizace hodnot (před validací) | tvary + oprava IBAN ↔ číslo účtu | jen tvary |
 | výchozí hodnoty | — (návrh si drží vlastní větve v transformu) | `InstructionDefaults` nad `DocHeadDefaults` / `DocRowDefaults`: co payload neuvádí, doplní se do **pracovní kopie** payloadu; zbytek pipeline běží nad ní, odpověď nese původní payload a `_resolve.defaults` (§ 3) |
-| `DocumentValidator` | včetně heuristik nad čísly předlohy a povinných polí | bez heuristik a bez povinných polí (jen `cashDesk` vázaného typu a `cashDirection`); `importNumber` povolené |
+| kontroly payloadu | `PaperChecks::validate()`: povinná pole předlohy a heuristiky nad čísly, proložené kontrolami `DocumentValidator` | `DocumentValidator`: bez heuristik a bez povinných polí (jen `cashDesk` vázaného typu a `cashDirection`); `importNumber` povolené |
 | resolve — strany, položky | `ref` má přednost, jinak hledání podle údajů (§ 8.1, § 8.2) | jen reference (`ReferenceResolver`); objekt bez `ref` s údaji = `reference_missing` (#166 D31) |
-| resolve — účet řádku, jednotka | reference, nebo signál holým číslem (nenalezený = warning); jednotka i zkratkou a aliasem | jen reference (nenalezená = chyba); jednotka jen přesným systémovým kódem (`unit_not_found` = chyba) |
+| resolve — účet řádku, jednotka | reference, nebo signál holým číslem (nenalezený = warning); jednotka i zkratkou a aliasem | jen reference (nenalezená = chyba); jednotka jen přesným systémovým kódem nebo id (`unit_not_found` = chyba) |
+| resolve — účet partnera | `bankAccount.ref` má přednost, jinak hledání podle čísla mezi účty dodavatele; nenalezený jde k založení | `bankAccount.ref` (id; `null` = bez vazby), bez klíče přesná shoda čísla; nic se nezakládá |
 | resolve — řada, pokladna, vlastní účet, dimenze, registrace DPH, původní doklad | reference | reference |
 | resolve — kódy DPH | odvození, soulad se signály, volby uživatele (§ 8.4) | kód z payloadu se jen ověří |
 | resolve — partner účetního a pokladního dokladu (`partner`, `rows[].partner`) | jen reference; bez pole volba `_resolve…partner` | jen reference |
-| reconcile | čte `userAction` vč. vynechání řádků | `_resolve` se nečte vůbec (D32) — blok se zahodí před validací, info `resolve_ignored`; řádky se nevynechávají |
-| side-creates | podle `autoCreateMode` / `userAction` + učení dodavatelských kódů | **žádné** — pokyn osoby, položky ani účty partnerů nezakládá; `autoCreateMode` nečte |
-| transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5; výchozí úhrada a pohyb řádku vlastní větví | hodnoty z payloadu (výchozí hodnoty už nese pracovní kopie); pole, které chybí i tam, je záměrně prázdné |
-| po uložení (v transakci) | — | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
-| po uložení | — | varování dokladu do `_resolve.issues`, `total_rounding_mode_ignored` |
+| plán uložení | `RecordMatching::reconcile()` — čte `userAction` vč. vynechání řádků | `_resolve` se nečte vůbec (D32) — blok se zahodí před validací, info `resolve_ignored`; řádky se nevynechávají |
+| zakládání záznamů | `PendingRecords` podle `autoCreateMode` / `userAction`, uvnitř transakce návrhu před pokynem; po uložení učení dodavatelských kódů | **žádné** — pokyn osoby, položky ani účty partnerů nezakládá; `autoCreateMode` nečte |
+| hodnoty dokladu | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5, výchozí úhrada a pohyb řádku — zapsané **do hotového dokladu** (`FinishedDocument`) | `transform()`: hodnoty z payloadu (výchozí hodnoty už nese pracovní kopie); pole, které chybí i tam, je záměrně prázdné |
+| po uložení (v transakci) | hotový doklad částky `totals` nenese — kontrolní součet se neuplatní | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
+| po uložení | odpověď použití návrhu varování uloženého dokladu nenese (ukazuje je review) | varování dokladu do `_resolve.issues`, `total_rounding_mode_ignored` |
 
-**`/preview` v pokynu** navíc spustí `DocDocument::validate()` pro cílový
+**`/preview` pokynu** navíc spustí `DocDocument::validate()` pro cílový
 stav z `applyOptions.targetDocState` — nález, který by apply odmítl (řádek
 bez kódu DPH při cíli V pořádku, opravný doklad bez důvodu), je vidět před
 uložením; stejně tak neshodu kontrolního součtu `totals`
 (`totals_check_failed` nad `_resolve.computed`). Data skládá stejnou cestou
-jako apply (výchozí hodnoty, reconcile, dohledání
+jako apply (výchozí hodnoty, plán z referencí, dohledání
 pokladny a řady, transform) a nic nezapisuje; chybu
 dohledání pokladny, řady nebo vlastního účtu hlásí týmž kódem, jaký vrátí
 apply. Nehlásí, co posoudit nemůže: řadu vázanou na pokladnu, kterou apply
@@ -2845,8 +2925,12 @@ pravdy o tom, které doklady existují.
 **Mez — apply uvnitř cizí transakce**: zámek patří spojení, ne transakci.
 Běží-li `apply()` v transakci volajícího (viz níže), uvolní se před jejím
 commitem a druhé dohledání čte snímek vnější transakce. Souběh si pak
-hlídá volající — jako periodická fakturace zámkem řádku období.
-Top-level volající (REST, import, datové sady) mají záruku celou.
+hlídá volající — periodická fakturace zámkem řádku období, **vstup
+návrhu** tímtéž zámkem drženým přes svou transakci
+(`DocumentApplier::lockSource()` / `unlockSource()`; zámek je pro jedno
+spojení opakovatelný, pokyn uvnitř projde) a vlastním dohledáním jako
+prvním dotazem transakce (`existingBySource()`). Top-level volající (REST,
+import, datové sady) mají záruku celou.
 
 ### Apply uvnitř cizí transakce
 
@@ -2857,8 +2941,10 @@ zámek řádku období → apply → zápis `doc` do období), zabalí `apply()`
 `NestedTransaction::run` a při `success === false` svou práci vrátí
 výjimkou — neúspěšný apply vrátil jen vlastní savepoint a vnější transakce
 zůstává volajícímu. `internal_error` po pádu celé transakce na serveru
-(deadlock) = volající dávku ukončí. Top-level volající (REST, pošta,
-datové sady) se nemění.
+(deadlock) = volající dávku ukončí. Stejně pokyn volá vstup návrhu
+(`DocumentProposal::apply()`): zakládá záznamy z `pending`, ukládá pokyn
+a učí kódy v jedné transakci — neúspěch pokynu vrátí i založené osoby.
+Top-level volající (REST, datové sady) se nemění.
 
 Opačný směr (DB → canonical) dělají exportery v
 `modules/core/exchange/src/Export/` (`DocumentExporter`, `PersonExporter`,
@@ -3023,13 +3109,19 @@ dispatcher: `/_exchange/persons/person/`, `/_exchange/items/item/`,
 majetku `/_exchange/assets/asset/` + `/_exchange/assets/doc-links/apply`
 (stejná oprávnění — §14 → Majetek).
 
-**Režim** (§ 3, #166 D2, D18): dokladové endpointy běží jako **pokyn** —
-doklad se uloží, jak ho payload říká. Interpretaci (odvozování jako
+**Pokyn × návrh** (§ 3, #166 D2, D18, D53): dokladové endpointy
+`/validate`, `/preview` a `/apply` běží jako **pokyn** — doklad se uloží,
+jak ho payload říká. Interpretaci papírové podoby (odvozování jako
 u pošty) si klient vyžádá výslovně:
 
 ```jsonc
-{ "applyOptions": { "interpret": true } }   // režim návrh; s importNumber nejde
+{ "applyOptions": { "interpret": true } }   // vstup návrhu; s importNumber nejde
 ```
+
+Payload pak jde cestou *interpretace → založení chybějících záznamů →
+pokyn → učení* (`DocumentProposal`). Kdo chce interpretaci **bez uložení**
+— a hotový doklad si případně upravit a uložit sám —, volá `/interpret`
+(níž).
 
 ### Doklad skriptem — minimální pokyn
 
@@ -3120,6 +3212,48 @@ stejným `savedDocId` a `_resolve.summary.status = "alreadyApplied"`
 obsahu; smazaný (v koši) nový pokyn neblokuje. 409 `source_ref_busy`
 znamená, že tentýž pokyn právě ukládá jiné volání — opakuj za chvíli.
 
+### POST `/interpret`
+
+Interpretace papírové podoby dokladu **bez uložení** (#166 D55). Jen čte —
+je povolená i ve zdroji dat jen pro čtení, stejně jako `/preview`.
+
+**Request body:** canonical JSON v papírové podobě (strany a položky
+údaji, signály návrhu) s volitelným `_resolve` (volby uživatele)
+a `applyOptions.autoCreateMode`. `applyOptions.interpret` se nečte —
+endpoint interpretuje vždy.
+
+**Response:**
+
+```jsonc
+{
+  "document": { … },   // hotový doklad — payload platný jako pokyn (§ 3)
+  "report": {
+    "supplier": { "status": "matched", "matchedId": 42, … },   // bloky jako `_resolve` návrhu
+    "rows":     [ … ], "vat": { … },
+    "issues":   [ … ],          // nálezy; cesty do původního payloadu
+    "summary":  { … },
+    "pending":  [               // co je potřeba založit před uložením
+      { "key": "supplier", "kind": "person", "table": "base_persons_persons",
+        "payload": { … }, "ref": "supplier.ref" }
+    ],
+    "rowMap":   [0, 2]          // řádek hotového dokladu → řádek původního
+  }
+}
+```
+
+`document` jde poslat na `/apply` jako pokyn — dá stejný doklad jako
+`/apply` s `interpret: true`. Má-li `report.pending` záznamy (zakládat se
+smí podle `autoCreateMode` a `userAction: create`), nesou je strany
+a položky v `document` jako objekt s daty **bez `ref`** a pokyn takový
+doklad odmítne (`reference_missing`): volající je založí sám (API osob
+a položek) a referenci doplní na cestu z `pending[].ref`, nebo použije
+`/apply` s `interpret: true`, které zakládá samo. Reference, která čeká na
+rozhodnutí (`unresolved_required`) nebo jejíž volba neplatí (`conflict`),
+je nález ve zprávě, ne chyba endpointu. Dodavatelské kódy položek se učí
+jen při uložení návrhem (`/apply` s `interpret: true`).
+
+**Chybové stavy:** `400 schema_invalid` jako u `/preview`.
+
 ### POST `/validate`
 
 Statická + dynamická validace bez resolve a bez DB writes.
@@ -3150,11 +3284,13 @@ ho vrátí beze změny, § 5 „Idempotence pokynu“).
 
 ### POST `/apply`
 
-Validate + resolve + reconcile s klientským `_resolve.*.userAction` + uložit.
+Validate + resolve + uložit; v návrhu navíc rozhodnutí nad klientským
+`_resolve.*.userAction` a založení chybějících záznamů (§ 10).
 
-**Request body:** canonical JSON; v režimu **návrh** s vyplněným
-`_resolve.*.userAction` (pokud preview indikoval `canCreate` /
-`ambiguous`). Pokyn `_resolve` nečte — reference nese payload.
+**Request body:** canonical JSON; v režimu **návrh**
+(`applyOptions.interpret: true`) s vyplněným `_resolve.*.userAction`
+(pokud preview indikoval `canCreate` / `ambiguous`). Pokyn `_resolve`
+nečte — reference nese payload.
 
 **Response:** enriched canonical (jako z `/preview`), navíc:
 
@@ -3196,10 +3332,12 @@ Vazba doklad ↔ zdrojová zpráva je **obousměrná** a obě strany zapisuje
 apply atomicky (D6 z `tasks/mail-message-centric.md`):
 
 **1. `core_mail_incoming_messages.target_table_id` / `target_row`** —
-forward lookup ze zprávy → výsledná entita (docs i registry). Zapisuje
-`DocumentApplier::writeLineageTargets` (resp. `RegistryApplier`) uvnitř
-save transakce. Zároveň slouží jako klíč **idempotence** apply — obsazený
-target = opakovaný apply vrátí existující entitu, nevzniká duplicita.
+forward lookup ze zprávy → výsledná entita (docs i registry). U dokladu
+ji zapisuje **vstup návrhu** (`DocumentProposal`, resp. `RegistryApplier`)
+uvnitř transakce uložení. Zároveň slouží jako klíč **idempotence** použití
+návrhu — obsazený target = opakované použití vrátí existující entitu,
+nevzniká duplicita. Pokyn (`DocumentApplier`) vazbu nezapisuje ani nečte
+(#166 U3): `source.message` v pokynu jen uloží sloupec `source_message`.
 
 **2. Sloupce v `docs_core_heads`:**
 

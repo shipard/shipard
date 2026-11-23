@@ -1,6 +1,6 @@
 # Task: Návrh = interpretace → pokyn; applier ukládá jen pokyn, endpoint `/interpret`
 
-**Stav:** naplánováno — zadání 2026-11-23, doplněno po ověření části 1 (#166 etapa 5, část 2; D53–D55, D59–D62)
+**Stav:** hotovo — 2026-11-23 (#166 etapa 5, část 2; D53–D55, D59–D62); zbývá proklik pošty člověkem a `ds-upgrade` zdrojů kvůli kopii schématu v profilu pošty
 
 **Issue:** #166 (etapa 5)
 
@@ -179,11 +179,208 @@ návrhu:
 
 ## Hotovo když
 
-- [ ] návrh běží cestou interpretace → pokyn; odpovědi mají stejný tvar
-- [ ] `DocumentApplier` a `DocumentValidator` nemají režim ani větve
+- [x] návrh běží cestou interpretace → pokyn; odpovědi mají stejný tvar
+- [x] `DocumentApplier` a `DocumentValidator` nemají režim ani větve
       odvozování a nezávisí na jmenném prostoru interpretace
-- [ ] hotový doklad nemá `limitations` (D60, D61)
-- [ ] `/interpret` vrací hotový doklad a zprávu
-- [ ] `dataset-verify` a uložené doklady z návrhů shodné s kódem před
+- [x] hotový doklad nemá `limitations` (D60, D61)
+- [x] `/interpret` vrací hotový doklad a zprávu
+- [x] `dataset-verify` a uložené doklady z návrhů shodné s kódem před
       taskem; testy invariantu beze změny
-- [ ] cílené testy, pak celá unit sada; dokumentace, stav tasku
+- [x] cílené testy, pak celá unit sada; dokumentace, stav tasku
+
+## Poznámky k implementaci
+
+Osm commitů na `stable`, každý se zelenou unit sadou: `e0064908` (meze
+formátu), `8a8db657` (plán pokynu ve sdílené vrstvě), `45941cd3` (vstup
+návrhu), `523f319d` (volající), `c076cedc` (testy návrhu, validátor),
+`228f15c4` (applier bez režimu), `01dad074` (`/interpret`) a commit
+s dokumentací.
+
+### Rozpor v zadání — schéma se mění
+
+Past „schéma se tímhle taskem nemění“ je starší než doplněné U3b. Platí
+U3b: `rows[].unit` text nebo kladné celé číslo a `Party.bankAccount.ref`
+ve všech třech kopiích (`.jsonc`, `.json`, `output_schema` profilu pošty —
+`ProfileSchemaDriftTest` vyžaduje shodu). Profil pošty je uložený ve
+zdroji dat; nové schéma model uvidí až po `ds-upgrade`.
+
+### Meze formátu (D60, D61)
+
+- **Jednotka číslem** = id aktivní jednotky (`UnitResolver::resolveId()`),
+  v pokynu neexistující = chyba `unit_not_found`, v návrhu varování.
+  `FinishedDocument` píše systémový kód, bez něj id. Výchozí jednotka pokynu
+  bez systémového kódu jde dál stranou (`InstructionDefaults::unitIds`) —
+  beze změny odpovědi pokynu.
+- **`supplier.bankAccount.ref`** — moje upřesnění D61, ať pokyn vyjádří
+  i rozhodnutí „bez vazby“: **id** = ten účet, **výslovné `null`** = účet
+  se k záznamu neváže, **chybějící klíč** = přesná shoda čísla jako dřív
+  (konvence formátu „chybí = výchozí chování, `null` = záměrně prázdné“).
+  Interpretace píše klíč vždy: id (shoda, volba uživatele; po založení
+  z `pending` ho doplní `withCreated()`), jinak `null`. Text `"@…"` je
+  `reference_invalid`.
+- **Účet jiné osoby** = chyba `bank_account_person_mismatch`, ale jen když
+  doklad osobu dodavatele má. Doklad bez osoby dodavatele (strana „bez
+  osoby“ v návrhu, účet se přitom našel) referenci přijme — jinak by se
+  změnilo dnešní chování návrhu (stínový případ „dodavatel bez osoby“).
+- **Známý okraj:** uživatel v review zvolí jiného dodavatele, než jakého
+  našlo hledání, a účet se našel pod tím původním. Dřív doklad dostal
+  partnera Y a účet partnera X; pokyn to odmítne
+  (`bank_account_person_mismatch`). Je to přímý důsledek D61, ve veřejných
+  sadách ani fixturách se nevyskytuje.
+- **Návrh z pošty referenci účtu zahazuje** stejně jako `source.ref`
+  (`MessageProposalApplier::withoutPartnerBankReference()`, i náhled) —
+  pole je ve schématu, které vidí model. REST s `interpret: true` ji čte
+  (má přednost před hledáním podle čísla).
+- `limitations` zanikly celé (`InterpretedDocument`, `DocumentInterpreter`).
+
+### Sdílená vrstva (D62)
+
+- `PayloadResolve::basePlan()` — co plyne z bloků `_resolve` bez
+  rozhodování; `plan()` — plán pokynu (projekce nalezených referencí).
+  `RecordMatching::reconcile()` staví na `basePlan()` a přidává rozhodnutí.
+- Zachované chování pokynu: strana vlastní firmy na zdroji bez vlastní
+  osoby je dál `unresolved_required` (blok bez shody, který není
+  referencí).
+- `item.display`, `effectiveAccount` a přenos auditu obohacení nese jen
+  zpráva návrhu; z náhledu pokynu zmizely.
+- `SourceRefLookup` — dohledání dokladu podle `source.ref` čte pokyn
+  i interpretace (nález `already_applied` v náhledu návrhu).
+- `ApplyMode` žil i v kontextu DPH (`vatCtx['mode']`); nahradil ho příznak
+  `interpreted`, který nastavuje `VatInterpretation::context()`.
+
+### Vstup návrhu `DocumentProposal` (U1)
+
+- `preview()` = `interpret()` + náhled pokynu nad hotovým dokladem +
+  `ProposalReport::withComputed()`; `apply()` = jedna `NestedTransaction`:
+  `PendingRecords::createFrom()` → `withCreated()` →
+  `DocumentApplier::apply()` → `SupplierCodeLearning::learnFrom()` → vazba
+  zprávy. Neúspěch pokynu vyhodí `ProposalStoppedException`, takže se vrátí
+  i založené záznamy. `validate()` = schéma + kontroly předlohy.
+- `interpret($canonical, saving: true)` — zpráva pro uložení nenese
+  `item.display` / `effectiveAccount` ani nález o existujícím `source.ref`
+  (odpověď uložení je neměla ani dřív).
+- **Nálezy pokynu v odpovědi návrhu:** přebírají se ty, které zpráva
+  interpretace ještě nemá (shoda kódu a cesty po převodu přes `rowMap`) —
+  sdílené kontroly payloadu běží v interpretaci i v pokynu. **Varování
+  úspěšně uloženého dokladu se nepřebírají** (dnešní chování, hlídá
+  `testWarningsFromSuccessfulSaveAreReportedOnlyInInstruction`); applier je
+  kvůli tomu vystavuje (`savedDocumentWarnings()`). `resolve_ignored`
+  a `_resolve.defaults` se v odpovědi neobjeví.
+- **Idempotence a zámek `source.ref`** (REST s `interpret: true`): rychlá
+  cesta před interpretací (`DocumentApplier::existingBySource()`), zámek
+  drží vstup návrhu přes commit své transakce (`lockSource()` /
+  `unlockSource()`; `GET_LOCK` je pro jedno spojení opakovatelný, pokyn
+  uvnitř projde) a doklad dohledává znovu jako první dotaz transakce. Bez
+  toho by se zámek pokynu uvolnil před commitem vnější transakce.
+- `InterpretedDocument::$operationIssues` — nálezy doplnění pohybu řádků
+  odděleně od rozhodnutí, aby je odpověď při chybě rozhodnutí nenesla
+  (jako dřív).
+
+### Applier a validátor bez režimu (U3)
+
+- **Idempotence podle zprávy a zápis vazby na zprávu patří vstupu návrhu.**
+  `replaceConcept` volá jen periodická fakturace a `source.message`
+  neposílá; exportér ani generátory ho také nepíšou. Pokyn se
+  `source.message` uloží jen sloupec `source_message`.
+- Z applieru zmizelo: parametr režimu, hledání podle údajů, volby
+  `_resolve`, vynechání řádků, zakládání, učení, větve `derives()`, ceny
+  s daní dodavatele v `transformRows()`, gatewaye osob a položek,
+  `ItemResolver`, `AccountResolver`, `VatPlaceDerivation`, štítky obsahu.
+  `ApplyMode` je smazaný. **`DocumentApplier.php` 3 166 → 2 558 řádků,
+  `DocumentValidator.php` 376 → 365**; ani jeden nemá `ApplyMode`,
+  `derives()` ani `use …\Interpret\…`.
+- `PaperChecks::validate()` prokládá kontroly předlohy kontrolami payloadu
+  z `DocumentValidator` (`checkDocTypeFields()`, `checkPartnerDocNumber()`,
+  `checkOptionsAndValues()`) — pořadí nálezů návrhu se nezměnilo.
+
+### Endpoint `/interpret` (U4)
+
+- Odpověď `{document, report}`; `report` = bloky a nálezy zprávy návrhu
+  (včetně `unresolved_required` / `conflict` — jsou to nálezy, ne chyba
+  endpointu), `summary`, `pending` a `rowMap`.
+- **Chyba schématu je 400 `schema_invalid`** — zadání píše 422 „jako
+  u `/preview`“, ale `/preview` vrací 400; držím se `/preview`.
+- V read-only zdroji je povolený (`ReadOnlyPolicy`), jen čte.
+- Dodavatelské kódy se učí jen při uložení návrhem (`/apply` s
+  `interpret: true`), ne při `/interpret` + vlastní `/apply`.
+
+### Plné porovnání staré a nové cesty (U5)
+
+- **Stínový test rozšířený na celé odpovědi** (do té doby jen `_resolve`
+  náhledu a data k uložení): náhled i uložení — výsledek, HTTP stav,
+  zpráva, celý payload s `_resolve` — a data předaná k uložení. Nad 33 unit
+  fixturami a nad třemi veřejnými sadami (čerstvý seed, 64 návrhů, každý
+  ve dvou variantách voleb) **bez rozdílu**; negativní kontrola (klíč navíc
+  v odpovědi) shodila všech 25 případů.
+- **Kód před taskem × po tasku** (worktree nad `7df087f5`, čerstvý seed
+  tří veřejných sad): `dataset-verify --json` **bajtově shodný**; výpis
+  `docs_core_heads`, `docs_core_rows`, `docs_core_vat_recap`,
+  `economy_accounting_journal`, osob, účtů osob, položek, dodavatelských
+  kódů, zpráv a analýz (bez časových sloupců) **bez jediného rozdílu**.
+  Dva běhy původního kódu proti sobě dávají nulový šum. Zopakováno po
+  přepnutí volajících, po převodu testů a po smazání staré cesty.
+- Stínové testy zanikly: nad sadou po přepnutí volajících (použití návrhu
+  už applierem neprochází), nad unit fixturami se starou cestou.
+
+### Dva rozdíly, které odhalil až převod testů návrhu
+
+Stínové fixtury je neměly; oba jsou opravené v `FinishedDocument`:
+
+1. **Účet navržený historií u ručně zvolené položky** (#111 D7b) se
+   nezapisuje — účet zapsaný referencí (`"@518100"`) zůstával v hotovém
+   dokladu a pokyn ho uložil.
+2. **Pokladní doklad s polem `partner` a stranou s jinou osobou**: v návrhu
+   má pole přednost; pokyn by hlásil `partner_conflict`. Strana proto
+   v hotovém dokladu ztrácí referenci i údaje osoby (jako strana „bez
+   osoby“).
+
+### Testy
+
+Testy návrhu volají `self::proposalOf($applier)` (vstup návrhu nad mocky
+testu); interpretaci staví `TestableDocumentApplier` (vlastní soubor)
+z resolverů, které test předal. Očekávání beze změny, s těmito výjimkami:
+
+- **D59:** žádný unit test dřívější výsledek (Bez DPH s kódy řádků)
+  neočekával — nesl ho jen známý rozdíl stínového testu, který zanikl.
+- `total_rounding_mode` bez odhadu: návrh klíč neposílal, hotový doklad
+  nese výslovně 0 („na haléře“) — šest asercí `assertArrayNotHasKey` →
+  `?? 0` (známá normalizace z části 1, uložený doklad stejný).
+- Počty volání: původní doklad opravy dohledá interpretace i pokyn (dvě
+  stejná čtení), zámek `source.ref` bere návrh i pokyn (čtyři události).
+- Testy mechaniky pokynu, které běžely v režimu návrh jen historicky
+  (vlastní transakce × savepoint, cíle uložení „před transakcí“, zamítnutý
+  cíl `replaceConcept`), volají pokyn — v návrhu běží uvnitř jeho
+  transakce a kryje je `DocumentProposalTest`.
+- Fixtury: resolver referencí, ve kterém existuje každé id
+  (`anyIdReferenceResolver()`), mock resolveru účtů s vlastníkem účtu,
+  jednotka se systémovým kódem `hr` místo vymyšleného `hour`.
+- Výchozí pohyb řádku a přednost založeného plátce před plánem se ověřují
+  na hotovém dokladu (`FinishedDocument`, `withCreated()`), ne v
+  `transform()`.
+
+Nové: `DocumentProposalTest` (transakce a rollback založené osoby,
+`pending` a `autoCreateMode`, převod cest přes `rowMap`, idempotence podle
+zprávy, zámek, `/interpret`), `PayloadResolvePlanTest`, integrační
+`DocumentProposalTransactionTest` (skutečná databáze: chyba pokynu vrátí
+založeného dodavatele) a `DocumentInterpretEndpointTest`.
+
+### Závěrečné ověření
+
+1. Tři veřejné sady, čerstvý seed, kód před taskem × po tasku —
+   `dataset-verify --json` bajtově shodný, uložené tabulky beze změny.
+2. Integrační testy nad volným zdrojem `blkm-i8` (matice round-tripu,
+   případy payloadů, invariant formulář × pokyn, idempotence, pošta, sady,
+   účtování, DPH, tisky, majetek, zakázky): 578 testů, 16 přeskočených,
+   bez selhání.
+3. Demo sada nad `360b-n`, kód před × po: `dataset-dump` shodný až na čas
+   vzniku v manifestu; po běhu periodické fakturace (20 období) hlavičky,
+   řádky, rekapitulace, deník a období zakázek bez rozdílu. Opravný doklad
+   kryje `CorrectiveDocServiceTest`.
+4. `/interpret` nad předlohami sady: `document` poslaný na `/apply` dá
+   stejný doklad jako `/apply` s `interpret: true`
+   (`DocumentInterpretEndpointTest`).
+5. Celá unit sada 12 219 testů zelená (`DatabaseManagerTest` hesla je
+   nahodile nestabilní, s taskem nesouvisí).
+
+**Zbývá člověku:** proklik náhledu a použití návrhu v poště na ukázkovém
+zdroji; `ds-upgrade` zdrojů dat (kopie schématu v profilu pošty).

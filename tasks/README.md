@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 479 tasků: **naplánováno** 6 · **částečně** 24 · **zrušeno** 1 · **hotovo** 448.
+Celkem 479 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 449.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,7 +28,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `doc-interpretation-switch.md` | naplánováno | zadání 2026-11-23, doplněno po ověření části 1 (#166 etapa 5, část 2; D53–D55, D59–D62) |
 | `doc-layers-documentation.md` | naplánováno | zadání 2026-11-23 (#166 etapa 5, část 3; D56); až po `tasks/doc-interpretation-switch.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |

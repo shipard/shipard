@@ -733,9 +733,10 @@ zbytek: validaci, resolve, řadu, výchozí hodnoty, dimenze,
 `TableGateway::saveDocument` s Document hooky. Žádné přímé skládání
 hlavičky a řádků mimo applier — druhá implementace by se rozešla.
 
-Generátor volá applier v režimu **pokyn** (`ApplyMode::Instruction`, #166
-D18 — `docs/exchange-format.md` § 3): ví, co chce uložit, takže applier
-nic neodvozuje ze signálů. Místo plnění, režim a kódy DPH jdou na doklad
+Generátor posílá applieru **pokyn** (`DocumentApplier::apply()`, #166 D18,
+D53 — `docs/exchange-format.md` § 3): ví, co chce uložit, a applier nic
+neodvozuje ze signálů ani nezakládá (interpretaci papírové podoby dělá
+vstup návrhu `DocumentProposal`, generátorů se netýká). Místo plnění, režim a kódy DPH jdou na doklad
 tak, jak je generátor napsal; co nenapíše, dostane **výchozí hodnotu jako
 nový doklad ve formuláři** — týmž kódem (§ 12c): datum vystavení,
 registraci DPH, vlastní účet, způsob úhrady, pohyb řádku, obsah z karty
