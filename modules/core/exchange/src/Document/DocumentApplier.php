@@ -638,16 +638,25 @@ class DocumentApplier
 
             // Objekt bez IBAN i čísla účtu = doklad bez bankovního spojení
             // (účtenka, karta) — není to reference k rozhodnutí (#103 F3).
-            // Pokyn účet partnera nezakládá (#166 D31): vazba vznikne jen
-            // přesnou shodou s jeho existujícím účtem, jinak zůstanou jen
-            // údaje ve sloupcích hlavičky.
-            if (is_array($supplier['bankAccount'] ?? null) && BankAccountResolver::hasIdentifier($supplier['bankAccount'])) {
-                $bankResult = $this->bankAccountResolver->resolvePartnerBank(
-                    $supplier['bankAccount'],
-                    $supplierPersonId,
-                );
+            // Pokyn účet partnera nezakládá (#166 D31). Vazbu na účet osoby
+            // říká reference `bankAccount.ref` (D61): id = ten účet, výslovné
+            // null = bez vazby; chybí-li klíč, vznikne vazba jen přesnou
+            // shodou s existujícím účtem osoby. Údaje účtu jdou do sloupců
+            // hlavičky vždy.
+            $bank = is_array($supplier['bankAccount'] ?? null) ? $supplier['bankAccount'] : [];
+            if (array_key_exists('ref', $bank)) {
+                if (CanonicalReferences::isSet($bank['ref'])) {
+                    $supplierBankResult = $this->payloadResolve->partnerBankReference(
+                        $bank['ref'],
+                        $supplierPersonId !== null ? (int) $supplierPersonId : null,
+                        $this->bankAccountResolver->partnerAccountBelongsTo(...),
+                        $issues,
+                    );
+                }
+            } elseif (BankAccountResolver::hasIdentifier($bank)) {
+                $bankResult = $this->bankAccountResolver->resolvePartnerBank($bank, $supplierPersonId);
                 if ($bankResult->status === ResolveStatus::Matched) {
-                    $supplierBankResult = $bankResult;
+                    $supplierBankResult = $bankResult->toArray();
                 }
             }
         }
@@ -707,16 +716,22 @@ class DocumentApplier
                 $rowResolve['unit'] = ResolveResult::matched($this->defaultUnitIds[$idx], 'default')->toArray();
             }
             if (!empty($row['unit'])) {
-                // Pokyn (#166 D37): jen přesný systémový kód, neznámá
-                // jednotka je chyba; zkratky a aliasy zná jen návrh.
-                $unitR = $this->unitResolver->resolve((string) $row['unit'], true);
+                // Pokyn (#166 D37, D60): text = přesný systémový kód, číslo
+                // = id jednotky; neznámá jednotka je chyba. Zkratky a aliasy
+                // zná jen návrh.
+                $byId = is_int($row['unit']);
+                $unitR = $byId
+                    ? $this->unitResolver->resolveId($row['unit'])
+                    : $this->unitResolver->resolve((string) $row['unit'], true);
                 $rowResolve['unit'] = $unitR->toArray();
                 if ($unitR->status === ResolveStatus::NotFound) {
                     $issues[] = [
                         'severity' => 'error',
                         'path'     => "rows.{$idx}.unit",
                         'code'     => 'unit_not_found',
-                        'message'  => "Jednotka „{$row['unit']}\" není systémový kód jednotky.",
+                        'message'  => $byId
+                            ? "Jednotka #{$row['unit']} není."
+                            : "Jednotka „{$row['unit']}\" není systémový kód jednotky.",
                     ];
                 }
             }
@@ -776,7 +791,7 @@ class DocumentApplier
             $resolved['balanceParty'] = $balancePartyResult;
         }
         if ($supplierBankResult !== null) {
-            $resolved['supplierBank'] = $supplierBankResult->toArray();
+            $resolved['supplierBank'] = $supplierBankResult;
         }
         // Partner hlavičky (#166 D30) — jen účetní doklad a typy vázané na
         // pokladnu; u faktur je partnerem strana (nález dává validátor).

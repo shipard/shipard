@@ -470,6 +470,12 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                // Účet partnera referencí (#166 D61): id záznamu účtu osoby
+                // (přirozený klíč účet nemá). S referencí pokyn použije ten
+                // účet; chybí-li klíč, váže účet přesnou shodou čísla s účtem
+                // osoby; výslovné null = účet se k záznamu neváže. Čte se
+                // u dodavatele (`supplier.bankAccount`).
+                "ref":           { "$ref": "#/$defs/Reference" },
                 "accountNumber": { "type": ["string", "null"] },
                 "iban":          { "type": ["string", "null"] },
                 "bic":           { "type": ["string", "null"] },
@@ -494,7 +500,11 @@
                 "operation":      { "type": ["string", "null"] },
                 "orderPos":       { "type": ["integer", "null"] },
                 "item":           { "$ref": "#/$defs/RowItem" },
-                "unit":           { "type": ["string", "null"] },
+                // Jednotka (#166 D37, D60): text = systémový kód jednotky
+                // ("pcs", "hr"); kladné celé číslo = id jednotky — tak se
+                // zapíše jednotka založená uživatelem, která systémový kód
+                // nemá. Papírová podoba ji nese zkratkou nebo názvem (návrh).
+                "unit":           { "type": ["string", "integer", "null"], "minimum": 1 },
                 "quantity":       { "type": ["number", "null"] },
                 "unitPrice":      { "type": ["number", "null"] },
                 "totalPrice":     { "type": ["number", "null"] },

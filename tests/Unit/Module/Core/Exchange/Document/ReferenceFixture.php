@@ -28,6 +28,8 @@ trait ReferenceFixture
         'economy_codebooks_vat_registrations' => ['code', []],
         'economy_codebooks_cost_centers'      => ['code', []],
         'economy_accounting_accounts'         => ['number', []],
+        // Účet partnera přirozený klíč nemá — reference je jen id (#166 D61).
+        'base_persons_bank_accounts'          => [null, []],
     ];
 
     /**
@@ -72,7 +74,7 @@ trait ReferenceFixture
         $out = [];
         foreach (self::REFERENCE_TABLES as $table => [$key, $lookup]) {
             $columns = [['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true, 'autoIncrement' => true]];
-            foreach ([$key, ...$lookup] as $column) {
+            foreach (array_filter([$key, ...$lookup]) as $column) {
                 $columns[] = ['id' => $column, 'name' => $column, 'type' => 'varchar', 'length' => 40, 'nullable' => true];
             }
             $out[$table] = TableDefinition::fromArray([
@@ -87,6 +89,17 @@ trait ReferenceFixture
     }
 
     /**
+     * Resolver účtů pro testy applieru: účet, na který hotový doklad odkáže
+     * referencí (#166 D61), patří dodavateli dokladu.
+     */
+    private function bankAccountResolverMock(): \Shipard\Module\Core\Exchange\Resolve\BankAccountResolver
+    {
+        $bank = $this->createMock(\Shipard\Module\Core\Exchange\Resolve\BankAccountResolver::class);
+        $bank->method('partnerAccountBelongsTo')->willReturn(true);
+        return $bank;
+    }
+
+    /**
      * @param array<string, array<string, int|list<int>>> $records tabulka →
      *        `"sloupec=hodnota"` → id (seznam = víc záznamů téže hodnoty);
      *        hledání podle id projde pro každé id, které se v tabulce vyskytuje
@@ -95,6 +108,11 @@ trait ReferenceFixture
     {
         $ids = static function (string $table, string $column, mixed $value) use ($records): array {
             $rows = $records[$table] ?? [];
+            if ($column === 'id' && $table === 'base_persons_bank_accounts' && !isset($records[$table])) {
+                // Účty partnerů testy nevyjmenovávají — existuje každý, na
+                // který hotový doklad odkáže (id dává mock resolveru účtů).
+                return [(int) $value];
+            }
             if ($column === 'id') {
                 foreach ($rows as $found) {
                     if (in_array((int) $value, (array) $found, true)) {

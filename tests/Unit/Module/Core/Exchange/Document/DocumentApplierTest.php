@@ -169,7 +169,7 @@ class DocumentApplierTest extends TestCase
                     : ResolveResult::notFound(),
             );
         }
-        $bank ??= $this->createMock(BankAccountResolver::class);
+        $bank ??= $this->bankAccountResolverMock();
         $heads ??= $this->createMock(TransactionlessTableGateway::class);
         $persons ??= $this->createMock(TransactionlessTableGateway::class);
         $items ??= $this->createMock(TransactionlessTableGateway::class);
@@ -443,7 +443,7 @@ class DocumentApplierTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         return $this->buildApplier(
@@ -610,7 +610,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $applier = $this->buildApplier(
@@ -691,7 +691,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::canCreate(['iban' => 'CZ...']));
 
         $applier = $this->buildApplier(party: $party, item: $itemResolver, unit: $unit, vat: $vat, bank: $bank);
@@ -728,7 +728,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $applier = $this->buildApplier(party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank);
@@ -769,7 +769,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $applier = $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank);
@@ -945,7 +945,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         return ['party' => $party, 'item' => $item, 'unit' => $unit, 'vat' => $vat, 'bank' => $bank];
@@ -1118,7 +1118,7 @@ class DocumentApplierTest extends TestCase
             ResolveStatus::Matched, matchedId: 0, matchedBy: 'cfgItem',
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
         $applier = $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank, heads: $heads, config: $config);
         return [$applier, $db, $heads];
@@ -1628,7 +1628,7 @@ class DocumentApplierTest extends TestCase
             ResolveStatus::Matched, matchedId: 0, matchedBy: 'cfgItem',
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $applier = $this->buildApplier(party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank);
@@ -1761,7 +1761,7 @@ class DocumentApplierTest extends TestCase
         // #103 F3 nález A: účtenka nese bankAccount se samými null — žádné
         // rozhodnutí o bankovním spojení, apply nesmí skončit unresolved_required.
         $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->expects($this->never())->method('resolvePartnerBank');
 
         $applier = $this->buildApplier(
@@ -2987,7 +2987,7 @@ class DocumentApplierTest extends TestCase
             matchedBy: 'cfgItem',
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
         return [$party, $item, $unit, $vat, $bank];
     }
@@ -3306,7 +3306,7 @@ class DocumentApplierTest extends TestCase
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $applier = $this->buildApplier(party: $party, item: $itemResolver, unit: $unit, vat: $vat, bank: $bank);
@@ -3357,7 +3357,7 @@ class DocumentApplierTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $vat = $this->createMock(VatCodeResolver::class);
@@ -3397,7 +3397,7 @@ class DocumentApplierTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $vat = $this->createMock(VatCodeResolver::class);
@@ -3430,7 +3430,7 @@ class DocumentApplierTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $vat = $this->createMock(VatCodeResolver::class);
@@ -4664,7 +4664,7 @@ class DocumentApplierTest extends TestCase
             ResolveStatus::Matched, matchedId: 0, matchedBy: 'cfgItem',
             createPayload: ['code' => 'highEU', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         return $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank, heads: $heads, references: $references);

@@ -609,6 +609,7 @@ class AnalysisController
         // Návrh z pošty klíč idempotence pokynu nenese (#166 D46) — stejně
         // jako MessageProposalApplier::apply().
         unset($canonical['source']['ref']);
+        $canonical = MessageProposalApplier::withoutPartnerBankReference($canonical);
         if (empty($canonical['source']['kind'])) {
             $canonical['source']['kind'] = 'aiExtraction';
         }

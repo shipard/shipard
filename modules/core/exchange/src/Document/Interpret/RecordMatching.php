@@ -165,15 +165,20 @@ final class RecordMatching
 
             // Objekt bez IBAN i čísla účtu = doklad bez bankovního spojení
             // (účtenka, karta) — není to reference k rozhodnutí (#103 F3).
-            // Pokyn účet partnera nezakládá (#166 D31): vazba vznikne jen
-            // přesnou shodou s jeho existujícím účtem, jinak zůstanou jen
-            // údaje ve sloupcích hlavičky.
-            if (is_array($supplier['bankAccount'] ?? null) && BankAccountResolver::hasIdentifier($supplier['bankAccount'])) {
-                $bankResult = $this->bankAccountResolver->resolvePartnerBank(
-                    $supplier['bankAccount'],
-                    $supplierPersonId,
+            // Reference `bankAccount.ref` (#166 D61) má přednost; bez ní se
+            // účet hledá podle čísla mezi účty dodavatele a nenalezený jde
+            // k založení. Prázdná reference (i výslovné null z předlohy)
+            // v návrhu nic neříká.
+            $bank = is_array($supplier['bankAccount'] ?? null) ? $supplier['bankAccount'] : [];
+            if (CanonicalReferences::isSet($bank['ref'] ?? null)) {
+                $supplierBankResult = $this->resolve->partnerBankReference(
+                    $bank['ref'],
+                    $supplierPersonId !== null ? (int) $supplierPersonId : null,
+                    $this->bankAccountResolver->partnerAccountBelongsTo(...),
+                    $issues,
                 );
-                $supplierBankResult = $bankResult;
+            } elseif (BankAccountResolver::hasIdentifier($bank)) {
+                $supplierBankResult = $this->bankAccountResolver->resolvePartnerBank($bank, $supplierPersonId)->toArray();
             }
         }
 
@@ -227,8 +232,11 @@ final class RecordMatching
                 $rowResolve['partner'] = $partnerBlock;
             }
             if (!empty($row['unit'])) {
-                // Jednotka z papíru: i zkratkou a aliasem; nerozpoznaná jen varuje.
-                $unitR = $this->unitResolver->resolve((string) $row['unit'], false);
+                // Jednotka z papíru: i zkratkou a aliasem; číslo je id (#166
+                // D60). Nerozpoznaná jen varuje.
+                $unitR = is_int($row['unit'])
+                    ? $this->unitResolver->resolveId($row['unit'])
+                    : $this->unitResolver->resolve((string) $row['unit'], false);
                 $rowResolve['unit'] = $unitR->toArray();
                 if ($unitR->status === ResolveStatus::NotFound) {
                     $issues[] = [
@@ -295,7 +303,7 @@ final class RecordMatching
             $resolved['balanceParty'] = $balancePartyResult;
         }
         if ($supplierBankResult !== null) {
-            $resolved['supplierBank'] = $supplierBankResult->toArray();
+            $resolved['supplierBank'] = $supplierBankResult;
         }
         // Partner hlavičky (#166 D30) — jen účetní doklad a typy vázané na
         // pokladnu; u faktur je partnerem strana (nález dává validátor).

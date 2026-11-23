@@ -213,6 +213,7 @@ final class MessageProposalApplier
             $source['kind'] = 'aiExtraction';
         }
         $canonical['source'] = $source;
+        $canonical = self::withoutPartnerBankReference($canonical);
 
         // Fresh obohacení řádků (historie + obsahové štítky, bez LLM) —
         // před merge userActions, takže klientovy piny mají v reconcile
@@ -780,6 +781,25 @@ final class MessageProposalApplier
     // -------------------------------------------------------------------
     // Client _resolve helpers
     // -------------------------------------------------------------------
+
+    /**
+     * Návrh z pošty nenese referenci účtu partnera (`bankAccount.ref`, #166
+     * D61) — stejně jako `source.ref`: pole je ve schématu, které vidí i
+     * model, a vyplněné by doklad navázalo na cizí účet. Účet se v návrhu
+     * hledá podle čísla; referenci zapíše až interpretace do hotového dokladu.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<string, mixed>
+     */
+    public static function withoutPartnerBankReference(array $canonical): array
+    {
+        foreach (['supplier', 'customer'] as $side) {
+            if (is_array($canonical[$side] ?? null) && is_array($canonical[$side]['bankAccount'] ?? null)) {
+                unset($canonical[$side]['bankAccount']['ref']);
+            }
+        }
+        return $canonical;
+    }
 
     /**
      * Expand flat client-side userActions into nested `_resolve` shape

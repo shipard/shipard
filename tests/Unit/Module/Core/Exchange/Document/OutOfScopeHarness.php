@@ -290,7 +290,7 @@ trait OutOfScopeHarness
             $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
         }
         if ($bank === null) {
-            $bank = $this->createMock(BankAccountResolver::class);
+            $bank = $this->bankAccountResolverMock();
             $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
         }
         if ($account === null) {

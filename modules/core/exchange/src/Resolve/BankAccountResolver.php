@@ -83,6 +83,16 @@ class BankAccountResolver
     }
 
     /**
+     * Patří účet partnera dané osobě? Reference `supplier.bankAccount.ref`
+     * (#166 D61) smí ukazovat jen na účet dodavatele dokladu.
+     */
+    public function partnerAccountBelongsTo(int $accountId, int $personId): bool
+    {
+        $row = $this->db->fetch('SELECT [person] FROM [base_persons_bank_accounts] WHERE [id] = %i', $accountId);
+        return $row !== null && (int) ($row['person'] ?? 0) === $personId;
+    }
+
+    /**
      * @param array<string, mixed> $bankAccount Canonical Party.bankAccount block.
      */
     public function resolveOwnBank(array $bankAccount): ResolveResult

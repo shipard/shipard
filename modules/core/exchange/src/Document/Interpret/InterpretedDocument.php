@@ -34,9 +34,9 @@ final class InterpretedDocument
      *        uložením: `key` (`supplier` | `customer` | `balanceParty` |
      *        `supplierBank` | `rows.<index původního řádku>.item`), `kind`
      *        ({@see PENDING_PERSON} …), `table`, `payload` (data k založení)
-     *        a `ref` — cesta v hotovém dokladu, kam přijde reference (null
-     *        u bankovního účtu partnera: formát pro něj referenci nemá, pokyn
-     *        ho po založení najde přesnou shodou). Položka nese navíc `row`
+     *        a `ref` — cesta v hotovém dokladu, kam přijde reference
+     *        (u bankovního účtu partnera `supplier.bankAccount.ref`, #166
+     *        D61). Položka nese navíc `row`
      *        (index původního řádku) a `unit` (id jednotky), účet `person`
      *        (id dodavatele, null = zakládaný dodavatel)
      * @param list<int> $rowMap index řádku hotového dokladu → index řádku
@@ -51,9 +51,6 @@ final class InterpretedDocument
      *        uživatele neplatí (`conflict`) — doklad v této podobě uložit nejde
      * @param list<array<string, mixed>> $decisionIssues nálezy, které vznikají
      *        až při rozhodování nad volbami (uložení), ne v náhledu
-     * @param list<array{path: string, code: string, message: string}> $limitations
-     *        co hotový doklad nevyjádří přesně (jednotka bez systémového kódu,
-     *        zvolený účet partnera) — cesty do původního payloadu
      * @param array<string, mixed> $paper papírová podoba po normalizaci hodnot
      *        — payload, ke kterému se vztahují cesty zprávy a který návrh
      *        vrací v odpovědi
@@ -68,7 +65,6 @@ final class InterpretedDocument
         public readonly array $learn,
         public readonly ?array $decisionError = null,
         public readonly array $decisionIssues = [],
-        public readonly array $limitations = [],
         public readonly array $paper = [],
         public readonly ?string $recapFallback = null,
     ) {

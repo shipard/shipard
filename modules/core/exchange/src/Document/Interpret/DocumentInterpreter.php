@@ -204,7 +204,6 @@ final class DocumentInterpreter
         $docType = $this->payload->mapDocType($canonical);
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
         $rowIndices = PayloadResolve::keptRowIndices($rows, $rowSkips);
-        $limitations = [];
         $grossTotals = $this->vat->supplierVatGrossTotals($canonical, $vatCtx);
         $roundingAuto = RoundingInterpretation::resolveAuto($this->config, $canonical, $docType, $cashDir);
         $roundingMode = RoundingInterpretation::resolveMode($canonical, $roundingAuto, $grossTotals);
@@ -227,7 +226,7 @@ final class DocumentInterpreter
             // Bez automatiky a bez odhadu platí výchozí mód — výslovně.
             'totalRoundingMode'    => $roundingAuto ? null : (RoundingModeNames::totalName($roundingMode ?? 0) ?? 'cent'),
             'paymentMethod'        => DocumentApplier::canonicalPaymentMethod($this->defaults->paymentMethodFor($canonical, $docType)),
-            'unitCodes'            => $this->unitCodes($rows, $rowIndices, $resolved, $limitations),
+            'units'                => $this->units($rows, $rowIndices, $resolved),
             'correctionOriginalId' => $correction !== null && $correction['supported'] ? $correction['originalId'] : null,
             'references'           => [
                 'numberSeries'   => $this->referenceId('docs_core_number_series', $canonical['numberSeries'] ?? null),
@@ -239,8 +238,6 @@ final class DocumentInterpreter
             ],
         ]);
 
-        $this->appendBankLimitation($resolved, $clientResolve, $plan, $limitations);
-
         return new InterpretedDocument(
             document: $document,
             report: $this->buildReport($canonical, $resolved, $issues, $rowSkips),
@@ -251,7 +248,6 @@ final class DocumentInterpreter
                 ? ['code' => (string) $plan['errorCode'], 'message' => (string) ($plan['errorMessage'] ?? 'Reconcile selhal.')]
                 : null,
             decisionIssues: $decisionIssues,
-            limitations: $limitations,
             paper: $canonical,
             recapFallback: $recap['fallback'] ?? null,
         );
@@ -300,17 +296,16 @@ final class DocumentInterpreter
     }
 
     /**
-     * Jednotky řádků systémovým kódem (#166 D37) — papír je nese zkratkou
-     * nebo názvem. Jednotka, která systémový kód nemá, se do formátu
-     * zapsat nedá: řádek zůstane bez jednotky a je to mez (`limitations`).
+     * Jednotky řádků, jak je nese formát (#166 D37, D60): systémovým kódem
+     * — papír je nese zkratkou nebo názvem — a jednotka, která systémový kód
+     * nemá (založená uživatelem), číslem (id).
      *
      * @param array<int, mixed> $rows
      * @param list<int> $rowIndices
      * @param array<string, mixed> $resolved
-     * @param list<array{path: string, code: string, message: string}> $limitations
-     * @return array<int, ?string>
+     * @return array<int, int|string>
      */
-    private function unitCodes(array $rows, array $rowIndices, array $resolved, array &$limitations): array
+    private function units(array $rows, array $rowIndices, array $resolved): array
     {
         $out = [];
         foreach ($rowIndices as $i) {
@@ -318,17 +313,10 @@ final class DocumentInterpreter
             if (!is_array($block) || ($block['status'] ?? null) !== ResolveStatus::Matched->value || !isset($block['matchedId'])) {
                 continue;
             }
-            $unit = (string) ($rows[$i]['unit'] ?? '');
-            $code = UnitResolver::systemCodeFromText($unit, $block['matchedBy'] ?? null)
-                ?? $this->unitResolver->systemCodeById((int) $block['matchedId']);
-            if ($code === null) {
-                $limitations[] = [
-                    'path'    => "rows.{$i}.unit",
-                    'code'    => 'unit_without_system_code',
-                    'message' => "Jednotka „{$unit}“ nemá systémový kód — hotový doklad ji nevyjádří.",
-                ];
-            }
-            $out[$i] = $code;
+            $unit = $rows[$i]['unit'] ?? null;
+            $out[$i] = (is_string($unit) ? UnitResolver::systemCodeFromText($unit, $block['matchedBy'] ?? null) : null)
+                ?? $this->unitResolver->systemCodeById((int) $block['matchedId'])
+                ?? (int) $block['matchedId'];
         }
         return $out;
     }
@@ -346,33 +334,6 @@ final class DocumentInterpreter
             return $this->payload->references()->resolve($table, $value);
         } catch (ReferenceException) {
             return null;
-        }
-    }
-
-    /**
-     * Zvolený bankovní účet partnera (`useExisting:<id>`) formát vyjádřit
-     * neumí — pokyn váže účet jen přesnou shodou s účtem osoby. Liší-li se
-     * volba od shody, je to mez.
-     *
-     * @param array<string, mixed> $resolved
-     * @param array<string, mixed> $clientResolve
-     * @param array<string, mixed> $plan
-     * @param list<array{path: string, code: string, message: string}> $limitations
-     */
-    private function appendBankLimitation(array $resolved, array $clientResolve, array $plan, array &$limitations): void
-    {
-        $action = is_array($clientResolve['supplierBank'] ?? null) ? ($clientResolve['supplierBank']['userAction'] ?? null) : null;
-        if (!is_string($action) || !str_starts_with($action, 'useExisting:') || ($plan['resolvedSupplierBank'] ?? null) === null) {
-            return;
-        }
-        $block = $resolved['supplierBank'] ?? null;
-        $matched = is_array($block) && ($block['status'] ?? null) === ResolveStatus::Matched->value ? ($block['matchedId'] ?? null) : null;
-        if ($matched === null || (int) $matched !== (int) $plan['resolvedSupplierBank']) {
-            $limitations[] = [
-                'path'    => 'supplier.bankAccount',
-                'code'    => 'partner_bank_pin',
-                'message' => 'Zvolený bankovní účet partnera hotový doklad nevyjádří — formát pro něj referenci nemá.',
-            ];
         }
     }
 
@@ -402,7 +363,7 @@ final class DocumentInterpreter
                 'table'   => 'base_persons_bank_accounts',
                 'payload' => $plan['bankCreate'],
                 'person'  => $plan['resolvedSupplier'] ?? null,
-                'ref'     => null,
+                'ref'     => 'supplier.bankAccount.ref',
             ];
         }
         foreach ($plan['rowItemCreates'] as $i => $payload) {

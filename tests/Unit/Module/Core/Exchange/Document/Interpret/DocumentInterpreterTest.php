@@ -10,6 +10,7 @@ use Shipard\Module\Core\Exchange\Document\Interpret\InterpretedDocument;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
+use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Tests\Unit\Module\Core\Exchange\Document\InterpreterFixture;
 use Shipard\Tests\Unit\Module\Core\Exchange\Document\OutOfScopeHarness;
 
@@ -65,7 +66,6 @@ final class DocumentInterpreterTest extends TestCase
         $this->assertSame([], $result->pending);
         $this->assertSame([0], $result->rowMap);
         $this->assertNull($result->decisionError);
-        $this->assertSame([], $result->limitations);
         $this->assertFalse($result->hasErrors());
     }
 
@@ -239,5 +239,47 @@ final class DocumentInterpreterTest extends TestCase
         $this->assertArrayNotHasKey('companyId', $result->document['supplier']);
         // Bankovní spojení dokladu zůstává — jde do sloupců hlavičky.
         $this->assertArrayHasKey('bankAccount', $result->document['supplier']);
+    }
+
+    /** D60: jednotka bez systémového kódu jde do hotového dokladu číslem. */
+    public function testUnitWithoutSystemCodeGoesById(): void
+    {
+        $unit = $this->createMock(UnitResolver::class);
+        $unit->method('resolve')->willReturn(ResolveResult::matched(9, 'shortcut'));
+        $code = null;
+        $unit->method('systemCodeById')->willReturnCallback(static function () use (&$code): ?string {
+            return $code;
+        });
+
+        $this->assertSame(9, $this->interpret($this->happyPayload(), unit: $unit)->document['rows'][0]['unit']);
+
+        $code = 'box';
+        $this->assertSame('box', $this->interpret($this->happyPayload(), unit: $unit)->document['rows'][0]['unit']);
+    }
+
+    /** D61: o vazbě na účet partnera rozhodla interpretace — pokyn ji dostane výslovně. */
+    public function testPartnerBankAccountGoesByReference(): void
+    {
+        // Účet nalezený podle čísla (účet zvolený uživatelem jde týmž polem plánu).
+        $this->assertSame(7, $this->interpret($this->happyPayload())->document['supplier']['bankAccount']['ref']);
+
+        // Účet, který se založí: reference přijde po založení.
+        $bank = $this->bankAccountResolverMock();
+        $bank->method('resolvePartnerBank')->willReturn(ResolveResult::canCreate(['iban' => 'CZ6508000000001234567890', 'person' => 42]));
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['autoCreateMode' => 'liberal'];
+        $result = $this->interpret($payload, bank: $bank);
+        $this->assertArrayHasKey('ref', $result->document['supplier']['bankAccount']);
+        $this->assertNull($result->document['supplier']['bankAccount']['ref']);
+        $pending = array_column($result->pending, null, 'key');
+        $this->assertSame('supplier.bankAccount.ref', $pending['supplierBank']['ref']);
+        $this->assertSame(55, $result->withCreated(['supplierBank' => 55])['supplier']['bankAccount']['ref']);
+
+        // Účet vynechaný uživatelem: výslovně bez vazby.
+        $payload = $this->happyPayload();
+        $payload['_resolve']['supplierBank']['userAction'] = 'skip';
+        $skipped = $this->interpret($payload)->document['supplier']['bankAccount'];
+        $this->assertArrayHasKey('ref', $skipped);
+        $this->assertNull($skipped['ref']);
     }
 }

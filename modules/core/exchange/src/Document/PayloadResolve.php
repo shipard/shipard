@@ -24,6 +24,8 @@ final class PayloadResolve
 
     public const ACCOUNTS_TABLE = 'economy_accounting_accounts';
 
+    public const PARTNER_ACCOUNTS_TABLE = 'base_persons_bank_accounts';
+
     public function __construct(
         private readonly PayloadContext $payload,
         private readonly VatCodeResolver $vatCodeResolver,
@@ -183,6 +185,50 @@ final class PayloadResolve
             'matchedId' => $accountId,
             'status'    => 'matched',
         ];
+    }
+
+    /**
+     * Bankovní účet partnera zadaný **referencí** `supplier.bankAccount.ref`
+     * (#166 D61) — v obou režimech. Účet partnera přirozený klíč nemá:
+     * reference je jen id záznamu, text `"@…"` je `reference_invalid`. Účet
+     * jiné osoby, než je dodavatel dokladu, je chyba
+     * `bank_account_person_mismatch`; doklad bez osoby dodavatele (strana
+     * „bez osoby“ v návrhu) nemá s čím účet porovnat a referenci přijme.
+     *
+     * @param int|null $partnerId dodavatel dokladu, je-li známý
+     * @param \Closure(int, int): bool $belongsTo patří účet osobě?
+     *        ({@see \Shipard\Module\Core\Exchange\Resolve\BankAccountResolver::partnerAccountBelongsTo()})
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed> blok `_resolve.supplierBank`
+     */
+    public function partnerBankReference(mixed $value, ?int $partnerId, \Closure $belongsTo, array &$issues): array
+    {
+        $path = 'supplier.bankAccount.ref';
+        if (!is_int($value)) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => $path,
+                'code'     => ReferenceException::INVALID,
+                'message'  => 'Bankovní účet partnera nemá přirozený klíč — urči ho id záznamu (kladné celé číslo).',
+            ];
+            return self::REFERENCE_ERROR_BLOCK;
+        }
+        try {
+            $accountId = $this->payload->references()->resolve(self::PARTNER_ACCOUNTS_TABLE, $value);
+        } catch (ReferenceException $e) {
+            $issues[] = PayloadContext::referenceIssue($e, $path);
+            return self::REFERENCE_ERROR_BLOCK;
+        }
+        if ($partnerId !== null && !$belongsTo($accountId, $partnerId)) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => $path,
+                'code'     => 'bank_account_person_mismatch',
+                'message'  => "Bankovní účet #{$accountId} nepatří dodavateli dokladu.",
+            ];
+            return self::REFERENCE_ERROR_BLOCK;
+        }
+        return ResolveResult::matched($accountId, 'ref')->toArray();
     }
 
     /**

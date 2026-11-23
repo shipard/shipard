@@ -269,12 +269,35 @@ final class DocumentApplierReferencesTest extends TestCase
         $this->assertSame('warning', $this->issue($proposal->canonical, 'unit_not_found')['severity'] ?? null);
     }
 
+    /** D60: jednotka číslem = id jednotky (jednotka bez systémového kódu); neexistující je chyba. */
+    public function testUnitByIdInInstruction(): void
+    {
+        $unit = $this->createMock(UnitResolver::class);
+        $unit->expects($this->never())->method('resolve');
+        $unit->method('resolveId')->willReturnCallback(
+            static fn (int $id): ResolveResult => $id === 9 ? ResolveResult::matched(9, 'id') : ResolveResult::notFound(),
+        );
+        $payload = self::asInstruction($this->payload());
+        $payload['rows'] = [$payload['rows'][0]];
+
+        $payload['rows'][0]['unit'] = 9;
+        $result = $this->instruction($payload, $this->buildApplier(unit: $unit));
+        $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
+        $this->assertSame(9, $this->savedHeadsData['rows'][0]['unit']);
+
+        $payload['rows'][0]['unit'] = 10;
+        $this->assertRejected($this->instruction($payload, $this->buildApplier(unit: $unit)), 'unit_not_found', 'rows.0.unit');
+
+        $payload['rows'][0]['unit'] = 0;
+        $this->assertSame('schema_invalid', $this->instruction($payload, $this->buildApplier(unit: $unit))->errorCode);
+    }
+
     // ── Účet partnera ───────────────────────────────────────────────────────
 
     /** U1: `supplier.bankAccount` jsou data hlavičky; vazba jen přesnou shodou, pokyn účet nezakládá. */
     public function testPartnerBankAccountIsLinkedOnlyOnExactMatchAndNeverCreated(): void
     {
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::canCreate(['iban' => 'CZ6508000000001234567890']));
         $payload = self::asInstruction($this->payload());
         $payload['applyOptions'] = ['autoCreateMode' => 'liberal'];
@@ -289,6 +312,62 @@ final class DocumentApplierReferencesTest extends TestCase
         $matched = $this->instruction($payload);
         $this->assertTrue($matched->success);
         $this->assertSame(7, $this->savedHeadsData['partner_bank']);
+    }
+
+    /** D61: `bankAccount.ref` = id účtu dodavatele; výslovné null = bez vazby. */
+    public function testPartnerBankAccountReference(): void
+    {
+        $bank = $this->createMock(BankAccountResolver::class);
+        $bank->expects($this->never())->method('resolvePartnerBank');
+        $bank->method('partnerAccountBelongsTo')->willReturnCallback(
+            static fn (int $accountId, int $personId): bool => [$accountId, $personId] === [31, 42],
+        );
+        $records = ['base_persons_bank_accounts' => ['id=31' => 31, 'id=32' => 32]] + self::REFERENCE_RECORDS;
+        $payload = self::asInstruction($this->payload());
+
+        $payload['supplier']['bankAccount']['ref'] = 31;
+        $result = $this->instruction($payload, $this->buildApplier(records: $records, bank: $bank));
+        $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
+        $this->assertSame(31, $this->savedHeadsData['partner_bank']);
+        $this->assertSame('1234567890/0100', $this->savedHeadsData['partner_bank_account'], 'údaje účtu jdou do sloupců hlavičky dál');
+        $this->assertSame(
+            ['status' => 'matched', 'matchedId' => 31, 'matchedBy' => 'ref'],
+            $result->canonical['_resolve']['supplierBank'],
+        );
+
+        // Účet jiné osoby, neexistující účet, přirozený klíč (účet ho nemá).
+        foreach ([[32, 'bank_account_person_mismatch'], [99, 'reference_not_found'], ['@CZ6508000000001234567890', 'reference_invalid']] as [$reference, $code]) {
+            $payload['supplier']['bankAccount']['ref'] = $reference;
+            $this->assertRejected(
+                $this->instruction($payload, $this->buildApplier(records: $records, bank: $bank)),
+                $code,
+                'supplier.bankAccount.ref',
+            );
+        }
+
+        // Výslovné null: účet se k záznamu neváže, ani kdyby číslo sedělo.
+        $payload['supplier']['bankAccount']['ref'] = null;
+        $result = $this->instruction($payload, $this->buildApplier(records: $records, bank: $bank));
+        $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
+        $this->assertArrayNotHasKey('partner_bank', $this->savedHeadsData);
+        $this->assertArrayNotHasKey('supplierBank', $result->canonical['_resolve']);
+    }
+
+    /** D61: v návrhu má reference přednost před hledáním podle čísla; prázdná nic neříká. */
+    public function testProposalPrefersPartnerBankAccountReference(): void
+    {
+        $payload = $this->payload();
+        $payload['supplier']['bankAccount']['ref'] = 31;
+        $records = ['base_persons_bank_accounts' => ['id=31' => 31]] + self::REFERENCE_RECORDS;
+
+        $result = $this->buildApplier(records: $records)->apply($payload, ApplyMode::Proposal);
+        $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
+        $this->assertSame(31, $this->savedHeadsData['partner_bank']);
+
+        $payload['supplier']['bankAccount']['ref'] = null;
+        $result = $this->buildApplier(records: $records)->apply($payload, ApplyMode::Proposal);
+        $this->assertTrue($result->success);
+        $this->assertSame(7, $this->savedHeadsData['partner_bank'], 'bez reference účet podle čísla');
     }
 
     // ── Řada, pokladna, vlastní účet ────────────────────────────────────────

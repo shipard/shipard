@@ -49,7 +49,7 @@ final class FinishedDocument
      *   totalRoundingAuto: bool,
      *   totalRoundingMode: ?string,
      *   paymentMethod: ?string,
-     *   unitCodes: array<int, ?string>,
+     *   units: array<int, int|string>,
      *   correctionOriginalId: ?int,
      *   references: array{numberSeries: ?int, cashDesk: ?int, ownBankAccount: ?int},
      * } $facts rozhodnutí interpretace: `rowIndices` řádky, které na dokladu
@@ -81,6 +81,7 @@ final class FinishedDocument
             }
         }
         $doc = self::headPartner($doc, $canonical, $plan['resolvedHeadPartner'] ?? null, $facts['headPartnerAllowed']);
+        $doc = self::partnerBank($doc, $facts['resolved']['supplierBank'] ?? null, $plan['resolvedSupplierBank'] ?? null);
 
         foreach ($plan['resolvedHeadDimensions'] ?? [] as $dimension => $recordId) {
             $doc['dimensions'][$dimension] = (int) $recordId;
@@ -177,6 +178,27 @@ final class FinishedDocument
     }
 
     /**
+     * Bankovní účet partnera (#166 D61): interpretace o vazbě na účet osoby
+     * rozhodla, pokyn ji proto dostane **výslovně** — id účtu (shoda nebo
+     * volba uživatele), nebo `null` (bez vazby: účet se teprve založí
+     * a referenci doplní {@see InterpretedDocument::withCreated()}, nebo ho
+     * uživatel vynechal). Bez klíče by pokyn účet vázal přesnou shodou sám.
+     * Reference z předlohy, která se nenašla, zůstává (chybu nese nález).
+     *
+     * @param array<string, mixed> $doc
+     * @param array<string, mixed>|null $block `_resolve.supplierBank`
+     * @return array<string, mixed>
+     */
+    private static function partnerBank(array $doc, ?array $block, ?int $accountId): array
+    {
+        if ($block === null || !is_array($doc['supplier']['bankAccount'] ?? null) || !empty($block['referenceError'])) {
+            return $doc;
+        }
+        $doc['supplier']['bankAccount']['ref'] = $accountId;
+        return $doc;
+    }
+
+    /**
      * Řádek převzaté rekapitulace z tvaru dokladu zpět do formátu — s kódem
      * DPH, který interpretace dohledala.
      *
@@ -231,7 +253,7 @@ final class FinishedDocument
         // Text řádku, jak skončí na dokladu — pokyn ho nedoplňuje z karty položky.
         $out['description'] = CanonicalRowText::compose($row);
         $out['operation'] = ($row['operation'] ?? null) ?: ($plan['rowOperationDefaults'][$i] ?? null);
-        $out['unit'] = $facts['unitCodes'][$i] ?? null;
+        $out['unit'] = $facts['units'][$i] ?? null;
         $out['quantity'] = $row['quantity'] ?? null;
 
         $gross = $facts['grossTotals'][$i] ?? null;

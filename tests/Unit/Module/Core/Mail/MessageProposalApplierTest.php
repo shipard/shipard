@@ -473,6 +473,27 @@ class MessageProposalApplierTest extends TestCase
         $this->assertSame(self::MESSAGE_NDX, $captured['source']['message']);
     }
 
+    public function testApplyDropsPartnerBankReferenceFromTheProposal(): void
+    {
+        // Reference účtu partnera (#166 D61) návrh z pošty nenese — pole vidí
+        // i model; účet se hledá podle čísla.
+        $canonical = $this->happyCanonical();
+        $canonical['supplier'] = ['name' => 'Dodavatel s.r.o.', 'bankAccount' => ['ref' => 31, 'iban' => 'CZ6508000000001234567890']];
+        $db = $this->db($this->messageRow(), $this->analysisRow(['canonical_json' => json_encode($canonical)]));
+
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
+            $captured = $passed;
+            return ApplyResult::error('unresolved_required', 'X', [], 422);
+        });
+
+        $this->service($db, $applier)
+            ->apply(self::MESSAGE_NDX, 7, null, ['autoCreateMode' => 'safe', 'targetDocState' => 10]);
+
+        $this->assertSame(['iban' => 'CZ6508000000001234567890'], $captured['supplier']['bankAccount']);
+    }
+
     public function testApplyDefaultsToSafeWithoutClientResolve(): void
     {
         $db = $this->db($this->messageRow(), $this->analysisRow());

@@ -77,7 +77,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $this->saved = null;

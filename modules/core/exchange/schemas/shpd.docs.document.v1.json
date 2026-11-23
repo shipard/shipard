@@ -239,6 +239,7 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                "ref":           { "$ref": "#/$defs/Reference" },
                 "accountNumber": { "type": ["string", "null"] },
                 "iban":          { "type": ["string", "null"] },
                 "bic":           { "type": ["string", "null"] },
@@ -256,7 +257,7 @@
                 "operation":      { "type": ["string", "null"] },
                 "orderPos":       { "type": ["integer", "null"] },
                 "item":           { "$ref": "#/$defs/RowItem" },
-                "unit":           { "type": ["string", "null"] },
+                "unit":           { "type": ["string", "integer", "null"], "minimum": 1 },
                 "quantity":       { "type": ["number", "null"] },
                 "unitPrice":      { "type": ["number", "null"] },
                 "totalPrice":     { "type": ["number", "null"] },

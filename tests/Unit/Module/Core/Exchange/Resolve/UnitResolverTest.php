@@ -155,4 +155,22 @@ class UnitResolverTest extends TestCase
         $r = (new UnitResolver($db))->resolve('floob');
         $this->assertSame(ResolveStatus::NotFound, $r->status);
     }
+
+    /** #166 D60: jednotka číslem = id aktivní jednotky. */
+    public function testResolveIdFindsActiveUnit(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->exactly(2))
+            ->method('fetch')
+            ->willReturnCallback(function (string $sql, int $id): ?Row {
+                $this->assertStringContainsString('[id] = %i', $sql);
+                return $id === 9 ? new Row(['id' => 9]) : null;
+            });
+        $resolver = new UnitResolver($db);
+
+        $found = $resolver->resolveId(9);
+        $this->assertSame([ResolveStatus::Matched, 9, 'id'], [$found->status, $found->matchedId, $found->matchedBy]);
+        $this->assertSame(ResolveStatus::NotFound, $resolver->resolveId(10)->status);
+        $this->assertSame(ResolveStatus::NotFound, $resolver->resolveId(0)->status, 'bez dotazu');
+    }
 }

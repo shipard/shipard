@@ -58,7 +58,7 @@ class DocumentApplierItemPinTest extends TestCase
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $account = $this->createMock(AccountResolver::class);

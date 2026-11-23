@@ -878,6 +878,9 @@
                                             ],
                                             "additionalProperties": false,
                                             "properties": {
+                                                "ref": {
+                                                    "$ref": "#/$defs/Reference"
+                                                },
                                                 "accountNumber": {
                                                     "type": [
                                                         "string",
@@ -933,8 +936,10 @@
                                                 "unit": {
                                                     "type": [
                                                         "string",
+                                                        "integer",
                                                         "null"
-                                                    ]
+                                                    ],
+                                                    "minimum": 1
                                                 },
                                                 "quantity": {
                                                     "type": [

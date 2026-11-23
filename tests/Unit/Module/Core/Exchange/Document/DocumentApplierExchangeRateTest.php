@@ -63,7 +63,7 @@ class DocumentApplierExchangeRateTest extends TestCase
                 ? new ResolveResult(ResolveStatus::Matched, matchedId: 0, matchedBy: 'cfgItem', createPayload: ['code' => $code, 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false])
                 : ResolveResult::notFound(),
         );
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $this->saved = null;

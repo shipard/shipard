@@ -174,4 +174,18 @@ class BankAccountResolverTest extends TestCase
         $r = (new BankAccountResolver($db))->resolveOwnBank(['iban' => 'CZ65...']);
         $this->assertSame(ResolveStatus::NotFound, $r->status);
     }
+
+    /** #166 D61: reference na účet partnera smí ukazovat jen na účet dodavatele dokladu. */
+    public function testPartnerAccountBelongsTo(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(
+            static fn (string $sql, int $id): ?Row => $id === 31 ? new Row(['person' => 42]) : null,
+        );
+        $resolver = new BankAccountResolver($db);
+
+        $this->assertTrue($resolver->partnerAccountBelongsTo(31, 42));
+        $this->assertFalse($resolver->partnerAccountBelongsTo(31, 43));
+        $this->assertFalse($resolver->partnerAccountBelongsTo(99, 42), 'účet není');
+    }
 }

@@ -154,6 +154,24 @@ class UnitResolver
     }
 
     /**
+     * Jednotka číslem (#166 D60): id aktivní jednotky — tvar, kterým formát
+     * nese jednotku bez systémového kódu (založenou uživatelem).
+     */
+    public function resolveId(int $unitId): ResolveResult
+    {
+        $row = $unitId > 0 ? $this->db->fetch(
+            'SELECT [id] FROM [core_units]
+             WHERE [id] = %i AND [docState] IN (%i, %i, %i)
+             LIMIT 1',
+            $unitId,
+            self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+        ) : null;
+        return $row !== null
+            ? ResolveResult::matched((int) $row['id'], 'id')
+            : ResolveResult::notFound();
+    }
+
+    /**
      * Systémový kód jednotky, kterou {@see resolve()} našel **kódem nebo
      * aliasem** — plyne z textu, bez dotazu. Výměnný formát nese jednotku
      * kódem, papír zkratkou nebo názvem (#166 D37, D52). Null = shoda jinou
