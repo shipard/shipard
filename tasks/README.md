@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 480 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 450.
+Celkem 481 tasků: **naplánováno** 6 · **částečně** 24 · **zrušeno** 1 · **hotovo** 450.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `doc-source-kind-old-shipard.md` | naplánováno | zadání 2026-11-23 (#166 etapa 6, drobnost na nové straně) |
+| `mail-profile-paper-schema.md` | naplánováno | zadání 2026-11-23 (#166, nález z evaluace; D63–D66) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -308,6 +309,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `doc-interpretation-switch.md` | Návrh = interpretace → pokyn: přepnutí pošty, ISDOC a REST na novou cestu, `DocumentApplier` bez režimu a větví odvozování, endpoint `/interpret` (#166 etapa 5, D53–D55) |
 | `doc-layers-documentation.md` | Dokumentace ukládání dokladů po vrstvách: doklad, formát a ukládací API, nový `docs/document-interpretation.md`; importní mód na jednom místě, obrázek cílového modelu, úklid schématu (#166 etapa 5, D56) |
 | `doc-source-kind-old-shipard.md` | Druh zdroje dokladu `import.oldShipard` v `docs.core.sourceKinds` — popisek a filtr zdroje u dokladů z importu ze starého Shipardu (#166 etapa 6) |
+| `mail-profile-paper-schema.md` | Schéma pro model = papírová podoba dokladu: projekce schématu dokladu bez referencí a polí pokynu, nová verze promptu a strážce „změna schématu bez verze“, otisk schématu v záznamu evaluace (#166, D63–D66) |
 | `exchange-format-phase3a.md` | Vizualizace canonical + PDF split-view |
 | `exchange-format-phase3b.md` | Interakce s `_resolve` |
 | `exchange-resolve-decision-ui.md` | Rebuild rozhodování canCreate/ambiguous/notFound + smart totals |
