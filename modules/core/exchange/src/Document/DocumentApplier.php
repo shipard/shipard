@@ -86,6 +86,9 @@ class DocumentApplier
     /** Společné kroky resolve nad tím, co payload říká ({@see PayloadResolve}). */
     private readonly PayloadResolve $payloadResolve;
 
+    /** Dohledání dokladu podle `source.ref` ({@see SourceRefLookup}). */
+    private readonly SourceRefLookup $sourceRefs;
+
     /**
      * Interpretace papírové podoby dokladu (#166 D51) — odvozování, které
      * běží jen v režimu návrh. Applier ho jen volá; vlastní kopii pravidel
@@ -149,6 +152,15 @@ class DocumentApplier
         'auto'     => VatRateDates::SOURCE_AUTO,
         'document' => VatRateDates::SOURCE_DOCUMENT,
         'rows'     => VatRateDates::SOURCE_ROWS,
+    ];
+
+    /** D6: výpočet částek v náhledu se nepovedl — náhled ukáže údaje z předlohy. */
+    public const COMPUTED_UNAVAILABLE_ISSUE = [
+        'severity' => 'info',
+        'path'     => 'totals',
+        'code'     => 'computed_unavailable',
+        'message'  => 'Rekapitulaci DPH a součty dokladu nešlo spočítat'
+            . ' — náhled ukazuje údaje přečtené z dokladu, ne výsledek výpočtu.',
     ];
 
     /** Náhled nic nezakládá — `transform()` bez založených entit (D2). */
@@ -282,6 +294,7 @@ class DocumentApplier
     ) {
         $this->payload = new PayloadContext($db, $config, $references, $exchangeRateResolver);
         $this->payloadResolve = new PayloadResolve($this->payload, $vatCodeResolver, $vatCodeDerivation, $dimensionResolver);
+        $this->sourceRefs = new SourceRefLookup($db);
         $this->vatInterpretation = new VatInterpretation(
             $db,
             $config,
@@ -386,18 +399,7 @@ class DocumentApplier
         array $tables,
         ?DocumentEventDispatcher $eventDispatcher = null,
     ): TransactionlessTableGateway {
-        $childTables = $tables[$tableName]?->childTables ?? [];
-        return new TransactionlessTableGateway(
-            $tableName,
-            $db,
-            $registry,
-            $childTables,
-            $config,
-            $dsConfig,
-            $eventDispatcher,
-            $tables[$tableName]?->docStates,
-            $tables[$tableName] ?? null,
-        );
+        return TransactionlessTableGateway::forTable($tableName, $db, $registry, $config, $dsConfig, $tables, $eventDispatcher);
     }
 
     /**
@@ -1054,13 +1056,7 @@ class DocumentApplier
         ApplyMode $mode,
     ): ?array {
         $unavailable = static function (array &$issues): void {
-            $issues[] = [
-                'severity' => 'info',
-                'path'     => 'totals',
-                'code'     => 'computed_unavailable',
-                'message'  => 'Rekapitulaci DPH a součty dokladu nešlo spočítat'
-                    . ' — náhled ukazuje údaje přečtené z dokladu, ne výsledek výpočtu.',
-            ];
+            $issues[] = self::COMPUTED_UNAVAILABLE_ISSUE;
         };
         $plan = $this->previewPlan($resolved, $rowSkips);
         try {
@@ -1393,7 +1389,9 @@ class DocumentApplier
         // 0. Idempotency check — same extracted_document already applied?
         //    Return existing savedDocId without re-saving. See Phase 2 spec
         //    "Idempotency apply".
-        $idempotent = $replaceId === null ? $this->checkIdempotent($canonical) : null;
+        //    Patří návrhu (#166 U3): zprávu pošty nese jen doklad z pošty;
+        //    pokyn s `source.message` ukládá jen sloupec dokladu.
+        $idempotent = $replaceId === null && $mode->derives() ? $this->checkIdempotent($canonical) : null;
         if ($idempotent !== null) {
             return $idempotent;
         }
@@ -1575,7 +1573,9 @@ class DocumentApplier
             // Lineage targets only — analysis resolution / message docState
             // update lives in MessageProposalApplier so the verdict write
             // stays one place. See tasks/mail-message-centric.md D6.
-            $this->writeLineageTargets($canonical, $savedDocId);
+            if ($mode->derives()) {
+                $this->writeLineageTargets($canonical, $savedDocId);
+            }
 
             return [$savedDocId, $sideCreatedIds];
             });
@@ -2626,8 +2626,7 @@ class DocumentApplier
     /** @param array<string, mixed> $applyOptions */
     private static function replaceConceptId(array $applyOptions): ?int
     {
-        $value = $applyOptions['replaceConcept'] ?? null;
-        return is_int($value) && $value > 0 ? $value : null;
+        return SourceRefLookup::replaceConceptId($applyOptions);
     }
 
     /**
@@ -2892,7 +2891,7 @@ class DocumentApplier
      * @param array<string, mixed> $canonical
      * @param list<array<string, mixed>> $issues
      */
-    private static function alreadyAppliedResult(array $canonical, int $existingId, array $issues = []): ApplyResult
+    public static function alreadyAppliedResult(array $canonical, int $existingId, array $issues = []): ApplyResult
     {
         $enriched = $canonical;
         $enriched['savedDocId'] = $existingId;
@@ -2911,47 +2910,15 @@ class DocumentApplier
 
     // ── Idempotence podle source.kind + source.ref (#166 D46) ──────────────
 
-    /** Koš — doklad v koši nový pokyn neblokuje (#166 D46). */
-    private const TRASH_STATE = 90;
-
     /** Jak dlouho čeká pokyn na souběžný pokyn se stejným klíčem (s). */
     private const SOURCE_LOCK_TIMEOUT = 10;
 
     /**
-     * Živý doklad se stejným druhem zdroje a identifikátorem ve zdroji.
-     * Index `idx_source_ref` dá kandidáty podle collation sloupce (bez
-     * ohledu na velikost písmen), shodu rozhoduje {@see SourceRef::matches()}
-     * přesně. Víc živých dokladů (doklad obnovený z koše vedle novějšího)
-     * = nejnovější — ten, který pokyn vrátil naposledy.
-     *
-     * @param int|null $excludeId Cílový koncept přegenerování (U5) —
-     *        `replaceConcept` nahrazuje právě jeho, nesmí se najít sám.
      * @return array{id: int, docType: string, docNumber: ?string}|null
      */
     private function findBySourceRef(SourceRef $key, ?int $excludeId): ?array
     {
-        $rows = $this->db->fetchAll(
-            'SELECT [id], [doc_type], [doc_number], [source_kind], [source_ref]
-             FROM [docs_core_heads]
-             WHERE [source_kind] = %s AND [source_ref] = %s AND [docState] <> %i
-             ORDER BY [id] DESC',
-            $key->kind, $key->ref, self::TRASH_STATE,
-        );
-        foreach ($rows as $row) {
-            $row = is_array($row) ? $row : $row->toArray();
-            $id = (int) ($row['id'] ?? 0);
-            if ($id <= 0 || $id === $excludeId || !$key->matches($row['source_kind'] ?? null, $row['source_ref'] ?? null)) {
-                continue;
-            }
-            // Koncept nese zástupné číslo `!<id>` — skutečné číslo nemá.
-            $number = $row['doc_number'] ?? null;
-            return [
-                'id'        => $id,
-                'docType'   => (string) ($row['doc_type'] ?? ''),
-                'docNumber' => is_string($number) && $number !== '' && !str_starts_with($number, '!') ? $number : null,
-            ];
-        }
-        return null;
+        return $this->sourceRefs->find($key, $excludeId);
     }
 
     /**
@@ -2980,56 +2947,64 @@ class DocumentApplier
     }
 
     /**
-     * Nález k existujícímu dokladu: info `already_applied`, nebo chyba
-     * `source_ref_conflict` při jiném typu dokladu. Nese `docId`
-     * a `docNumber` (koncept číslo nemá → null).
-     *
      * @param array<string, mixed> $canonical
      * @param array{id: int, docType: string, docNumber: ?string} $existing
-     * @return array{severity: string, path: string, code: string, message: string, docId: int, docNumber: ?string}
+     * @return array<string, mixed>
      */
     private function sourceRefIssue(array $canonical, array $existing): array
     {
-        $label = '#' . $existing['id'] . ($existing['docNumber'] !== null ? ' (' . $existing['docNumber'] . ')' : '');
-        $docType = $canonical['docType'] ?? null;
-        $payloadType = is_string($docType) ? self::mapDocTypeValue($docType) : '';
-        if ($payloadType !== $existing['docType']) {
-            return [
-                'severity'  => 'error',
-                'path'      => 'source.ref',
-                'code'      => 'source_ref_conflict',
-                'message'   => "Identifikátor ve zdroji (source.ref) už nese doklad {$label} typu {$existing['docType']}, payload je typu {$payloadType}.",
-                'docId'     => $existing['id'],
-                'docNumber' => $existing['docNumber'],
-            ];
-        }
-        return [
-            'severity'  => 'info',
-            'path'      => 'source.ref',
-            'code'      => 'already_applied',
-            'message'   => "Doklad se stejným identifikátorem ve zdroji už existuje: {$label}. Apply ho vrátí beze změny.",
-            'docId'     => $existing['id'],
-            'docNumber' => $existing['docNumber'],
-        ];
+        return SourceRefLookup::issue($canonical, $existing);
     }
 
     /**
-     * Náhled (#166 U4): existující doklad se stejným klíčem jako nález —
-     * info `already_applied`, při jiném typu chyba `source_ref_conflict`.
-     *
      * @param array<string, mixed> $canonical
      * @param array<int, array<string, mixed>> $issues
      */
     private function appendSourceRefIssue(array $canonical, array &$issues): void
     {
+        $this->sourceRefs->appendIssue($canonical, $issues);
+    }
+
+    // ── Idempotence a zámek pro volajícího s vlastní transakcí ──────────────
+
+    /**
+     * Odpověď za doklad, který se stejným `source.ref` už existuje — pro
+     * volajícího, který `apply()` balí do vlastní transakce (vstup návrhu)
+     * a potřebuje idempotenci vyhodnotit dřív, než cokoli založí. Null =
+     * doklad není (nebo payload klíč nenese).
+     *
+     * @param array<string, mixed> $canonical payload, jak přišel
+     */
+    public function existingBySource(array $canonical): ?ApplyResult
+    {
+        $this->instructionPayload = null;
+        $this->appliedDefaults = null;
+        $existing = $this->sourceRefs->existingFor($canonical);
+        return $existing !== null ? $this->existingBySourceRef($canonical, $existing) : null;
+    }
+
+    /**
+     * Zámek souběhu podle `source.ref` pro volajícího s vlastní transakcí:
+     * drží ho od chvíle před svou transakcí do jejího commitu (zámek, který
+     * si bere `apply()` sám, se uvnitř cizí transakce uvolní před commitem).
+     * Zámek je pro jedno spojení opakovatelný — `apply()` uvnitř projde.
+     *
+     * @param array<string, mixed> $canonical
+     * @return bool false = zámek drží jiný pokyn (`source_ref_busy`); true
+     *         i pro payload bez klíče
+     */
+    public function lockSource(array $canonical): bool
+    {
         $key = SourceRef::fromCanonical($canonical);
-        if ($key === null) {
-            return;
-        }
-        $options = is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : [];
-        $existing = $this->findBySourceRef($key, self::replaceConceptId($options));
-        if ($existing !== null) {
-            $issues[] = $this->sourceRefIssue($canonical, $existing);
+        return $key === null || $this->acquireSourceLock($key);
+    }
+
+    /** @param array<string, mixed> $canonical */
+    public function unlockSource(array $canonical): void
+    {
+        $key = SourceRef::fromCanonical($canonical);
+        if ($key !== null) {
+            $this->releaseSourceLock($key);
         }
     }
 
@@ -3168,20 +3143,6 @@ class DocumentApplier
      */
     private function annotateSideCreated(array $resolved, array $sideIds): array
     {
-        foreach (['supplier', 'customer', 'balanceParty', 'supplierBank'] as $key) {
-            if (($resolved[$key]['status'] ?? null) === 'canCreate' && ($sideIds[$key] ?? null) !== null) {
-                $resolved[$key]['status'] = 'matched';
-                $resolved[$key]['matchedId'] = $sideIds[$key];
-                $resolved[$key]['matchedBy'] = 'created';
-            }
-        }
-        foreach ($resolved['rows'] ?? [] as $i => $rowR) {
-            if (($rowR['item']['status'] ?? null) === 'canCreate' && isset($sideIds['rowItems'][$i])) {
-                $resolved['rows'][$i]['item']['status'] = 'matched';
-                $resolved['rows'][$i]['item']['matchedId'] = $sideIds['rowItems'][$i];
-                $resolved['rows'][$i]['item']['matchedBy'] = 'created';
-            }
-        }
-        return $resolved;
+        return ProposalReport::withCreated($resolved, $sideIds);
     }
 }

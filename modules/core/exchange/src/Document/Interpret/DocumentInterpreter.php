@@ -16,6 +16,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\PayloadContext;
 use Shipard\Module\Core\Exchange\Document\PayloadResolve;
 use Shipard\Module\Core\Exchange\Document\RoundingModeNames;
+use Shipard\Module\Core\Exchange\Document\SourceRefLookup;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
 use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
@@ -71,6 +72,7 @@ final class DocumentInterpreter
         private readonly ProposalDefaults $defaults,
         private readonly ProposalReport $report,
         private readonly UnitResolver $unitResolver,
+        private readonly SourceRefLookup $sourceRefs,
     ) {
     }
 
@@ -134,6 +136,7 @@ final class DocumentInterpreter
             new ProposalDefaults($db, $config, $payload),
             new ProposalReport($db, in_array('accounting_account', $itemColumns, true)),
             $unitResolver,
+            new SourceRefLookup($db),
         );
     }
 
@@ -141,8 +144,12 @@ final class DocumentInterpreter
      * @param array<string, mixed> $canonical papírová podoba dokladu
      *        (`shpd.docs.document.v1`, schéma už ověřené) s volbami uživatele
      *        v `_resolve`
+     * @param bool $saving interpretace pro **uložení**: zpráva bez toho, co
+     *        patří jen náhledu — bloky `item.display` a `effectiveAccount`
+     *        a nález o dokladu, který se stejným `source.ref` už existuje
+     *        (uložení ho vrátí beze změny dřív, než se obsah posuzuje)
      */
-    public function interpret(array $canonical): InterpretedDocument
+    public function interpret(array $canonical, bool $saving = false): InterpretedDocument
     {
         // 1. Tvary hodnot a oprava bankovního spojení z redundance (#118 D2).
         $canonical = CanonicalValueNormalizer::normalize(CanonicalReferences::expand($canonical));
@@ -168,6 +175,9 @@ final class DocumentInterpreter
         $this->payload->appendExchangeRateIssue($canonical, $issues);
         $this->payload->appendCorrectionIssues($canonical, $issues);
         $this->payload->appendVatRegistrationIssue($canonical, $issues);
+        if (!$saving) {
+            $this->sourceRefs->appendIssue($canonical, $issues);
+        }
 
         // 3. Hledání záznamů a kontext DPH.
         $vatCtx = $this->vat->context($canonical);
@@ -192,11 +202,12 @@ final class DocumentInterpreter
         foreach ($plan['rowItemCreates'] as $i => $payload) {
             $pendingItemTypes[$i] = PendingRecords::plannedItemType($this->db, is_array($payload) ? $payload : []);
         }
+        $operationIssues = [];
         $plan['rowOperationDefaults'] = $this->defaults->rowOperations(
             $canonical,
             $plan,
             self::NO_SIDE_IDS,
-            $decisionIssues,
+            $operationIssues,
             $pendingItemTypes,
         );
 
@@ -240,7 +251,7 @@ final class DocumentInterpreter
 
         return new InterpretedDocument(
             document: $document,
-            report: $this->buildReport($canonical, $resolved, $issues, $rowSkips),
+            report: $this->buildReport($canonical, $resolved, $issues, $rowSkips, display: !$saving),
             pending: self::pending($plan, $rowIndices),
             rowMap: $rowIndices,
             learn: self::learn($rows, $plan),
@@ -248,14 +259,16 @@ final class DocumentInterpreter
                 ? ['code' => (string) $plan['errorCode'], 'message' => (string) ($plan['errorMessage'] ?? 'Reconcile selhal.')]
                 : null,
             decisionIssues: $decisionIssues,
+            operationIssues: $operationIssues,
             paper: $canonical,
             recapFallback: $recap['fallback'] ?? null,
         );
     }
 
     /**
-     * Zpráva: bloky `_resolve` tak, jak je dnes nese náhled návrhu — bez
-     * bloku `computed`, který počítá pokyn nad hotovým dokladem.
+     * Zpráva: bloky `_resolve` tak, jak je nese náhled návrhu — bez bloku
+     * `computed`, který počítá pokyn nad hotovým dokladem. `$display` =
+     * s efektivní položkou a účtem řádků pro review (jen náhled).
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $resolved
@@ -263,9 +276,11 @@ final class DocumentInterpreter
      * @param list<int> $rowSkips
      * @return array<string, mixed>
      */
-    private function buildReport(array $canonical, array $resolved, array $issues, array $rowSkips): array
+    private function buildReport(array $canonical, array $resolved, array $issues, array $rowSkips, bool $display): array
     {
-        $resolved = $this->report->annotateRowDisplay($canonical, $resolved, $rowSkips);
+        if ($display) {
+            $resolved = $this->report->annotateRowDisplay($canonical, $resolved, $rowSkips);
+        }
         $report = $resolved + ['issues' => $issues];
         $report['summary'] = PayloadResolve::summary($resolved, $issues);
         if (is_array($report['rows'] ?? null)) {

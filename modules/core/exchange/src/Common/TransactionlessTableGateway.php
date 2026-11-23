@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Common;
 
+use Dibi\Connection;
+use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Document\DocumentEventDispatcher;
+use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\TableGateway;
 
 /**
@@ -31,6 +37,34 @@ use Shipard\Core\Document\TableGateway;
  */
 class TransactionlessTableGateway extends TableGateway
 {
+    /**
+     * Gateway tabulky zdroje dat se vším, co k ní definice říká (child
+     * tabulky, stavy) — pro appliery a vstup návrhu.
+     *
+     * @param array<string, TableDefinition> $tables aktivní tabulky zdroje dat
+     */
+    public static function forTable(
+        string $tableName,
+        Connection $db,
+        DocumentRegistry $registry,
+        ConfigRuntime $config,
+        DataSourceConfig $dsConfig,
+        array $tables,
+        ?DocumentEventDispatcher $eventDispatcher = null,
+    ): self {
+        return new self(
+            $tableName,
+            $db,
+            $registry,
+            $tables[$tableName]?->childTables ?? [],
+            $config,
+            $dsConfig,
+            $eventDispatcher,
+            $tables[$tableName]?->docStates,
+            $tables[$tableName] ?? null,
+        );
+    }
+
     protected function beginTransaction(): void {}
     protected function commitTransaction(): void {}
     protected function rollbackTransaction(): void {}

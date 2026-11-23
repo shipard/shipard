@@ -8,32 +8,33 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\Interpret\DocumentInterpreter;
-use Shipard\Module\Core\Exchange\Document\Interpret\InterpretedDocument;
-use Shipard\Module\Core\Exchange\Document\Interpret\ProposalReport;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 
 /**
  * Stínové porovnání (#166 D57, U5): pro jeden vstup spustí **dnešní cestu
- * návrhu** (`DocumentApplier` v režimu návrh) a **novou cestu** (interpretace
- * → založení chybějících záznamů → pokyn nad hotovým dokladem) a vrátí
- * rozdíly. Prázdný seznam = obě cesty dávají totéž.
+ * návrhu** (`DocumentApplier` v režimu návrh) a **novou cestu** — vstup
+ * návrhu {@see DocumentProposal} (interpretace → založení chybějících
+ * záznamů → pokyn nad hotovým dokladem) — a vrátí rozdíly. Prázdný seznam =
+ * obě cesty dávají totéž.
  *
  * Porovnává se:
  *
- *  - náhled — celý blok `_resolve` odpovědi návrhu (bloky stran a řádků,
- *    DPH, nálezy včetně textů a pořadí, souhrn, `computed`) proti zprávě
- *    interpretace doplněné o `computed` z náhledu pokynu, a vrácený payload;
- *  - uložení — data předaná k uložení (výstup `transform()`: hlavička,
- *    řádky, rekapitulace) a výsledek (uloženo × kód chyby);
+ *  - náhled — **celá odpověď**: vrácený payload a blok `_resolve` (bloky
+ *    stran a řádků, DPH, nálezy včetně textů a pořadí, souhrn, `computed`);
+ *  - uložení — výsledek (uloženo × kód chyby, HTTP stav, zpráva), **celá
+ *    odpověď** a data předaná k uložení (výstup `transform()`: hlavička,
+ *    řádky, rekapitulace);
  *  - úplnost hotového dokladu — pokyn nad ním nesmí doplnit žádnou výchozí
  *    hodnotu (`_resolve.defaults` prázdné, D52).
  *
  * Nová cesta běží první a izolovaně (`$isolated` — u databáze savepoint
  * vrácený zpět), aby dnešní cesta potom viděla zdroj dat v původním stavu.
  * Záznamy, které obě cesty zakládají, mají proto různá id; porovnání je
- * převádí přes klíč záznamu v `pending`.
+ * převádí podle bloků `matchedBy: created` obou odpovědí.
  *
  * **Výjimky** — rozdíly, které nejsou chybou — jsou jen v {@see NORMALIZED}
- * a v poznámkách tasku `tasks/doc-interpretation-extract.md`.
+ * a v poznámkách tasků `tasks/doc-interpretation-extract.md`
+ * a `tasks/doc-interpretation-switch.md`.
  */
 final class ShadowRunner
 {
@@ -48,15 +49,14 @@ final class ShadowRunner
      * @param \Closure(): list<array<string, mixed>> $transformed data předaná k uložení od posledního `$reset`
      * @param \Closure(): void $reset
      * @param \Closure(\Closure(): mixed): mixed $isolated spustí práci a její zápisy vrátí zpět
-     * @param \Closure(list<array<string, mixed>>): array<string, mixed> $createPending založí záznamy z `pending`
      */
     public function __construct(
         private readonly DocumentApplier $applier,
         private readonly DocumentInterpreter $interpreter,
+        private readonly DocumentProposal $proposal,
         private readonly \Closure $transformed,
         private readonly \Closure $reset,
         private readonly \Closure $isolated,
-        private readonly \Closure $createPending,
     ) {
     }
 
@@ -66,29 +66,20 @@ final class ShadowRunner
      */
     public function preview(array $canonical): array
     {
-        $interpreted = $this->interpreter->interpret($canonical);
         $old = $this->applier->preview($canonical, ApplyMode::Proposal);
-        $new = $this->applier->preview($interpreted->document, ApplyMode::Instruction);
+        $new = $this->proposal->preview($canonical);
 
-        $out = [];
-        if (!$old->success || !$new->success) {
-            $out[] = 'náhled: dnes ' . ($old->errorCode ?? 'ok') . ' × nově ' . ($new->errorCode ?? 'ok');
+        $out = self::outcomeDifference('náhled', $old, $new);
+        if ($out !== []) {
             return $out;
         }
-        $instruction = $new->canonical['_resolve'] ?? [];
-        $out = [...$out, ...self::defaultsDifference($instruction)];
+        if ($old->success) {
+            // Úplnost hotového dokladu: pokyn nad ním nic nedoplňuje.
+            $instruction = $this->applier->preview($this->interpreter->interpret($canonical)->document, ApplyMode::Instruction);
+            $out = self::defaultsDifference($instruction->canonical['_resolve'] ?? []);
+        }
 
-        $paper = $old->canonical;
-        $expected = $paper['_resolve'] ?? [];
-        unset($paper['_resolve']);
-        $newPaper = $interpreted->paper;
-        unset($newPaper['_resolve']);
-
-        return [
-            ...$out,
-            ...ShadowDiff::arrays('náhled._resolve', $expected, ProposalReport::withComputed($interpreted, $instruction)),
-            ...ShadowDiff::arrays('náhled.payload', $paper, $newPaper),
-        ];
+        return [...$out, ...ShadowDiff::arrays('náhled', $old->canonical, $new->canonical)];
     }
 
     /**
@@ -97,43 +88,26 @@ final class ShadowRunner
      */
     public function apply(array $canonical): array
     {
-        $interpreted = $this->interpreter->interpret($canonical);
-
-        // Nová cesta: jen když interpretace nenašla chybu — jinak by vstup
-        // návrhu skončil stejně jako dnes před uložením.
-        $new = null;
-        if (!$interpreted->hasErrors()) {
-            $new = ($this->isolated)(function () use ($interpreted): array {
-                ($this->reset)();
-                $created = $interpreted->pending !== [] ? ($this->createPending)($interpreted->pending) : [];
-                $result = $this->applier->apply($interpreted->withCreated($created), ApplyMode::Instruction);
-                return ['result' => $result, 'data' => ($this->transformed)(), 'created' => $created];
-            });
-        }
+        $new = ($this->isolated)(function () use ($canonical): array {
+            ($this->reset)();
+            $result = $this->proposal->apply($canonical);
+            return ['result' => $result, 'data' => ($this->transformed)()];
+        });
 
         ($this->reset)();
         $old = $this->applier->apply($canonical, ApplyMode::Proposal);
         $oldData = ($this->transformed)();
 
-        $out = [];
-        if ($new === null) {
-            if ($old->success) {
-                $out[] = 'uložení: dnes uloženo × interpretace hlásí chybu ('
-                    . ($interpreted->decisionError['code'] ?? 'nález se závažností chyba') . ')';
-            } elseif ($interpreted->decisionError !== null && $old->errorCode !== $interpreted->decisionError['code']) {
-                $out[] = "uložení: dnes {$old->errorCode} × interpretace {$interpreted->decisionError['code']}";
-            }
+        /** @var ApplyResult $newResult */
+        $newResult = $new['result'];
+        $out = self::outcomeDifference('uložení', $old, $newResult);
+        if ($out !== []) {
             return ['differences' => $out, 'result' => $old];
         }
 
-        /** @var ApplyResult $newResult */
-        $newResult = $new['result'];
-        if ($old->success !== $newResult->success || $old->errorCode !== $newResult->errorCode) {
-            $out[] = 'uložení: dnes ' . ($old->errorCode ?? 'uloženo') . ' × nově ' . ($newResult->errorCode ?? 'uloženo')
-                . ($newResult->success ? '' : ' — ' . self::errorIssues($newResult->canonical));
-            return ['differences' => $out, 'result' => $old];
-        }
-        $out = [...$out, ...self::defaultsDifference($newResult->canonical['_resolve'] ?? [])];
+        $oldIds = self::createdIds($old->canonical['_resolve'] ?? []);
+        $newIds = self::createdIds($newResult->canonical['_resolve'] ?? []);
+        $out = ShadowDiff::arrays('odpověď', self::response($old->canonical, $oldIds), self::response($newResult->canonical, $oldIds, $newIds));
         if (!$old->success) {
             return ['differences' => $out, 'result' => $old];
         }
@@ -142,19 +116,30 @@ final class ShadowRunner
             return ['differences' => $out, 'result' => $old];
         }
 
-        $newData = self::withIdsOf(
-            $new['data'][0],
-            $interpreted,
-            $new['created'],
-            self::createdIds($old->canonical['_resolve'] ?? [], $interpreted),
-        );
         return [
             'differences' => [
                 ...$out,
-                ...ShadowDiff::arrays('doklad', self::normalized($oldData[0]), self::normalized($newData)),
+                ...ShadowDiff::arrays('doklad', self::normalized($oldData[0]), self::normalized(self::withIdsOf($new['data'][0], $newIds, $oldIds))),
             ],
             'result' => $old,
         ];
+    }
+
+    /**
+     * Výsledek obou cest: úspěch, kód chyby, HTTP stav a zpráva.
+     *
+     * @return list<string>
+     */
+    private static function outcomeDifference(string $what, ApplyResult $old, ApplyResult $new): array
+    {
+        $describe = static fn (ApplyResult $r): string => $r->success
+            ? "ok ({$r->statusCode})"
+            : "{$r->errorCode} ({$r->statusCode}): {$r->errorMessage}";
+        if ($describe($old) === $describe($new)) {
+            return [];
+        }
+        return ["{$what}: dnes " . $describe($old) . ' × nově ' . $describe($new)
+            . ($new->success ? '' : ' — ' . self::errorIssues($new->canonical))];
     }
 
     /**
@@ -195,27 +180,62 @@ final class ShadowRunner
     }
 
     /**
-     * Id záznamů, které dnešní cesta založila — z odpovědi (`matchedBy:
-     * created`), ve tvaru `PendingRecords::create()`.
+     * Id záznamů, které cesta založila — z odpovědi (`matchedBy: created`):
+     * osoby a účet podle klíče bloku, položky podle indexu řádku.
      *
      * @param array<string, mixed> $resolve
-     * @return array<string, mixed>
+     * @return array{persons: array<string, int>, bank: ?int, items: array<int, int>}
      */
-    private static function createdIds(array $resolve, InterpretedDocument $interpreted): array
+    private static function createdIds(array $resolve): array
     {
-        $ids = ['rowItems' => []];
-        foreach ($interpreted->pending as $entry) {
-            if ($entry['kind'] === InterpretedDocument::PENDING_ITEM) {
-                $id = $resolve['rows'][$entry['row']]['item']['matchedId'] ?? null;
-                if ($id !== null) {
-                    $ids['rowItems'][$entry['row']] = (int) $id;
-                }
-                continue;
+        $ids = ['persons' => [], 'bank' => null, 'items' => []];
+        foreach (['supplier', 'customer', 'balanceParty'] as $key) {
+            if (($resolve[$key]['matchedBy'] ?? null) === 'created') {
+                $ids['persons'][$key] = (int) $resolve[$key]['matchedId'];
             }
-            $id = $resolve[$entry['key']]['matchedId'] ?? null;
-            $ids[$entry['key']] = $id !== null ? (int) $id : null;
+        }
+        if (($resolve['supplierBank']['matchedBy'] ?? null) === 'created') {
+            $ids['bank'] = (int) $resolve['supplierBank']['matchedId'];
+        }
+        foreach ($resolve['rows'] ?? [] as $i => $row) {
+            if (($row['item']['matchedBy'] ?? null) === 'created') {
+                $ids['items'][(int) $i] = (int) $row['item']['matchedId'];
+            }
         }
         return $ids;
+    }
+
+    /**
+     * Odpověď k porovnání: id uloženého dokladu jen jako „je × není“
+     * a id založených záznamů nové cesty převedená na id dnešní cesty.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array{persons: array<string, int>, bank: ?int, items: array<int, int>} $oldIds
+     * @param array{persons: array<string, int>, bank: ?int, items: array<int, int>}|null $newIds null = odpověď dnešní cesty
+     * @return array<string, mixed>
+     */
+    private static function response(array $canonical, array $oldIds, ?array $newIds = null): array
+    {
+        if (array_key_exists('savedDocId', $canonical)) {
+            $canonical['savedDocId'] = $canonical['savedDocId'] !== null ? 'uloženo' : null;
+        }
+        if ($newIds === null) {
+            return $canonical;
+        }
+        foreach ($newIds['persons'] as $key => $id) {
+            if (isset($oldIds['persons'][$key])) {
+                $canonical['_resolve'][$key]['matchedId'] = $oldIds['persons'][$key];
+            }
+        }
+        if ($newIds['bank'] !== null && $oldIds['bank'] !== null) {
+            $canonical['_resolve']['supplierBank']['matchedId'] = $oldIds['bank'];
+        }
+        foreach ($newIds['items'] as $i => $id) {
+            if (isset($oldIds['items'][$i])) {
+                $canonical['_resolve']['rows'][$i]['item']['matchedId'] = $oldIds['items'][$i];
+            }
+        }
+        return $canonical;
     }
 
     /**
@@ -223,31 +243,26 @@ final class ShadowRunner
      * týmž záznamům dala dnešní cesta.
      *
      * @param array<string, mixed> $data
-     * @param array<string, mixed> $newIds
-     * @param array<string, mixed> $oldIds
+     * @param array{persons: array<string, int>, bank: ?int, items: array<int, int>} $newIds
+     * @param array{persons: array<string, int>, bank: ?int, items: array<int, int>} $oldIds
      * @return array<string, mixed>
      */
-    private static function withIdsOf(array $data, InterpretedDocument $interpreted, array $newIds, array $oldIds): array
+    private static function withIdsOf(array $data, array $newIds, array $oldIds): array
     {
         $persons = [];
-        $items = [];
-        foreach ($interpreted->pending as $entry) {
-            if ($entry['kind'] === InterpretedDocument::PENDING_ITEM) {
-                $from = $newIds['rowItems'][$entry['row']] ?? null;
-                $to = $oldIds['rowItems'][$entry['row']] ?? null;
-                if ($from !== null && $to !== null) {
-                    $items[(int) $from] = (int) $to;
-                }
-            } elseif ($entry['kind'] === InterpretedDocument::PENDING_PERSON) {
-                $from = $newIds[$entry['key']] ?? null;
-                $to = $oldIds[$entry['key']] ?? null;
-                if ($from !== null && $to !== null) {
-                    $persons[(int) $from] = (int) $to;
-                }
-            } elseif (isset($data['partner_bank'], $newIds['supplierBank'], $oldIds['supplierBank'])
-                && (int) $data['partner_bank'] === (int) $newIds['supplierBank']) {
-                $data['partner_bank'] = (int) $oldIds['supplierBank'];
+        foreach ($newIds['persons'] as $key => $id) {
+            if (isset($oldIds['persons'][$key])) {
+                $persons[$id] = $oldIds['persons'][$key];
             }
+        }
+        $items = [];
+        foreach ($newIds['items'] as $i => $id) {
+            if (isset($oldIds['items'][$i])) {
+                $items[$id] = $oldIds['items'][$i];
+            }
+        }
+        if (isset($data['partner_bank'], $newIds['bank'], $oldIds['bank']) && (int) $data['partner_bank'] === $newIds['bank']) {
+            $data['partner_bank'] = $oldIds['bank'];
         }
         foreach (['partner', 'partner_balance'] as $column) {
             if (isset($data[$column], $persons[(int) $data[$column]])) {

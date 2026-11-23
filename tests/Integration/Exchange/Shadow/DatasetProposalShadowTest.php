@@ -13,16 +13,20 @@ use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Dataset\Verify\ProposalApplyStep;
 use Shipard\Module\Core\Exchange\Dataset\Verify\SetDocuments;
 use Shipard\Module\Core\Exchange\Document\Interpret\DocumentInterpreter;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Document\Interpret\PendingRecords;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
+use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
+use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 use Shipard\Tests\Integration\IntegrationTestCase;
 use Shipard\Tests\Unit\Module\Core\Exchange\Document\Shadow\ShadowRunner;
 
 /**
  * Stínový test nad návrhy datové sady (#166 D57, U5): každý otevřený návrh
- * z pošty zdroje dat projde dnešní cestou návrhu i novou cestou „pokyn nad
- * hotovým dokladem“ a obě musí dát totéž ({@see ShadowRunner}).
+ * z pošty zdroje dat projde dnešní cestou návrhu i vstupem návrhu
+ * (`DocumentProposal`) a obě musí dát totéž — odpovědi náhledu i uložení
+ * a data předaná k uložení ({@see ShadowRunner}).
  *
  * Pouští se nad zdrojem s **čerstvě nahranou** veřejnou sadou
  * (`dataset-seed tests/datasets/cz/<sada> -y`):
@@ -99,15 +103,16 @@ final class DatasetProposalShadowTest extends IntegrationTestCase
             }
             return $result;
         };
+        $interpreter = DocumentInterpreter::create($dibi, $config, $this->dsConfig, $this->tables);
         $applier->shadow = new ShadowRunner(
             $applier,
-            DocumentInterpreter::create($dibi, $config, $this->dsConfig, $this->tables),
+            $interpreter,
+            new DocumentProposal($dibi, new SchemaValidator(SchemaLoader::default()), $interpreter, $applier, $pending),
             static fn (): array => $heads->recorded,
             static function () use ($heads): void {
                 $heads->recorded = [];
             },
             $isolated,
-            static fn (array $entries): array => $pending->createFrom($entries),
         );
         $proposals = new MessageProposalApplier(
             $this->db,

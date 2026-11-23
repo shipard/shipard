@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\Interpret\DocumentInterpreter;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Tests\Unit\Module\Core\Exchange\Document\Shadow\ShadowRunner;
 
 /**
@@ -32,12 +33,35 @@ trait InterpreterFixture
             $part('proposalDefaults'),
             $part('proposalReport'),
             $part('unitResolver'),
+            $part('sourceRefs'),
         );
     }
 
     /**
-     * Stínové porovnání nad applierem testu ({@see ShadowRunner}): nová cesta
-     * zakládá záznamy týmž `PendingRecords` jako dnešní; mocky nic
+     * Vstup návrhu nad applierem testu (#166 D53): tytéž mocky, zakládání
+     * týmž `PendingRecords`; zápisy (učení kódů, vazba na zprávu) jdou přes
+     * `executeSql()` applieru, takže je testovací podtřída zachytává dál.
+     */
+    private static function proposalOf(DocumentApplier $applier): DocumentProposal
+    {
+        $part = static fn (string $property): mixed
+            => (new \ReflectionProperty(DocumentApplier::class, $property))->getValue($applier);
+        $executeSql = new \ReflectionMethod($applier, 'executeSql');
+
+        return new DocumentProposal(
+            $part('db'),
+            $part('schemaValidator'),
+            self::interpreterOf($applier),
+            $applier,
+            $part('pendingRecords'),
+            static function (mixed ...$args) use ($applier, $executeSql): void {
+                $executeSql->invoke($applier, ...$args);
+            },
+        );
+    }
+
+    /**
+     * Stínové porovnání nad applierem testu ({@see ShadowRunner}): mocky nic
      * nezapisují, izolace proto není potřeba.
      *
      * @param \Closure(): list<array<string, mixed>> $transformed data předaná k uložení
@@ -45,14 +69,13 @@ trait InterpreterFixture
      */
     private static function shadowOf(DocumentApplier $applier, \Closure $transformed, \Closure $reset): ShadowRunner
     {
-        $pending = (new \ReflectionProperty(DocumentApplier::class, 'pendingRecords'))->getValue($applier);
         return new ShadowRunner(
             $applier,
             self::interpreterOf($applier),
+            self::proposalOf($applier),
             $transformed,
             $reset,
             static fn (\Closure $work): mixed => $work(),
-            static fn (array $entries): array => $pending->createFrom($entries),
         );
     }
 }

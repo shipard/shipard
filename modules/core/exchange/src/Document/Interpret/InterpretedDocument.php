@@ -51,6 +51,8 @@ final class InterpretedDocument
      *        uživatele neplatí (`conflict`) — doklad v této podobě uložit nejde
      * @param list<array<string, mixed>> $decisionIssues nálezy, které vznikají
      *        až při rozhodování nad volbami (uložení), ne v náhledu
+     * @param list<array<string, mixed>> $operationIssues nálezy doplnění pohybu
+     *        řádků — odpověď uložení je nese až za rozhodnutím
      * @param array<string, mixed> $paper papírová podoba po normalizaci hodnot
      *        — payload, ke kterému se vztahují cesty zprávy a který návrh
      *        vrací v odpovědi
@@ -65,6 +67,7 @@ final class InterpretedDocument
         public readonly array $learn,
         public readonly ?array $decisionError = null,
         public readonly array $decisionIssues = [],
+        public readonly array $operationIssues = [],
         public readonly array $paper = [],
         public readonly ?string $recapFallback = null,
     ) {
@@ -76,7 +79,7 @@ final class InterpretedDocument
         if ($this->decisionError !== null) {
             return true;
         }
-        foreach ([...($this->report['issues'] ?? []), ...$this->decisionIssues] as $issue) {
+        foreach ([...($this->report['issues'] ?? []), ...$this->decisionIssues, ...$this->operationIssues] as $issue) {
             if (($issue['severity'] ?? null) === 'error') {
                 return true;
             }

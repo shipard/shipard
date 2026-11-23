@@ -93,6 +93,99 @@ final class ProposalReport
     }
 
     /**
+     * `_resolve` odpovědi **uložení** návrhu: bloky zprávy (po uložení se
+     * založenými záznamy jako nalezenými), nálezy a souhrn. Zpráva pro
+     * uložení bloky `item.display` a `effectiveAccount` nenese — ty patří
+     * náhledu ({@see DocumentInterpreter::interpret()} s `$saving`).
+     *
+     * @param list<array<string, mixed>> $issues nálezy odpovědi, cesty do původního payloadu
+     * @param array<string, mixed> $created id záznamů založených z `pending`
+     *        ({@see PendingRecords::create()}); prázdné = nic se nezaložilo
+     * @return array<string, mixed>
+     */
+    public static function forSave(InterpretedDocument $interpreted, array $issues, array $created = []): array
+    {
+        $report = $interpreted->report;
+        unset($report['issues'], $report['summary']);
+        $summaryBlocks = self::withCreated($report, $created);
+        return $summaryBlocks + ['issues' => $issues, 'summary' => PayloadResolve::summary($summaryBlocks, $issues)];
+    }
+
+    /**
+     * Nálezy pokynu nad hotovým dokladem, které zpráva návrhu ještě nenese
+     * (#166 U1): cesty řádků převedené přes `rowMap` na původní payload.
+     * Co interpretace hlásí sama (sdílené kontroly payloadu běží v obou),
+     * se neopakuje — shoda kódu a cesty; `resolve_ignored` a výchozí hodnoty
+     * pokynu do odpovědi návrhu nepatří.
+     *
+     * @param list<array<string, mixed>> $known nálezy, které odpověď už má
+     * @param list<array<string, mixed>> $instructionIssues `_resolve.issues` odpovědi pokynu
+     * @return list<array<string, mixed>>
+     */
+    public static function instructionIssues(InterpretedDocument $interpreted, array $known, array $instructionIssues): array
+    {
+        $seen = [];
+        foreach ($known as $issue) {
+            $seen[($issue['code'] ?? '') . '@' . ($issue['path'] ?? '')] = true;
+        }
+        $out = [];
+        foreach ($instructionIssues as $issue) {
+            if (!is_array($issue) || ($issue['code'] ?? null) === 'resolve_ignored') {
+                continue;
+            }
+            $issue['path'] = self::originalPath((string) ($issue['path'] ?? ''), $interpreted->rowMap);
+            $key = ($issue['code'] ?? '') . '@' . $issue['path'];
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $out[] = $issue;
+        }
+        return $out;
+    }
+
+    /**
+     * Cesta v hotovém dokladu → cesta v původním payloadu: vynechané řádky
+     * posouvají indexy (`rowMap`), ostatní cesty jsou shodné.
+     *
+     * @param list<int> $rowMap
+     */
+    public static function originalPath(string $path, array $rowMap): string
+    {
+        if (preg_match('/^rows\.(\d+)(\..*)?$/', $path, $m) !== 1) {
+            return $path;
+        }
+        return 'rows.' . ($rowMap[(int) $m[1]] ?? (int) $m[1]) . ($m[2] ?? '');
+    }
+
+    /**
+     * Bloky po uložení: záznam, který se založil, je nalezený
+     * (`matchedBy: "created"`) s novým id.
+     *
+     * @param array<string, mixed> $resolved bloky `_resolve`
+     * @param array<string, mixed> $created id založených záznamů ({@see PendingRecords::create()})
+     * @return array<string, mixed>
+     */
+    public static function withCreated(array $resolved, array $created): array
+    {
+        foreach (['supplier', 'customer', 'balanceParty', 'supplierBank'] as $key) {
+            if (($resolved[$key]['status'] ?? null) === 'canCreate' && ($created[$key] ?? null) !== null) {
+                $resolved[$key]['status'] = 'matched';
+                $resolved[$key]['matchedId'] = $created[$key];
+                $resolved[$key]['matchedBy'] = 'created';
+            }
+        }
+        foreach ($resolved['rows'] ?? [] as $i => $rowR) {
+            if (($rowR['item']['status'] ?? null) === 'canCreate' && isset($created['rowItems'][$i])) {
+                $resolved['rows'][$i]['item']['status'] = 'matched';
+                $resolved['rows'][$i]['item']['matchedId'] = $created['rowItems'][$i];
+                $resolved['rows'][$i]['item']['matchedBy'] = 'created';
+            }
+        }
+        return $resolved;
+    }
+
+    /**
      * D4: částka k úhradě z papíru proti částce, která skončí na dokladu
      * → warning `computed_total_mismatch` (u samovyměření se liší daň,
      * k úhradě sedí). Bez `totals.totalAmount` se neporovnává. V pokynu jsou

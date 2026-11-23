@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Document\Interpret;
 
 use Dibi\Connection;
+use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Base\Persons\Values\PersonValues;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
@@ -28,8 +32,27 @@ final class PendingRecords
     }
 
     /**
+     * Zakládání nad zdrojem dat — gatewaye osob a položek bez vlastní
+     * transakce (tu drží volající).
+     *
+     * @param array<string, TableDefinition> $tables aktivní tabulky zdroje dat
+     */
+    public static function forDataSource(
+        Connection $db,
+        ConfigRuntime $config,
+        DataSourceConfig $dsConfig,
+        DocumentRegistry $registry,
+        array $tables,
+    ): self {
+        return new self(
+            $db,
+            TransactionlessTableGateway::forTable('base_persons_persons', $db, $registry, $config, $dsConfig, $tables),
+            TransactionlessTableGateway::forTable('economy_items', $db, $registry, $config, $dsConfig, $tables),
+        );
+    }
+
+    /**
      * @param array<string, mixed> $plan
-     * @param array<string, mixed> $resolved
      * @return array{supplier: ?int, customer: ?int, balanceParty: ?int, supplierBank: ?int, rowItems: array<int, int>}
      */
     public function create(array $plan): array
