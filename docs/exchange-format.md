@@ -339,8 +339,9 @@ Top-level struktura:
 
   // ── Source (audit / lineage) ─────────────────────────────────────────────
   "source": {
-    "kind": "aiExtraction",      // aiExtraction | isdoc | xml.peppol | manual
-                                  //   | api | import.flexibee | import.pohoda | …
+    "kind": "aiExtraction",      // aiExtraction | isdoc | peppolUbl | manual
+                                  //   | api | import.oldShipard
+                                  //   | import.flexibee | import.pohoda | …
     "ref": "ORD-2026-0042",       // string|null, do 60 znaků — identifikátor
                                   //   dokladu ve zdrojovém systému; s `kind`
                                   //   klíč idempotence pokynu (viz „Idempotence
@@ -2343,7 +2344,7 @@ nevzniká duplicita. Pokyn (`DocumentApplier`) vazbu nezapisuje ani nečte
 
 | Sloupec | Typ | Význam |
 |---------|-----|--------|
-| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `api` (skript nebo jiný systém přes REST) / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
+| `source_kind` | `enumString(40) nullable` | `aiExtraction` / `isdoc` / `manual` / `api` (skript nebo jiný systém přes REST) / `workOrder` (periodická fakturace) / `correctiveDoc` (opravný doklad z akce Vystavit opravný doklad, #92 D6) / `import.oldShipard` (import ze starého Shipardu) / `import.flexibee` / … (řízeno cfgItem `docs.core.sourceKinds`) |
 | `source_ref` | `varchar(60) nullable`, index `idx_source_ref` (`source_kind`, `source_ref`) | Identifikátor dokladu ve zdrojovém systému (`source.ref`, #166 D46). S `source_kind` klíč **idempotence pokynu**: opakovaný pokyn se stejnou dvojicí vrátí existující živý doklad. Index není unikátní — doklad v koši nový pokyn neblokuje; shodu rozhoduje applier přesně (collation sloupce dává jen kandidáty). |
 | `source_message` | `int nullable` ref `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty; plní server-side injection `source.message` při apply návrhu. |
 | `source_extracted_at` | `datetime nullable` | Časový bod extrakce / importu. |

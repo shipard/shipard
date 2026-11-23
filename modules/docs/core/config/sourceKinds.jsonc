@@ -48,6 +48,14 @@
         "name:cs": "Opravný doklad",
         "name:en": "Corrective document"
     },
+    "import.oldShipard": {
+        // Doklad z importu ze starého Shipardu (#166 etapa 6) — runner
+        // importu posílá tento klíč v `source.kind`; názvy shodné
+        // s economy.items.sourceKinds.
+        "name": "Import from legacy Shipard",
+        "name:cs": "Import ze starého Shipardu",
+        "name:en": "Import from legacy Shipard"
+    },
     "import.flexibee": {
         "name": "Import — Flexibee",
         "name:cs": "Import — Flexibee",

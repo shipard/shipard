@@ -1,6 +1,6 @@
 # Task: Druh zdroje dokladu „Import ze starého Shipardu“
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 6, drobnost na nové straně)
+**Stav:** hotovo — 2026-11-23 (#166 etapa 6); zbývá `ds-upgrade` ostatních zdrojů dat
 
 **Issue:** #166 (etapa 6)
 
@@ -40,5 +40,17 @@ už dnes.
 
 ## Hotovo když
 
-- [ ] klíč v `docs.core.sourceKinds` a v dokumentaci
-- [ ] cílené testy, stav tasku
+- [x] klíč v `docs.core.sourceKinds` a v dokumentaci
+- [x] cílené testy, stav tasku
+
+## Provedeno
+
+- `docs.core.sourceKinds`: klíč `import.oldShipard` před `import.flexibee`
+  (pořadí klíčů = pořadí ve filtru).
+- `docs/exchange-format.md` § 5 a § 12; v § 5 opraven klíč `xml.peppol`
+  na `peppolUbl` podle číselníku.
+- `modules/docs/core/tables/docs_core_heads.md`: výčet doplněn i o `api`,
+  `workOrder` a `correctiveDoc`.
+- `DocsHeadsViewerSourceKindFilterTest` beze změny — číselník si mockuje.
+- Ověřeno na `4l3j-z0bz-kz39-echj` po `ds-upgrade`: filtr Zdroj v přehledu
+  přijatých faktur nabízí „Import ze starého Shipardu“.
