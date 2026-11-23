@@ -606,6 +606,9 @@ class AnalysisController
         $canonical = $canonicalJson;
         $canonical['source'] = is_array($canonical['source'] ?? null) ? $canonical['source'] : [];
         $canonical['source']['message'] = $messageNdx;
+        // Návrh z pošty klíč idempotence pokynu nenese (#166 D46) — stejně
+        // jako MessageProposalApplier::apply().
+        unset($canonical['source']['ref']);
         if (empty($canonical['source']['kind'])) {
             $canonical['source']['kind'] = 'aiExtraction';
         }

@@ -15,6 +15,7 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
+use Shipard\Module\Core\Exchange\Document\SourceRef;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
 use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
@@ -50,6 +51,23 @@ class TestableDocumentApplier extends DocumentApplier
     protected function executeSql(mixed ...$args): void
     {
         $this->sqlCalls[] = $args;
+    }
+
+    /** @var list<string> pořadí volání zámku podle `source.ref` */
+    public array $lockEvents = [];
+
+    /** false = zámek drží jiný pokyn (GET_LOCK vypršel). */
+    public bool $lockAvailable = true;
+
+    protected function acquireSourceLock(SourceRef $key): bool
+    {
+        $this->lockEvents[] = 'acquire';
+        return $this->lockAvailable;
+    }
+
+    protected function releaseSourceLock(SourceRef $key): void
+    {
+        $this->lockEvents[] = 'release';
     }
 }
 
@@ -1054,9 +1072,14 @@ class DocumentApplierTest extends TestCase
      *
      * @return array{DocumentApplier, \PHPUnit\Framework\MockObject\MockObject, \PHPUnit\Framework\MockObject\MockObject}
      */
-    private function applierForReplaceTests(?array $target, ?ConfigRuntime $config = null, ?array &$saved = null): array
+    private function applierForReplaceTests(?array $target, ?ConfigRuntime $config = null, ?array &$saved = null, ?\Closure $sourceRows = null): array
     {
         $db = $this->createMock(Connection::class);
+        // Dohledání podle source.kind + source.ref (#166 D46): kandidáty
+        // dává closure (pořadí volání → řádky), ostatní dotazy nic.
+        $db->method('fetchAll')->willReturnCallback(static function (...$args) use ($sourceRows) {
+            return $sourceRows !== null && str_contains((string) $args[0], '[source_ref]') ? $sourceRows($args) : [];
+        });
         $db->method('fetch')->willReturnCallback(static function (...$args) use ($target) {
             $sql = (string) $args[0];
             if (str_contains($sql, 'FOR UPDATE') && str_contains($sql, '[docs_core_heads]')) {
@@ -1193,6 +1216,217 @@ class DocumentApplierTest extends TestCase
 
         $this->assertTrue($result->success, (string) $result->errorMessage);
         $this->assertSame(605, $saved['id']);
+    }
+
+    // ── Idempotence podle source.kind + source.ref (#166 D46) ────────────────
+
+    /** Happy fixture s klíčem idempotence. */
+    private function sourceRefPayload(string $ref = 'A-1', array $applyOptions = []): array
+    {
+        $payload = $this->happyPayload();
+        $payload['source'] = ['kind' => 'api', 'ref' => $ref];
+        if ($applyOptions !== []) {
+            $payload['applyOptions'] = $applyOptions;
+        }
+        return $payload;
+    }
+
+    /** Řádek hlavičky, jak ho vrací dohledání podle klíče. */
+    private static function sourceRefRow(int $id = 77, string $docType = 'invni', string $ref = 'A-1', ?string $docNumber = 'FP-0001'): Row
+    {
+        return new Row(['id' => $id, 'doc_type' => $docType, 'doc_number' => $docNumber, 'source_kind' => 'api', 'source_ref' => $ref]);
+    }
+
+    public function testSourceRefReplayReturnsExistingDocumentWithoutLookingAtContent(): void
+    {
+        $queries = [];
+        [$applier, $db, $heads] = $this->applierForReplaceTests(null, sourceRows: static function (array $args) use (&$queries): array {
+            $queries[] = $args;
+            return [self::sourceRefRow()];
+        });
+        $heads->expects($this->never())->method('saveDocument');
+        $db->expects($this->never())->method('begin');
+
+        // Obsah se neporovnává ani neposuzuje — payload bez řádků by jinak neprošel.
+        $payload = $this->sourceRefPayload();
+        unset($payload['rows']);
+        $result = $applier->apply($payload);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(200, $result->statusCode);
+        $this->assertSame(77, $result->savedId);
+        $this->assertSame(77, $result->canonical['savedDocId']);
+        $this->assertSame('alreadyApplied', $result->canonical['_resolve']['summary']['status']);
+        $issue = $result->canonical['_resolve']['issues'][0];
+        $this->assertSame(['info', 'source.ref', 'already_applied'], [$issue['severity'], $issue['path'], $issue['code']]);
+        $this->assertSame(77, $issue['docId']);
+        $this->assertSame('FP-0001', $issue['docNumber']);
+        $this->assertSame([], $applier->lockEvents, 'rychlá cesta zámek nebere');
+
+        // Koš neblokuje: dotaz vylučuje stav 90.
+        $this->assertCount(1, $queries);
+        $this->assertStringContainsString('[docState] <> %i', (string) $queries[0][0]);
+        $this->assertSame(['api', 'A-1', 90], array_slice($queries[0], 1));
+    }
+
+    public function testSourceRefWithoutLivingDocumentSavesUnderLockAndStoresTheKey(): void
+    {
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(null, saved: $saved, sourceRows: static fn (): array => []);
+        $result = $applier->apply($this->sourceRefPayload(), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('api', $saved['source_kind']);
+        $this->assertSame('A-1', $saved['source_ref']);
+        $this->assertSame(['acquire', 'release'], $applier->lockEvents);
+        $this->assertNotSame('alreadyApplied', $result->canonical['_resolve']['summary']['status']);
+    }
+
+    public function testSourceRefMatchIsExact(): void
+    {
+        // Collation sloupce vrátí i kandidáta lišícího se velikostí písmen —
+        // jiný identifikátor, doklad vznikne.
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(null, saved: $saved, sourceRows: static fn (): array => [self::sourceRefRow(ref: 'a-1')]);
+        $result = $applier->apply($this->sourceRefPayload(), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('A-1', $saved['source_ref']);
+    }
+
+    public function testSourceRefOfAnotherDocTypeIsAConflict(): void
+    {
+        [$applier, , $heads] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => [self::sourceRefRow(docType: 'invno')]);
+        $heads->expects($this->never())->method('saveDocument');
+        $result = $applier->apply($this->sourceRefPayload());
+
+        $this->assertFalse($result->success);
+        $this->assertSame('source_ref_conflict', $result->errorCode);
+        $this->assertSame(422, $result->statusCode);
+        $issue = $result->canonical['_resolve']['issues'][0];
+        $this->assertSame(['error', 'source.ref', 'source_ref_conflict'], [$issue['severity'], $issue['path'], $issue['code']]);
+        $this->assertSame(77, $issue['docId']);
+    }
+
+    public function testSourceRefFoundUnderLockRollsBackAndReturnsExisting(): void
+    {
+        // Souběžný pokyn: první dohledání nic, druhé (pod zámkem, uvnitř
+        // transakce) už doklad vidí.
+        $call = 0;
+        [$applier, $db, $heads] = $this->applierForReplaceTests(null, sourceRows: static function () use (&$call): array {
+            return ++$call === 1 ? [] : [self::sourceRefRow(docNumber: '!0000000077')];
+        });
+        $db->expects($this->once())->method('rollback');
+        $db->expects($this->never())->method('commit');
+        $heads->expects($this->never())->method('saveDocument');
+
+        $result = $applier->apply($this->sourceRefPayload(), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(77, $result->savedId);
+        $this->assertSame('alreadyApplied', $result->canonical['_resolve']['summary']['status']);
+        $this->assertNull($result->canonical['_resolve']['issues'][0]['docNumber'], 'koncept nese jen zástupné číslo');
+        $this->assertSame(2, $call);
+        $this->assertSame(['acquire', 'release'], $applier->lockEvents);
+    }
+
+    public function testSourceRefLockHeldByAnotherInstructionIsBusy(): void
+    {
+        [$applier, $db, $heads] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => []);
+        $applier->lockAvailable = false;
+        $db->expects($this->never())->method('begin');
+        $heads->expects($this->never())->method('saveDocument');
+
+        $result = $applier->apply($this->sourceRefPayload(), ApplyMode::Proposal);
+
+        $this->assertSame('source_ref_busy', $result->errorCode);
+        $this->assertSame(409, $result->statusCode);
+        $this->assertSame(['acquire'], $applier->lockEvents, 'nezískaný zámek se neuvolňuje');
+    }
+
+    public function testSourceRefLockIsReleasedWhenSaveFails(): void
+    {
+        [$applier, , $heads] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => []);
+        $heads->method('saveDocument')->willThrowException(new \RuntimeException('db down'));
+
+        $result = $applier->apply($this->sourceRefPayload(), ApplyMode::Proposal);
+
+        $this->assertSame('internal_error', $result->errorCode);
+        $this->assertSame(['acquire', 'release'], $applier->lockEvents);
+    }
+
+    public function testReplaceConceptExcludesItsTargetFromSourceRefLookup(): void
+    {
+        // Cílový koncept nese tentýž klíč — nesmí se najít sám; přegeneruje se.
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(
+            ['id' => 605, 'docState' => 10, 'doc_type' => 'invni'],
+            saved: $saved,
+            sourceRows: static fn (): array => [self::sourceRefRow(id: 605, docNumber: null)],
+        );
+        $result = $applier->apply($this->sourceRefPayload(applyOptions: ['replaceConcept' => 605]), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(605, $saved['id']);
+        $this->assertSame('A-1', $saved['source_ref']);
+        $this->assertNotSame('alreadyApplied', $result->canonical['_resolve']['summary']['status']);
+    }
+
+    public function testReplaceConceptWithoutSourceRefClearsTheColumn(): void
+    {
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
+        $result = $applier->apply($this->replacePayload(), ApplyMode::Proposal);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertArrayHasKey('source_ref', $saved);
+        $this->assertNull($saved['source_ref']);
+        $this->assertSame([], $applier->lockEvents, 'bez klíče žádný zámek');
+    }
+
+    public function testPreviewReportsExistingDocumentBySourceRef(): void
+    {
+        foreach ([['invni', 'info', 'already_applied'], ['invno', 'error', 'source_ref_conflict']] as [$docType, $severity, $code]) {
+            [$applier] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => [self::sourceRefRow(docType: $docType)]);
+            $result = $applier->preview($this->sourceRefPayload(), ApplyMode::Proposal);
+
+            $this->assertTrue($result->success, 'náhled vrací 200 vždy');
+            $found = array_values(array_filter(
+                $result->canonical['_resolve']['issues'],
+                static fn (array $issue): bool => $issue['path'] === 'source.ref',
+            ));
+            $this->assertCount(1, $found, $code);
+            $this->assertSame([$severity, $code], [$found[0]['severity'], $found[0]['code']]);
+            $this->assertSame(77, $found[0]['docId']);
+            $this->assertSame('FP-0001', $found[0]['docNumber']);
+            // Zbytek náhledu běží jako obvykle.
+            $this->assertArrayHasKey('rows', $result->canonical['_resolve']);
+        }
+    }
+
+    public function testPreviewWithoutExistingDocumentHasNoSourceRefIssue(): void
+    {
+        [$applier] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => []);
+        $result = $applier->preview($this->sourceRefPayload(), ApplyMode::Proposal);
+        $this->assertNotContains('source.ref', array_column($result->canonical['_resolve']['issues'], 'path'));
+    }
+
+    public function testSourceRefShapeIsCheckedBySchemaAndValidator(): void
+    {
+        $applier = $this->buildApplier();
+        foreach ([str_repeat('x', 61), ' A-1', 'A-1 ', ''] as $ref) {
+            $this->assertSame('schema_invalid', $applier->validate($this->sourceRefPayload($ref), ApplyMode::Proposal)->errorCode, "ref '{$ref}'");
+        }
+        $this->assertNotSame('schema_invalid', $applier->validate($this->sourceRefPayload(str_repeat('x', 60)), ApplyMode::Proposal)->errorCode);
+
+        // Identifikátor bez druhu zdroje nejde dohledat — chyba, nic se neuloží.
+        [$applier, , $heads] = $this->applierForReplaceTests(null, sourceRows: static fn (): array => [self::sourceRefRow()]);
+        $heads->expects($this->never())->method('saveDocument');
+        $payload = $this->sourceRefPayload();
+        unset($payload['source']['kind']);
+        $result = $applier->apply($payload, ApplyMode::Proposal);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertContains('source_kind_missing', array_column($result->canonical['_resolve']['issues'], 'code'));
     }
 
     public function testValidateAcceptsReplaceConceptInSchema(): void

@@ -801,6 +801,9 @@ class DocumentApplier
         $this->appendExchangeRateIssue($canonical, $issues);
         $this->appendCorrectionIssues($canonical, $issues);
         $this->appendVatRegistrationIssue($canonical, $issues);
+        // Idempotence (#166 U4): doklad se stejným `source.ref` už existuje —
+        // apply ho vrátí beze změny. Náhled to říká, zbytek běží jako obvykle.
+        $this->appendSourceRefIssue($canonical, $issues);
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues, $mode), $mode);
         // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
         //     — čte uložené volby z klientského _resolve, ale nerozhoduje
@@ -1231,6 +1234,19 @@ class DocumentApplier
             return $idempotent;
         }
 
+        // 0b. Idempotence pokynu (#166 D46): živý doklad se stejným
+        //     `source.kind` + `source.ref` se vrací beze změny — dřív, než se
+        //     obsah posuzuje, aby opakování po výpadku spojení prošlo i poté,
+        //     co se ve zdroji dat něco změnilo. Obsah se neporovnává. Při
+        //     přegenerování se cílový koncept z dohledání vylučuje.
+        $sourceKey = SourceRef::fromCanonical($canonical);
+        if ($sourceKey !== null) {
+            $existing = $this->findBySourceRef($sourceKey, $replaceId);
+            if ($existing !== null) {
+                return $this->existingBySourceRef($canonical, $existing);
+            }
+        }
+
         // 1+2. Schema + DocumentValidator.
         $schemaIssues = $this->schemaValidator->validate($canonical, self::FORMAT_ID, self::FORMAT_VERSION);
         if ($schemaIssues !== []) {
@@ -1308,9 +1324,33 @@ class DocumentApplier
         //       ve své transakci a atomicky navazuje doklad na období, #110).
         //       Neúspěch closure = rollback vlastní práce; vnější transakce
         //       zůstává volajícímu.
+        //
+        //       Souběh pokynů se stejným `source.ref` (#166 U3): pojmenovaný
+        //       zámek podle klíče držený od chvíle před transakcí do jejího
+        //       commitu; první dotaz transakce doklad dohledá znovu (čerstvý
+        //       snímek), takže druhý pokyn po uvolnění zámku najde doklad
+        //       prvního. Zámek uvolňuje `finally` níž.
+        if ($sourceKey !== null && !$this->acquireSourceLock($sourceKey)) {
+            return ApplyResult::error(
+                'source_ref_busy',
+                'Jiný pokyn se stejným identifikátorem ve zdroji (source.ref) se právě ukládá — zkuste to znovu.',
+                $enriched,
+                statusCode: 409,
+            );
+        }
+        try {
         try {
             $savedValidation = null;
-            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, &$savedValidation, $numberSeriesId, $replaceId, $docTypeCode, $mode): array {
+            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, &$savedValidation, $numberSeriesId, $replaceId, $docTypeCode, $mode, $sourceKey): array {
+            // Idempotence pod zámkem (#166 U3): doklad mohl vzniknout mezi
+            // prvním dohledáním a zámkem.
+            if ($sourceKey !== null) {
+                $existing = $this->findBySourceRef($sourceKey, $replaceId);
+                if ($existing !== null) {
+                    throw new SourceRefExistsException($existing);
+                }
+            }
+
             // Přegenerovat (Q2): zámek cílového konceptu — zavře závod
             // „koncept mezitím potvrzený“ (ApplyAbortedException → 409/422).
             $this->lockReplaceTarget($replaceId, $docTypeCode);
@@ -1380,6 +1420,8 @@ class DocumentApplier
                 $enriched = $this->withResolve($canonical, $resolved, $validatorIssues);
             }
             return ApplyResult::error($e->errorCode, $e->getMessage(), $enriched, statusCode: $e->statusCode);
+        } catch (SourceRefExistsException $e) {
+            return $this->existingBySourceRef($canonical, $e->existing);
         } catch (DocumentValidationFailedException $e) {
             // D21 (#166), oba režimy: nálezy dokladu do `_resolve.issues`
             // s cestou v canonicalu; nic se neuložilo.
@@ -1395,6 +1437,11 @@ class DocumentApplier
             );
         } catch (\Throwable $e) {
             return ApplyResult::error('internal_error', $e->getMessage(), $enriched, statusCode: 500);
+        }
+        } finally {
+            if ($sourceKey !== null) {
+                $this->releaseSourceLock($sourceKey);
+            }
         }
 
         // Varování dokladu z úspěšného uložení (#166 U6) — jen v pokynu:
@@ -2539,6 +2586,7 @@ class DocumentApplier
             'notice'               => $canonical['notes']['internal'] ?? null,
             'doc_notice'           => $canonical['notes']['onDocument'] ?? null,
             'source_kind'          => $canonical['source']['kind'] ?? null,
+            'source_ref'           => $canonical['source']['ref'] ?? null,
             'source_message'       => $canonical['source']['message'] ?? null,
             'source_extracted_at'  => $this->mapExtractedAt($canonical['source']['extractedAt'] ?? null),
             // Opravný daňový doklad (#92 D10, task B U2–U3): jen u typu
@@ -5995,7 +6043,7 @@ class DocumentApplier
         'cash_desk' => null, 'cash_dir' => 0, 'bank_account' => null, 'payment_terminal' => null, 'transport' => null,
         'payment_reference' => null, 'specific_symbol' => null, 'constant_symbol' => null,
         'notice' => null, 'doc_notice' => null, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
-        'source_kind' => null, 'source_message' => null, 'source_extracted_at' => null,
+        'source_kind' => null, 'source_ref' => null, 'source_message' => null, 'source_extracted_at' => null,
         // Opravný doklad (#92 task B): bez bloku `correction` běžný doklad.
         'corrective' => 0, 'corrected_doc' => null, 'corrected_doc_number' => null,
         'corrected_doc_date' => null, 'correction_reason' => null,
@@ -6312,8 +6360,19 @@ class DocumentApplier
         ) {
             return null;
         }
-        $existingId = (int) $row['target_row'];
+        return self::alreadyAppliedResult($canonical, (int) $row['target_row']);
+    }
 
+    /**
+     * Odpověď opakovaného apply: payload, jak přišel, `savedDocId`
+     * existujícího dokladu a `_resolve.summary.status = "alreadyApplied"`.
+     * Společný tvar idempotence podle zprávy pošty i podle `source.ref`.
+     *
+     * @param array<string, mixed> $canonical
+     * @param list<array<string, mixed>> $issues
+     */
+    private static function alreadyAppliedResult(array $canonical, int $existingId, array $issues = []): ApplyResult
+    {
         $enriched = $canonical;
         $enriched['savedDocId'] = $existingId;
         $enriched['_resolve'] = [
@@ -6324,9 +6383,158 @@ class DocumentApplier
                 'ambiguousCount'  => 0,
                 'errorCount'      => 0,
             ],
-            'issues' => [],
+            'issues' => $issues,
         ];
         return ApplyResult::ok($enriched, $existingId);
+    }
+
+    // ── Idempotence podle source.kind + source.ref (#166 D46) ──────────────
+
+    /** Koš — doklad v koši nový pokyn neblokuje (#166 D46). */
+    private const TRASH_STATE = 90;
+
+    /** Jak dlouho čeká pokyn na souběžný pokyn se stejným klíčem (s). */
+    private const SOURCE_LOCK_TIMEOUT = 10;
+
+    /**
+     * Živý doklad se stejným druhem zdroje a identifikátorem ve zdroji.
+     * Index `idx_source_ref` dá kandidáty podle collation sloupce (bez
+     * ohledu na velikost písmen), shodu rozhoduje {@see SourceRef::matches()}
+     * přesně. Víc živých dokladů (doklad obnovený z koše vedle novějšího)
+     * = nejnovější — ten, který pokyn vrátil naposledy.
+     *
+     * @param int|null $excludeId Cílový koncept přegenerování (U5) —
+     *        `replaceConcept` nahrazuje právě jeho, nesmí se najít sám.
+     * @return array{id: int, docType: string, docNumber: ?string}|null
+     */
+    private function findBySourceRef(SourceRef $key, ?int $excludeId): ?array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT [id], [doc_type], [doc_number], [source_kind], [source_ref]
+             FROM [docs_core_heads]
+             WHERE [source_kind] = %s AND [source_ref] = %s AND [docState] <> %i
+             ORDER BY [id] DESC',
+            $key->kind, $key->ref, self::TRASH_STATE,
+        );
+        foreach ($rows as $row) {
+            $row = is_array($row) ? $row : $row->toArray();
+            $id = (int) ($row['id'] ?? 0);
+            if ($id <= 0 || $id === $excludeId || !$key->matches($row['source_kind'] ?? null, $row['source_ref'] ?? null)) {
+                continue;
+            }
+            // Koncept nese zástupné číslo `!<id>` — skutečné číslo nemá.
+            $number = $row['doc_number'] ?? null;
+            return [
+                'id'        => $id,
+                'docType'   => (string) ($row['doc_type'] ?? ''),
+                'docNumber' => is_string($number) && $number !== '' && !str_starts_with($number, '!') ? $number : null,
+            ];
+        }
+        return null;
+    }
+
+    /**
+     * Odpověď apply, když doklad se stejným klíčem existuje: tentýž typ →
+     * existující doklad beze změny (200, `alreadyApplied`); jiný typ než
+     * `docType` payloadu → `source_ref_conflict` (422) — stejný identifikátor
+     * pro jiný doklad je chyba volajícího.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array{id: int, docType: string, docNumber: ?string} $existing
+     */
+    private function existingBySourceRef(array $canonical, array $existing): ApplyResult
+    {
+        // Pokyn odpovídá payloadem, jak přišel.
+        $canonical = $this->instructionPayload ?? $canonical;
+        $issue = $this->sourceRefIssue($canonical, $existing);
+        if ($issue['severity'] === 'error') {
+            return ApplyResult::error(
+                'source_ref_conflict',
+                $issue['message'],
+                $this->withResolveIssues($canonical, [$issue]),
+                statusCode: 422,
+            );
+        }
+        return self::alreadyAppliedResult($canonical, $existing['id'], [$issue]);
+    }
+
+    /**
+     * Nález k existujícímu dokladu: info `already_applied`, nebo chyba
+     * `source_ref_conflict` při jiném typu dokladu. Nese `docId`
+     * a `docNumber` (koncept číslo nemá → null).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array{id: int, docType: string, docNumber: ?string} $existing
+     * @return array{severity: string, path: string, code: string, message: string, docId: int, docNumber: ?string}
+     */
+    private function sourceRefIssue(array $canonical, array $existing): array
+    {
+        $label = '#' . $existing['id'] . ($existing['docNumber'] !== null ? ' (' . $existing['docNumber'] . ')' : '');
+        $docType = $canonical['docType'] ?? null;
+        $payloadType = is_string($docType) ? self::mapDocTypeValue($docType) : '';
+        if ($payloadType !== $existing['docType']) {
+            return [
+                'severity'  => 'error',
+                'path'      => 'source.ref',
+                'code'      => 'source_ref_conflict',
+                'message'   => "Identifikátor ve zdroji (source.ref) už nese doklad {$label} typu {$existing['docType']}, payload je typu {$payloadType}.",
+                'docId'     => $existing['id'],
+                'docNumber' => $existing['docNumber'],
+            ];
+        }
+        return [
+            'severity'  => 'info',
+            'path'      => 'source.ref',
+            'code'      => 'already_applied',
+            'message'   => "Doklad se stejným identifikátorem ve zdroji už existuje: {$label}. Apply ho vrátí beze změny.",
+            'docId'     => $existing['id'],
+            'docNumber' => $existing['docNumber'],
+        ];
+    }
+
+    /**
+     * Náhled (#166 U4): existující doklad se stejným klíčem jako nález —
+     * info `already_applied`, při jiném typu chyba `source_ref_conflict`.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array<string, mixed>> $issues
+     */
+    private function appendSourceRefIssue(array $canonical, array &$issues): void
+    {
+        $key = SourceRef::fromCanonical($canonical);
+        if ($key === null) {
+            return;
+        }
+        $options = is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : [];
+        $existing = $this->findBySourceRef($key, self::replaceConceptId($options));
+        if ($existing !== null) {
+            $issues[] = $this->sourceRefIssue($canonical, $existing);
+        }
+    }
+
+    /**
+     * Pojmenovaný zámek MariaDB podle klíče (U3). Jména zámků jsou společná
+     * celému serveru, proto nesou i databázi. Zámek patří spojení, ne
+     * transakci: drží se přes commit vlastní transakce apply. Běží-li apply
+     * uvnitř transakce volajícího, uvolní se před jejím commitem — souběh
+     * pak hlídá volající (periodická fakturace zámkem řádku období).
+     * Chráněné kvůli testům (`Connection::query()` je final).
+     */
+    protected function acquireSourceLock(SourceRef $key): bool
+    {
+        return (int) $this->db->fetchSingle(
+            'SELECT GET_LOCK(CONCAT(DATABASE(), %s), %i)',
+            ':' . $key->lockKey(), self::SOURCE_LOCK_TIMEOUT,
+        ) === 1;
+    }
+
+    protected function releaseSourceLock(SourceRef $key): void
+    {
+        try {
+            $this->db->fetchSingle('SELECT RELEASE_LOCK(CONCAT(DATABASE(), %s))', ':' . $key->lockKey());
+        } catch (\Throwable) {
+            // Spojení spadlo — zámek zanikl s ním.
+        }
     }
 
     // ── Output enrichment helpers ──────────────────────────────────────────

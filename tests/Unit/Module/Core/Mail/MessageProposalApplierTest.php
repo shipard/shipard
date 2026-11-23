@@ -449,6 +449,30 @@ class MessageProposalApplierTest extends TestCase
         $this->assertSame(10, $captured['applyOptions']['targetDocState']);
     }
 
+    public function testApplyDropsSourceRefFromTheProposal(): void
+    {
+        // Klíč idempotence pokynu (#166 D46) návrh z pošty nenese — pole vidí
+        // i model a vyplněné by druhé zprávě vrátilo doklad té první.
+        $canonical = $this->happyCanonical();
+        $canonical['source'] = ['kind' => 'aiExtraction', 'ref' => 'FV-2026-001'];
+        $db = $this->db($this->messageRow(), $this->analysisRow(['canonical_json' => json_encode($canonical)]));
+
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
+            $captured = $passed;
+            return ApplyResult::error('unresolved_required', 'X', [], 422);
+        });
+
+        $this->service($db, $applier)
+            ->apply(self::MESSAGE_NDX, 7, null, ['autoCreateMode' => 'safe', 'targetDocState' => 10]);
+
+        $this->assertNotNull($captured);
+        $this->assertArrayNotHasKey('ref', $captured['source']);
+        $this->assertSame('aiExtraction', $captured['source']['kind']);
+        $this->assertSame(self::MESSAGE_NDX, $captured['source']['message']);
+    }
+
     public function testApplyDefaultsToSafeWithoutClientResolve(): void
     {
         $db = $this->db($this->messageRow(), $this->analysisRow());

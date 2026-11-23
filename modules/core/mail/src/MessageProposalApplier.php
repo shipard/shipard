@@ -204,6 +204,11 @@ final class MessageProposalApplier
         // Server-controlled injection — never trust client-supplied source.
         $source = is_array($canonical['source'] ?? null) ? $canonical['source'] : [];
         $source['message'] = $messageNdx;
+        // Klíč idempotence pokynu (`source.ref`, #166 D46) návrh z pošty
+        // nenese: pole je ve schématu, které vidí i model, a vyplněné (třeba
+        // číslem faktury) by druhé zprávě vrátilo doklad té první. Opakovaný
+        // apply návrhu hlídá vazba zprávy na doklad.
+        unset($source['ref']);
         if (empty($source['kind'])) {
             $source['kind'] = 'aiExtraction';
         }
