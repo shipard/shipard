@@ -144,6 +144,50 @@ class ExchangeControllerTest extends TestCase
         }
     }
 
+    /** `/interpret` (#166 D55): hotový doklad a zpráva bez uložení — přímo v `data`, ne pod `canonical`. */
+    public function testInterpretReturnsFinishedDocumentAndReport(): void
+    {
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->expects($this->never())->method('apply');
+        $proposal = $this->createMock(DocumentProposal::class);
+        $proposal->expects($this->never())->method('apply');
+        $proposal->method('interpret')->willReturn(ApplyResult::ok([
+            'document' => ['docType' => 'invoiceReceived', 'supplier' => ['ref' => 42]],
+            'report'   => ['issues' => [], 'pending' => [], 'rowMap' => [0]],
+        ]));
+
+        $response = (new ExchangeController($applier, proposal: $proposal))->interpret(
+            $this->buildRequest('POST', '/api/v1/_exchange/docs/document/interpret', ['format' => 'shpd.docs.document']),
+        );
+
+        $this->assertSame(200, $this->getStatus($response));
+        $body = $response->getPayload();
+        $this->assertSame(['ref' => 42], $body['data']['document']['supplier']);
+        $this->assertSame([0], $body['data']['report']['rowMap']);
+        $this->assertArrayNotHasKey('canonical', $body['data']);
+    }
+
+    public function testInterpretReportsSchemaErrorLikePreview(): void
+    {
+        $proposal = $this->createMock(DocumentProposal::class);
+        $proposal->method('interpret')->willReturn(
+            ApplyResult::error('schema_invalid', 'Struktura dokumentu neodpovídá schématu.', ['_resolve' => ['issues' => [['code' => 'x']]]], statusCode: 400),
+        );
+        $controller = new ExchangeController($this->createMock(DocumentApplier::class), proposal: $proposal);
+
+        $response = $controller->interpret($this->buildRequest('POST', '/api/v1/_exchange/docs/document/interpret', ['format' => 'x']));
+
+        $this->assertSame(400, $this->getStatus($response));
+        $body = $response->getPayload();
+        $this->assertSame('schema_invalid', $body['error']['code']);
+        $this->assertSame([['code' => 'x']], $body['error']['details']['canonical']['_resolve']['issues']);
+
+        // Bez zapojeného vstupu návrhu chyba nastavení.
+        $unwired = (new ExchangeController($this->createMock(DocumentApplier::class)))
+            ->interpret($this->buildRequest('POST', '/api/v1/_exchange/docs/document/interpret', ['format' => 'x']));
+        $this->assertSame(500, $this->getStatus($unwired));
+    }
+
     /** Bez zapojeného vstupu návrhu je `interpret: true` chyba nastavení, ne tichý pokyn. */
     public function testInterpretWithoutProposalWiringIsAnError(): void
     {

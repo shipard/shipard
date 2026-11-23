@@ -23,6 +23,7 @@ use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
  * sharing the same response shape:
  *
  *   POST /api/v1/_exchange/docs/document/{validate|preview|apply}
+ *   POST /api/v1/_exchange/docs/document/interpret   (#166 D55, hotový doklad bez uložení)
  *   POST /api/v1/_exchange/persons/person/{validate|preview|apply}
  *   POST /api/v1/_exchange/items/item/{validate|preview|apply}
  *   POST /api/v1/_exchange/bank/statement/{validate|preview|apply}
@@ -76,6 +77,35 @@ final class ExchangeController
     public function apply(Request $request): Response
     {
         return $this->documentFlow($request, 'apply');
+    }
+
+    /**
+     * `POST …/docs/document/interpret` (#166 D55): interpretace papírové
+     * podoby **bez uložení** — odpověď `{document, report}`: hotový doklad
+     * (payload platný jako pokyn) a zpráva včetně záznamů, které je potřeba
+     * založit (`report.pending`). Tělo = papírová podoba s volitelným
+     * `_resolve`; `applyOptions.interpret` se nečte — endpoint interpretuje
+     * vždy.
+     */
+    public function interpret(Request $request): Response
+    {
+        $payload = $this->extractPayload($request);
+        if ($payload instanceof Response) {
+            return $payload;
+        }
+        if ($this->proposal === null) {
+            return Response::error('INTERNAL_ERROR', 'Document interpretation is not wired in this dispatcher.', 500);
+        }
+        $result = $this->proposal->interpret($payload);
+        if (!$result->success) {
+            return Response::error(
+                $result->errorCode ?? 'internal_error',
+                $result->errorMessage ?? 'Unknown error',
+                $result->statusCode,
+                $result->canonical !== [] ? ['canonical' => $result->canonical] : [],
+            );
+        }
+        return Response::success($result->canonical, $result->statusCode);
     }
 
     /**

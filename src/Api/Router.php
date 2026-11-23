@@ -895,7 +895,7 @@ class Router
 	private function resolveExchangeRoute(string $subpath, string $method): Route|Response
 	{
 		$rest = substr($subpath, strlen('/_exchange/docs/document/'));
-		if (!in_array($rest, ['validate', 'preview', 'apply'], true)) {
+		if (!in_array($rest, ['validate', 'preview', 'apply', 'interpret'], true)) {
 			return Response::error('NOT_FOUND', 'Not found', 404);
 		}
 		if ($method !== 'POST') {

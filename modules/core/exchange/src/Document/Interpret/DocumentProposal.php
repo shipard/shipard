@@ -110,6 +110,48 @@ class DocumentProposal
     }
 
     /**
+     * Interpretace **bez uložení** (#166 D55): z papírové podoby a voleb
+     * uživatele hotový doklad — payload platný jako pokyn — a zpráva o tom,
+     * co interpretace našla a odvodila. Nic nezapisuje.
+     *
+     * Úspěšný výsledek nese v `canonical` dvojici `document` + `report`:
+     *
+     *  - `document` jde poslat jako pokyn (`/apply` bez `interpret`). Záznam,
+     *    který je potřeba teprve založit, v něm zůstává objektem s daty bez
+     *    `ref` — pokyn ho odmítne (`reference_missing`); volající ho založí
+     *    sám a referenci doplní na cestu z `report.pending[].ref`, nebo
+     *    použije `/apply` s `interpret: true`, které zakládá samo;
+     *  - `report` = bloky `_resolve` návrhu, nálezy (včetně těch, které
+     *    brání uložení — `unresolved_required`, `conflict`), souhrn,
+     *    `pending` (co založit: `key`, `kind`, `table`, `payload`, `ref`)
+     *    a `rowMap` (index řádku hotového dokladu → index původního).
+     *
+     * Cesty nálezů a indexy bloků řádků míří do **původního** payloadu.
+     *
+     * @param array<string, mixed> $canonical papírová podoba s volbami v `_resolve`
+     */
+    public function interpret(array $canonical): ApplyResult
+    {
+        $invalid = $this->schemaError($canonical);
+        if ($invalid !== null) {
+            return $invalid;
+        }
+        $interpreted = $this->interpreter->interpret($canonical);
+
+        $issues = [...($interpreted->report['issues'] ?? []), ...$interpreted->decisionIssues, ...$interpreted->operationIssues];
+        $report = $interpreted->report;
+        unset($report['issues'], $report['summary']);
+        $report += [
+            'issues'  => $issues,
+            'summary' => PayloadResolve::summary($report, $issues),
+            'pending' => $interpreted->pending,
+            'rowMap'  => $interpreted->rowMap,
+        ];
+
+        return ApplyResult::ok(['document' => $interpreted->document, 'report' => $report]);
+    }
+
+    /**
      * Náhled návrhu: zpráva interpretace a částky, **které skončí na
      * dokladu** — ty počítá pokyn nad hotovým dokladem (`computed`), ne
      * interpretace. Nic nezapisuje; projde i s chybami v nálezech, o dalším

@@ -61,6 +61,8 @@ class ReadOnlyPolicyTest extends TestCase
 			['contentTags', 'overview', $allow], ['contentTags', 'tagItems', $allow], ['contentTags', 'materialize', $d403],
 			// exchange — suffix match
 			['exchange', 'validate', $allow], ['exchange', 'preview', $allow], ['exchange', 'apply', $d403],
+			// interpretace dokladu bez uložení (#166 D55) jen čte
+			['exchange', 'interpret', $allow],
 			['exchange', 'person:validate', $allow], ['exchange', 'person:apply', $d403],
 			['exchange', 'item:preview', $allow], ['exchange', 'item:apply', $d403],
 			['exchange', 'bank:validate', $allow], ['exchange', 'bank:apply', $d403],

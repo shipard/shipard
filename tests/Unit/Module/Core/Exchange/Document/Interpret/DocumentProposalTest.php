@@ -159,6 +159,68 @@ final class DocumentProposalTest extends TestCase
         $this->assertContains('required', self::codes($result));
     }
 
+    // ── Interpretace bez uložení (/interpret) ───────────────────────────────
+
+    public function testInterpretReturnsFinishedDocumentThatSavesAsAnInstruction(): void
+    {
+        $applier = $this->buildApplier($this->proposalDb());
+        $payload = $this->happyPayload();
+
+        $result = self::proposalOf($applier)->interpret($payload);
+
+        $this->assertTrue($result->success);
+        $this->assertSame(['document', 'report'], array_keys($result->canonical));
+        $document = $result->canonical['document'];
+        $report = $result->canonical['report'];
+        // Hotový doklad: reference číslem, bez `_resolve`; zpráva: bloky a nálezy.
+        $this->assertSame(42, $document['supplier']['ref']);
+        $this->assertArrayNotHasKey('_resolve', $document);
+        $this->assertSame(42, $report['supplier']['matchedId']);
+        $this->assertSame([], $report['pending']);
+        $this->assertSame([0], $report['rowMap']);
+        $this->assertSame('ok', $report['summary']['status']);
+        $this->assertNull($this->savedHeadsData, 'interpretace neukládá');
+        $this->assertSame([], $this->transaction);
+
+        // Tentýž doklad uloží pokyn i `/apply` s `interpret: true`.
+        $asInstruction = $applier->apply($document);
+        $this->assertTrue($asInstruction->success, (string) $asInstruction->errorMessage);
+        $fromInstruction = $this->savedHeadsData;
+        $asProposal = self::proposalOf($this->buildApplier($this->proposalDb()))->apply($payload);
+        $this->assertTrue($asProposal->success);
+        $this->assertSame($fromInstruction, $this->savedHeadsData);
+    }
+
+    /** Záznam k založení: v hotovém dokladu bez `ref`, ve zprávě `pending` s cestou, kam reference patří. */
+    public function testInterpretListsPendingRecordsAndUndecidedReferences(): void
+    {
+        $created = [];
+        $applier = $this->buildApplier($this->proposalDb(), party: $this->unknownSupplier(), persons: $this->personsGateway($created));
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['autoCreateMode' => 'liberal'];
+
+        $result = self::proposalOf($applier)->interpret($payload);
+
+        $this->assertTrue($result->success);
+        $this->assertArrayNotHasKey('ref', $result->canonical['document']['supplier']);
+        $pending = $result->canonical['report']['pending'];
+        $this->assertSame(['supplier'], array_column($pending, 'key'));
+        $this->assertSame('supplier.ref', $pending[0]['ref']);
+        $this->assertSame('12345678', $pending[0]['payload']['company_id']);
+        $this->assertSame([], $created, 'nic se nezakládá');
+        // Pokyn takový doklad odmítne — volající záznam založí sám.
+        $rejected = $applier->apply($result->canonical['document']);
+        $this->assertSame('validation_failed', $rejected->errorCode);
+        $this->assertContains('reference_missing', self::codes($rejected));
+
+        // Bez rozhodnutí (strict): nic k založení, zpráva říká, co chybí.
+        $undecided = self::proposalOf($applier)->interpret($this->happyPayload());
+        $this->assertTrue($undecided->success);
+        $this->assertSame([], $undecided->canonical['report']['pending']);
+        $this->assertContains('unresolved_required', array_column($undecided->canonical['report']['issues'], 'code'));
+        $this->assertSame('needsAttention', $undecided->canonical['report']['summary']['status']);
+    }
+
     // ── Uložení ─────────────────────────────────────────────────────────────
 
     public function testApplySavesTheFinishedDocumentAsAnInstruction(): void

@@ -1215,6 +1215,7 @@ function dispatchExchange(
 		'validate'        => $ctrl->validate($request),
 		'preview'         => $ctrl->preview($request),
 		'apply'            => $ctrl->apply($request),
+		'interpret'       => $ctrl->interpret($request),
 		'person:validate' => $ctrl->validatePerson($request),
 		'person:preview'  => $ctrl->previewPerson($request),
 		'person:apply'    => $ctrl->applyPerson($request),

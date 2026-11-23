@@ -1054,6 +1054,17 @@ class RouterTest extends TestCase
 		$this->assertRoute($result, 'exchange', 'preview');
 	}
 
+	public function testExchangeInterpret(): void
+	{
+		$result = $this->router->resolve('/api/v1/_exchange/docs/document/interpret', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'exchange', 'interpret');
+
+		// Jen POST; interpretace jiných formátů (osoby, položky) neexistuje.
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/docs/document/interpret', 'GET'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/persons/person/interpret', 'POST'));
+	}
+
 	public function testExchangeApply(): void
 	{
 		$result = $this->router->resolve('/api/v1/_exchange/docs/document/apply', 'POST');

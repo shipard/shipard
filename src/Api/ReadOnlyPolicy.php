@@ -109,6 +109,8 @@ final class ReadOnlyPolicy
 		'exchange' => [
 			'validate' => ReadOnlyVerdict::Allow,
 			'preview'  => ReadOnlyVerdict::Allow,
+			// Interpretace dokladu bez uložení (#166 D55) — jen čte.
+			'interpret' => ReadOnlyVerdict::Allow,
 			// apply → 403
 		],
 		'personsRegistry' => [
