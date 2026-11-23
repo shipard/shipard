@@ -30,6 +30,8 @@ final class ProposalShadowTest extends TestCase
      * Známý rozdíl (poznámky tasku): návrh v režimu Bez DPH, který applier
      * za doklad mimo DPH ani za doklad neplátce **nepovažuje**, dnes uloží
      * řádky s kódem DPH; pokyn doklad Bez DPH ukládá bez kódů (#166 D20).
+     * **Přijatý** (rozhodnuto 2026-11-23) — po přepnutí návrhu na cestu
+     * interpretace → pokyn je správně chování nové cesty.
      */
     private const GAP_NONE_WITH_CODES = 'známý rozdíl: režim Bez DPH s kódy řádků';
 

@@ -226,10 +226,13 @@ původního payloadu a porovná s částkou z papíru.
   uživatelem (`useExisting`) jiný než shoda je `limitations`
   `partner_bank_pin`;
 - jednotku bez systémového kódu (`unit_without_system_code`);
-- **známý rozdíl:** návrh, který zůstane v režimu Bez DPH, aniž ho applier
-  považuje za doklad neplátce nebo doklad mimo české DPH (předloha říká
-  `none`, ale řádky nesou daň), dnes uloží řádky s kódem DPH; pokyn doklad
-  Bez DPH ukládá bez kódů (D20). Ve veřejných sadách se nevyskytuje.
+- **přijatý rozdíl** (rozhodnuto 2026-11-23): návrh, který zůstane
+  v režimu Bez DPH, aniž ho applier považuje za doklad neplátce nebo
+  doklad mimo české DPH (předloha říká `none`, ale řádky nesou daň), dnes
+  uloží řádky s kódem DPH a řádek rekapitulace; pokyn doklad Bez DPH
+  ukládá bez kódů (D20, #164). Po přepnutí návrhu na cestu interpretace →
+  pokyn takový doklad vznikne bez kódů a bez rekapitulace. Ve veřejných
+  sadách se nevyskytuje.
 
 **Stav:** cesta návrhu v applieru (`ApplyMode::Proposal`) zatím běží dál.
 Že pokyn nad hotovým dokladem dává totéž — odpověď náhledu i data předaná

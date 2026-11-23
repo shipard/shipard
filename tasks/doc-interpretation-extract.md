@@ -339,9 +339,12 @@ výměnného formátu to neukáže; po přesunu mezi soubory pouštět celou sad
    `vat_mode` 0 **a** řádek s kódem DPH (v tuzemsku `cz-114`), doklad pak
    má i řádek rekapitulace. Pokyn doklad Bez DPH ukládá bez kódů (D20),
    takže nová cesta kód ani rekapitulaci nemá. **Je to rozdíl uloženého
-   dokladu**, ne jen tvaru dat — k rozhodnutí před přepnutím: buď ho
-   přijmout (doklad Bez DPH kódy nést nemá, #164), nebo návrhu takový
-   doklad přepnout na režim s DPH. Ve veřejných sadách se nevyskytuje.
+   dokladu**, ne jen tvaru dat. Ve veřejných sadách se nevyskytuje.
+   **Rozhodnuto 2026-11-23: rozdíl se přijímá** — doklad Bez DPH kódy
+   nést nemá (#164), dnešní výsledek je nekonzistentní doklad. Po přepnutí
+   návrhu na cestu interpretace → pokyn takový doklad vznikne bez kódů
+   a bez rekapitulace; je to jediná přijatá výjimka z D54, zapsaná
+   i v `tasks/doc-interpretation-switch.md`.
 
 **Závěrečné ověření** (proti výchozímu commitu `b462e89f`):
 

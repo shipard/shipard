@@ -31,6 +31,16 @@ pokyn. Přibude endpoint, který vrátí hotový doklad bez uložení.
   a položek → pokyn → učení dodavatelských kódů, v jedné transakci.
 - ✓ **D54 — Chování návrhu se nemění:** uložené doklady i `dataset-verify`
   před a po shodné.
+  - **Přijatá výjimka** (rozhodnuto 2026-11-23, nález stínového testu
+    v `tasks/doc-interpretation-extract.md`): návrh, který zůstane
+    v režimu Bez DPH, aniž ho interpretace považuje za doklad neplátce
+    nebo doklad mimo české DPH (předloha říká `vat.mode: none`, ale řádek
+    nese daň dodavatele), dnes uloží `vat_mode` 0 s kódem DPH na řádku
+    a s řádkem rekapitulace. Po přepnutí vznikne **bez kódů a bez
+    rekapitulace** — doklad Bez DPH kódy nést nemá (#164). Ve veřejných
+    sadách se nevyskytuje, `dataset-verify` tím není dotčený. Unit test,
+    který by dnešní výsledek očekával, se při přepnutí upraví a zapíše
+    do poznámek.
 - ✓ **D55 — Endpoint `/interpret`** vrátí hotový doklad a zprávu bez
   uložení; `/apply` s `interpret: true` zůstává jako obojí najednou.
 
