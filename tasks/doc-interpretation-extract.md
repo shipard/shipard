@@ -1,6 +1,6 @@
 # Task: Interpretace dokladu jako samostatná část — hotový doklad vedle dnešní cesty návrhu
 
-**Stav:** částečně — commit 1 (přesun kódu návrhu) hotový 2026-11-23; zbývá hotový doklad (`interpret()`), stínový test a dokumentace (#166 etapa 5, část 1; D51, D52, D54, D57)
+**Stav:** hotovo — 2026-11-23 (#166 etapa 5, část 1; D51, D52, D54, D57); navazuje `tasks/doc-interpretation-switch.md`
 
 **Issue:** #166 (etapa 5)
 
@@ -175,11 +175,12 @@ hotový doklad) — plný přepis dokumentace je
 
 - [x] kód návrhu je ve třídách interpretace, applier ho jen volá; žádná
       logika odvozování není dvakrát
-- [ ] `interpret()` vrací úplný hotový doklad, zprávu, `pending`,
+- [x] `interpret()` vrací úplný hotový doklad, zprávu, `pending`,
       `rowMap`, `learn`
-- [ ] stínový test bez rozdílu nad veřejnými sadami i unit fixturami
-- [ ] `dataset-verify` a testy invariantu beze změny
-- [ ] cílené testy, pak celá unit sada; stav tasku
+- [x] stínový test bez rozdílu nad veřejnými sadami i unit fixturami
+      (jeden zapsaný známý rozdíl — poznámky)
+- [x] `dataset-verify` a testy invariantu beze změny
+- [x] cílené testy, pak celá unit sada; stav tasku
 
 ## Poznámky k implementaci
 
@@ -255,3 +256,104 @@ signaturou.
 výjimku pro formát data ve zprávě o kurzu podle cesty souboru — kód se
 přestěhoval do `PayloadContext.php`, výjimka s ním. Cílený běh testů
 výměnného formátu to neukáže; po přesunu mezi soubory pouštět celou sadu.
+
+### Commit 2 — hotový doklad (2026-11-23, `4dd3bba6`)
+
+- **`DocumentInterpreter::interpret()`** projde kroky návrhu až po
+  rozhodnutí nad volbami uživatele (`RecordMatching::reconcile()`) přes
+  tytéž třídy jako applier; hotový doklad z nich skládá čistá funkce
+  `FinishedDocument::build()`. Schéma ověřuje volající.
+- **`InterpretedDocument`** nese nad rámec U3:
+  - `decisionError` (`unresolved_required` / `conflict`) a `decisionIssues`
+    — nálezy, které dnes vznikají až při uložení, ne v náhledu;
+  - `limitations` — co hotový doklad nevyjádří (níž);
+  - `paper` — papírová podoba po normalizaci (payload, který návrh vrací
+    v odpovědi) a `recapFallback` (důvod přepočtu rekapitulace pro
+    `computed`);
+  - `withCreated()` — doplní reference založených záznamů ve tvaru, který
+    vrací `PendingRecords::create()`; `PendingRecords::createFrom()` zakládá
+    přímo ze seznamu `pending`.
+- **Pravidla sjednocená na jedno místo**, aby je `transform()` i interpret
+  nebraly každý po svém: `RoundingInterpretation::resolveAuto()` /
+  `resolveMode()`, `ProposalDefaults::paymentMethodFor()`,
+  `PayloadResolve::vatBlocks()` / `summary()` / `keptRowIndices()`.
+- **Pohyb řádku se zakládanou položkou:** typ položky plyne z druhu, který
+  položka při založení dostane — `PendingRecords::plannedItemType()` ho
+  přečte předem, takže pohyb je v hotovém dokladu už před založením.
+- **Řada a pokladna** se nedoplňují (jen se reference převede na id):
+  `resolveSaveTargets()` se chová v obou režimech stejně a vázanou řadu
+  může založit až apply.
+- **Strana s volbou „bez osoby“** (`skip`) ztrácí v hotovém dokladu název,
+  IČO a DIČ — jinak by ji pokyn odmítl `reference_missing`; adresa
+  a bankovní spojení zůstávají.
+- **`ProposalReport::withComputed()`** — zpráva návrhu s blokem `computed`
+  z náhledu pokynu (indexy řádků přes `rowMap`, `recapFallback`,
+  `computed_total_mismatch`). Použije ji vstup návrhu v navazujícím tasku.
+
+**Meze formátu** (`limitations`, k rozhodnutí v navazujícím tasku):
+
+- Bankovní účet partnera nemá referenci. Pokyn ho váže přesnou shodou
+  s účtem osoby; po založení z `pending` se najde. Účet zvolený uživatelem
+  (`useExisting`) jiný než shoda vyjádřit nejde (`partner_bank_pin`).
+- Jednotka nalezená zkratkou nebo názvem, která nemá systémový kód
+  (`unit_without_system_code`) — řádek zůstane bez jednotky.
+
+### Commit 3 — stínový test (2026-11-23, `46c65181`)
+
+- **Co se porovnává** (`ShadowRunner`): u náhledu **celý blok `_resolve`**
+  — bloky stran a řádků, DPH, nálezy včetně textů a pořadí, souhrn,
+  `computed` — a vrácený payload; u uložení data předaná
+  `saveDocument()` před `beforeSave()` (výstup `transform()`) a výsledek
+  (uloženo × kód chyby). Navíc úplnost: pokyn nad hotovým dokladem nesmí
+  doplnit žádnou výchozí hodnotu. Je to přísnější než U5 (kód, cesta,
+  závažnost).
+- **Unit fixtury** — 33 případů: `ProposalShadowTest` (25),
+  `DocumentApplierCorrectionTest` (4, opravný doklad) a
+  `DocumentApplierExchangeRateTest` (4, kurz z lístku).
+- **Veřejné sady** — `DatasetProposalShadowTest`: 64 návrhů tří sad, každý
+  dvakrát (volby `dataset-verify`: zakládat vše, cíl V pořádku; „jednoklik“:
+  zakládat bezpečně, cíl Koncept). Bez rozdílu.
+- **Test nad sadou běží naostro a jen na vyžádání**
+  (`SHIPARD_SHADOW_DATASET=1`). Zápis verdiktu v `MessageProposalApplier`
+  si otevírá vlastní transakci (`START TRANSACTION` vnější transakci
+  potichu potvrdí), takže běh nejde zabalit a vrátit — první pokus
+  o vnější rollback návrhy sady použil natrvalo. Nová cesta a varianta
+  „jednoklik“ běží v savepointu, který se vrací; po testu jsou návrhy
+  použité a další běh chce nový `dataset-seed`.
+- **Pořadí cest:** nová cesta běží první (izolovaně), dnešní potom —
+  jinak by druhé uložení narazilo na idempotenci podle zprávy a na doklad
+  se stejným číslem dodavatele. Záznamy, které obě cesty zakládají, mají
+  různá id; porovnání je převádí přes klíč v `pending`.
+
+**Výjimky stínového testu:**
+
+1. **Normalizace `total_rounding_mode`** (`ShadowRunner::NORMALIZED`): návrh
+   bez odhadnutého módu klíč nepošle (platí výchozí hodnota sloupce 0),
+   pokyn pošle výslovně 0 („na haléře“). Uložený doklad je stejný. Bez
+   normalizace se liší většina návrhů sad (negativní kontrola nad sadou
+   plátce: 40 řádků rozdílů).
+2. **Známý rozdíl — režim Bez DPH s kódy řádků** (případ
+   `KNOWN_GAPS` v `ProposalShadowTest`, přesné znění rozdílu v testu):
+   předloha říká `vat.mode: none`, ale řádek nese daň dodavatele, takže to
+   není doklad od neplátce ani doklad mimo české DPH. Dnešní cesta uloží
+   `vat_mode` 0 **a** řádek s kódem DPH (v tuzemsku `cz-114`), doklad pak
+   má i řádek rekapitulace. Pokyn doklad Bez DPH ukládá bez kódů (D20),
+   takže nová cesta kód ani rekapitulaci nemá. **Je to rozdíl uloženého
+   dokladu**, ne jen tvaru dat — k rozhodnutí před přepnutím: buď ho
+   přijmout (doklad Bez DPH kódy nést nemá, #164), nebo návrhu takový
+   doklad přepnout na režim s DPH. Ve veřejných sadách se nevyskytuje.
+
+**Závěrečné ověření** (proti výchozímu commitu `b462e89f`):
+
+1. Stínový test nad třemi veřejnými sadami (čerstvý seed) — bez rozdílu;
+   nad unit fixturami bez rozdílu kromě zapsaného známého rozdílu.
+2. `dataset-verify --json` tří veřejných sad bajtově shodný s kódem před
+   taskem; uložené hlavičky, řádky, rekapitulace, deník, osoby, položky,
+   dodavatelské kódy a účty partnerů shodné (bez časových sloupců).
+3. Integrační testy nad volným zdrojem `blkm-i8` — matice round-tripu,
+   případy payloadů, invariant formulář × pokyn, idempotence, pošta, sady:
+   555 testů, 17 přeskočených (z toho stínový test nad sadou, který běží
+   jen na vyžádání), bez selhání, stejný počet asercí jako po commitu 1.
+4. Celá unit sada: 12 213 testů zelených.
+
+`DocumentApplier`: 6 987 řádků před taskem → 3 166 po něm.

@@ -157,6 +157,87 @@ vůbec (#166 D32): payload, který ho nese, projde s jedním info nálezem
 Importní mód (`applyOptions.importNumber`) je vždy pokyn a nese jen
 historii — § 10 „Importní mód“.
 
+### Interpretace jako samostatná část — hotový doklad (#166 D51, D52)
+
+Kód, který „přemýšlí“ nad papírovou podobou dokladu — hledání podle údajů,
+odvozování DPH, volby uživatele —, žije ve jmenném prostoru
+`Document\Interpret\`. `DocumentApplier` ho v režimu návrh jen volá
+a vlastní kopii pravidel nemá. Co čtou obě strany, drží dvě sdílené třídy
+v `Document\`: `PayloadContext` (typ dokladu, registrace DPH z reference,
+datum sazby, původní doklad opravy, kurz, kontext DPH pokynu)
+a `PayloadResolve` (reference, dimenze, ověření kódu DPH a předmětu plnění
+z payloadu, řádek převzaté rekapitulace).
+
+| Třída | Co rozhoduje |
+|---|---|
+| `VatInterpretation` | kontext DPH návrhu: místo plnění z DIČ, druh plnění ze štítků, kód DPH řádku, doklad neplátce a mimo české DPH, režim ověřený proti číslům, ceny řádků s daní dodavatele, volby DPH z `_resolve` (§ 8.4) |
+| `RecapInterpretation` | převzít, nebo přepočítat rekapitulaci |
+| `RoundingInterpretation` | automatika a odhad módu zaokrouhlení |
+| `RecordMatching` | strany a položky podle údajů, účet partnera, účet holým číslem, jednotka aliasem; rozhodnutí nad volbami uživatele a `autoCreateMode` |
+| `PendingRecords`, `SupplierCodeLearning` | zakládání chybějících záznamů a učení dodavatelských kódů — **zapisují**, proto stojí mimo samotnou interpretaci |
+| `ProposalDefaults` | pohyb řádku podle typu položky, výchozí způsob úhrady |
+| `ProposalReport` | bloky náhledu návrhu navíc k resolve, `computed_total_mismatch` |
+| `PaperChecks` | povinná pole předlohy a heuristiky nad čísly (`DocumentValidator` je pouští jen v návrhu) |
+
+**`DocumentInterpreter::interpret(array $canonical): InterpretedDocument`**
+čte databázi a nic nezapisuje. Z papírové podoby a voleb uživatele udělá:
+
+- `document` — **hotový doklad**, payload platný jako pokyn;
+- `report` — bloky `_resolve` návrhu (strany, řádky, DPH, oprava,
+  `valueRepairs`, souhrn) a nálezy; cesty míří do původního payloadu;
+- `pending` — osoby, položky a účet partnera, které je před uložením
+  potřeba založit, s daty k založení a s cestou v hotovém dokladu, kam
+  přijde reference (`InterpretedDocument::withCreated()` ji doplní);
+- `rowMap` — index řádku hotového dokladu → index původního (vynechané
+  řádky v hotovém dokladu nejsou);
+- `learn` — dodavatelské kódy položek k naučení po uložení;
+- `decisionError` — reference čeká na rozhodnutí (`unresolved_required`)
+  nebo volba neplatí (`conflict`); `limitations` — co formát nevyjádří
+  (níž).
+
+**Hotový doklad je úplný** (D52) — výchozí hodnoty pokynu se na doklad
+z papíru neuplatní, pokyn nad ním vrací prázdné `_resolve.defaults`:
+
+- každý odkaz je reference číslem (id); strana nebo položka, která se
+  teprve založí, zůstává objektem s daty bez `ref`;
+- `vat.mode`, `vat.place`, `vat.registration` (i `null`), `vat.recapSource`
+  a u převzaté rekapitulace `vatRecap` s kódy; přepočítaná se nepředává;
+- řádky nesou výslovně `vat.code`, `operation`, `description`, `unitPrice`,
+  `unit` (systémovým kódem) a `quantity` — hodnotu, nebo `null`; ceny jsou
+  už převedené (doklad neplátce a doklad mimo české DPH: `totalPrice`
+  s daní dodavatele, `priceCalcMode: fromTotal`);
+- `totals` nesou jen `totalRoundingAuto` a `totalRoundingMode` — **žádné
+  částky**: pokyn by je bral jako kontrolní součet a doklad z papíru
+  s haléřovým rozdílem odmítl;
+- `payment.method`, `payment.ownBankAccount`, `currency`
+  a `dates.issueDate` výslovně, i jako `null`;
+- bez signálů návrhu (`item.ourCode`, účet holým číslem,
+  `vat.registrationCountry`), bez `_resolve`, bez `applyOptions.interpret`
+  a `autoCreateMode`; ostatní `applyOptions` a `source` beze změny.
+
+Blok `computed` náhledu počítá pokyn nad hotovým dokladem;
+`ProposalReport::withComputed()` ho vrátí do zprávy s indexy řádků
+původního payloadu a porovná s částkou z papíru.
+
+**Co hotový doklad nevyjádří:**
+
+- bankovní účet partnera nemá ve formátu referenci — pokyn ho váže přesnou
+  shodou s účtem osoby (po založení z `pending` se najde); účet zvolený
+  uživatelem (`useExisting`) jiný než shoda je `limitations`
+  `partner_bank_pin`;
+- jednotku bez systémového kódu (`unit_without_system_code`);
+- **známý rozdíl:** návrh, který zůstane v režimu Bez DPH, aniž ho applier
+  považuje za doklad neplátce nebo doklad mimo české DPH (předloha říká
+  `none`, ale řádky nesou daň), dnes uloží řádky s kódem DPH; pokyn doklad
+  Bez DPH ukládá bez kódů (D20). Ve veřejných sadách se nevyskytuje.
+
+**Stav:** cesta návrhu v applieru (`ApplyMode::Proposal`) zatím běží dál.
+Že pokyn nad hotovým dokladem dává totéž — odpověď náhledu i data předaná
+k uložení —, hlídá stínový test (`ProposalShadowTest` nad unit fixturami,
+`DatasetProposalShadowTest` nad návrhy veřejných sad). Přepnutí návrhu na
+cestu interpretace → pokyn a endpoint `/interpret` je
+`tasks/doc-interpretation-switch.md`.
+
 ### Výchozí hodnoty pokynu — jedno místo s formulářem (#166 D40–D50)
 
 **Co formulář předvyplní novému dokladu a řádku, to doplní i pokyn, když
