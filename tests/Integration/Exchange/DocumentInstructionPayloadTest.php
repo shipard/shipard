@@ -107,16 +107,43 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame([], array_intersect(['vat_place_derived', 'vat_code_derived'], self::codes($result)));
     }
 
-    // ── Řádek bez kódu DPH: rozhoduje DocDocument ───────────────────────────
+    // ── Řádek bez kódu DPH: výchozí kód, výslovné null rozhoduje DocDocument ─
 
-    public function testRowWithoutCodeIsRejectedOnConfirmationAndPreviewShowsItFirst(): void
+    /**
+     * #166 D43, D44: řádek bez kódu na dokladu s DPH dostane první kód
+     * nabídky jako ve formuláři — náhled i uložení to řeknou v
+     * `_resolve.defaults`, protože výchozí kód mění částky.
+     */
+    public function testRowWithoutCodeGetsTheDefaultCodeAndTheResponseSaysSo(): void
     {
+        $code = $this->fixtures->vatCode('input', 'domestic', 'standard');
         $payload = $this->options($this->payloadWithoutRowCode(), 40);
+
+        $preview = $this->applier->preview($payload);
+        $this->assertTrue($preview->success);
+        $this->assertSame([], self::findings($preview, 'vat_code_missing'));
+        $this->assertSame($code, self::defaults($preview)['rows.0.vat.code'] ?? null);
+        $this->assertArrayNotHasKey('code', $preview->canonical['rows'][0]['vat'], 'odpověď vrací payload, jak přišel');
+
+        $result = $this->applier->apply($payload);
+        $saved = $this->saved($result);
+
+        $this->assertSame(40, (int) $saved->head['docState']);
+        $this->assertSame([$code], array_column($saved->rows, 'vat_code'));
+        $this->assertSame($code, self::defaults($result)['rows.0.vat.code'] ?? null);
+        $this->assertSame([1000.0, 210.0, 1210.0], self::amounts($saved, 'total_base', 'total_vat', 'total_amount'));
+    }
+
+    /** #166 D50: výslovné `null` je „záměrně bez kódu“ — nedoplní se a potvrzení zastaví doklad. */
+    public function testExplicitNullCodeIsRejectedOnConfirmationAndPreviewShowsItFirst(): void
+    {
+        $payload = $this->options($this->payloadWithNullRowCode(), 40);
         $before = $this->documentCount();
 
         $preview = $this->applier->preview($payload);
         $this->assertTrue($preview->success);
         $this->assertSame([['error', 'rows.0.vat.code']], self::findings($preview, 'vat_code_missing'));
+        $this->assertArrayNotHasKey('rows.0.vat.code', self::defaults($preview));
 
         $result = $this->applier->apply($payload);
         $this->assertFalse($result->success);
@@ -125,9 +152,9 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame($before, $this->documentCount(), 'nic se neuložilo');
     }
 
-    public function testRowWithoutCodeIsSavedAsDraftWithWarning(): void
+    public function testExplicitNullCodeIsSavedAsDraftWithWarning(): void
     {
-        $result = $this->applier->apply($this->options(self::withoutChecksum($this->payloadWithoutRowCode()), 10));
+        $result = $this->applier->apply($this->options(self::withoutChecksum($this->payloadWithNullRowCode()), 10));
         $saved = $this->saved($result);
 
         $this->assertSame(10, (int) $saved->head['docState']);
@@ -135,10 +162,10 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame([['warning', 'rows.0.vat.code']], self::findings($result, 'vat_code_missing'));
     }
 
-    /** #166 D27: se součty dokladu (daň 210) řádek bez kódu neprojde ani jako koncept — daň na dokladu není. */
-    public function testRowWithoutCodeAndDeclaredTotalsFailsTheChecksumEvenAsDraft(): void
+    /** #166 D27: se součty dokladu (daň 210) řádek záměrně bez kódu neprojde ani jako koncept — daň na dokladu není. */
+    public function testNullCodeAndDeclaredTotalsFailsTheChecksumEvenAsDraft(): void
     {
-        $payload = $this->options($this->payloadWithoutRowCode(), 10);
+        $payload = $this->options($this->payloadWithNullRowCode(), 10);
         $before = $this->documentCount();
 
         $result = $this->applier->apply($payload);
@@ -152,7 +179,10 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame($before, $this->documentCount(), 'nic se neuložilo');
     }
 
-    /** D22: importní mód výjimku z validace nemá. */
+    /**
+     * D22: importní mód výjimku z validace nemá — a obsah řádku nedoplňuje
+     * (#166 D49): historický řádek bez kódu by jinak tiše dostal základní sazbu.
+     */
     public function testRowWithoutCodeIsRejectedOnConfirmationEvenInImportMode(): void
     {
         $payload = $this->options($this->payloadWithoutRowCode(), 40, import: true);
@@ -162,6 +192,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
 
         $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
         $this->assertSame([['error', 'rows.0.vat.code']], self::findings($result, 'vat_code_missing'));
+        $this->assertArrayNotHasKey('rows.0.vat.code', self::defaults($result));
         $this->assertSame($before, $this->documentCount());
     }
 
@@ -857,6 +888,12 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         return self::withRowVat($payload, ['pct' => 21]);
     }
 
+    /** Tentýž doklad, řádek výslovně bez kódu (`"vat": {"code": null}`, #166 D50). @return array<string, mixed> */
+    private function payloadWithNullRowCode(): array
+    {
+        return self::withRowVat($this->payloadWithoutRowCode(), ['code' => null]);
+    }
+
     /** Převzatá rekapitulace s haléřovým rozdílem proti řádkům. @return array<string, mixed> */
     private function declaredRecapPayload(): array
     {
@@ -926,6 +963,14 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
             static fn (array $issue): string => (string) ($issue['code'] ?? ''),
             (array) ($result->canonical['_resolve']['issues'] ?? []),
         ));
+    }
+
+    /** Pole, která pokyn doplnil sám (`_resolve.defaults`). @return array<string, mixed> cesta → hodnota */
+    private static function defaults(ApplyResult $result): array
+    {
+        $defaults = $result->canonical['_resolve']['defaults'] ?? null;
+        self::assertIsArray($defaults, 'odpověď pokynu nese _resolve.defaults');
+        return array_column($defaults, 'value', 'path');
     }
 
     /** @return list<array{0: string, 1: string}> dvojice [severity, path] nálezů s kódem */

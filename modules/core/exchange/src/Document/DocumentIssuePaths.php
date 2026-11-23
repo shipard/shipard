@@ -62,6 +62,14 @@ final class DocumentIssuePaths
         'recap'                => 'vatRecap',
     ];
 
+    /** Strana, která je partnerem dokladu, podle typu — pro payload bez `selfParty`. */
+    private const PARTNER_PARTY = [
+        'invoiceIssued'    => 'customer',
+        'proformaIssued'   => 'customer',
+        'invoiceReceived'  => 'supplier',
+        'proformaReceived' => 'supplier',
+    ];
+
     /** Sloupec řádku → pole řádku canonicalu. */
     private const ROW = [
         'vat_code'            => 'vat.code',
@@ -73,6 +81,7 @@ final class DocumentIssuePaths
         'discount_pct'        => 'discountPct',
         'discount_amount'     => 'discountAmount',
         'item'                => 'item',
+        'description'         => 'description',
         'unit'                => 'unit',
         'operation'           => 'operation',
         'account'             => 'account',
@@ -92,13 +101,37 @@ final class DocumentIssuePaths
     public static function issues(ValidationResult $validation, array $canonical, array $rowIndices): array
     {
         $issues = [];
+        $derived = self::derivedFindings($validation);
         foreach ($validation->getErrors() as $error) {
+            if (in_array($error, $derived, true)) {
+                continue;
+            }
             $issues[] = self::issue('error', $error, $canonical, $rowIndices);
         }
         foreach ($validation->getWarnings() as $warning) {
             $issues[] = self::issue('warning', $warning, $canonical, $rowIndices);
         }
         return $issues;
+    }
+
+    /**
+     * Nálezy, které jen opakují jiný nález (#166 U7 — jeden nález na pole):
+     * účetní datum applier odvozuje z data vystavení, takže chybějící datum
+     * vystavení dá dokladu i „Účetní datum je povinné“. Hlásí se jen příčina.
+     *
+     * @return list<ValidationError>
+     */
+    private static function derivedFindings(ValidationResult $validation): array
+    {
+        $required = [];
+        foreach ($validation->getErrors() as $error) {
+            if ($error->code === 'required') {
+                $required[$error->column] = $error;
+            }
+        }
+        return isset($required['issue_date'], $required['accounting_date'])
+            ? [$required['accounting_date']]
+            : [];
     }
 
     /**
@@ -127,12 +160,13 @@ final class DocumentIssuePaths
             return "rows.{$index}." . (self::ROW[$m[2]] ?? $m[2]);
         }
         if ($column === 'partner') {
-            // Partner dokladu je ta druhá strana než my; bez selfParty
-            // (účetní a pokladní doklad) zůstává sloupec.
+            // Partner dokladu je ta druhá strana než my; bez `selfParty` ji
+            // u faktur říká typ dokladu (minimální pokyn `selfParty` nenese),
+            // u účetního a pokladního dokladu zůstává sloupec.
             return match ($canonical['selfParty'] ?? null) {
                 'customer' => 'supplier',
                 'supplier' => 'customer',
-                default    => 'partner',
+                default    => self::PARTNER_PARTY[(string) ($canonical['docType'] ?? '')] ?? 'partner',
             };
         }
         return self::HEAD[$column] ?? $column;

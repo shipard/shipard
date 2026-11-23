@@ -1662,6 +1662,9 @@ class DocumentApplierTest extends TestCase
         ];
         $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
 
+        // Jako náhled a uložení: pokyn nejdřív dostane výchozí hodnoty
+        // (v návrhu je krok prázdný).
+        $canonical = (new \ReflectionMethod($applier, 'applyInstructionDefaults'))->invoke($applier, $canonical, $mode);
         $ref = new \ReflectionMethod($applier, 'transform');
         return $ref->invoke($applier, $canonical, $plan, $sideIds, null, $mode);
     }
@@ -3969,8 +3972,13 @@ class DocumentApplierTest extends TestCase
         ]);
 
         // Registrace k datu dokladu neplatí — import ji přesto použije.
+        // Výchozí registraci pokyn dostává jako referenci (společné pravidlo
+        // `DocHeadDefaults`), proto applier s resolverem referencí.
         $data = $this->invokeTransform(
-            $this->buildApplier(db: $this->dbWithVatRegistrationValidity('2026-08-01', null)),
+            $this->buildApplier(
+                db: $this->dbWithVatRegistrationValidity('2026-08-01', null),
+                references: $this->referenceResolver(self::REFERENCE_RECORDS),
+            ),
             $canonical,
             ApplyMode::Instruction,
         );

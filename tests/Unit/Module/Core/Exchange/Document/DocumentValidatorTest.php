@@ -1100,28 +1100,58 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByCode($this->v->validate($invoice), 'partner_not_supported'));
     }
 
-    /** Strana i pokladna jen referencí projdou povinnými poli stejně jako objekt. */
+    /** Strana i pokladna jen referencí projdou povinnými poli návrhu stejně jako objekt. */
     public function testScalarReferencesSatisfyRequiredFields(): void
     {
         $issues = $this->v->validate([
             'docType' => 'invoiceReceived', 'selfParty' => 'customer', 'supplier' => '@F00001',
             'dates' => ['issueDate' => '2026-04-15'],
             'rows' => [['rowKind' => 'item', 'item' => '@K-001', 'quantity' => 1, 'unitPrice' => 100]],
-        ]);
+        ], ApplyMode::Proposal);
         $this->assertNull($this->findByCode($issues, 'required'));
 
         foreach (['@POK', 2] as $cashDesk) {
             $issues = $this->v->validate([
                 'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => $cashDesk,
                 'dates' => ['issueDate' => '2026-04-15'],
-            ]);
+            ], ApplyMode::Proposal);
             $this->assertSame([], array_filter($issues, static fn (array $i): bool => $i['path'] === 'cashDesk'));
         }
-        $issues = $this->v->validate([
-            'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => '',
-            'dates' => ['issueDate' => '2026-04-15'],
-        ]);
-        $this->assertCount(1, array_filter($issues, static fn (array $i): bool => $i['path'] === 'cashDesk'));
+        foreach ([ApplyMode::Proposal, ApplyMode::Instruction] as $mode) {
+            $issues = $this->v->validate([
+                'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => '',
+                'dates' => ['issueDate' => '2026-04-15'],
+            ], $mode);
+            $this->assertCount(1, array_filter($issues, static fn (array $i): bool => $i['path'] === 'cashDesk'));
+        }
+    }
+
+    /**
+     * Pokyn (#166 D45, U7): povinnost polí validátor nehlídá — vyžaduje se
+     * jen obálka a `docType`; co chybí, má výchozí hodnotu jako ve formuláři,
+     * nebo to ohlásí validace dokladu pro cílový stav. Zůstává, co výchozí
+     * hodnotu mít nemůže: pokladna vázaného typu a směr pokladního dokladu.
+     */
+    public function testInstructionDoesNotCheckRequiredFields(): void
+    {
+        foreach (['invoiceReceived', 'invoiceIssued', 'proformaIssued', 'proformaReceived', 'accountingDocument'] as $docType) {
+            $this->assertNull(
+                $this->findByCode($this->v->validate(['docType' => $docType]), 'required'),
+                $docType,
+            );
+        }
+        $issues = $this->v->validate(['docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => '@POK']);
+        $this->assertNull($this->findByCode($issues, 'required'), 'datum, řádky ani strany se nevyžadují');
+
+        foreach (['cashDocument', 'cashRegisterDocument'] as $docType) {
+            $required = array_values(array_filter(
+                $this->v->validate(['docType' => $docType, 'cashDirection' => 1]),
+                static fn (array $i): bool => $i['code'] === 'required',
+            ));
+            $this->assertSame(['cashDesk'], array_column($required, 'path'), $docType);
+        }
+        $issues = $this->v->validate(['docType' => 'cashDocument', 'cashDesk' => '@POK']);
+        $this->assertSame('cashDirection', $this->findByCode($issues, 'invalid_value')['path'] ?? null);
     }
 
     public function testValueFindingsAreAppended(): void

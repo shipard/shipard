@@ -23,6 +23,8 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Docs\Core\AccountingDateRule;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
+use Shipard\Module\Docs\Core\Defaults\DocHeadDefaults;
+use Shipard\Module\Docs\Core\Defaults\DocRowDefaults;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
@@ -114,8 +116,39 @@ class DocumentApplier
      */
     private ?array $vatRegistrationCache = null;
 
+    /** Společná pravidla výchozích hodnot hlavičky (docs.core) — viz headDefaults(). */
+    private ?DocHeadDefaults $headDefaults = null;
+
+    /** Adaptér výchozích hodnot pokynu — viz applyInstructionDefaults(). */
+    private ?InstructionDefaults $instructionDefaults = null;
+
+    /**
+     * Pokyn (#166 D44): payload, jak přišel (po normalizaci tvarů) — z něj
+     * se skládá odpověď; applier dál pracuje s kopií doplněnou o výchozí
+     * hodnoty. Null = návrh nebo `/validate`.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $instructionPayload = null;
+
+    /**
+     * Pole, která pokyn doplnil sám — `_resolve.defaults`. Null = návrh
+     * (klíč se nevypisuje).
+     *
+     * @var list<array{path: string, value: mixed}>|null
+     */
+    private ?array $appliedDefaults = null;
+
+    /**
+     * Výchozí jednotky řádků bez systémového kódu (index řádku → id) —
+     * formát je vyjádřit neumí, {@see resolveAll()} je bere odsud.
+     *
+     * @var array<int, int>
+     */
+    private array $defaultUnitIds = [];
+
     /** Map canonical vat.mode → docs_core_heads.vat_mode (cfgItem docs.core.vatModes). */
-    private const VAT_MODE_MAP = [
+    public const VAT_MODE_MAP = [
         'none'      => 0,
         'fromBase'  => 1,
         'fromTotal' => 2,
@@ -180,7 +213,7 @@ class DocumentApplier
     ];
 
     /** Map canonical payment.method → docs_core_heads.payment_method. */
-    private const PAYMENT_METHOD_MAP = [
+    public const PAYMENT_METHOD_MAP = [
         'cash'           => 0,
         'bankTransfer'   => 1,
         'card'           => 2,
@@ -196,7 +229,7 @@ class DocumentApplier
     ];
 
     /** Map canonical rowKind → docs_core_rows.row_kind. */
-    private const ROW_KIND_MAP = [
+    public const ROW_KIND_MAP = [
         'text'    => 0,
         'item'    => 1,
         'section' => 2,
@@ -393,6 +426,85 @@ class DocumentApplier
     private function references(): ReferenceResolver
     {
         return $this->references ??= new ReferenceResolver($this->db, []);
+    }
+
+    // ── Výchozí hodnoty pokynu (#166 D40–D44, D48–D50) ──────────────────────
+
+    /** Výchozí hodnoty hlavičky — tatáž třída jako ve formuláři dokladu. */
+    private function headDefaults(): DocHeadDefaults
+    {
+        return $this->headDefaults ??= new DocHeadDefaults(new DataSourceConnection($this->db), $this->config);
+    }
+
+    /**
+     * Pokyn: co payload neuvádí, doplní se týmž kódem jako ve formuláři
+     * ({@see InstructionDefaults}) — do **pracovní kopie**, se kterou běží
+     * zbytek náhledu i uložení. Odpověď se skládá z payloadu, jak přišel,
+     * a doplněná pole vyjmenuje `_resolve.defaults`. Návrh se nemění:
+     * výchozí hodnoty nedostává a klíč `defaults` nenese.
+     *
+     * Hlavička jde první — registrace DPH, datum a režim DPH určují kontext,
+     * ve kterém se řádku vybírá kód DPH.
+     *
+     * @param array<string, mixed> $canonical payload po normalizaci tvarů
+     * @return array<string, mixed> pracovní kopie
+     */
+    private function applyInstructionDefaults(array $canonical, ApplyMode $mode): array
+    {
+        $this->instructionPayload = null;
+        $this->appliedDefaults = null;
+        $this->defaultUnitIds = [];
+        if ($mode->derives()) {
+            return $canonical;
+        }
+        $this->instructionPayload = $canonical;
+        $this->instructionDefaults ??= new InstructionDefaults(
+            $this->headDefaults(),
+            new DocRowDefaults(new DataSourceConnection($this->db), $this->config),
+            $this->references,
+            new DataSourceConnection($this->db),
+            $this->config,
+        );
+        $import = self::isImportMode($canonical);
+
+        $head = $this->instructionDefaults->head($canonical, $this->mapDocType($canonical), $import);
+        $canonical = $head['canonical'];
+        $rows = $this->instructionDefaults->rows(
+            $canonical,
+            $this->defaultsHead($canonical),
+            $import,
+            $this->vatRegistrationReference($canonical)['country'] ?? null,
+        );
+
+        $this->appliedDefaults = [...$head['defaults'], ...$rows['defaults']];
+        $this->defaultUnitIds = $rows['unitIds'];
+        return $rows['canonical'];
+    }
+
+    /** Doplnil pole pokyn sám ({@see applyInstructionDefaults()})? */
+    private function isDefaulted(string $path): bool
+    {
+        return in_array($path, array_column($this->appliedDefaults ?? [], 'path'), true);
+    }
+
+    /**
+     * Sloupce hlavičky, ze kterých se skládá kontext DPH pro výchozí hodnoty
+     * řádků (`DocHeadVatContext::fromHead()`): typ, směr, místo plnění,
+     * registrace a sloupce data sazby — tytéž hodnoty, které do dokladu
+     * pošle {@see transform()}.
+     *
+     * @param array<string, mixed> $canonical payload s doplněnou hlavičkou
+     * @return array<string, mixed>
+     */
+    private function defaultsHead(array $canonical): array
+    {
+        $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
+        return [
+            'cash_dir'         => isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0,
+            'vat_place'        => self::VAT_PLACE_MAP[(string) ($vat['place'] ?? 'domestic')] ?? 0,
+            'vat_registration' => $this->vatRegistrationReference($canonical)['id'] ?? null,
+            'doc_currency'     => strtolower((string) ($canonical['currency'] ?? '')),
+        ] + $this->vatRateHead($canonical, null, ApplyMode::Instruction);
     }
 
     /**
@@ -611,6 +723,10 @@ class DocumentApplier
      */
     public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
     {
+        // Statická kontrola výchozí hodnoty nedoplňuje — stav z předchozího volání pryč.
+        $this->instructionPayload = null;
+        $this->appliedDefaults = null;
+        $this->defaultUnitIds = [];
         $schemaIssues = $this->schemaValidator->validate($canonical, self::FORMAT_ID, self::FORMAT_VERSION);
         if ($schemaIssues !== []) {
             return ApplyResult::error(
@@ -647,6 +763,9 @@ class DocumentApplier
      */
     public function preview(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
     {
+        $this->instructionPayload = null;
+        $this->appliedDefaults = null;
+        $this->defaultUnitIds = [];
         // 1. Static checks first; schema errors abort early.
         $schemaIssues = $this->schemaValidator->validate($canonical, self::FORMAT_ID, self::FORMAT_VERSION);
         if ($schemaIssues !== []) {
@@ -662,6 +781,9 @@ class DocumentApplier
         //     vrací normalizovaný canonical; `_resolve.valueRepairs` přenáší withResolve().
         $resolveIgnored = self::ignoresResolve($canonical, $mode);
         $canonical = self::normalizeValues($canonical, $mode);
+        // 1c. Pokyn: výchozí hodnoty, které payload neuvádí (#166 D40) — dál
+        //     běží vše nad doplněnou kopií, stejně jako v apply.
+        $canonical = $this->applyInstructionDefaults($canonical, $mode);
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
         //    Vynechané řádky (#111 D9, D12) z klientského _resolve jednou pro
@@ -943,7 +1065,10 @@ class DocumentApplier
         $plan['ownBankAccountId'] = $targets['ownBankAccountId'];
 
         try {
-            $plan['rowOperationDefaults'] = $this->defaultRowOperationsForApply($canonical, $plan, self::NO_SIDE_IDS, $discarded);
+            // Pohyb řádku pokyn dostal mezi výchozími hodnotami
+            // ({@see applyInstructionDefaults()}); řádek bez něj je záměrně
+            // prázdný — mapa návrhu se tu nevolá.
+            $plan['rowOperationDefaults'] = [];
             $data = $this->transform($canonical, $plan, self::NO_SIDE_IDS, $targets['numberSeriesId'], $mode);
             $doc = $this->headsGateway->createDocument($data);
             // validate() data mění (denormalizace z řady, DPPD) — jen nad kopií.
@@ -1086,6 +1211,9 @@ class DocumentApplier
      */
     public function apply(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
     {
+        $this->instructionPayload = null;
+        $this->appliedDefaults = null;
+        $this->defaultUnitIds = [];
         $this->applyOptionsCache = is_array($canonical['applyOptions'] ?? null)
             ? $canonical['applyOptions']
             : [];
@@ -1118,6 +1246,9 @@ class DocumentApplier
         // účtu je interpretace, běží jen v návrhu (#166 D19).
         $resolveIgnored = self::ignoresResolve($canonical, $mode);
         $canonical = self::normalizeValues($canonical, $mode);
+        // Pokyn: výchozí hodnoty, které payload neuvádí (#166 D40) — po
+        // normalizaci, před kontrolami; stejné místo jako v náhledu.
+        $canonical = $this->applyInstructionDefaults($canonical, $mode);
         $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         // Vynechané řádky (#111 D9, D12) — tentýž seznam pro důvod přepočtu
         // rekapitulace i pro plán.
@@ -1191,9 +1322,12 @@ class DocumentApplier
             // kdy jsou finální ID položek v DB (matched i právě založené),
             // takže item_type se čte jednotně přes ID. Issues se propíší do
             // finální response přes withResolve() po commitu.
-            $plan['rowOperationDefaults'] = $this->defaultRowOperationsForApply(
-                $canonical, $plan, $sideCreatedIds, $validatorIssues,
-            );
+            // Jen návrh: pokyn pohyb dostal mezi výchozími hodnotami
+            // společným pravidlem ({@see applyInstructionDefaults()}) a řádek
+            // bez něj je záměrně prázdný (#166 D50).
+            $plan['rowOperationDefaults'] = $mode->derives()
+                ? $this->defaultRowOperationsForApply($canonical, $plan, $sideCreatedIds, $validatorIssues)
+                : [];
 
             // Transform canonical → internal $data.
             $data = $this->transform($canonical, $plan, $sideCreatedIds, $numberSeriesId, $mode);
@@ -1387,6 +1521,11 @@ class DocumentApplier
             );
             if ($partnerBlock !== null) {
                 $rowResolve['partner'] = $partnerBlock;
+            }
+            if (empty($row['unit']) && isset($this->defaultUnitIds[$idx])) {
+                // Výchozí jednotka z karty položky bez systémového kódu
+                // (#166 D42) — formát ji vyjádřit neumí, id nese adaptér.
+                $rowResolve['unit'] = ResolveResult::matched($this->defaultUnitIds[$idx], 'default')->toArray();
             }
             if (!empty($row['unit'])) {
                 // Pokyn (#166 D37): jen přesný systémový kód, neznámá
@@ -1627,6 +1766,16 @@ class DocumentApplier
         //     nejde (#59 Task E, E2). Uvedená jiná řada je chyba
         //     number_series_conflict (#166 U3).
         if ($this->isCashDeskBoundDocType($docTypeCode)) {
+            if ($cashDeskId === null) {
+                // Pokladna výchozí hodnotu nemá — řada dokladu pokladny se
+                // nikdy nevybírá potichu. Chybějící `cashDesk` hlásí
+                // validátor (`required`); tady už jen bez druhého nálezu
+                // na totéž pole (#166 D45 — jeden nález na pole).
+                return [
+                    'numberSeriesId' => null, 'cashDeskId' => null, 'ownBankAccountId' => null,
+                    'error' => ['code' => 'validation_failed', 'message' => 'Validace dokumentu selhala.', 'path' => 'cashDesk', 'reported' => true],
+                ];
+            }
             $importMode = self::isImportMode($canonical);
             $numberSeriesId = $cashDeskId !== null
                 ? $this->resolveBoundNumberSeries($docTypeCode, $cashDeskId, $importMode)
@@ -2269,10 +2418,13 @@ class DocumentApplier
         $recapSource = $this->resolveRecapSource($canonical, $plan['rowSkips'] ?? [], $mode);
         $calcSource = self::VAT_CALC_SOURCE_MAP[(string) ($canonical['vat']['calcSource'] ?? 'header')] ?? 0;
         $csMode = self::CS_MODE_MAP[(string) ($canonical['vat']['controlStatementMode'] ?? 'auto')] ?? 0;
-        // Pokladní doklad bez způsobu úhrady = Hotovost (ostatní Převodem).
-        $defaultPaymentMethod = $isCashDeskBound ? 'cash' : 'bankTransfer';
-        $paymentMethod = self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? $defaultPaymentMethod)]
-            ?? self::PAYMENT_METHOD_MAP[$defaultPaymentMethod];
+        // Způsob úhrady z payloadu. Pokyn ho bez hodnoty dostal mezi
+        // výchozími hodnotami ({@see applyInstructionDefaults()}); když tu
+        // chybí, je záměrně prázdný a platí výchozí hodnota sloupce. Návrh
+        // se ptá téhož pravidla jako formulář: doklad pokladny Hotově,
+        // ostatní Převodem.
+        $paymentMethod = self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')]
+            ?? ($mode->derives() ? $this->headDefaults()->paymentMethod($docType) : null);
 
         // AI extractors sometimes omit accountingDate even when issueDate
         // is present. DocDocument::beforeSave (applyDateDefaults) would
@@ -2724,7 +2876,7 @@ class DocumentApplier
             // ten, který to říká (`vat.mode` none) — kódy řádků se na něj
             // nepropisují, stejně jako je nenabízí formulář (U3).
             $ctx['withoutVat'] = ($vat['mode'] ?? null) === 'none';
-            $own = $this->instructionVatRegistration($canonical, $ctx['withoutVat']);
+            $own = $this->instructionVatRegistration($canonical);
             if ($own !== null) {
                 $ctx['ownCountry'] = $own['country'];
                 $ctx['ownRegistrationId'] = $own['id'];
@@ -2933,26 +3085,24 @@ class DocumentApplier
 
     /**
      * Registrace DPH dokladu v pokynu (#166 D20, D36): reference
-     * `vat.registration` ({@see vatRegistrationReference()}); bez ní výchozí
-     * registrace zdroje dat jako ve formuláři (první podle `country`, `id`),
-     * jen u dokladu s DPH. Mimo importní mód musí platit k datu dokladu
-     * ({@see registrationDate()}), import platnost nezkoumá (D22). Null =
-     * doklad registraci nedostane; u dokladu s DPH to při potvrzení zastaví
-     * validace dokladu.
+     * `vat.registration` ({@see vatRegistrationReference()}). Výchozí
+     * registraci zdroje dat (první podle `country`, `id`, mimo importní mód
+     * platná k datu dokladu, jen u dokladu s DPH) pokyn dostává mezi
+     * výchozími hodnotami jako referenci ({@see applyInstructionDefaults()},
+     * společné pravidlo `DocHeadDefaults`) — vlastní kopii pravidla tu
+     * applier nemá. Null = doklad registraci nedostane (pole je záměrně
+     * prázdné, nebo zdroj dat k datu registraci nemá); u dokladu s DPH to
+     * při potvrzení zastaví validace dokladu.
      *
      * @param array<string, mixed> $canonical
      * @return array{id: int, country: string}|null
      */
-    private function instructionVatRegistration(array $canonical, bool $withoutVat): ?array
+    private function instructionVatRegistration(array $canonical): ?array
     {
         $reference = $this->vatRegistrationReference($canonical);
-        if ($reference !== null) {
-            return $reference['id'] !== null ? ['id' => $reference['id'], 'country' => (string) $reference['country']] : null;
-        }
-        if ($withoutVat) {
-            return null;
-        }
-        return $this->ownVatRegistration(self::isImportMode($canonical) ? null : $this->registrationDate($canonical));
+        return $reference !== null && $reference['id'] !== null
+            ? ['id' => $reference['id'], 'country' => (string) $reference['country']]
+            : null;
     }
 
     /**
@@ -3444,44 +3594,18 @@ class DocumentApplier
     }
 
     /**
-     * Naše registrace DPH pro přijatý doklad (D2): první aktivní podle
-     * `country`, `id` — stejné pořadí jako výchozí hodnota formuláře
-     * (`DocsHeadsFormBase::resolveVatRegistrationOptions()`).
-     *
-     * S datem se bere jen registrace k němu platná (`valid_from` /
-     * `valid_to`, null = neomezeno) — plátcovství je registrace k datu
-     * (docs/ds-setup.md D5, #97 D2). Null pak znamená, že zdroj k datu
-     * plátcem nebyl. Bez data (import) platnost nerozhoduje.
+     * Naše registrace DPH pro přijatý doklad v návrhu (D2): první aktivní
+     * podle `country`, `id`, s datem jen registrace k němu platná — pravidlo
+     * drží `DocHeadDefaults::vatRegistration()`, stejné pro formulář, pokyn
+     * i návrh. Null s datem znamená, že zdroj k datu plátcem nebyl
+     * (docs/ds-setup.md D5, #97 D2).
      *
      * @param string|null $date `YYYY-MM-DD`, null = bez ohledu na platnost
      * @return array{id: int, country: string}|null
      */
     private function ownVatRegistration(?string $date): ?array
     {
-        $row = $date === null
-            ? $this->db->fetch(
-                'SELECT [id], [country] FROM [economy_codebooks_vat_registrations]
-                 WHERE [docState] IN (%i, %i, %i)
-                 ORDER BY [country], [id] LIMIT 1',
-                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-            )
-            : $this->db->fetch(
-                'SELECT [id], [country] FROM [economy_codebooks_vat_registrations]
-                 WHERE [docState] IN (%i, %i, %i)
-                   AND ([valid_from] IS NULL OR [valid_from] <= %s)
-                   AND ([valid_to] IS NULL OR [valid_to] >= %s)
-                 ORDER BY [country], [id] LIMIT 1',
-                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-                $date, $date,
-            );
-        if ($row === null || !isset($row['id']) || !isset($row['country'])) {
-            return null;
-        }
-        $country = strtolower(trim((string) $row['country']));
-        if ($country === '') {
-            return null;
-        }
-        return ['id' => (int) $row['id'], 'country' => $country];
+        return $this->headDefaults()->vatRegistration($date);
     }
 
     /**
@@ -5253,6 +5377,8 @@ class DocumentApplier
             // Pokyn (#166 D20): režim je záměr — bez volby uživatele, bez
             // korekce ze součtů a bez přepnutí kvůli samovyměření.
             ['mode' => $value, 'source' => $source] = $this->documentVatMode($canonical, $vatCtx['mode']);
+            // Režim doplněný výchozí hodnotou není hodnota z payloadu.
+            $source = $this->isDefaulted('vat.mode') ? 'default' : $source;
             return ['value' => $value, 'source' => $source, 'reason' => null, 'pinned' => false, 'auto' => $value];
         }
         if ($vatCtx['nonPayer']) {
@@ -5500,9 +5626,12 @@ class DocumentApplier
             return $explicit;
         }
         if (!$mode->derives()) {
-            // Pokyn (#166 U4, D26): automatika nezávisí na `totals` — bez
-            // výslovné hodnoty je zapnutá všude, kde platí.
-            return true;
+            // Pokyn (#166 U4, D26, D50): automatika nezávisí na `totals`.
+            // Chybějící klíč = výchozí hodnota jako ve formuláři (zapnutá
+            // u typu s automatikou, `DocHeadDefaults`); výslovné `null` =
+            // záměrně bez automatiky.
+            return !(is_array($totals) && array_key_exists('totalRoundingAuto', $totals))
+                && $this->headDefaults()->totalRoundingAuto($docType);
         }
         return !is_array($totals) || !isset($totals['totalAmount']) || !is_numeric($totals['totalAmount']);
     }
@@ -5969,8 +6098,7 @@ class DocumentApplier
     /** Má typ dokladu řadu vázanou na pokladnu (`docTypes[].series_binding = cash_desk`)? */
     private function isCashDeskBoundDocType(string $docType): bool
     {
-        $cfg = $this->config->cfgItem('docs.core.docTypes');
-        return is_array($cfg) && (($cfg[$docType]['series_binding'] ?? null) === 'cash_desk');
+        return DocTypes::isCashDeskBound($this->config, $docType);
     }
 
     /** Archivovaná entita (V archívu) — pokladna s historickými doklady (#59 Task E). */
@@ -6210,7 +6338,12 @@ class DocumentApplier
      */
     private function withResolveIssues(array $canonical, array $issues): array
     {
+        // Pokyn odpovídá payloadem, jak přišel — doplněná pole nese `defaults`.
+        $canonical = $this->instructionPayload ?? $canonical;
         $resolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
+        if ($this->appliedDefaults !== null) {
+            $resolve['defaults'] = $this->appliedDefaults;
+        }
         $resolve['issues'] = array_merge(
             is_array($resolve['issues'] ?? null) ? $resolve['issues'] : [],
             $issues,
@@ -6286,7 +6419,14 @@ class DocumentApplier
      */
     private function withResolve(array $canonical, array $resolved, array $issues): array
     {
+        // Pokyn odpovídá payloadem, jak přišel (#166 D44) — applier pracoval
+        // s kopií doplněnou o výchozí hodnoty; která pole doplnil, říká
+        // `_resolve.defaults` (cesta a hodnota). Návrh klíč nenese.
+        $canonical = $this->instructionPayload ?? $canonical;
         $resolve = $resolved + ['issues' => $issues];
+        if ($this->appliedDefaults !== null) {
+            $resolve['defaults'] = $this->appliedDefaults;
+        }
         $resolve['summary'] = $this->buildSummary($resolved, $issues);
         // Per-row enrichment audit (RowHistoryEnricher) is not part of the
         // fresh resolve — carry it over from the incoming _resolve by index,

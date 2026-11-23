@@ -55,8 +55,15 @@ final class DocumentValidator
         // applier, např. kontrola sady před seedem, posílá tvar ze souboru).
         $canonical = CanonicalReferences::expand($canonical);
 
-        $this->checkCommonRequired($canonical, $issues);
-        $this->checkPerDocType($canonical, $issues);
+        // Povinnost polí hlídá validátor jen v návrhu (#166 D45, U7). Pokyn
+        // vyžaduje jen obálku a `docType` (schéma): co payload neuvádí, má
+        // výchozí hodnotu jako ve formuláři, a co chybí i potom, ohlásí
+        // `DocDocument::validate()` pro cílový stav — jeden nález na pole.
+        // Výjimka je pokladna vázaného typu, viz checkPerDocType().
+        if ($mode->derives()) {
+            $this->checkCommonRequired($canonical, $issues);
+        }
+        $this->checkPerDocType($canonical, $mode, $issues);
         $this->checkHeadPartner($canonical, $mode, $issues);
         if ($mode->derives()) {
             $this->checkTotalsCoherence($canonical, $issues);
@@ -295,9 +302,23 @@ final class DocumentValidator
     /**
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function checkPerDocType(array $canonical, array &$issues): void
+    private function checkPerDocType(array $canonical, ApplyMode $mode, array &$issues): void
     {
         $docType = (string) ($canonical['docType'] ?? '');
+        if (!$mode->derives()) {
+            // Pokyn: strany validátor nevyžaduje (U7) — hlídá je doklad pro
+            // cílový stav. Zůstává, co výchozí hodnotu mít nemůže: pokladna
+            // dokladu vázaného na pokladnu (řada se nikdy nevybírá potichu,
+            // bez ní doklad nemá kam vzniknout) a směr pokladního dokladu
+            // (neplatnou hodnotu by doklad uložil jako „bez směru“).
+            if (in_array($docType, ['cashDocument', 'cashRegisterDocument'], true)) {
+                $this->checkCashDesk($canonical, $issues);
+            }
+            if ($docType === 'cashDocument') {
+                $this->checkCashDirection($canonical, $issues);
+            }
+            return;
+        }
         switch ($docType) {
             case 'invoiceReceived':
                 if (empty($canonical['supplier'])) {
@@ -328,15 +349,7 @@ final class DocumentValidator
             // Strany (supplier/customer) jsou nepovinné — anonymní doklady.
             case 'cashDocument':
                 $this->checkCashDesk($canonical, $issues);
-                $direction = $canonical['cashDirection'] ?? null;
-                if (!in_array($direction, [1, 2], true)) {
-                    $issues[] = [
-                        'severity' => 'error',
-                        'path'     => 'cashDirection',
-                        'code'     => 'invalid_value',
-                        'message'  => 'Směr pokladního dokladu musí být 1 (příjem) nebo 2 (výdej).',
-                    ];
-                }
+                $this->checkCashDirection($canonical, $issues);
                 break;
             case 'cashRegisterDocument':
                 $this->checkCashDesk($canonical, $issues);
@@ -344,6 +357,21 @@ final class DocumentValidator
             // Other docTypes (creditNote, order, deliveryNote, …) pick up the
             // common checks above; type-specific validation arrives with each
             // module that introduces them.
+        }
+    }
+
+    /**
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkCashDirection(array $canonical, array &$issues): void
+    {
+        if (!in_array($canonical['cashDirection'] ?? null, [1, 2], true)) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => 'cashDirection',
+                'code'     => 'invalid_value',
+                'message'  => 'Směr pokladního dokladu musí být 1 (příjem) nebo 2 (výdej).',
+            ];
         }
     }
 

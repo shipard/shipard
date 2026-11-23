@@ -715,9 +715,12 @@ final class DocumentApplierInstructionTest extends TestCase
 
         $ctx = $this->vatContextOf($this->buildApplier($db), $payload);
 
+        // Výchozí registraci dává společné pravidlo `DocHeadDefaults` (první
+        // dotaz) — pokyn ji dostane jako referenci a applier ji pak dohledá
+        // stejně jako registraci z payloadu.
         $this->assertSame(5, $ctx['ownRegistrationId']);
-        $this->assertStringContainsString('ORDER BY [country], [id]', $queries->list[0][0]);
-        $this->assertStringContainsString('[valid_from]', $queries->list[0][0]);
+        $this->assertStringContainsString('ORDER BY `country`, `id`', $queries->list[0][0]);
+        $this->assertStringContainsString('`valid_from`', $queries->list[0][0]);
     }
 
     /** D22: importní mód platnost registrace k datu nezkoumá. */
@@ -732,8 +735,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $declared = $this->vatContextOf($this->buildApplier($db), $payload);
 
         $this->assertSame([5, 5], [$declared['ownRegistrationId'], $default['ownRegistrationId']]);
-        $this->assertCount(2, $queries->list);
-        $this->assertStringNotContainsString('[valid_from] <=', $queries->list[0][0], 'výchozí registrace bez podmínky platnosti');
+        $this->assertStringNotContainsString('`valid_from` <=', $queries->list[0][0], 'výchozí registrace bez podmínky platnosti');
     }
 
     /** D22: `importNumber` v režimu návrh je chyba validace — nic se neuloží ani nenahlédne jako import. */
@@ -837,6 +839,10 @@ final class DocumentApplierInstructionTest extends TestCase
     /** @return array<string, mixed> */
     private function vatContextOf(DocumentApplier $applier, array $payload): array
     {
+        // Jako náhled a uložení: kontext se počítá nad payloadem doplněným
+        // o výchozí hodnoty pokynu.
+        $payload = (new \ReflectionMethod($applier, 'applyInstructionDefaults'))
+            ->invoke($applier, $payload, ApplyMode::Instruction);
         return (new \ReflectionMethod($applier, 'vatContext'))->invoke($applier, $payload, ApplyMode::Instruction);
     }
 }

@@ -61,7 +61,7 @@ final class DocHeadVatContext
      * Tentýž kontext z dat hlavičky, která ještě není uložená (#166 U3) —
      * pokyn výměnného formátu doplňuje výchozí hodnoty řádků dřív, než doklad
      * vznikne. `$head` nese sloupce `docs_core_heads`; zemi registrace DPH
-     * dohledá podle `vat_registration`.
+     * dohledá podle `vat_registration`, pokud ji volající nezná (`$country`).
      *
      * @param array<string, mixed> $head
      * @return array{doc_type: string, cash_dir: int, vat_place: int,
@@ -71,7 +71,7 @@ final class DocHeadVatContext
      *     doc_currency: string, home_currency: string, exchange_rate: float,
      *     country: ?string, direction: ?string, place: string}
      */
-    public static function fromHead(array $head, ?DataSourceConnection $db, ?ConfigRuntime $config): array
+    public static function fromHead(array $head, ?DataSourceConnection $db, ?ConfigRuntime $config, ?string $country = null): array
     {
         $context = [
             'doc_type'      => (string) ($head['doc_type'] ?? ''),
@@ -90,12 +90,12 @@ final class DocHeadVatContext
             'doc_currency'  => (string) ($head['doc_currency'] ?? ''),
             'home_currency' => (string) ($head['home_currency'] ?? ''),
             'exchange_rate' => (float) ($head['exchange_rate'] ?? 1.0),
-            'country'       => null,
+            'country'       => $country !== null && $country !== '' ? $country : null,
             'direction'     => null,
             'place'         => 'domestic',
         ];
 
-        if (!empty($head['vat_registration']) && $db !== null) {
+        if ($context['country'] === null && !empty($head['vat_registration']) && $db !== null) {
             $reg = $db->fetchRow(
                 'SELECT `country` FROM `economy_codebooks_vat_registrations` WHERE `id` = %i',
                 (int) $head['vat_registration'],

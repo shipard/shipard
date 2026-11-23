@@ -409,7 +409,9 @@ class DatasetPreflightTest extends TestCase
     {
         $set = $this->writeSet(static function (DatasetWriter $w): void {
             $doc = self::doc();
-            unset($doc['dates']); // DocumentValidator: issueDate required
+            // DocumentValidator: pole partner faktura nenese (partner_not_supported).
+            // Povinná pole pokyn nehlídá (#166 D45) — chybějící datum by prošlo.
+            $doc['partner'] = '@F00001';
             $w->writeJsonc('docs/0001-koncept-invni.jsonc', $doc);
         });
 

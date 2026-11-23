@@ -37,6 +37,7 @@ trait DefaultsFixtures
      * @param array<string, mixed>|null $registration řádek výchozí registrace DPH
      * @param array<int, array<string, mixed>> $items id položky → řádek `economy_items`
      * @param array<string, mixed>|null $cashDesk řádek pokladny (z `cash_desk` i z řady)
+     * @param array<int, ?string> $units id jednotky → systémový kód
      */
     protected function db(
         array $settings = [],
@@ -44,6 +45,7 @@ trait DefaultsFixtures
         ?int $bankAccount = 3,
         array $items = [],
         ?array $cashDesk = null,
+        array $units = [],
     ): DataSourceConnection {
         $this->queries = [];
         $db = $this->createMock(DataSourceConnection::class);
@@ -53,13 +55,16 @@ trait DefaultsFixtures
                 : null,
         );
         $db->method('fetchRow')->willReturnCallback(
-            function (string $sql, mixed ...$params) use ($registration, $bankAccount, $items, $cashDesk): ?array {
+            function (string $sql, mixed ...$params) use ($registration, $bankAccount, $items, $cashDesk, $units): ?array {
                 $this->queries[] = ['sql' => $sql, 'params' => $params];
                 return match (true) {
                     str_contains($sql, 'economy_codebooks_cash_desks')        => $cashDesk,
                     str_contains($sql, 'economy_codebooks_vat_registrations') => $registration,
                     str_contains($sql, 'economy_codebooks_bank_accounts')     => $bankAccount !== null ? ['id' => $bankAccount] : null,
                     str_contains($sql, 'economy_items')                       => $items[(int) ($params[0] ?? 0)] ?? null,
+                    str_contains($sql, 'core_units')                          => array_key_exists((int) ($params[0] ?? 0), $units)
+                        ? ['system_code' => $units[(int) $params[0]]]
+                        : null,
                     default                                                   => null,
                 };
             },
