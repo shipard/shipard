@@ -140,7 +140,7 @@ final class PayloadContext
      * `vat.registration` ({@see vatRegistrationReference()}). Výchozí
      * registraci zdroje dat (první podle `country`, `id`, mimo importní mód
      * platná k datu dokladu, jen u dokladu s DPH) pokyn dostává mezi
-     * výchozími hodnotami jako referenci ({@see applyInstructionDefaults()},
+     * výchozími hodnotami jako referenci ({@see DocumentApplier::applyInstructionDefaults()},
      * společné pravidlo `DocHeadDefaults`) — vlastní kopii pravidla tu
      * applier nemá. Null = doklad registraci nedostane (pole je záměrně
      * prázdné, nebo zdroj dat k datu registraci nemá); u dokladu s DPH to
@@ -243,11 +243,11 @@ final class PayloadContext
      * Hlavička dokladu ve tvaru, který čte {@see VatRateDates} — applier
      * datum sazby nepočítá vlastním kódem (U2). DUZP a DPPD jen u daňového
      * typu a příznak s datem opravy z {@see correctionColumns()}, tedy tytéž
-     * hodnoty, které do dokladu pošle {@see transform()}.
+     * hodnoty, které do dokladu pošle {@see DocumentApplier::transform()}.
      *
      * `vat_mode` rozhoduje jen o tom, zda přepínač platí (doklad bez DPH má
      * vždy automatiku): volba uživatele, jinak režim dokladu
-     * ({@see documentVatMode()}). Konečný režim ({@see effectiveVatMode()})
+     * ({@see Interpret\VatInterpretation::documentVatMode()}). Konečný režim ({@see Interpret\VatInterpretation::effectiveVatMode()})
      * závisí na rozhodnutích o kódech řádků a ta na datu sazby — proto odhad.
      * Rozejde se jen u dokladu „Bez DPH“, který ochrana samovyměření přepne
      * na výpočet zdola a který zároveň nese vlastní data sazby: applier tam
@@ -831,5 +831,49 @@ final class PayloadContext
         $ctx['rateDate'] = VatRateDates::headDate($ctx['rateHead'], $this->config);
         $this->vatContextCache = ['key' => $key, 'ctx' => $ctx];
         return $ctx;
+    }
+
+    /**
+     * D5: neznámé `vat.mode` → warning místo tichého fallbacku (doklad dál
+     * padá na fromBase). Schéma má pole jako enum, takže sem takový payload
+     * dojde jen mimo schema validaci — pojistka, ne hlavní cesta.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array{severity: string, path: string, code: string, message: string}|null
+     */
+    public static function unknownVatModeIssue(array $canonical): ?array
+    {
+        $mode = is_array($canonical['vat'] ?? null) ? ($canonical['vat']['mode'] ?? null) : null;
+        if ($mode === null || (is_string($mode) && isset(DocumentApplier::VAT_MODE_MAP[$mode]))) {
+            return null;
+        }
+        $label = is_scalar($mode) ? (string) $mode : (string) json_encode($mode);
+        return [
+            'severity' => 'warning',
+            'path'     => 'vat.mode',
+            'code'     => 'vat_mode_unknown',
+            'message'  => "Neznámý režim výpočtu DPH „{$label}“ — použije se výpočet zdola (fromBase).",
+        ];
+    }
+
+    /**
+     * D5: neznámé `vat.place` → warning, použije se tuzemsko.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array{severity: string, path: string, code: string, message: string}|null
+     */
+    public static function unknownVatPlaceIssue(array $canonical): ?array
+    {
+        $place = is_array($canonical['vat'] ?? null) ? ($canonical['vat']['place'] ?? null) : null;
+        if ($place === null || (is_string($place) && isset(DocumentApplier::VAT_PLACE_MAP[$place]))) {
+            return null;
+        }
+        $label = is_scalar($place) ? (string) $place : (string) json_encode($place);
+        return [
+            'severity' => 'warning',
+            'path'     => 'vat.place',
+            'code'     => 'vat_place_unknown',
+            'message'  => "Neznámé místo plnění „{$label}“ — použije se tuzemsko.",
+        ];
     }
 }
