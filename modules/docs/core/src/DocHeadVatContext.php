@@ -54,7 +54,25 @@ final class DocHeadVatContext
         if ($head === null) {
             return null;
         }
+        return self::fromHead($head, $db, $config);
+    }
 
+    /**
+     * Tentýž kontext z dat hlavičky, která ještě není uložená (#166 U3) —
+     * pokyn výměnného formátu doplňuje výchozí hodnoty řádků dřív, než doklad
+     * vznikne. `$head` nese sloupce `docs_core_heads`; zemi registrace DPH
+     * dohledá podle `vat_registration`.
+     *
+     * @param array<string, mixed> $head
+     * @return array{doc_type: string, cash_dir: int, vat_place: int,
+     *     vat_duzp: mixed, vat_dppd: mixed, issue_date: mixed, corrective: mixed,
+     *     corrected_doc_date: mixed, vat_rate_source: int, vat_rate_date: ?string,
+     *     effective_rate_date: ?string, automatic_rate_date: ?string, vat_mode: int,
+     *     doc_currency: string, home_currency: string, exchange_rate: float,
+     *     country: ?string, direction: ?string, place: string}
+     */
+    public static function fromHead(array $head, ?DataSourceConnection $db, ?ConfigRuntime $config): array
+    {
         $context = [
             'doc_type'      => (string) ($head['doc_type'] ?? ''),
             'cash_dir'      => (int) ($head['cash_dir'] ?? 0),
@@ -77,7 +95,7 @@ final class DocHeadVatContext
             'place'         => 'domestic',
         ];
 
-        if (!empty($head['vat_registration'])) {
+        if (!empty($head['vat_registration']) && $db !== null) {
             $reg = $db->fetchRow(
                 'SELECT `country` FROM `economy_codebooks_vat_registrations` WHERE `id` = %i',
                 (int) $head['vat_registration'],

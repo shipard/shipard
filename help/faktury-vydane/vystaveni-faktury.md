@@ -53,7 +53,7 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    faktury předvybrané; zkontroluj je, jen když máš registrací nebo účtů víc:
 
    - **Registrace DPH** je u faktury s daní povinná; předvybraná je první
-     z tvých registrací. Bez ní nepůjde na řádku zvolit **Kód DPH** a doklad
+     z tvých registrací platných k datu vystavení. Bez ní nepůjde na řádku zvolit **Kód DPH** a doklad
      nepůjde dát do **V pořádku**.
    - **Náš bankovní účet** je u vydané faktury povinný — je to účet, na který
      má odběratel zaplatit. Předvybraný je účet označený v Nastavení jako
@@ -80,7 +80,9 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
 4. **Zadej řádky.** Tab **Řádky** → **Přidat**. Na řádku vyplň:
 
    - **Pohyb** — *Prodej služeb* (předvolený) nebo *Prodej zboží*. Určuje,
-     jak se řádek zaúčtuje.
+     jak se řádek zaúčtuje. Po výběru položky se přepne podle jejího typu:
+     u *Zásoby* na *Prodej zboží*, u *Účetní položky* na *Účetní položka*.
+     Pohyb, který sis vybral jinak (třeba odpočet zálohy), zůstane.
    - **Položka** z katalogu — vytáhne popis, jednotku a prodejní cenu.
      Chybějící položku založíš přímo z řádku, viz
      [Založení položky](../polozky/zalozeni-polozky.md).

@@ -15,8 +15,10 @@ use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 
 /**
  * Select pohybu v řádkovém sub-formu: options filtrované podle doc_type
- * hlavičky, řazené dle order, default = nejnižší order, skryté pro
- * textové řádky.
+ * hlavičky, řazené dle order, skryté pro textové řádky. Výchozí pohyb dává
+ * `DocRowDefaults` — nejnižší order, u řádku s položkou mapa
+ * `applyRowOperations` podle typu položky; výběr položky přenastaví jen
+ * automatický pohyb (#166 U3).
  */
 class DocRowsFormOperationsTest extends TestCase
 {
@@ -167,6 +169,39 @@ class DocRowsFormOperationsTest extends TestCase
         return $form;
     }
 
+    /**
+     * Form s mapou výchozích pohybů (`docs.core.applyRowOperations`) a kartami
+     * položek: 1 služba s cenou a jednotkou, 2 zásoba bez ceny.
+     */
+    private function formWithOperationMap(string $docType): DocRowsForm
+    {
+        $items = $this->configItems();
+        $items['docs.core.applyRowOperations'] = [
+            'invno' => ['byItemType' => ['0' => 'sale.services', '1' => 'sale.goods'], 'default' => 'sale.services'],
+            'invni' => ['byItemType' => ['1' => 'purchase.goods'], 'default' => 'acc.entry'],
+        ];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(
+            static function (string $sql, mixed ...$params) use ($docType): ?array {
+                if (str_contains($sql, 'economy_items')) {
+                    return [
+                        1 => ['name' => 'Správa IT', 'sales_price_no_vat' => 5000.0, 'unit' => 8, 'item_type' => 0],
+                        2 => ['name' => 'Kabel', 'sales_price_no_vat' => null, 'unit' => null, 'item_type' => 1],
+                    ][(int) ($params[0] ?? 0)] ?? null;
+                }
+                return [
+                    'doc_type' => $docType, 'cash_dir' => 0, 'vat_place' => 0, 'vat_duzp' => null,
+                    'vat_mode' => 1, 'vat_registration' => null,
+                ];
+            },
+        );
+        $db->method('fetchAll')->willReturn([]);
+        $form = new DocRowsForm('docs_core_rows');
+        $form->setConfig(ConfigRuntimeFactory::fromItems($items));
+        $form->setDb($db);
+        return $form;
+    }
+
     private function findElement(FormDefinition $def, string $column): ?FormElement
     {
         foreach ($def->tabs[0]->sections as $section) {
@@ -212,6 +247,76 @@ class DocRowsFormOperationsTest extends TestCase
         $this->form('invno')->applyNewRecordDefaults($data);
 
         $this->assertSame('sale.services', $data['operation']);
+    }
+
+    /**
+     * Výchozí pohyb je jedno pravidlo pro formulář i pokyn (#166 U3). Nový
+     * řádek položku ještě nemá → první pohyb nabídky, ne výchozí pohyb mapy
+     * (*Účetní položka* přijaté faktury bez položky nejde potvrdit).
+     */
+    public function testNewRowWithoutItemKeepsFirstOfferedOperation(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5];
+        $this->formWithOperationMap('invni')->applyNewRecordDefaults($data);
+
+        $this->assertSame('purchase.goods', $data['operation']);
+    }
+
+    /** Nový řádek s prefillnutou položkou bere pohyb podle jejího typu. */
+    public function testNewRowWithItemTakesOperationByItemType(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'item' => 2];
+        $this->formWithOperationMap('invno')->applyNewRecordDefaults($data);
+
+        $this->assertSame('sale.goods', $data['operation']);
+        $this->assertSame('Kabel', $data['description']);
+    }
+
+    /** Položka = řádek (#166 D42): text, cena a jednotka z karty se přepisují vždy. */
+    public function testItemSelectionOverwritesTextPriceAndUnit(): void
+    {
+        $data = [
+            'row_kind' => 1, 'doc_head' => 5, 'item' => 1, 'operation' => 'sale.services',
+            'description' => 'starý text', 'unit_price' => 1, 'unit' => 3, 'quantity' => 2,
+        ];
+        $result = $this->formWithOperationMap('invno')->recalculate('item', $data);
+
+        $this->assertSame('Správa IT', $result->data['description']);
+        $this->assertSame(5000.0, $result->data['unit_price']);
+        $this->assertSame(8, $result->data['unit']);
+        $this->assertSame(2, $result->data['quantity'], 'množství se výběrem položky nemění');
+    }
+
+    /** Položka bez ceny a jednotky nechá cenu a jednotku řádku být. */
+    public function testItemWithoutPriceKeepsRowPriceAndUnit(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'item' => 2, 'operation' => 'sale.goods', 'unit_price' => 120.0, 'unit' => 3];
+        $result = $this->formWithOperationMap('invno')->recalculate('item', $data);
+
+        $this->assertSame('Kabel', $result->data['description']);
+        $this->assertSame(120.0, $result->data['unit_price']);
+        $this->assertSame(3, $result->data['unit']);
+    }
+
+    /** Výběr položky přenastaví automatický pohyb podle typu položky. */
+    public function testItemSelectionResetsAutomaticOperationByItemType(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'item' => 2, 'operation' => 'sale.services'];
+        $result = $this->formWithOperationMap('invno')->recalculate('item', $data);
+        $this->assertSame('sale.goods', $result->data['operation'], 'zásoba → prodej zboží');
+
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'item' => 2, 'operation' => 'acc.entry'];
+        $result = $this->formWithOperationMap('invni')->recalculate('item', $data);
+        $this->assertSame('purchase.goods', $result->data['operation'], 'výchozí pohyb mapy je automatický');
+    }
+
+    /** Ručně zvolený zvláštní pohyb výběr položky nepřepíše. */
+    public function testItemSelectionKeepsManuallyChosenOperation(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'item' => 2, 'operation' => 'sale.advanceDeduction'];
+        $result = $this->formWithOperationMap('invno')->recalculate('item', $data);
+
+        $this->assertSame('sale.advanceDeduction', $result->data['operation']);
     }
 
     public function testNewRowDefaultKeepsExplicitPrefill(): void

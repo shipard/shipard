@@ -51,6 +51,16 @@
     //                NumberSeriesProvisioner vázané typy přeskakuje. Hodnota
     //                FK se při uložení dokladu denormalizuje z řady do
     //                hlavičky (docs_core_heads.cash_desk). Chybí = nevázaný typ.
+    //                Typ vázaný na pokladnu má výchozí úhradu Hotově a měnu
+    //                pokladny (DocTypes::isCashDeskBound(), #166 D41).
+    //   vat:         false = typ bez DPH (#166 U1: cmnbkp) — nový doklad má
+    //                režim „Bez DPH“ a registraci DPH nedostává. Chybí = typ
+    //                s DPH, režim nového dokladu řídí agenda DPH zdroje dat.
+    //                Jediná autorita čtení: DocTypes::hasVat().
+    //   own_bank_account: false = doklad vlastní bankovní účet nenese (#166
+    //                U1: cmnbkp, cash, cashreg) — výchozí účet zdroje dat se
+    //                nedoplňuje. Chybí = typ s vlastním účtem. Jediná autorita
+    //                čtení: DocTypes::usesOwnBankAccount().
     //   doc_number_pattern_default: vzorec, který provisioner použije při
     //                               vytvoření default číselné řady
     //   subclass:    plný název Document třídy v navazujícím modulu
@@ -139,6 +149,8 @@
         "shortcut:en": "AD",
         "doc_id_code": "60",
         "trade_dir": 0,
+        "vat": false,
+        "own_bank_account": false,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\AccountingDocs\\AccountingDocument"
     },
@@ -161,6 +173,7 @@
         "trade_dir_column": "cash_dir",
         "series_binding": "cash_desk",
         "total_rounding_auto": true,
+        "own_bank_account": false,
         "doc_number_pattern_default": "%D%C%y%5",
         "subclass": "Shipard\\Module\\Docs\\CashDocs\\CashDocument"
     },
@@ -180,6 +193,7 @@
         "trade_dir": 1,
         "series_binding": "cash_desk",
         "total_rounding_auto": true,
+        "own_bank_account": false,
         "doc_number_pattern_default": "%D%C%y%5",
         "subclass": "Shipard\\Module\\Docs\\CashRegister\\CashRegisterDocument"
     }

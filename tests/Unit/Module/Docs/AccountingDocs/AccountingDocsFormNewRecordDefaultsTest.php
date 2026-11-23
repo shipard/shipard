@@ -5,16 +5,32 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Docs\AccountingDocs;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Docs\AccountingDocs\AccountingDocsForm;
 
 /**
- * Účetní doklad (cmnbkp) je bez DPH a bez bankovního účtu: hook nastaví
- * vat_mode = 0 před base hookem, takže registrace DPH se neuplatní, a
- * bankovní účet se nedotazuje (issue #60).
+ * Účetní doklad (cmnbkp) je bez DPH a bez bankovního účtu: říkají to
+ * atributy typu `vat: false` a `own_bank_account: false` (#166 U1), ne
+ * podtřída formuláře — registrace DPH se neuplatní a bankovní účet se
+ * nedotazuje (issue #60).
  */
 class AccountingDocsFormNewRecordDefaultsTest extends TestCase
 {
+    /** Skutečné `docs.core.docTypes` — atributy typu jsou to, co se testuje. */
+    private function config(): ConfigRuntime
+    {
+        $docTypes = JsoncParser::parseFile(
+            dirname(__DIR__, 5) . '/modules/docs/core/config/docTypes.jsonc',
+        );
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'docs.core.docTypes' ? $docTypes : null,
+        );
+        return $config;
+    }
+
     public function testHookForcesNoVatAndSkipsRegistrationAndBankAccount(): void
     {
         $queries = [];
@@ -32,6 +48,7 @@ class AccountingDocsFormNewRecordDefaultsTest extends TestCase
             },
         );
         $form = new AccountingDocsForm('docs_core_heads');
+        $form->setConfig($this->config());
         $form->setDb($db);
 
         // schéma defaulty, jak je vloží FormController
@@ -50,9 +67,10 @@ class AccountingDocsFormNewRecordDefaultsTest extends TestCase
 
     public function testFormRendersNoVatNorBankAccountFields(): void
     {
-        // Důvod pro newRecordUsesBankAccount() = false: hlavička účetního
+        // Důvod atributu `own_bank_account: false`: hlavička účetního
         // dokladu žádné DPH ani bankovní pole nemá, default by šel do ničeho.
         $form = new AccountingDocsForm('docs_core_heads');
+        $form->setConfig($this->config());
         $def = $form->buildFormDefinition(['doc_type' => 'cmnbkp', 'vat_mode' => 1], true);
 
         $columns = [];

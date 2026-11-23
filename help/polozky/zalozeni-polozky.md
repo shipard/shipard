@@ -70,6 +70,9 @@ nezobrazí — a je to tak správně. **U běžné faktury účet neurčuje
 položka, ale Pohyb řádku** (*Nákup zboží a materiálu*, *Nákup služeb*,
 *Ostatní nákup*, u vydaných *Prodej služeb*, *Prodej zboží*). Účet
 z položky se použije jedině u řádku s pohybem **Účetní položka**.
+Pohyb se na řádku předvolí podle **typu položky**, kterou vybereš —
+*Služba* dá nákup nebo prodej služeb, *Zásoba* zboží, *Účetní položka*
+pohyb *Účetní položka*; změnit ho můžeš.
 
 **Kód nevyplňuj, pokud nemusíš.** Necháš-li ho prázdný, Shipard
 vygeneruje vlastní. Zadaný kód musí být v katalogu jedinečný; kód se

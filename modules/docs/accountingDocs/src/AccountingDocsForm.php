@@ -11,7 +11,9 @@ use Shipard\Module\Docs\Core\DocsHeadsFormBase;
 /**
  * Editační formulář pro Účetní doklady (FÚD) — `doc_type = 'cmnbkp'`.
  *
- * Lehčí než faktura: bez DPH (`vat_mode = 0`), partner nepovinný (hlavní
+ * Lehčí než faktura: bez DPH (`vat_mode = 0` — atribut typu `vat: false`,
+ * výchozí hodnotu dává `DocHeadDefaults`), bez vlastního bankovního účtu
+ * (`own_bank_account: false`), partner nepovinný (hlavní
  * osoba dokladu; saldo identita ale žije per řádek), bez polí měny /
  * zaokrouhlení / DPH. Řádky kontace řeší sdílený `DocRowsForm` (větev
  * `rowAccount`).
@@ -56,35 +58,6 @@ class AccountingDocsForm extends DocsHeadsFormBase
             return parent::renderSubtable($tab, $rows, $parentData);
         }
         return $this->renderContationRows($rows);
-    }
-
-    /**
-     * Účetní doklad je bez DPH: `vat_mode = 0` PŘED parent::, aby base
-     * nedosadil registraci DPH. Bankovní účet formulář nemá
-     * (newRecordUsesBankAccount). Záchytná síť při uložení zůstává v
-     * AccountingDocument::validate/beforeSave.
-     */
-    public function applyNewRecordDefaults(array &$data): void
-    {
-        $data['vat_mode'] = 0;
-        parent::applyNewRecordDefaults($data);
-    }
-
-    protected function newRecordUsesBankAccount(): bool
-    {
-        return false;
-    }
-
-    /**
-     * Jen renderování (skrytí sekce DPH) — běží i při recalculate, kde hook
-     * neběží; proto se `vat_mode = 0` s applyNewRecordDefaults duplikuje.
-     */
-    protected function applyClientDefaults(array &$data, bool $isNew): void
-    {
-        parent::applyClientDefaults($data, $isNew);
-        if ($isNew) {
-            $data['vat_mode'] = 0;
-        }
     }
 
     protected function getFormTitle(): string

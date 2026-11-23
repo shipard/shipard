@@ -12,6 +12,7 @@ use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Docs\Core\Defaults\DocRowDefaults;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
@@ -31,6 +32,18 @@ class DocRowsForm extends TableForm
 {
     /** Sloupec karty majetku na řádku (extension economy.assets, vlajka `rowAsset`). */
     private const ASSET_COLUMN = 'asset';
+
+    /** Společná pravidla výchozích hodnot řádku — viz rowDefaults(). */
+    private ?DocRowDefaults $rowDefaults = null;
+
+    /**
+     * Výchozí hodnoty řádku nového dokladu — společné s pokynem výměnného
+     * formátu (#166 D40, D42, D43).
+     */
+    private function rowDefaults(): DocRowDefaults
+    {
+        return $this->rowDefaults ??= new DocRowDefaults($this->db, $this->config);
+    }
 
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
     {
@@ -340,15 +353,22 @@ class DocRowsForm extends TableForm
     }
 
     /**
-     * Defaulty nového řádku z kontextu hlavičky (prefill `defaults[doc_head]`):
-     *  - pohyb = první povolený pro doc_type hlavičky (nejnižší order),
+     * Defaulty nového řádku z kontextu hlavičky (prefill `defaults[doc_head]`)
+     * dává {@see DocRowDefaults} — stejné pravidlo doplní i pokyn výměnného
+     * formátu, když je payload neuvádí (#166 D40):
+     *  - pohyb = první pohyb nabídky typu dokladu (nejnižší order); u řádku
+     *    s položkou podle mapy `docs.core.applyRowOperations` a typu položky
+     *    — tu ale nový řádek většinou ještě nemá, přenastaví ho až výběr
+     *    položky v recalculate,
      *  - Kód DPH = první z nabídky pro zemi registrace / směr / místo plnění
-     *    hlavičky se sazbou k datu sazby (CZ tuzemsko → „Základní") včetně
-     *    dopočtu vat_pct stejnou cestou jako recalculate (issue #60).
+     *    hlavičky se sazbou k datu sazby (CZ tuzemsko → „Základní"), nikdy
+     *    „Mimo DPH“ (#164 U4),
      *  - Množství = 1 (položkový řádek bez množství nemá v módu „z ceny za
      *    jednotku" cenu celkem — po výběru položky tak Cena celkem hned ukáže
-     *    1 × cena) a živý přepočet, aby vat_* byly konzistentní od prvního
-     *    zobrazení (#71).
+     *    1 × cena).
+     * Formulář přidává dopočet vat_pct stejnou cestou jako recalculate
+     * (issue #60) a živý přepočet, aby vat_* byly konzistentní od prvního
+     * zobrazení (#71).
      * Textový řádek nemá nic z toho; kontační řádek (rowSide) nemá DPH blok,
      * default by zapsal hodnotu do skrytého pole. Explicitní prefill vyhrává
      * a prefillnutý pohyb neblokuje ostatní defaulty.
@@ -360,30 +380,20 @@ class DocRowsForm extends TableForm
         }
         $headContext = $this->loadHeadContext($data['doc_head'] ?? null);
 
-        if (empty($data['operation'])) {
-            $options = $this->buildOperationOptions($headContext);
-            if ($options !== []) {
-                $data['operation'] = $options[0]['value'];
-                $this->applyContationRowDefaults($data);
+        // Prázdné pole = nezadáno; společná třída doplňuje jen chybějící klíč.
+        foreach (['operation', 'vat_code', 'quantity'] as $column) {
+            if (array_key_exists($column, $data) && ($data[$column] === null || $data[$column] === '')) {
+                unset($data[$column]);
             }
         }
-
-        $opAttrs = $this->resolveOperationAttrs((string) ($data['operation'] ?? ''));
-        if ($this->hasRowSideLayout($opAttrs)) {
+        $filled = $this->rowDefaults()->apply($data, $headContext);
+        if (in_array('operation', $filled, true)) {
+            $this->applyContationRowDefaults($data);
+        }
+        if ($this->hasRowSideLayout($this->resolveOperationAttrs((string) ($data['operation'] ?? '')))) {
             return;
         }
-        if ($this->headHasVat($headContext) && empty($data['vat_code'])) {
-            // První kód nabídky — nikdy „Mimo DPH“ (#164 U4): je v nabídce
-            // poslední, a kdyby byl jediný, zůstane řádek bez kódu.
-            $vatOptions = $this->buildVatCodeOptions($headContext, $data, includeOutOfScope: false);
-            if ($vatOptions !== []) {
-                $data['vat_code'] = $vatOptions[0]['value'];
-            }
-        }
         $this->deriveVatPct($data, $headContext);
-        if (!isset($data['quantity']) || $data['quantity'] === '') {
-            $data['quantity'] = 1;
-        }
         $this->applyLiveCalculation($data, $headContext);
     }
 
@@ -395,7 +405,7 @@ class DocRowsForm extends TableForm
      */
     private function headHasVat(?array $headContext): bool
     {
-        return $headContext !== null && (int) ($headContext['vat_mode'] ?? 0) !== 0;
+        return DocRowDefaults::headHasVat($headContext);
     }
 
     /**
@@ -586,30 +596,42 @@ class DocRowsForm extends TableForm
             if ((int) ($data['row_kind'] ?? 1) !== 1) {
                 $data['operation'] = null;
             } elseif (empty($data['operation'])) {
-                $options = $this->buildOperationOptions($headContext);
-                if ($options !== []) {
-                    $data['operation'] = $options[0]['value'];
+                $operation = $this->rowDefaults()->operationFor(
+                    $headContext,
+                    $this->rowDefaults()->item($data['item'] ?? null)['item_type'] ?? null,
+                );
+                if ($operation !== null) {
+                    $data['operation'] = $operation;
                 }
             }
         }
 
-        if ($changedColumn === 'item' && !empty($data['item']) && $this->db !== null) {
-            $item = $this->db->fetchRow(
-                'SELECT `name`, `sales_price_no_vat`, `unit` FROM `economy_items` WHERE `id` = %i',
-                (int) $data['item'],
-            );
+        if ($changedColumn === 'item' && !empty($data['item'])) {
+            $item = $this->rowDefaults()->item($data['item']);
             if ($item !== null) {
-                // Položka = řádek: name, sales_price_no_vat a unit z položky se vždy
-                // propisují do řádku. Platí pro výběr z dropdownu, vytvoření nové položky,
-                // i edit existující položky (editTriggers: true na lookup). Uživateláňské
+                // Položka = řádek: název, prodejní cena a jednotka z položky se vždy
+                // propisují do řádku (#166 D42 — pokyn jimi jen doplňuje, co payload
+                // neuvádí). Platí pro výběr z dropdownu, vytvoření nové položky,
+                // i edit existující položky (editTriggers: true na lookup). Uživatelské
                 // úpravy unit_price (sleva) se řeší přes samostatná pole
                 // discount_pct / discount_amount, ne přepisem unit_price.
-                $data['description'] = (string) ($item['name'] ?? '');
-                if (!empty($item['sales_price_no_vat'])) {
-                    $data['unit_price'] = (float) $item['sales_price_no_vat'];
+                $data['description'] = $item['description'];
+                if ($item['unit_price'] !== null) {
+                    $data['unit_price'] = $item['unit_price'];
                 }
-                if (!empty($item['unit'])) {
-                    $data['unit'] = (int) $item['unit'];
+                if ($item['unit'] !== null) {
+                    $data['unit'] = $item['unit'];
+                }
+                // Pohyb podle typu položky — jen když ho uživatel nezvolil sám:
+                // prázdný a automatický pohyb se přenastaví, ručně zvolený
+                // zvláštní pohyb (odpočet zálohy, majetek) zůstává.
+                $current = (string) ($data['operation'] ?? '');
+                if ($this->rowDefaults()->isAutomaticOperation($headContext, $current)) {
+                    $operation = $this->rowDefaults()->operationFor($headContext, $item['item_type']);
+                    if ($operation !== null && $operation !== $current) {
+                        $data['operation'] = $operation;
+                        $this->applyContationRowDefaults($data);
+                    }
                 }
             }
         }
@@ -781,55 +803,17 @@ class DocRowsForm extends TableForm
     }
 
     /**
-     * Options pohybů filtrované podle `doc_type` hlavičky (a u pokladního
-     * dokladu podle `cash_dir` — pohyb s `cashDir` se nabízí jen pro shodný
-     * směr), řazené dle `docTypes[docType].order` vzestupně (první = default
-     * pro nový řádek). `name` z cfgItem je už lokalizované compiled configem.
+     * Options pohybů podle `doc_type` hlavičky a směru pokladního dokladu,
+     * řazené dle `docTypes[docType].order` — nabídku drží
+     * {@see DocRowDefaults::operationOptions()}, protože z ní plyne i výchozí
+     * pohyb nového řádku.
      *
      * @param array<string, mixed>|null $headContext
      * @return list<array{value: string, label: string}>
      */
     private function buildOperationOptions(?array $headContext, string $currentOperation = ''): array
     {
-        $docType = (string) ($headContext['doc_type'] ?? '');
-        if ($docType === '' || $this->config === null) {
-            return [];
-        }
-        $cfg = $this->config->cfgItem('docs.core.rowOperations');
-        if (!is_array($cfg)) {
-            return [];
-        }
-        $cashDir = (int) ($headContext['cash_dir'] ?? 0);
-
-        $entries = [];
-        foreach ($cfg as $key => $entry) {
-            if (!is_array($entry)) {
-                continue;
-            }
-            $docTypeAttrs = $entry['docTypes'][$docType] ?? null;
-            if (!is_array($docTypeAttrs)) {
-                continue;
-            }
-            if (isset($docTypeAttrs['cashDir']) && (int) $docTypeAttrs['cashDir'] !== $cashDir) {
-                continue;
-            }
-            // Systémové operace zakládá jen služba (assets D48) — v nabídce
-            // nejsou, leda jako operace právě zobrazeného řádku.
-            if (!empty($entry['system']) && (string) $key !== $currentOperation) {
-                continue;
-            }
-            $entries[] = [
-                'value' => (string) $key,
-                'label' => (string) ($entry['name'] ?? $key),
-                'order' => (int) ($docTypeAttrs['order'] ?? 0),
-            ];
-        }
-        usort($entries, fn(array $a, array $b) => $a['order'] <=> $b['order']);
-
-        return array_map(
-            fn(array $e) => ['value' => $e['value'], 'label' => $e['label']],
-            $entries,
-        );
+        return $this->rowDefaults()->operationOptions($headContext, $currentOperation);
     }
 
     /** @return list<array{value: int, label: string}> */

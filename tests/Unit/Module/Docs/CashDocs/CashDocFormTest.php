@@ -29,10 +29,13 @@ class CashDocFormTest extends TestCase
         $this->sqlLog = [];
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnCallback(
-            function (string $sql, mixed ...$params) use ($rowsCount): ?array {
+            function (string $sql, mixed ...$params) use ($rowsCount, $registrations): ?array {
                 $this->sqlLog[] = $sql;
                 if (str_contains($sql, 'COUNT(*)')) {
                     return ['cnt' => $rowsCount];
+                }
+                if (str_contains($sql, 'economy_codebooks_vat_registrations')) {
+                    return $registrations[0] ?? null;
                 }
                 if (str_contains($sql, 'economy_codebooks_cash_desks')) {
                     return self::DESK;
@@ -70,7 +73,7 @@ class CashDocFormTest extends TestCase
             'docs.core.docTypes' => [
                 'cash' => [
                     'trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk',
-                    'total_rounding_auto' => true,
+                    'own_bank_account' => false, 'total_rounding_auto' => true,
                 ],
             ],
             'world.base.cashRounding' => ['czk' => ['step' => 1, 'countries' => ['cz']]],

@@ -14,6 +14,7 @@ use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Docs\Core\Defaults\DocHeadDefaults;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListTypes;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
 use Shipard\Module\Core\System\ActiveUsersOptions;
@@ -84,8 +85,8 @@ abstract class DocsHeadsFormBase extends TableForm
     /** Per-instance cache — viz vatAgendaDisabled(). */
     private ?bool $vatAgendaDisabled = null;
 
-    /** Per-instance cache — viz homeCurrency(). */
-    private ?string $homeCurrency = null;
+    /** Společná pravidla výchozích hodnot hlavičky — viz headDefaults(). */
+    private ?DocHeadDefaults $headDefaults = null;
 
     /** Resolver kurzu per instance (memoizuje sám); null bez databáze nebo bez tabulky lístků. */
     private ?ExchangeRateResolver $exchangeRateResolver = null;
@@ -99,12 +100,30 @@ abstract class DocsHeadsFormBase extends TableForm
     public const string EXCHANGE_RATE_HINT_KEY = '_exchange_rate_hint';
 
     /**
+     * Výchozí hodnoty sloupců ze schématu `docs_core_heads`, které
+     * FormController vkládá do dat nového dokladu **před** hookem — u nového
+     * dokladu proto znamenají „nezadáno“ ({@see dropUnspecifiedDefaults()}).
+     * Platí definice tabulky; konstanta je jen záloha pro formulář bez ní.
+     */
+    private const SCHEMA_DEFAULTS = ['vat_mode' => 1, 'payment_method' => 1, 'doc_currency' => 'czk'];
+
+    /**
+     * Výchozí hodnoty hlavičky nového dokladu — společné s pokynem výměnného
+     * formátu (#166 D40). Formulář se podle typu dokladu nevětví sám; rozdíly
+     * řídí atributy typu (`DocTypes`).
+     */
+    protected function headDefaults(): DocHeadDefaults
+    {
+        return $this->headDefaults ??= new DocHeadDefaults($this->db, $this->config);
+    }
+
+    /**
      * True, když je DS vědomě nastavený jako neplátce
-     * (`economy.vatAgenda === false`). Řídí JEN default nového dokladu
-     * a skrytí sekce „DPH" u dokladů bez DPH — renderování existujících
-     * dat řídí vat_mode dokladu (ds-setup.md D10), proto se přes tenhle
-     * příznak NIKDY nepřepojuje $hasVat. Nerozhodnutý klíč (null) se
-     * chová jako dnešek, ne jako false.
+     * (`economy.vatAgenda === false`). Řídí JEN skrytí sekce „DPH" u dokladů
+     * bez DPH — renderování existujících dat řídí vat_mode dokladu
+     * (ds-setup.md D10), proto se přes tenhle příznak NIKDY nepřepojuje
+     * $hasVat. Nerozhodnutý klíč (null) se chová jako dnešek, ne jako false.
+     * Výchozí režim DPH nového dokladu dává {@see DocHeadDefaults::vatMode()}.
      */
     protected function vatAgendaDisabled(): bool
     {
@@ -123,13 +142,7 @@ abstract class DocsHeadsFormBase extends TableForm
      */
     protected function homeCurrency(): string
     {
-        if ($this->homeCurrency === null) {
-            $value = $this->db !== null
-                ? (new SettingsStore($this->db))->get('economy.homeCurrency')
-                : null;
-            $this->homeCurrency = is_string($value) && $value !== '' ? $value : 'czk';
-        }
-        return $this->homeCurrency;
+        return $this->headDefaults()->homeCurrency();
     }
 
     /**
@@ -226,100 +239,101 @@ abstract class DocsHeadsFormBase extends TableForm
      * (issue #24 A, #60). Cokoli, co má uživatel vidět předvyplněné hned po
      * otevření modalu, patří sem.
      *
-     * Pořadí je podstatné: registrace DPH se rozhoduje podle vat_mode,
-     * subclass (účetní doklad) ho proto nastaví PŘED parent::. Explicitní
-     * hodnota v datech (import, kopie dokladu, prefill) vždy vyhrává.
+     * Výchozí hodnoty hlavičky (měna, způsob úhrady, režim DPH, datum
+     * vystavení, registrace DPH, vlastní účet, automatické zaokrouhlení)
+     * dává {@see DocHeadDefaults} — stejné pravidlo doplní i pokyn výměnného
+     * formátu, když je payload neuvádí (#166 D40, D41). Explicitní hodnota
+     * v datech (kopie dokladu, prefill) vždy vyhrává; co je u nového dokladu
+     * „nezadáno“, říká {@see dropUnspecifiedDefaults()}.
+     *
+     * Jen formuláři patří to, co uživatel potřebuje vidět před uložením
+     * a co `DocDocument` dopočítá až při něm: účetní datum a DUZP z data
+     * vystavení, Vystavil, kurz a mód automatického zaokrouhlení.
      */
     public function applyNewRecordDefaults(array &$data): void
     {
-        // 1. Neplátce (economy.vatAgenda === false): přepisuje právě a jen
-        //    schéma default vat_mode = 1.
-        if ($this->vatAgendaDisabled() && (int) ($data['vat_mode'] ?? 1) === 1) {
-            $data['vat_mode'] = 0;
-        }
-        // 2. Datum vystavení = dnes (#24 A.1) a z něj Účetní datum + DUZP,
-        //    stejně jako recalculate('issue_date'). Recalculate běží jen při
-        //    změně pole; kdo předvyplněné datum nechá být, by bez tohohle
-        //    narazil na povinné Účetní datum ve validate() (#24 B, D6).
-        //    DUZP jen u daňového typu — nedaňový ho nemá (#79 D1).
-        if (empty($data['issue_date'])) {
-            $data['issue_date'] = date('Y-m-d');
-        }
+        $this->dropUnspecifiedDefaults($data);
+        $this->headDefaults()->apply($data);
+
+        // Účetní datum + DUZP z data vystavení, stejně jako
+        // recalculate('issue_date'). Recalculate běží jen při změně pole; kdo
+        // předvyplněné datum nechá být, by bez tohohle narazil na povinné
+        // Účetní datum ve validate() (#24 B, D6). DUZP jen u daňového typu —
+        // nedaňový ho nemá (#79 D1).
         if (empty($data['accounting_date'])) {
             $data['accounting_date'] = $data['issue_date'];
         }
         if (empty($data['vat_duzp']) && $this->isTaxDocument($data)) {
             $data['vat_duzp'] = $data['issue_date'];
         }
-        // 3. Registrace DPH: první podle country, id — totéž pořadí, jaké
-        //    uživatel vidí v roletce. Jen u dokladu s DPH; vat_mode = 0 je
-        //    platná hodnota, proto (int) a ne empty().
-        if ((int) ($data['vat_mode'] ?? 1) !== 0 && empty($data['vat_registration'])) {
-            $options = $this->resolveVatRegistrationOptions();
-            if ($options !== []) {
-                $data['vat_registration'] = (int) $options[0]['value'];
-            }
-        }
-        // 4. Náš bankovní účet: is_default ve stavu V pořádku, bez ohledu na
-        //    měnu dokladu (FPB v EUR z českého účtu je běžná). Jen formuláře,
-        //    které pole renderují (základní, FVB, FPB).
-        if ($this->newRecordUsesBankAccount() && empty($data['bank_account'])) {
-            $account = $this->resolveDefaultBankAccount();
-            if ($account !== null) {
-                $data['bank_account'] = $account;
-            }
-        }
-        // 5. Vystavil = přihlášený uživatel (#93 D1), ať pole v tabu Nastavení
-        //    ukáže výchozího autora. Kdo ho vymaže, uloží doklad bez autora —
-        //    přítomný klíč DocAuthorResolver při uložení nepřepisuje.
+        // Vystavil = přihlášený uživatel (#93 D1), ať pole v tabu Nastavení
+        // ukáže výchozího autora. Kdo ho vymaže, uloží doklad bez autora —
+        // přítomný klíč DocAuthorResolver při uložení nepřepisuje.
         if (empty($data['author']) && $this->db !== null) {
             $author = (new DocAuthorResolver($this->db->getDibiConnection()))->interactiveUser();
             if ($author !== null) {
                 $data['author'] = $author;
             }
         }
-        // 6. Kurz (#121 D6): doklad v cizí měně od začátku (prefill, pokladna
-        //    v cizí měně nastaví měnu před parent::) dostane kurz k účetnímu
-        //    datu; domácí měna kurz 1.
+        // Kurz (#121 D6): doklad v cizí měně od začátku (prefill, pokladna
+        // v cizí měně) dostane kurz k účetnímu datu; domácí měna kurz 1.
         $this->applyExchangeRate($data);
-        // 7. Automatické zaokrouhlení (#73 D2, D3, U7): prodejní typ ho má
-        //    zapnuté a mód podle způsobu úhrady, měny a země; ostatní typy
-        //    vypnuté a mód Na haléře. Schéma default sloupce (0) tady od
-        //    „nezadáno“ odlišit nejde (jako vat_mode v bodě 1), proto se
-        //    u typů s automatikou nastavuje vždy. U pokladního dokladu bez
-        //    směru zůstane jen příznak — mód dopočítá recalculate('cash_dir').
-        if ($this->hasTotalRoundingAuto($data)) {
-            $data['total_rounding_auto'] = 1;
-            $this->applyTotalRoundingAuto($data);
-        } else {
-            $data['total_rounding_auto'] = 0;
-            if (!isset($data['total_rounding_mode'])) {
-                $data['total_rounding_mode'] = RoundingModes::ON_CENT;
+        // Mód zaokrouhlení (#73 D3, U7): při zapnuté automatice podle způsobu
+        // úhrady, měny a země — uživatel ho vidí před uložením; jinak Na
+        // haléře. U pokladního dokladu bez směru zůstane jen příznak — mód
+        // dopočítá recalculate('cash_dir').
+        if (!isset($data['total_rounding_mode'])) {
+            $data['total_rounding_mode'] = RoundingModes::ON_CENT;
+        }
+        $this->applyTotalRoundingAuto($data);
+    }
+
+    /**
+     * Odstraní z dat nového dokladu hodnoty, které znamenají „nezadáno“, aby
+     * je {@see DocHeadDefaults} doplnil (doplňuje jen chybějící klíč):
+     *  - prázdné pole (datum vystavení, registrace DPH, vlastní účet),
+     *  - výchozí hodnotu sloupce ze schématu, kterou FormController vložil
+     *    před hookem (`vat_mode` 1, `payment_method` 1, `doc_currency` czk,
+     *    `total_rounding_auto` 0) — „když neprefillnuto“ na této cestě poznat
+     *    nejde, explicitní prefill hodnotou rovnou schématu se proto bere
+     *    jako nezadaný,
+     *  - měnu dokladu vázaného na pokladnu: tu určuje pokladna z řady.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function dropUnspecifiedDefaults(array &$data): void
+    {
+        foreach (['issue_date', 'vat_registration', 'bank_account', 'total_rounding_auto'] as $column) {
+            if (array_key_exists($column, $data) && empty($data[$column])) {
+                unset($data[$column]);
             }
         }
-    }
-
-    /**
-     * Renderuje formulář pole `bank_account`? Základní doklad, FVB a FPB ano;
-     * pokladní a účetní doklad ne (přepisují na false). Přes payment_method
-     * to odvodit nejde — účetní doklad má ze schématu 1 (Převodem) a pole
-     * přesto nemá.
-     */
-    protected function newRecordUsesBankAccount(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Výchozí bankovní účet (`is_default`) ve stavu V pořádku; null bez něj.
-     * Víc výchozích účtů nic nebrání — ORDER BY je jen determinismus.
-     */
-    protected function resolveDefaultBankAccount(): ?int
-    {
-        if ($this->db === null) {
-            return null;
+        foreach (self::SCHEMA_DEFAULTS as $column => $fallback) {
+            if (!array_key_exists($column, $data)) {
+                continue;
+            }
+            $value = $data[$column];
+            $default = $this->schemaDefault($column, $fallback);
+            if ($value === null || $value === ''
+                || strtolower((string) $value) === strtolower((string) $default)
+            ) {
+                unset($data[$column]);
+            }
         }
-        return DefaultBankAccountResolver::resolve($this->db);
+        if ($this->headDefaults()->cashDeskCurrency($data) !== null) {
+            unset($data['doc_currency']);
+        }
+    }
+
+    /** Výchozí hodnota sloupce z definice tabulky; bez definice (unit testy) záloha. */
+    private function schemaDefault(string $column, mixed $fallback): mixed
+    {
+        foreach ($this->tableDef?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return $col->default ?? $fallback;
+            }
+        }
+        return $fallback;
     }
 
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
@@ -597,8 +611,8 @@ abstract class DocsHeadsFormBase extends TableForm
      * (GET meta i recalculate, kde applyNewRecordDefaults neběží), takže se
      * do response `data` nepropíší — řídí `hidden`/options ($hasVat,
      * $hasForeignCurrency, měnový filtr účtů). Co má uživatel vidět v inputu,
-     * patří do applyNewRecordDefaults; hodnoty, které řídí obojí (vat_mode
-     * účetního dokladu, payment_method pokladního), stojí na obou místech.
+     * patří do applyNewRecordDefaults; hodnoty, které řídí obojí (vat_mode,
+     * payment_method, měna pokladny), berou obě místa z {@see DocHeadDefaults}.
      * Server-side defaulty (fiscal_year, vat_period, snapshots, součty)
      * počítá DocDocument::beforeSave.
      *
@@ -609,11 +623,12 @@ abstract class DocsHeadsFormBase extends TableForm
         if (!$isNew) {
             return;
         }
-        if (!isset($data['vat_mode'])) {
-            // Neplátce (economy.vatAgenda === false) → „Bez DPH"; nerozhodnutý
-            // klíč zachovává dnešní default. Jen default — explicitní hodnota
-            // v datech vyhrává (import, kopie dokladu).
-            $data['vat_mode'] = $this->vatAgendaDisabled() ? 0 : 1;
+        $docType = (string) ($data['doc_type'] ?? '');
+        if (!isset($data['vat_mode']) || !DocTypes::hasVat($this->config, $docType)) {
+            // Typ bez DPH (účetní doklad) a neplátce → „Bez DPH"; jinak ze
+            // základu. Jen default — explicitní hodnota v datech vyhrává
+            // (kopie dokladu); typ bez DPH jiný režim nemá.
+            $data['vat_mode'] = $this->headDefaults()->vatMode($docType);
         }
         if (!isset($data['vat_calc_source'])) {
             $data['vat_calc_source'] = 0;
@@ -622,7 +637,7 @@ abstract class DocsHeadsFormBase extends TableForm
             $data['vat_place'] = 0;
         }
         if (!isset($data['payment_method'])) {
-            $data['payment_method'] = 1;
+            $data['payment_method'] = $this->headDefaults()->paymentMethod($docType);
         }
         if (!isset($data['total_rounding_auto'])) {
             $data['total_rounding_auto'] = $this->hasTotalRoundingAuto($data) ? 1 : 0;
@@ -638,7 +653,11 @@ abstract class DocsHeadsFormBase extends TableForm
         if (empty($data['home_currency'])) {
             $data['home_currency'] = $this->homeCurrency();
         }
-        if (empty($data['doc_currency'])) {
+        $cashDeskCurrency = $this->headDefaults()->cashDeskCurrency($data);
+        if ($cashDeskCurrency !== null) {
+            // Měnu dokladu vázaného na pokladnu určuje pokladna z řady.
+            $data['doc_currency'] = $cashDeskCurrency;
+        } elseif (empty($data['doc_currency'])) {
             // Domácí doklad je v domácí měně; explicitní hodnota vyhrává.
             $data['doc_currency'] = $data['home_currency'];
         }

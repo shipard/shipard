@@ -26,6 +26,14 @@ use Shipard\Core\Config\ConfigRuntime;
  * typ; původní doklad musí být typu s příznakem. Chybějící atribut = typ bez
  * opravných dokladů (`DocDocument::applyCorrectiveColumns` příznak vynuluje).
  *
+ * `vat` (#166 U1): `false` = typ bez DPH (`cmnbkp`) — nový doklad má režim
+ * „Bez DPH“ a registraci DPH nedostává. `own_bank_account` (#166 U1):
+ * `false` = doklad vlastní bankovní účet nenese (`cmnbkp`, `cash`,
+ * `cashreg`). `series_binding: "cash_desk"` = typ vázaný na pokladnu
+ * (výchozí úhrada Hotově, měna pokladny). Výchozí hodnoty nového dokladu
+ * z nich skládá `Defaults\DocHeadDefaults` — formulář ani pokyn se podle
+ * typu nevětví samy.
+ *
  * Směr obchodu má vlastní autoritu `DocDocument::resolveTradeDir()`.
  */
 final class DocTypes
@@ -67,6 +75,37 @@ final class DocTypes
             return true;
         }
         return ($docTypes[$docType]['tax_document'] ?? true) !== false;
+    }
+
+    /**
+     * Typ s DPH? Bez configu, u neznámého typu i bez atributu ano (dnešní
+     * chování); bez DPH jen při explicitním `vat: false`.
+     */
+    public static function hasVat(?ConfigRuntime $config, string $docType): bool
+    {
+        return (self::attributes($config, $docType)['vat'] ?? true) !== false;
+    }
+
+    /**
+     * Nese doklad vlastní bankovní účet? Bez configu, u neznámého typu i bez
+     * atributu ano; ne jen při explicitním `own_bank_account: false`.
+     */
+    public static function usesOwnBankAccount(?ConfigRuntime $config, string $docType): bool
+    {
+        return (self::attributes($config, $docType)['own_bank_account'] ?? true) !== false;
+    }
+
+    /** Typ s řadou vázanou na pokladnu (`series_binding: "cash_desk"` — pokladní doklad, prodejka). */
+    public static function isCashDeskBound(?ConfigRuntime $config, string $docType): bool
+    {
+        return (self::attributes($config, $docType)['series_binding'] ?? null) === 'cash_desk';
+    }
+
+    /** @return array<string, mixed> atributy typu; bez configu a u neznámého typu prázdné */
+    private static function attributes(?ConfigRuntime $config, string $docType): array
+    {
+        $docTypes = $config?->cfgItem('docs.core.docTypes');
+        return is_array($docTypes) && is_array($docTypes[$docType] ?? null) ? $docTypes[$docType] : [];
     }
 
     /**

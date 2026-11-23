@@ -26,6 +26,9 @@ use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
  */
 class DocsHeadsFormNewRecordDefaultsTest extends TestCase
 {
+    /** @var array{sql: string, params: list<mixed>}|null poslední dotaz na výchozí registraci DPH */
+    private ?array $registrationQuery = null;
+
     private const REGISTRATIONS = [
         ['id' => 7, 'country' => 'cz', 'vat_id' => 'CZ11111111'],
         ['id' => 9, 'country' => 'sk', 'vat_id' => 'SK2222222222'],
@@ -58,12 +61,18 @@ class DocsHeadsFormNewRecordDefaultsTest extends TestCase
             },
         );
         $db->method('fetchRow')->willReturnCallback(
-            static function (string $sql, mixed ...$params) use ($defaultBankAccount, &$queries): ?array {
+            function (string $sql, mixed ...$params) use ($registrations, $defaultBankAccount, &$queries): ?array {
                 if ($queries !== null) {
                     $queries[] = $sql;
                 }
                 if (str_contains($sql, 'economy_codebooks_bank_accounts')) {
                     return $defaultBankAccount !== null ? ['id' => $defaultBankAccount] : null;
+                }
+                // Výchozí registrace (DocHeadDefaults): první podle země a id,
+                // platná k datu — poslední dva parametry dotazu.
+                if (str_contains($sql, 'economy_codebooks_vat_registrations')) {
+                    $this->registrationQuery = ['sql' => $sql, 'params' => $params];
+                    return $registrations[0] ?? null;
                 }
                 return null;
             },
@@ -152,6 +161,18 @@ class DocsHeadsFormNewRecordDefaultsTest extends TestCase
         $this->form()->applyNewRecordDefaults($data);
 
         $this->assertSame(7, $data['vat_registration'], 'první podle country, id');
+    }
+
+    /** Registrace se vybírá s platností k datu dokladu (#166 U2) — jako v pokynu. */
+    public function testVatRegistrationIsValidAtIssueDate(): void
+    {
+        $data = $this->schemaData(['issue_date' => '2026-01-15']);
+        $this->form()->applyNewRecordDefaults($data);
+
+        $this->assertNotNull($this->registrationQuery);
+        $this->assertStringContainsString('`valid_from`', $this->registrationQuery['sql']);
+        $this->assertStringContainsString('ORDER BY `country`, `id`', $this->registrationQuery['sql']);
+        $this->assertSame(['2026-01-15', '2026-01-15'], array_slice($this->registrationQuery['params'], -2));
     }
 
     public function testVatRegistrationSkippedForDocumentWithoutVat(): void

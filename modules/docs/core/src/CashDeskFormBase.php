@@ -25,60 +25,25 @@ use Shipard\Core\Form\TabBuilder;
  */
 abstract class CashDeskFormBase extends DocsHeadsFormBase
 {
-    /** @var array<string, array{id: int, code: string, name: string, currency: string}|null> */
-    private array $cashDeskCache = [];
-
-    /** Schéma default `docs_core_heads.payment_method` (Převodem) — u nového dokladu pokladny se bere jako „nezadáno“. */
-    private const SCHEMA_DEFAULT_PAYMENT_METHOD = 1;
-
     /**
-     * HTTP cesta nového dokladu: schéma default payment_method = 1 (Převodem)
-     * na doklad pokladny nepatří — nový doklad začíná Hotovostí, i u prodejky,
-     * která převod povoluje. („Když neprefillnuto" na této cestě poznat nejde,
-     * FormController vloží schéma default dřív, takže explicitní prefill
-     * Převodem nepřežije.) Hodnota mimo povolené úhrady formuláře
-     * ({@see allowedPaymentMethods()}) → Hotovost; jiný povolený prefill
-     * (Kartou; u prodejky i Dobírkou, Bránou) přežije.
-     * Měna = měna pokladny z řady (prefill vieweru). Pak base (datum,
-     * registrace DPH); bankovní účet formulář nemá. Větve v
-     * applyClientDefaults zůstávají pro renderování a recalculate.
+     * HTTP cesta nového dokladu: výchozí hodnoty dává společná
+     * {@see \Shipard\Module\Docs\Core\Defaults\DocHeadDefaults} — typ
+     * vázaný na pokladnu začíná Hotovostí a měnou pokladny z řady (prefill
+     * vieweru), bankovní účet nenese. Formulář přidává jen jedno: způsob
+     * úhrady mimo povolené úhrady formuláře ({@see allowedPaymentMethods()})
+     * se bere jako nezadaný → Hotovost; jiný povolený prefill (Kartou;
+     * u prodejky i Dobírkou, Bránou) přežije. Schéma default Převodem je
+     * „nezadáno“ už v bázi — i u prodejky, která převod povoluje.
      */
     public function applyNewRecordDefaults(array &$data): void
     {
         $paymentMethod = $data['payment_method'] ?? null;
-        if ($paymentMethod === null || $paymentMethod === ''
-            || (int) $paymentMethod === self::SCHEMA_DEFAULT_PAYMENT_METHOD
-            || !in_array((int) $paymentMethod, $this->allowedPaymentMethods(), true)
+        if ($paymentMethod !== null && $paymentMethod !== ''
+            && !in_array((int) $paymentMethod, $this->allowedPaymentMethods(), true)
         ) {
-            $data['payment_method'] = 0;
-        }
-        $desk = $this->resolveCashDesk($data);
-        if ($desk !== null && $desk['currency'] !== '') {
-            $data['doc_currency'] = $desk['currency'];
+            unset($data['payment_method']);
         }
         parent::applyNewRecordDefaults($data);
-    }
-
-    protected function newRecordUsesBankAccount(): bool
-    {
-        return false;
-    }
-
-    /** Jen renderování (viz DocsHeadsFormBase::applyClientDefaults). */
-    protected function applyClientDefaults(array &$data, bool $isNew): void
-    {
-        $hadPaymentMethod = isset($data['payment_method']);
-        parent::applyClientDefaults($data, $isNew);
-        if (!$isNew) {
-            return;
-        }
-        if (!$hadPaymentMethod) {
-            $data['payment_method'] = 0;
-        }
-        $desk = $this->resolveCashDesk($data);
-        if ($desk !== null && $desk['currency'] !== '') {
-            $data['doc_currency'] = $desk['currency'];
-        }
     }
 
     /**
@@ -130,42 +95,7 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
      */
     protected function resolveCashDesk(array $data): ?array
     {
-        if ($this->db === null) {
-            return null;
-        }
-        $deskId = (int) ($data['cash_desk'] ?? 0);
-        $seriesId = (int) ($data['number_series'] ?? 0);
-        if ($deskId <= 0 && $seriesId <= 0) {
-            return null;
-        }
-        $cacheKey = $deskId > 0 ? "desk:{$deskId}" : "series:{$seriesId}";
-        if (array_key_exists($cacheKey, $this->cashDeskCache)) {
-            return $this->cashDeskCache[$cacheKey];
-        }
-
-        if ($deskId > 0) {
-            $row = $this->db->fetchRow(
-                'SELECT `id`, `code`, `name`, `currency` FROM `economy_codebooks_cash_desks` WHERE `id` = %i',
-                $deskId,
-            );
-        } else {
-            $row = $this->db->fetchRow(
-                'SELECT cd.`id`, cd.`code`, cd.`name`, cd.`currency`'
-                . ' FROM `docs_core_number_series` s'
-                . ' JOIN `economy_codebooks_cash_desks` cd ON cd.`id` = s.`cash_desk`'
-                . ' WHERE s.`id` = %i',
-                $seriesId,
-            );
-        }
-
-        $desk = is_array($row) && !empty($row['id']) ? [
-            'id'       => (int) $row['id'],
-            'code'     => (string) ($row['code'] ?? ''),
-            'name'     => (string) ($row['name'] ?? ''),
-            'currency' => strtolower(trim((string) ($row['currency'] ?? ''))),
-        ] : null;
-        $this->cashDeskCache[$cacheKey] = $desk;
-        return $desk;
+        return $this->headDefaults()->cashDesk($data);
     }
 
     /** Způsoby úhrady povolené na dokladu (default CashDeskDocumentBase::PAYMENT_METHODS_ALLOWED; formulář prodejky přepíše). */
