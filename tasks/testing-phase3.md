@@ -34,8 +34,11 @@ i JSON reportem.
 - `docs/test-corpus.md`, `docs/datasets.md`
 - `modules/core/mail/src/MessageProposalApplier.php` — sdílené jádro Použít
   (REST i MCP jedou přes ni)
-- `docs/exchange-format.md` → `applyOptions` (`targetDocState`,
-  `autoCreateMode`, `createMissingEntities`, `rejectOnIssues`), §8.4
+- `docs/exchange-format.md` § 10 → `applyOptions` (`targetDocState`;
+  `autoCreateMode` je v `docs/document-interpretation.md` § 8,
+  `createMissingEntities` a `rejectOnIssues` schéma dokladu od #166 D56
+  nenese), `docs/document-interpretation.md` § 6 (dříve oddíl 8.4
+  výměnného formátu)
 - `modules/core/exchange/src/Export/DocumentExporter.php`
 - `docs/cli.md` → `report-run`, `report-diff`; `docs/reports.md` §7.4, §13
 - `modules/economy/vat/config/vat-reports-cz.jsonc` — řádky přiznání

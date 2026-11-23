@@ -638,18 +638,6 @@
                                                         "liberal"
                                                     ]
                                                 },
-                                                "createMissingEntities": {
-                                                    "type": "boolean"
-                                                },
-                                                "rejectOnIssues": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "enum": [
-                                                            "error",
-                                                            "warning"
-                                                        ]
-                                                    }
-                                                },
                                                 "importNumber": {
                                                     "type": "object",
                                                     "description": "Import mode: force the document's own number + sequence instead of generating from the series counter. Used by legacy migration. When present, DocDocument skips assignDocumentNumber and syncs the counter to GREATEST(last_assigned, sequenceNumber).",

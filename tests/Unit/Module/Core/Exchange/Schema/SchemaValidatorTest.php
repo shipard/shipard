@@ -127,6 +127,35 @@ class SchemaValidatorTest extends TestCase
         $this->assertSame([], $issues);
     }
 
+    /**
+     * #166 D56: `rejectOnIssues` a `createMissingEntities` applier dokladů
+     * nikdy nečetl — schéma dokladu je nenese (formáty osob a položek
+     * `rejectOnIssues` čtou a mají ho dál).
+     *
+     * @return array<string, array{0: string, 1: mixed}>
+     */
+    public static function removedApplyOptionProvider(): array
+    {
+        return [
+            'rejectOnIssues'        => ['rejectOnIssues', ['error']],
+            'createMissingEntities' => ['createMissingEntities', true],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('removedApplyOptionProvider')]
+    public function testDocumentApplyOptionsRejectRemovedKeys(string $key, mixed $value): void
+    {
+        $payload = [
+            'format' => 'shpd.docs.document',
+            'formatVersion' => '1.0',
+            'docType' => 'invoiceReceived',
+            'applyOptions' => ['targetDocState' => 10, $key => $value],
+        ];
+
+        $issues = $this->validator->validate($payload, 'shpd.docs.document', '1');
+        $this->assertContains('additionalProperties', array_column($issues, 'code'));
+    }
+
     public function testFullRichPayloadIsAccepted(): void
     {
         $payload = json_decode(

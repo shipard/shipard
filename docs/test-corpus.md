@@ -246,7 +246,7 @@ Celkem 24 + 20 + 20 = **64 buněk** (PDF + očekávaný výsledek), 8 vynechaný
 
 Varianta 11 je u všech profilů tentýž doklad a končí stejně — Bez DPH
 s daní dodavatele v cenách řádků: u plátce cestou dokladu mimo české DPH
-(#89, `docs/exchange-format.md` § 8.4), u neplátce a spolku cestou #97.
+(#89, `docs/document-interpretation.md` § 6.3), u neplátce a spolku cestou #97.
 V přiznání DPH ani v kontrolním hlášení není (`vat-reporting.jsonc`:
 režim `none`), náklad je Σ řádků s daní (`reporting.out_of_czech_vat`).
 
@@ -641,7 +641,7 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 - **Pravidla odvozených polí sledují prompt** (§ 9).
 - **`exemptIntraCommunity` ≠ `reverseCharge`**: čl. 138 `reverseCharge`
   nezapíná; samovyměření u zboží z EU zapne místo plnění
-  (`docs/exchange-format.md` § 8.4).
+  (`docs/document-interpretation.md` § 6.5).
 - **Účtenka v podobě `pdfIsdoc` neprojde** (D10 #119): ISDOC je výměna
   mezi dvěma českými subjekty s IČO, účtenka nemá odběratele. Totéž platí
   pro zahraničního dodavatele.
@@ -905,9 +905,9 @@ Je to pojistka proti ostrým datům — žádný `--force`.
 
 Apply: zprávy v pořadí přijetí (`0V01` založí dodavatele, `0V02` ho
 najde), `MessageProposalApplier::apply()` s `targetDocState` 40
-a `autoCreateMode` liberal. Zadání jmenuje i `createMissingEntities`
-a `rejectOnIssues` — `DocumentApplier` je nečte (chyba blokuje vždy,
-varování nikdy), neposílají se. Selhání apply jedné zprávy je výsledek
+a `autoCreateMode` liberal. Volby `createMissingEntities`
+a `rejectOnIssues`, které zadání jmenuje, schéma dokladu nenese (#166
+D56) — chyba blokuje vždy, varování nikdy. Selhání apply jedné zprávy je výsledek
 (exit 1), ne pád.
 
 ### Kontroly

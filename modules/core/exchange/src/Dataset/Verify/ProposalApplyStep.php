@@ -10,9 +10,9 @@ use Shipard\Module\Core\Mail\MessageProposalApplier;
  * Použije otevřené návrhy zpráv sady jako doklady V pořádku (tasks/testing-phase3.md):
  * `MessageProposalApplier::apply()` — sdílené jádro Použít (REST i MCP) —
  * s `targetDocState` 40 a `autoCreateMode` liberal (dodavatele zakládá apply,
- * D21). Zadání jmenuje i `createMissingEntities` a `rejectOnIssues`;
- * ty `DocumentApplier` nečte (chyba blokuje vždy, varování nikdy), applier
- * zpráv je nepředává — nic dalšího se neposílá. Zprávy jdou v pořadí
+ * D21). Volby `createMissingEntities` a `rejectOnIssues`, které zadání
+ * jmenuje, schéma dokladu nenese (#166 D56) — chyba blokuje vždy, varování
+ * nikdy. Zprávy jdou v pořadí
  * `received_at`; doklad v cizí měně dostane kurz z lístků sady (#121 D6,
  * konec přeskakování D30 — #103 D74); selhání apply je výsledek, ne pád.
  */

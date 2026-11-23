@@ -342,11 +342,6 @@
                 // Zakládání chybějících osob, položek a účtů partnera — čte
                 // jen návrh; pokyn nic nezakládá (#166 D31).
                 "autoCreateMode":        { "enum": ["strict", "safe", "liberal"] },
-                "createMissingEntities": { "type": "boolean" },
-                "rejectOnIssues": {
-                    "type": "array",
-                    "items": { "enum": ["error", "warning"] }
-                },
 
                 "importNumber": {
                     "type": "object",
