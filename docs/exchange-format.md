@@ -134,8 +134,9 @@ druh plnění ze štítků; odvození `recapSource` a dohledání kódu rekapitu
 z řádků; odhad módu zaokrouhlení (mód říká payload); vynechání řádků; heuristická varování
 validátoru (`totals_mismatch`, `rows_recap_mismatch`, `vat_mode_suspect`,
 `vat_recap_inconsistent`); oprava IBAN ↔ číslo účtu (normalizace tvaru
-hodnot zůstává); učení dodavatelských kódů. Volby DPH v `_resolve` se
-ignorují s info `vat_pin_ignored`.
+hodnot zůstává); učení dodavatelských kódů. Blok `_resolve` pokyn nečte
+vůbec (#166 D32): payload, který ho nese, projde s jedním info nálezem
+`resolve_ignored` — volby DPH, položek ani partnerů se neuplatní.
 
 **Hodnoty DPH jsou v pokynu záměr** (D20):
 
@@ -262,6 +263,10 @@ Top-level struktura:
   "customer":  { /* Party — viz sekce 6 */ },   //   objekt s `ref` a daty
   "balanceParty": null,            // Party — ruční plátce (osoba pro
                                   //   saldokonto, #72); null = odvodí se
+  "partner": null,                 // Party — partner hlavičky účetního
+                                  //   dokladu a dokladu vázaného na pokladnu
+                                  //   (#166 D30); u faktur je partnerem
+                                  //   strana a pole je chyba
 
   // ── Dates ────────────────────────────────────────────────────────────────
   "dates": {
@@ -495,6 +500,7 @@ nenalezeno i nejednoznačné je chyba — nikdy první nalezený.
 | `rows[].account` | účty osnovy | číslo účtu | `"@518100"` |
 | `vat.registration` | registrace DPH | kód registrace (D17) | `"@cz"` |
 | `correction.originalDoc` | doklady | číslo dokladu | `"@FV26-00123"` |
+| `partner` — hlavička účetního dokladu a dokladu vázaného na pokladnu; `rows[].partner` — reference, nebo objekt s `ref` | osoby | jako strana | `"@F00042"`, `42` |
 
 - **Pokyn** hledá jen přes referenci a **nic nezakládá** (D31) — osoby,
   položky ani účty partnerů. Reference, která se nenajde, je nález
@@ -513,9 +519,24 @@ nenalezeno i nejednoznačné je chyba — nikdy první nalezený.
   (`selfParty`) referenci nenese. `supplier.bankAccount` jsou data: jdou do
   sloupců hlavičky, vazba na účet partnera vznikne v pokynu jen přesnou
   shodou s jeho existujícím účtem.
-- `_resolve` pokyn **nečte** (D32) — s dočasnou výjimkou voleb
-  `_resolve.partner` a `_resolve.rows[].partner` u účetního a pokladního
-  dokladu, které dostanou vlastní pole v `tasks/doc-format-partner-fields.md`.
+- **Partner účetního a pokladního dokladu** (`partner`, `rows[].partner`,
+  `tasks/doc-format-partner-fields.md`) má tvar strany, ale hledá se **jen
+  přes `ref`**, v obou režimech — pole je nové, žádný uložený návrh ho
+  nenese. Objekt s názvem / IČO / DIČ bez `ref` je v pokynu chyba
+  `reference_missing`, v návrhu varování a pole se nepoužije.
+  - `partner` na hlavičce nese jen `accountingDocument`, `cashDocument`
+    a `cashRegisterDocument`. U faktur je partnerem strana: pole je
+    v pokynu chyba `partner_not_supported`, návrh ho s varováním ignoruje.
+  - U pokladního dokladu a prodejky nese partnera hlavičky i strana podle
+    směru (tak ho píše export). Pole `partner` má přednost; určí-li pole
+    a strana **různé osoby**, pokyn doklad odmítne (`partner_conflict`).
+    V importním módu bere dobový snapshot data z pole.
+  - Účetní doklad snapshot partnera nemá (nemá směr obchodu) — data vedle
+    `ref` se u něj nepoužijí.
+- `_resolve` pokyn **nečte vůbec** (D32): blok se zahodí před zpracováním
+  a payload dostane jeden info nález `resolve_ignored` (path `_resolve`).
+  V návrhu volby `_resolve.partner` a `_resolve.rows[].partner` fungují
+  dál; uvedené pole má přednost.
 - Exportér (`DocumentExporter`, datové sady) píše každý odkaz přirozeným
   klíčem; generátory dokladů (periodická fakturace, opravný doklad) id.
   Číslo dokladu nemá unikátní index a čísla různých typů se mohou shodovat —
@@ -788,7 +809,8 @@ zachová stav dokladu.
   Applier z AI analýzy (`applyRowOperations`) zatím typ nezná — přijde
   s poštou (#106 D4).
 - **`accountingDocument`** (`cmnbkp`) — bez stran, kontační řádky
-  (`accSide`, `account`), partner per řádek přes pin.
+  (`accSide`, `account`); nepovinný partner hlavičky polem `partner`,
+  partner řádku polem `rows[].partner` (reference na osobu, #166 D30).
 - **`cashDocument`** (`cash`, pokladní doklad, #59 D12) — povinný **`cashDesk`**
   (reference na pokladnu, `"@POK"` = `economy_codebooks_cash_desks.code`)
   a **`cashDirection`** (1 příjem / 2 výdej). Řadu applier dohledá podle
@@ -804,16 +826,19 @@ zachová stav dokladu.
   Strany `supplier`/`customer` nepovinné (anonymní doklad); je-li strana
   uvedená, je partnerem hlavičky podle směru (příjem → odběratel, výdej →
   dodavatel; `selfParty` má přednost) a v import módu z ní vzniká dobový
-  snapshot. `payment.method` default `cash` (jinak jen `card`). Úhrady
-  faktur hotově/kartou = řádky `operation: payment.receivable` /
-  `payment.payable` s `totalPrice`, `paymentReference` (VS) a partnerem
-  přes pin `_resolve.rows[i].partner` (viz §7). Převody peněz (#59 Task D)
+  snapshot. Partnera hlavičky jde určit i polem `partner` — má přednost
+  před stranou, jiná osoba než strana je v pokynu `partner_conflict`
+  (§ 5 „Reference na záznamy“). `payment.method` default `cash` (jinak jen
+  `card`). Úhrady faktur hotově/kartou = řádky `operation:
+  payment.receivable` / `payment.payable` s `totalPrice`,
+  `paymentReference` (VS) a partnerem v poli `rows[].partner` (viz §7).
+  Převody peněz (#59 Task D)
   = řádky `operation: transfer.in` (jen `cashDirection: 1`) /
   `transfer.out` (jen 2) s `totalPrice` a volitelným `paymentReference`
   (staré `symbol1`/`symbol2`), bez partnera; `operation` je passthrough,
   směr vůči `cashDirection` hlídá validace dokladu. Zálohy (#59 Task E):
   `advance.received` (jen příjem) / `advance.given` (jen výdej) s
-  `totalPrice`, povinným partnerem přes pin `_resolve.rows[i].partner` a
+  `totalPrice`, povinným partnerem v poli `rows[].partner` a
   volitelným `paymentReference`, bez DPH; záporná částka = vrácení. Odpočet
   `sale.advanceDeduction` / `purchase.advanceDeduction` je na `cashDocument`
   položkový řádek s DPH jako na faktuře (záporný základ). Stejné klíče platí i pro
@@ -1152,10 +1177,9 @@ nebo import mezi dvěma cizími subjekty.
 
   // Kontace / saldo identita (účetní doklad, úhrady payment.* na pokladním
   // dokladu): částka přímo v totalPrice, strana a účet u kontace, VS / SS /
-  // KS / splatnost úhrady. Partner řádku se NEPOSÍLÁ jako Party — zatím se
-  // určuje volbou `_resolve.rows[i].partner = "useExisting:<id>"` (jediná
-  // volba, kterou čte i pokyn; vlastní pole dostane v
-  // tasks/doc-format-partner-fields.md).
+  // KS / splatnost úhrady. Partner řádku je pole `partner` — reference na
+  // osobu (42, "@F00042", "@company_id:…"), nebo objekt s `ref` (#166 D30).
+  "partner":          null,
   "accSide":          null,          // "debit" | "credit" (jen kontace)
   "account":          null,          // účet řádku — reference na účet osnovy
                                      //   ("@518100", id). DOČASNÉ (D39): holé
@@ -1871,8 +1895,8 @@ jako kód nálezu s cestou pole (`DocumentApplier::referenceIssue()`):
 Vyrábí ho `/preview`, čte `/apply`. Žije v stejném JSON dokumentu jako data —
 klient drží jeden payload mezi step preview a apply.
 
-**Volby v `_resolve` čte jen návrh** (#166 D32; výjimky v § „`userAction`
-slovník“). Výstupní bloky jsou v obou režimech stejné: záznam určený
+**Blok `_resolve` z payloadu čte jen návrh** (#166 D32) — pokyn ho zahodí
+celý a ohlásí info `resolve_ignored`. Výstupní bloky jsou v obou režimech stejné: záznam určený
 referencí z payloadu má `status: "matched"`, `matchedBy: "ref"`; reference,
 která se nenašla, `status: "notFound"` s příznakem `referenceError: true`
 (chybu nese nález v `issues`). Řádek obohacený z historie nese položku jako
@@ -2143,13 +2167,15 @@ do něj přidávají vlastní bloky bez změny schématu:
 Klient vyplňuje `userAction` mezi `/preview` a `/apply`. `/apply` aktion
 zvalidnuje a buď uloží, nebo vrátí chybu se seznamem nerozhodnutých referencí.
 
-**Volby platí jen v návrhu** (#166 D32). Pokyn `_resolve` nečte — reference
-určuje payload (§ 5 „Reference na záznamy“), volby DPH hlásí info
-`vat_pin_ignored`. Dočasná výjimka: `_resolve.partner`
-a `_resolve.rows[].partner` (partner účetního a pokladního dokladu), dokud
-nedostanou vlastní pole (`tasks/doc-format-partner-fields.md`). V návrhu
+**Volby platí jen v návrhu** (#166 D32). Pokyn `_resolve` nečte vůbec —
+reference určuje payload (§ 5 „Reference na záznamy“); payload s blokem
+projde a dostane jeden info nález `resolve_ignored`. V návrhu
 volba `useExisting` přebíjí i položku, kterou řádku zapsalo obohacení
-(`item.ref`); nenalezený `ref` z payloadu volbou přebít nejde.
+(`item.ref`); nenalezený `ref` z payloadu volbou přebít nejde. Volby
+`_resolve.partner` a `_resolve.rows[i].partner` (`useExisting:<id>`) určují
+v návrhu partnera účetního a pokladního dokladu, když payload pole
+`partner` / `rows[].partner` nenese; uvedené pole má přednost. Volba na
+neexistující nebo smazanou osobu je warning `pin_target_missing`.
 
 ### Issue codes — dokumenty
 
@@ -2203,7 +2229,8 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v nabídce kódů k efektivnímu místu a **datu sazby řádku** (`_resolve.vatCodeOptions` je nabídka k datu sazby dokladu; u řádku s vlastním datem se ověřuje nabídka k jeho datu, #159) — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce — i u předmětu plnění řádku, kde se čeká `useValue:<kód>`); path dle volby (#87 B, #89 D12). |
-| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). **V pokynu** každá volba DPH v `_resolve` (místo, režim, kód řádku, předmět plnění — i neplatná): pokyn volby nečte (#166 D19). |
+| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). Také volba kódu řádku u dokladu se zvoleným režimem Bez DPH mimo tuzemsko (#89 D4). Jen návrh — pokyn `_resolve` nečte a hlásí `resolve_ignored`. |
+| `resolve_ignored` | info | Jen pokyn: payload nese blok `_resolve` — pokyn ho celý ignoruje (volby DPH, položek, partnerů i vynechání řádků; #166 D32). Jeden nález na payload, path `_resolve`. |
 | `vat_recap_missing` | error | Jen pokyn: `vat.recapSource: "declared"` bez řádků `vatRecap` (#166 D20). Path `vatRecap`. |
 | `vat_recap_code_missing` | error | Jen pokyn: řádek převzaté rekapitulace nemá kód DPH — kód se z řádků nedohledává (#166 D20). Path `vatRecap.N.vatCode`. |
 | `import_requires_instruction` | error | `applyOptions.importNumber` v režimu návrh (REST s `applyOptions.interpret: true`): import přenáší hotový doklad, jde jen pokynem (#166 D22). Path `applyOptions.importNumber`. |
@@ -2226,7 +2253,9 @@ dostanou z odmítnutého `/apply` (oba režimy), z úspěšného `/apply` pokynu
 | `invalid_value` | error | `cashDirection` pokladního dokladu není 1 ani 2. |
 | `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo cílová tabulka dimenze nemá `exchangeKey` (#110 T2, #166 D8). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
 | `reference_not_found` / `reference_ambiguous` / `reference_invalid` / `reference_no_key` / `reference_column_not_allowed` / `reference_table_unknown` | error | Reference formátu dokladu (#166 D30, § 5 „Reference na záznamy“) se nenašla, není jednoznačná, nemá tvar reference, nebo cílová tabulka hledání neumí — kód resolveru (§ 8.6), path = pole s referencí (`supplier`, `rows.N.item`, `numberSeries`, `payment.ownBankAccount`, `cashDesk`, `dimensions.<id>`, `rows.N.account`, `vat.registration`, `correction.originalDoc`). Oba režimy; odpověď 422 `validation_failed`, nic se neuloží. U dimenze nese zpráva její název. |
-| `reference_missing` | error | Jen pokyn: strana nebo položka jako objekt bez `ref`, ale s názvem / IČO / DIČ / kódem — pokyn podle údajů nehledá a nic nezakládá (#166 D31). Path `supplier` / `customer` / `balanceParty` / `rows.N.item`. |
+| `reference_missing` | error / warning | Jen pokyn: strana nebo položka jako objekt bez `ref`, ale s názvem / IČO / DIČ / kódem — pokyn podle údajů nehledá a nic nezakládá (#166 D31). Path `supplier` / `customer` / `balanceParty` / `rows.N.item`. Partner (`partner`, `rows.N.partner`) jen údaji: v pokynu chyba, v návrhu warning a pole se nepoužije — podle údajů se nehledá v žádném režimu. |
+| `partner_not_supported` | error / warning | Pole `partner` na hlavičce typu, který ho nenese (faktury — partnerem je strana; #166 D30). V pokynu chyba, v návrhu varování a pole se ignoruje. Path `partner`. |
+| `partner_conflict` | error | Jen pokyn: u pokladního dokladu / prodejky určují pole `partner` a strana podle směru různé osoby. Path `partner`. |
 | `signal_not_allowed` | error | Jen pokyn: dočasný signál návrhu (#166 D39) — `rows.N.item.ourCode`, účet řádku holým číslem (`rows.N.account`), `vat.registrationCountry`. Zpráva radí, které pole použít. |
 | `unit_not_found` | warning / error | Jednotka řádku: návrh ji nerozpoznal (warning, doplní se výchozí); v pokynu není přesným systémovým kódem jednotky (error, #166 D37). Path `rows.N.unit`. |
 | `account_not_found` | warning | Jen návrh: účet řádku holým číslem (signál) není v rozvrhu — řádek bude bez účtu. V pokynu je nenalezený účet `reference_not_found`. |
@@ -2351,7 +2380,8 @@ Kroky jsou pro oba režimy (§ 3) stejné; liší se tím, co dělají:
 | resolve — účet řádku, jednotka | reference, nebo signál holým číslem (nenalezený = warning); jednotka i zkratkou a aliasem | jen reference (nenalezená = chyba); jednotka jen přesným systémovým kódem (`unit_not_found` = chyba) |
 | resolve — řada, pokladna, vlastní účet, dimenze, registrace DPH, původní doklad | reference | reference |
 | resolve — kódy DPH | odvození, soulad se signály, volby uživatele (§ 8.4) | kód z payloadu se jen ověří |
-| reconcile | čte `userAction` vč. vynechání řádků | `_resolve` se nečte (D32) — kromě dočasných `partner` a `rows[].partner`; řádky se nevynechávají |
+| resolve — partner účetního a pokladního dokladu (`partner`, `rows[].partner`) | jen reference; bez pole volba `_resolve…partner` | jen reference |
+| reconcile | čte `userAction` vč. vynechání řádků | `_resolve` se nečte vůbec (D32) — blok se zahodí před validací, info `resolve_ignored`; řádky se nevynechávají |
 | side-creates | podle `autoCreateMode` / `userAction` + učení dodavatelských kódů | **žádné** — pokyn osoby, položky ani účty partnerů nezakládá; `autoCreateMode` nečte |
 | transform | místo, režim, registrace, rekapitulace a zaokrouhlení podle § 8.4 a § 5 | hodnoty z payloadu a výchozí hodnoty (§ 3, tabulka D20) |
 | po uložení (v transakci) | — | kontrolní součet `totals` proti uložené hlavičce; neshoda = rollback a `totals_check_failed` (§ 5) |
@@ -2757,8 +2787,8 @@ Validate + resolve. Bez DB writes.
 
 **Request body:** canonical JSON. Z klientského `_resolve` se čtou jen
 `contentTag` a volby DPH (`rows[i].vatCode.userAction`, `vat.place` /
-`vat.mode.userAction`, #87 task B — jen v režimu návrh; pokyn je ignoruje
-s `vat_pin_ignored`); odpověď nese čerstvý `_resolve`,
+`vat.mode.userAction`, #87 task B — jen v režimu návrh; pokyn blok
+`_resolve` ignoruje celý s `resolve_ignored`); odpověď nese čerstvý `_resolve`,
 takže `userAction` se v ní neobjeví — mapu rozhodnutí drží klient.
 
 **Response:** enriched canonical s vyplněným `_resolve` na top-level a

@@ -574,9 +574,10 @@ Vědomé normalizace a limity fáze 1:
   automatikou má v dumpu `totals.totalRoundingMode`. V demo sadě
   `it-servis` je to sedm přijatých faktur zaokrouhlených na koruny
   (`"unit"`).
-- Řádkový partner účetního dokladu a hlavičkový partner `cmnbkp` se
-  nepřenáší (formát ho nemá) → warning při dumpu; pole dostanou
-  v `tasks/doc-format-partner-fields.md`.
+- Partner účetního dokladu se přenáší (#166 D30): hlavičkový polem
+  `partner` (objekt s `ref` a daty), řádkový polem `rows[].partner`
+  (reference číslem osoby). Pokladní doklad a prodejka nesou partnera
+  hlavičky stranou podle směru, partnera řádku (úhrada, záloha) polem.
 - Záznam bez hodnoty přirozeného klíče nelze odkázat (#166 U5) → warning
   a pole se vynechá: vlastní bankovní účet a položka bez kódu, řada
   a registrace DPH bez kódu (zdroj před `ds-upgrade`), jednotka bez
