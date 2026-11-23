@@ -26,10 +26,11 @@ final class EvalReport
             $set['name'], (int) ($set['messages'] ?? 0), $repeat, $run['variant']['name'],
         );
         $lines[] = sprintf(
-            'Model %s (%s, připojení %s — %s), profil %s %s%s',
+            'Model %s (%s, připojení %s — %s), profil %s %s%s, schéma %s',
             $effective['model'], $effective['platform'], $effective['connection'], $effective['connectionOrigin'] ?? '?',
             $effective['profile'], $effective['promptVersion'],
             ($effective['promptSource'] ?? '') === 'file' ? ' (prompt ze souboru)' : '',
+            is_string($effective['schemaHash'] ?? null) ? substr($effective['schemaHash'], 0, 8) : 'bez otisku',
         );
         $failed = [];
         foreach ($m as $key => $value) {

@@ -1,7 +1,7 @@
 <script>
   // Jeden řádek o běhu (EvalRunSummary): varianta · model (štítky) ·
-  // prompt · ×N · datum · commit · štítek „jiná verze sady“.
-  import { formatDateTime, formatCommit } from '../format.js';
+  // prompt · schéma · ×N · datum · commit · štítek „jiná verze sady“.
+  import { formatDateTime, formatCommit, formatHash } from '../format.js';
   import { t } from '../i18n/index.js';
   let { summary, showFile = true } = $props();
 </script>
@@ -18,6 +18,8 @@
     <span class="dev-muted">effort</span> <span>{summary.effort ?? '—'}</span>
   {/if}
   <span class="dev-muted">prompt</span> <span>{summary.promptVersion ?? '—'}</span>
+  <span class="dev-muted">{t('testing.run.schema')}</span>
+  <code title={summary.schemaHash ? t('testing.run.schemaTitle', { hash: summary.schemaHash }) : t('testing.run.schemaMissingTitle')}>{formatHash(summary.schemaHash)}</code>
   <span>× {summary.repeat}</span>
   <span>{formatDateTime(summary.startedAt)}</span>
   <span class="dev-muted" title={summary.dirty ? t('testing.run.dirtyTitle') : ''}>{formatCommit(summary.commit, summary.dirty)}</span>

@@ -18,6 +18,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
+use Shipard\Module\Core\Exchange\Schema\SchemaFingerprint;
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputing;
 use Shipard\Module\Core\Mail\Analysis\AnalysisOutcome;
 use Shipard\Module\Core\Mail\Eval\EvalDataSource;
@@ -470,6 +471,9 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame('claude-sonnet-5-5', $run['variant']['effective']['model']);
         $this->assertSame('v4.7.1', $run['variant']['effective']['promptVersion']);
         $this->assertSame(hash('sha256', 'T'), $run['variant']['effective']['promptHash']);
+        // #166 D66: otisk výstupního schématu profilu, proti kterému se výstup validoval.
+        $this->assertSame(SchemaFingerprint::of(self::PROFILE['output_schema']), $run['variant']['effective']['schemaHash']);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $run['variant']['effective']['schemaHash']);
         $this->assertSame('claude-haiku-5-5', $run['variant']['effective']['contentTags']['model']);
         $this->assertSame(2, $run['repeat']);
         $this->assertSame(2, $run['metrics']['calls.total']);

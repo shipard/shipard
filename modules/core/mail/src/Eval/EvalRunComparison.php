@@ -162,6 +162,8 @@ final class EvalRunComparison
                 'improved' => $improved,
                 'worsened' => $worsened,
             ],
+            'samePrompt' => self::sameHash($this->a, $this->b, 'promptHash'),
+            'sameSchema' => self::sameHash($this->a, $this->b, 'schemaHash'),
             'sameSelection' => ($this->a['set']['messages'] ?? null) === ($this->b['set']['messages'] ?? null)
                 && ($this->a['set']['only'] ?? []) === ($this->b['set']['only'] ?? [])
                 && ($this->a['set']['limit'] ?? null) === ($this->b['set']['limit'] ?? null),
@@ -257,6 +259,24 @@ final class EvalRunComparison
                 $r['dirty'] ? ', neuložené změny' : '',
             );
         }
+        if ($c['samePrompt'] === false) {
+            $lines[] = sprintf(
+                '<comment>Běhy mají jiný prompt: A %s (%s), B %s (%s).</comment>',
+                $c['runs']['a']['promptVersion'] ?? '?', self::shortHash($c['runs']['a']['promptHash']),
+                $c['runs']['b']['promptVersion'] ?? '?', self::shortHash($c['runs']['b']['promptHash']),
+            );
+        }
+        if ($c['sameSchema'] === false) {
+            $lines[] = sprintf(
+                '<comment>Běhy validovaly výstup modelu proti jinému schématu profilu: A %s, B %s.</comment>',
+                self::shortHash($c['runs']['a']['schemaHash']), self::shortHash($c['runs']['b']['schemaHash']),
+            );
+        } elseif ($c['sameSchema'] === null && ($c['runs']['a']['schemaHash'] ?? $c['runs']['b']['schemaHash']) !== null) {
+            $lines[] = sprintf(
+                'Schéma profilu nejde porovnat — záznam bez otisku (běh před #166 D66): A %s, B %s.',
+                self::shortHash($c['runs']['a']['schemaHash']), self::shortHash($c['runs']['b']['schemaHash']),
+            );
+        }
         if (!$c['sameSelection']) {
             $lines[] = '<comment>Běhy mají jiný výběr zpráv (--only / --limit) — porovnávej s rezervou.</comment>';
         }
@@ -306,13 +326,38 @@ final class EvalRunComparison
             'variant' => $run['variant']['name'] ?? null,
             'model' => $effective['model'] ?? null,
             'connection' => $effective['connection'] ?? null,
+            'promptVersion' => $effective['promptVersion'] ?? null,
             'promptHash' => $effective['promptHash'] ?? null,
+            // Otisk výstupního schématu profilu (#166 D66); starší běhy ho nemají.
+            'schemaHash' => $effective['schemaHash'] ?? null,
             'messages' => (int) ($run['set']['messages'] ?? 0),
             'repeat' => self::repeatOf($run),
             'startedAt' => $run['startedAt'] ?? null,
             'commit' => $run['git']['commit'] ?? null,
             'dirty' => (bool) ($run['git']['dirty'] ?? false),
         ];
+    }
+
+    /**
+     * Shoda otisku z `variant.effective` obou běhů: true / false, nebo null,
+     * když ho některý záznam nenese (starší běh) — pak se neví.
+     *
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     */
+    private static function sameHash(array $a, array $b, string $key): ?bool
+    {
+        $ha = $a['variant']['effective'][$key] ?? null;
+        $hb = $b['variant']['effective'][$key] ?? null;
+        if (!is_string($ha) || $ha === '' || !is_string($hb) || $hb === '') {
+            return null;
+        }
+        return $ha === $hb;
+    }
+
+    private static function shortHash(mixed $hash): string
+    {
+        return is_string($hash) && $hash !== '' ? substr($hash, 0, 8) : 'bez otisku';
     }
 
     /** @param array<string, mixed> $run */

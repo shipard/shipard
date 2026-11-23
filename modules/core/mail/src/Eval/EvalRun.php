@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Mail\Eval;
 
 use Shipard\Core\Ai\AiCallPlan;
+use Shipard\Module\Core\Exchange\Schema\SchemaFingerprint;
 
 /**
  * Sestavení souboru výsledků běhu (`shpd.eval.run.v1`, D36): sada (název,
  * země, profil, hash obsahu, výběr), git (commit, neuložené změny),
  * varianta deklarovaná i rozepsaná na skutečné hodnoty (profil, verze
- * a hash promptu, platforma a původ připojení, model, ladění, strop,
- * ladění štítků), začátek a konec, opakování, plánovaný počet volání
+ * a hash promptu, otisk výstupního schématu profilu — `schemaHash`,
+ * {@see SchemaFingerprint}, #166 D66: proti kterému schématu se výstup
+ * modelu validoval; shodný otisk má u verze promptu zapsaný
+ * `ProfileSchemaDriftTest` —, platforma a původ připojení, model, ladění,
+ * strop, ladění štítků), začátek a konec, opakování, plánovaný počet volání
  * a důvod předčasného konce (`stoppedBy`: `maxCost` strop útraty,
  * `cancelled` SIGTERM; null = doběhlo, D61), metriky (vč. rozpadu
  * `byPath` podle cesty výpočtu, #103 D76) a per zpráva × opakování jen
@@ -64,6 +68,7 @@ final class EvalRun
                     'promptVersion' => (string) ($profile['prompt_version'] ?? ''),
                     'promptSource' => $variant->promptTemplate !== null ? 'file' : 'profile',
                     'promptHash' => hash('sha256', $promptTemplate),
+                    'schemaHash' => SchemaFingerprint::of(self::schemaOf($profile)),
                     'platform' => $plan->platform,
                     'connection' => $plan->connectionCode,
                     'connectionOrigin' => $plan->origins['connection'] ?? null,
@@ -100,5 +105,17 @@ final class EvalRun
             'calls' => array_map(static fn (EvalCallResult $r): array => $r->toArray(), $results),
 
         ];
+    }
+
+    /**
+     * `output_schema` řádku profilu — text JSON z databáze, nebo už dekódované pole.
+     *
+     * @param array<string, mixed> $profile
+     * @return array<int|string, mixed>|string|null
+     */
+    private static function schemaOf(array $profile): array|string|null
+    {
+        $schema = $profile['output_schema'] ?? null;
+        return is_array($schema) || is_string($schema) ? $schema : null;
     }
 }

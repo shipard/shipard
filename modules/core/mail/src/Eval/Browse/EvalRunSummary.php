@@ -41,6 +41,8 @@ final class EvalRunSummary
             'platform' => $effective['platform'] ?? null,
             'promptVersion' => $effective['promptVersion'] ?? null,
             'promptHash' => $effective['promptHash'] ?? null,
+            // Otisk výstupního schématu profilu (#166 D66); starší běhy ho nemají.
+            'schemaHash' => $effective['schemaHash'] ?? null,
             'thinking' => $effective['thinking'] ?? null,
             'effort' => $effective['effort'] ?? null,
             'repeat' => max(1, (int) ($run['repeat'] ?? 1)),

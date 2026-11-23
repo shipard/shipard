@@ -176,6 +176,63 @@ final class EvalRunComparisonTest extends TestCase
         $this->assertStringContainsString('různou verzi metrik (A v1, B v2)', implode("\n", EvalRunComparison::of($a, $b)->lines()));
     }
 
+    /** #166 D66: rozdílné výstupní schéma profilu je v porovnání vidět; starší záznam otisk nemá. */
+    public function testDifferentOutputSchemaIsFlagged(): void
+    {
+        $a = self::fixture('run-a');
+        $b = self::fixture('run-b');
+
+        // Dva starší běhy: otisk nenese žádný, neví se a nic se nehlásí.
+        $old = EvalRunComparison::of($a, $b);
+        $this->assertNull($old->toArray()['sameSchema']);
+        $this->assertNull($old->toArray()['runs']['a']['schemaHash']);
+        $this->assertStringNotContainsString('chéma', implode("\n", $old->lines()));
+
+        // Starší běh proti novému: porovnat nejde.
+        $b['variant']['effective']['schemaHash'] = str_repeat('b', 64);
+        $mixed = EvalRunComparison::of($a, $b);
+        $this->assertNull($mixed->toArray()['sameSchema']);
+        $this->assertStringContainsString(
+            'Schéma profilu nejde porovnat — záznam bez otisku (běh před #166 D66): A bez otisku, B bbbbbbbb.',
+            implode("\n", $mixed->lines()),
+        );
+
+        $a['variant']['effective']['schemaHash'] = str_repeat('a', 64);
+        $different = EvalRunComparison::of($a, $b);
+        $this->assertFalse($different->toArray()['sameSchema']);
+        $this->assertSame(str_repeat('a', 64), $different->toArray()['runs']['a']['schemaHash']);
+        $this->assertStringContainsString(
+            'Běhy validovaly výstup modelu proti jinému schématu profilu: A aaaaaaaa, B bbbbbbbb.',
+            implode("\n", $different->lines()),
+        );
+
+        $a['variant']['effective']['schemaHash'] = str_repeat('b', 64);
+        $same = EvalRunComparison::of($a, $b);
+        $this->assertTrue($same->toArray()['sameSchema']);
+        $this->assertStringNotContainsString('chéma', implode("\n", $same->lines()));
+    }
+
+    /** Rozdílný prompt se hlásí stejně jako rozdílné schéma. */
+    public function testDifferentPromptIsFlagged(): void
+    {
+        $a = self::fixture('run-a');
+        $b = self::fixture('run-b');
+        $a['variant']['effective']['promptVersion'] = 'v4.12.0';
+        $a['variant']['effective']['promptHash'] = str_repeat('1', 64);
+        $b['variant']['effective']['promptVersion'] = 'v4.13.0';
+        $b['variant']['effective']['promptHash'] = str_repeat('1', 64);
+        $this->assertTrue(EvalRunComparison::of($a, $b)->toArray()['samePrompt']);
+        $this->assertStringNotContainsString('jiný prompt', implode("\n", EvalRunComparison::of($a, $b)->lines()));
+
+        $b['variant']['effective']['promptHash'] = str_repeat('2', 64);
+        $c = EvalRunComparison::of($a, $b);
+        $this->assertFalse($c->toArray()['samePrompt']);
+        $this->assertStringContainsString(
+            'Běhy mají jiný prompt: A v4.12.0 (11111111), B v4.13.0 (22222222).',
+            implode("\n", $c->lines()),
+        );
+    }
+
     public function testDifferentSetsAreRefused(): void
     {
 

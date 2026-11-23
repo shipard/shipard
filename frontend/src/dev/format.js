@@ -91,6 +91,11 @@ export function versionLabel(v) {
   return parts.join(' · ');
 }
 
+/** Zkrácený otisk (sha256 promptu, schématu) na 8 znaků; bez otisku pomlčka. */
+export function formatHash(hash) {
+  return hash ? String(hash).slice(0, 8) : DASH;
+}
+
 /** Zkrácený commit `1baa027d`; `dirty` → `1baa027d*`. */
 export function formatCommit(commit, dirty = false) {
   if (!commit) return DASH;
