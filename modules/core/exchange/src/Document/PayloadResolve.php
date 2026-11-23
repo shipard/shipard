@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Document;
 
+use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
+use Shipard\Module\Core\Exchange\Resolve\ReferenceException;
+use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
 use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Docs\Core\VatRateDates;
@@ -16,12 +19,196 @@ use Shipard\Module\Docs\Core\VatRateDates;
  */
 final class PayloadResolve
 {
+    /** Blok `_resolve` reference, která se nenašla — chybu už nese nález. */
+    public const REFERENCE_ERROR_BLOCK = ['status' => 'notFound', 'referenceError' => true];
+
+    public const ACCOUNTS_TABLE = 'economy_accounting_accounts';
+
     public function __construct(
         private readonly PayloadContext $payload,
         private readonly VatCodeResolver $vatCodeResolver,
         private readonly VatCodeDerivation $vatCodeDerivation,
+        /** Null = zdroj dat bez dimenzí s přirozeným klíčem — objekt `dimensions` se ignoruje. */
+        private readonly ?DimensionResolver $dimensionResolver = null,
     ) {
     }
+
+    // ── Reference formátu (#166 D30–D33) ────────────────────────────────────
+
+
+    /**
+     * Blok `_resolve` pro referenci strany nebo položky: nalezeno =
+     * `matched` s `matchedBy: "ref"`; chyba = nález a blok s příznakem
+     * `referenceError`, podle kterého {@see Interpret\RecordMatching::resolveOne()} nic dalšího
+     * nehlásí ani nezakládá.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed>
+     */
+    public function referenceBlock(string $table, mixed $value, string $path, array &$issues): array
+    {
+        try {
+            return ResolveResult::matched($this->payload->references()->resolve($table, $value), 'ref')->toArray();
+        } catch (ReferenceException $e) {
+            $issues[] = PayloadContext::referenceIssue($e, $path);
+            return self::REFERENCE_ERROR_BLOCK;
+        }
+    }
+
+    /**
+     * Partner hlavičky účetního a pokladního dokladu a partner řádku (#166
+     * D30): hledá se **jen přes `ref`**, v obou režimech — pole je nové,
+     * žádný uložený návrh ho nenese, takže se podle údajů nehledá ani
+     * v návrhu. Objekt s názvem, IČO nebo DIČ bez `ref` je v pokynu chyba
+     * `reference_missing`; v návrhu varování a pole se nepoužije (dál platí
+     * volba `_resolve…partner`, u pokladního dokladu strana).
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @param bool $lenient návrh: údaje bez `ref` jen varují a pole se nepoužije;
+     *        pokyn (false): chyba `reference_missing`
+     * @return array<string, mixed>|null blok `_resolve`; null = pole partnera neurčuje
+     */
+    public function resolvePartner(string $path, mixed $partner, bool $lenient, array &$issues): ?array
+    {
+        if (!is_array($partner)) {
+            return null;
+        }
+        if (CanonicalReferences::isSet($partner['ref'] ?? null)) {
+            return $this->referenceBlock('base_persons_persons', $partner['ref'], $path, $issues);
+        }
+        if (!CanonicalReferences::partyIdentifies($partner)) {
+            return null;
+        }
+        $issues[] = [
+            'severity' => $lenient ? 'warning' : 'error',
+            'path'     => $path,
+            'code'     => 'reference_missing',
+            'message'  => $lenient
+                ? 'Partner nese údaje osoby, ale ne referenci — pole se nepoužije.'
+                : 'Partner nese údaje osoby, ale ne referenci — v pokynu ho urči polem ref (id, "@kód osoby", "@company_id:IČO").',
+        ];
+        return $lenient ? null : self::REFERENCE_ERROR_BLOCK;
+    }
+
+    /** Id osoby z bloku `_resolve`, jen když se našla. */
+    public static function matchedPersonId(mixed $block): ?int
+    {
+        return is_array($block) && ($block['status'] ?? null) === ResolveStatus::Matched->value && isset($block['matchedId'])
+            ? (int) $block['matchedId']
+            : null;
+    }
+
+    /**
+     * Řádek canonicalu nese blok položky — tatáž podmínka, podle které
+     * {@see DocumentApplier::resolveAll()} vyrábí `_resolve.rows[i].item`; podle ní
+     * {@see Interpret\RecordMatching::skippedRowIndices()} uznává položkovou volbu `skip`.
+     */
+    public static function rowHasItem(mixed $row): bool
+    {
+        return is_array($row) && is_array($row['item'] ?? null) && $row['item'] !== [];
+    }
+
+    /**
+     * Dimenze deníku z objektu `dimensions` (#110 T2): klíč = id dimenze,
+     * hodnota = reference na záznam cílové tabulky (#166 D30 — id, nebo
+     * `"@klíč"` podle `exchangeKey` tabulky). Neznámé id hlásí
+     * {@see DocumentValidator} (`dimension_unknown`) — tady se přeskočí;
+     * prázdná hodnota = bez dimenze; špatný tvar, nenalezený nebo
+     * nejednoznačný záznam = chyba s kódem resolveru (blokuje apply).
+     * Platí v obou režimech i v importním módu. Bez resolveru (DS bez
+     * dimenzí) se nic neřeší.
+     *
+     * @param array<string, mixed> $dimensions
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, array{value: int|string, status: string, matchedId?: int}>
+     */
+    public function resolveDimensions(array $dimensions, string $path, array &$issues): array
+    {
+        if ($this->dimensionResolver === null) {
+            return [];
+        }
+        $out = [];
+        foreach ($dimensions as $id => $value) {
+            $id = (string) $id;
+            if (!CanonicalReferences::isSet($value) || !$this->dimensionResolver->knows($id)) {
+                continue;
+            }
+            try {
+                $out[$id] = [
+                    'value'     => $value,
+                    'status'    => 'matched',
+                    'matchedId' => $this->dimensionResolver->resolve($id, $value),
+                ];
+            } catch (ReferenceException $e) {
+                $out[$id] = ['value' => $value, 'status' => 'notFound'];
+                $issues[] = PayloadContext::referenceIssue($e, "{$path}.{$id}", $this->dimensionResolver->name($id) . ': ');
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<string, array{value: string, status: string, matchedId?: int}> $resolve
+     * @return array<string, int> id dimenze → id záznamu (jen nalezené)
+     */
+    public static function matchedDimensionIds(array $resolve): array
+    {
+        $out = [];
+        foreach ($resolve as $id => $r) {
+            if (($r['status'] ?? null) === 'matched' && isset($r['matchedId'])) {
+                $out[(string) $id] = (int) $r['matchedId'];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Účet řádku zadaný **referencí** (číslo = id, `"@518100"`) — v obou
+     * režimech. Nenalezený je chyba s kódem resolveru. Holé číslo je signál
+     * návrhu (D39) a sem nepatří.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array{number: ?string, matchedId: ?int, status: string}
+     */
+    public function rowAccountReference(int|string $idx, mixed $account, array &$issues): array
+    {
+        try {
+            $accountId = $this->payload->references()->resolve(self::ACCOUNTS_TABLE, $account);
+        } catch (ReferenceException $e) {
+            $issues[] = PayloadContext::referenceIssue($e, "rows.{$idx}.account");
+            return ['number' => is_string($account) ? substr($account, 1) : null, 'matchedId' => null, 'status' => 'notFound'];
+        }
+        return [
+            'number'    => $this->payload->references()->keyOf(self::ACCOUNTS_TABLE, $accountId),
+            'matchedId' => $accountId,
+            'status'    => 'matched',
+        ];
+    }
+
+    /**
+     * Opravný doklad (#92 task B U3): výsledek dohledání původního dokladu
+     * jako blok `_resolve.correction` — tvar jako ResolveResult::toArray();
+     * souhrn ho nepočítá. Null = doklad blok nenese nebo ho typ nepodporuje.
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<string, mixed>|null
+     */
+    public function correctionBlock(array $canonical): ?array
+    {
+        $correction = $this->payload->correctionDecision($canonical);
+        if ($correction === null || !$correction['supported']) {
+            return null;
+        }
+        return array_filter([
+            'status'       => $correction['status'],
+            'matchedId'    => $correction['originalId'],
+            'matchedBy'    => $correction['matchedBy'],
+            'docNumber'    => $correction['originalNumber'],
+            'taxPointDate' => $correction['originalDate'],
+        ], static fn ($v) => $v !== null);
+    }
+
+    // ── Kódy DPH, které payload říká ────────────────────────────────────────
 
     /**
      * `_resolve.rows[].vatCode` řádku, jehož kód **nese payload**: jen se

@@ -10,6 +10,7 @@ use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\PayloadContext;
+use Shipard\Module\Core\Exchange\Document\PayloadResolve;
 use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
 use Shipard\Module\Core\Exchange\Document\SupplierVatPrices;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
@@ -81,6 +82,7 @@ final class VatInterpretation
         private readonly Connection $db,
         private readonly ConfigRuntime $config,
         private readonly PayloadContext $payload,
+        private readonly PayloadResolve $resolve,
         private readonly VatCodeResolver $vatCodeResolver,
         private readonly VatCodeDerivation $vatCodeDerivation,
         private readonly VatPlaceDerivation $vatPlaceDerivation,
@@ -983,6 +985,41 @@ final class VatInterpretation
         return $kind !== null
             ? 'vyber kód DPH u řádku, nebo zvol režim Bez DPH.'
             : 'doklad založ ručně.';
+    }
+
+    /**
+     * `_resolve.rows[].vatCode` jednoho řádku dokladu z papíru: rozhodnutí
+     * interpretace ({@see rowVatCode()}), a kde nerozhoduje, kód z payloadu
+     * ověřený proti číselníku — s procentem z dokladu jako zálohou, když kód
+     * k datu sazbu nemá. Null = řádek blok nemá.
+     *
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $vatCtx {@see context()}
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed>|null
+     */
+    public function resolveRowVatCode(
+        int $idx,
+        array $row,
+        array $vatCtx,
+        string $vatCountry,
+        string $supplierCountry,
+        array &$issues,
+    ): ?array {
+        $decided = $this->rowVatCode($idx, $row, $vatCtx, $vatCountry, $issues);
+        if ($decided !== null) {
+            return $decided['block'];
+        }
+        $pct = is_array($row['vat'] ?? null) ? ($row['vat']['pct'] ?? null) : null;
+        return $this->resolve->rowVatCode(
+            $idx,
+            $row,
+            $vatCtx,
+            $vatCountry,
+            $supplierCountry,
+            $issues,
+            is_numeric($pct) ? (float) $pct : null,
+        );
     }
 
     /**

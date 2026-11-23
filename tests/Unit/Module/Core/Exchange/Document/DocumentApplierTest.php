@@ -13,6 +13,7 @@ use Shipard\Core\Document\DocumentResult;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\RecordMatching;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
 use Shipard\Module\Core\Exchange\Document\SourceRef;
@@ -111,6 +112,12 @@ class DocumentApplierTest extends TestCase
             },
         );
         return $config;
+    }
+
+    /** Hledání záznamů návrhu (#166 D51) — volby uživatele řeší interpretace, ne applier. */
+    private static function recordMatching(DocumentApplier $applier): RecordMatching
+    {
+        return (new \ReflectionProperty(DocumentApplier::class, 'recordMatching'))->getValue($applier);
     }
 
     private static ?array $vatPlaces = null;
@@ -793,8 +800,9 @@ class DocumentApplierTest extends TestCase
 
         $plan = ['errorCode' => null, 'errorMessage' => null];
         $issues = [];
-        $ref = new \ReflectionMethod($applier, 'resolveOne');
-        $res = $ref->invokeArgs($applier, [
+        $matching = self::recordMatching($applier);
+        $ref = new \ReflectionMethod($matching, 'resolveOne');
+        $res = $ref->invokeArgs($matching, [
             'customer',
             ['status' => 'notFound'],
             'useExisting:2468',
@@ -818,8 +826,9 @@ class DocumentApplierTest extends TestCase
         $applier = $this->buildApplier(db: $db);
 
         $issues = [];
-        $ref = new \ReflectionMethod($applier, 'resolvePin');
-        $this->assertSame(77, $ref->invokeArgs($applier, ['partner', 'useExisting:77', &$issues]));
+        $matching = self::recordMatching($applier);
+        $ref = new \ReflectionMethod($matching, 'resolvePin');
+        $this->assertSame(77, $ref->invokeArgs($matching, ['partner', 'useExisting:77', &$issues]));
         $this->assertSame([], $issues);
 
         // b) smazaný/neexistující cíl → null + warning (žádná tichá ztráta)
@@ -828,8 +837,9 @@ class DocumentApplierTest extends TestCase
         $applier2 = $this->buildApplier(db: $db2);
 
         $issues2 = [];
-        $ref2 = new \ReflectionMethod($applier2, 'resolvePin');
-        $id = $ref2->invokeArgs($applier2, ['rows.0.partner', 'useExisting:99', &$issues2]);
+        $matching2 = self::recordMatching($applier2);
+        $ref2 = new \ReflectionMethod($matching2, 'resolvePin');
+        $id = $ref2->invokeArgs($matching2, ['rows.0.partner', 'useExisting:99', &$issues2]);
         $this->assertNull($id);
         $this->assertCount(1, $issues2);
         $this->assertSame('warning', $issues2[0]['severity']);
