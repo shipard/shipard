@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Mail;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Exchange\Document\SpecialPlaceSupply;
 use Shipard\Module\Core\Exchange\Enrich\ItemContentTags;

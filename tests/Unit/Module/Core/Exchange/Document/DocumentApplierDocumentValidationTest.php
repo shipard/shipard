@@ -7,7 +7,6 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 
 /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +14,9 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\Interpret\RecordMatching;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
+use Shipard\Module\Core\Exchange\Document\PayloadResolve;
+use Shipard\Module\Core\Exchange\Document\Interpret\FinishedDocument;
+use Shipard\Module\Core\Exchange\Document\Interpret\InterpretedDocument;
 use Shipard\Module\Core\Exchange\Document\Interpret\RecapInterpretation;
 use Shipard\Module\Core\Exchange\Document\PayloadContext;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
@@ -40,39 +42,6 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\World\Trade\TradeUnionResolver;
 use Shipard\Module\World\Vat\VatRateResolver;
 use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
-
-/**
- * Testable applier with `executeSql` no-op'd. `Dibi\Connection::query()` is
- * final and cannot be mocked, but the applier wraps it in a protected
- * method so subclasses can intercept.
- */
-class TestableDocumentApplier extends DocumentApplier
-{
-    /** @var list<array> */
-    public array $sqlCalls = [];
-
-    protected function executeSql(mixed ...$args): void
-    {
-        $this->sqlCalls[] = $args;
-    }
-
-    /** @var list<string> pořadí volání zámku podle `source.ref` */
-    public array $lockEvents = [];
-
-    /** false = zámek drží jiný pokyn (GET_LOCK vypršel). */
-    public bool $lockAvailable = true;
-
-    protected function acquireSourceLock(SourceRef $key): bool
-    {
-        $this->lockEvents[] = 'acquire';
-        return $this->lockAvailable;
-    }
-
-    protected function releaseSourceLock(SourceRef $key): void
-    {
-        $this->lockEvents[] = 'release';
-    }
-}
 
 class DocumentApplierTest extends TestCase
 {
@@ -120,7 +89,7 @@ class DocumentApplierTest extends TestCase
     /** Hledání záznamů návrhu (#166 D51) — volby uživatele řeší interpretace, ne applier. */
     private static function recordMatching(DocumentApplier $applier): RecordMatching
     {
-        return (new \ReflectionProperty(DocumentApplier::class, 'recordMatching'))->getValue($applier);
+        return self::partOf($applier, 'recordMatching');
     }
 
     private static ?array $vatPlaces = null;
@@ -1930,8 +1899,6 @@ class DocumentApplierTest extends TestCase
             'resolvedSupplier' => 5, 'resolvedCustomer' => null, 'resolvedSupplierBank' => null,
             'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [], 'resolvedRowVatCodes' => [],
         ];
-        $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
-
         // Papírová podoba (výchozí): interpretace z ní udělá hotový doklad
         // a ten jde do pokynu — data dokladu skládá vždy pokyn.
         // Importní mód je vždy pokyn (#166 D22).
@@ -1940,9 +1907,8 @@ class DocumentApplierTest extends TestCase
         }
         // Jako náhled a uložení: pokyn nejdřív dostane výchozí hodnoty
         // (hotový doklad je úplný, nic se nedoplní).
-        $canonical = (new \ReflectionMethod($applier, 'applyInstructionDefaults'))->invoke($applier, $canonical, ApplyMode::Instruction);
-        $ref = new \ReflectionMethod($applier, 'transform');
-        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Instruction);
+        $canonical = (new \ReflectionMethod($applier, 'applyInstructionDefaults'))->invoke($applier, $canonical);
+        return (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, null);
     }
 
     public function testTransformPassesImportNumberAsVirtualField(): void
@@ -2067,16 +2033,21 @@ class DocumentApplierTest extends TestCase
             'resolvedBalanceParty' => 77,
             'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [], 'resolvedRowVatCodes' => [],
         ];
-        $sideIds = ['supplier' => null, 'customer' => null, 'balanceParty' => null, 'supplierBank' => null, 'rowItems' => []];
-        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Instruction);
+        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, null);
 
         $this->assertSame(77, $data['partner_balance']);
         $this->assertSame(1, $data['partner_balance_manual']);
 
-        // Side-create má přednost před plánem (nově založená osoba).
-        $sideIds['balanceParty'] = 78;
-        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Instruction);
-        $this->assertSame(78, $data['partner_balance']);
+        // Osoba, kterou návrh teprve založí, přijde do hotového dokladu
+        // referencí po založení — pokyn ji dostane stejně jako nalezenou.
+        $interpreted = new InterpretedDocument(
+            document: $canonical,
+            report: [],
+            pending: [['key' => 'balanceParty', 'kind' => InterpretedDocument::PENDING_PERSON, 'ref' => 'balanceParty.ref']],
+            rowMap: [],
+            learn: ['supplier' => null, 'codes' => []],
+        );
+        $this->assertSame(78, $interpreted->withCreated(['balanceParty' => 78])['balanceParty']['ref']);
 
         // Bez plátce klíče vypadnou — odvození je na DocDocument.
         $data = $this->invokeTransform($applier, ['docType' => 'invoiceIssued', 'selfParty' => 'supplier', 'dates' => ['issueDate' => '2024-06-01']]);
@@ -3209,9 +3180,7 @@ class DocumentApplierTest extends TestCase
      */
     private function invokeTransformWithPlan(DocumentApplier $applier, array $canonical, array $plan): array
     {
-        $sideIds = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
-        $ref = new \ReflectionMethod($applier, 'transform');
-        return $ref->invoke($applier, $canonical, $plan, $sideIds, null, ApplyMode::Instruction);
+        return (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, null);
     }
 
     public function testValidateAcceptsAccountingDocumentWithoutParty(): void
@@ -3397,7 +3366,7 @@ class DocumentApplierTest extends TestCase
         );
         unset($payload['vat']);
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $result = $applier->preview($payload, ApplyMode::Instruction);
+        $result = $applier->preview($payload);
 
         $this->assertTrue($result->success);
         $resolve = $result->canonical['_resolve'];
@@ -3436,7 +3405,7 @@ class DocumentApplierTest extends TestCase
         // Rekapitulace jde stejnou kaskádou — bez prefixu také země dodavatele.
         $payload['vatRecap'][0]['vatCode'] = 'special110';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload, ApplyMode::Instruction);
+        $applier->preview($payload);
     }
 
     /** Explicitní vat.registrationCountry má přednost před prefixem kódu (zdroj bez registrace DPH). */
@@ -3465,7 +3434,7 @@ class DocumentApplierTest extends TestCase
         );
         $payload['vat']['registrationCountry'] = 'DE';
         $payload['applyOptions'] = self::IMPORT_OPTIONS;
-        $applier->preview($payload, ApplyMode::Instruction);
+        $applier->preview($payload);
     }
 
     // ── Kód DPH přijatého dokladu ze signálů (VatCodeDerivation, D1–D5) ────
@@ -4622,9 +4591,9 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('warning', $issues[0]['severity']);
     }
 
-    public function testTransformUsesRowOperationDefaultsAndPassthroughWins(): void
+    /** Výchozí pohyb řádku zapisuje interpretace do hotového dokladu; výslovný pohyb má přednost. */
+    public function testFinishedDocumentCarriesRowOperationDefaultsAndPassthroughWins(): void
     {
-        $applier = $this->buildApplier();
         $canonical = [
             'docType' => 'invoiceReceived',
             'dates'   => ['issueDate' => '2026-06-10'],
@@ -4633,17 +4602,25 @@ class DocumentApplierTest extends TestCase
                 ['operation' => 'purchase.other', 'quantity' => 1, 'unitPrice' => 50.0, 'totalPrice' => 50.0],
             ],
         ];
-        $plan = [
-            'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [],
-            'resolvedRowVatCodes' => [], 'resolvedRowAccounts' => [], 'resolvedRowPartners' => [],
-            'rowOperationDefaults' => [0 => 'purchase.services', 1 => 'acc.entry'],
-        ];
+        $plan = PayloadResolve::basePlan(['rows' => [['index' => 0], ['index' => 1]]], [])
+            + ['rowOperationDefaults' => [0 => 'purchase.services', 1 => 'acc.entry']];
 
-        $data = $this->invokeTransformWithPlan($applier, $canonical, $plan);
+        $document = FinishedDocument::build($canonical, [
+            'rowIndices' => [0, 1], 'plan' => $plan, 'resolved' => [], 'skippedParties' => [],
+            'headPartnerAllowed' => false, 'vatMode' => 'fromBase', 'vatPlace' => 'domestic',
+            'vatRegistration' => null, 'withoutVat' => false, 'recap' => ['source' => 0, 'recap' => []],
+            'grossTotals' => [], 'totalRoundingAuto' => false, 'totalRoundingMode' => 'cent',
+            'paymentMethod' => 'bankTransfer', 'units' => [], 'correctionOriginalId' => null,
+            'references' => ['numberSeries' => null, 'cashDesk' => null, 'ownBankAccount' => null],
+        ]);
 
-        $this->assertSame('purchase.services', $data['rows'][0]['operation']);
-        // Explicitní canonical operation má přednost před defaultem.
-        $this->assertSame('purchase.other', $data['rows'][1]['operation']);
+        $this->assertSame('purchase.services', $document['rows'][0]['operation']);
+        // Explicitní pohyb z předlohy má přednost před výchozím.
+        $this->assertSame('purchase.other', $document['rows'][1]['operation']);
+
+        // Pokyn pohyb jen předá.
+        $data = $this->invokeTransformWithPlan($this->buildApplier(), $document, $plan);
+        $this->assertSame(['purchase.services', 'purchase.other'], array_column($data['rows'], 'operation'));
     }
 
     /**
@@ -5137,7 +5114,7 @@ class DocumentApplierTest extends TestCase
             $payload['applyOptions'] = self::IMPORT_OPTIONS;
             $payload['rows'][0]['vat'] = $rowVat;
             // DB bez registrace DPH + import mód = cesta mimo derivaci.
-            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload, ApplyMode::Instruction);
+            $result = $this->buildVatDerivingApplier($this->createMock(Connection::class))->preview($payload);
             return [$result->canonical['_resolve']['rows'][0], $this->issueCodes($result)];
         };
 

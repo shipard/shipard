@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document\Interpret;
 
 use PHPUnit\Framework\TestCase;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\Interpret\InterpretedDocument;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
@@ -74,7 +73,7 @@ final class DocumentInterpreterTest extends TestCase
         $applier = $this->buildApplier();
         $result = self::interpreterOf($applier)->interpret($this->happyPayload());
 
-        $preview = $applier->preview($result->document, ApplyMode::Instruction);
+        $preview = $applier->preview($result->document);
 
         $this->assertTrue($preview->success);
         // D52: hotový doklad je úplný — výchozí hodnoty pokynu se neuplatní.

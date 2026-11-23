@@ -14,14 +14,6 @@ use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
-use Shipard\Module\Core\Exchange\Document\Interpret\PendingRecords;
-use Shipard\Module\Core\Exchange\Document\Interpret\ProposalDefaults;
-use Shipard\Module\Core\Exchange\Document\Interpret\ProposalReport;
-use Shipard\Module\Core\Exchange\Document\Interpret\RecapInterpretation;
-use Shipard\Module\Core\Exchange\Document\Interpret\RecordMatching;
-use Shipard\Module\Core\Exchange\Document\Interpret\RoundingInterpretation;
-use Shipard\Module\Core\Exchange\Document\Interpret\SupplierCodeLearning;
-use Shipard\Module\Core\Exchange\Document\Interpret\VatInterpretation;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
@@ -30,7 +22,6 @@ use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\Defaults\DocHeadDefaults;
 use Shipard\Module\Docs\Core\Defaults\DocRowDefaults;
 use Shipard\Module\Docs\Core\DocDocument;
-use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\PersonSnapshotBuilder;
@@ -38,10 +29,8 @@ use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Module\Docs\Core\TotalRoundingAuto;
 use Shipard\Module\Docs\Core\VatRateDates;
 use Shipard\Core\Accounting\JournalDimensionSet;
-use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
-use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ReferenceException;
 use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
@@ -52,23 +41,28 @@ use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueNormalizer;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
-use Shipard\Module\World\Trade\TradeUnionResolver;
 
 /**
- * Orchestrator of the canonical → DB save pipeline. See
- * docs/exchange-format.md §10 for the full step sequence.
+ * **Pokyn**: uloží doklad výměnného formátu tak, jak ho payload říká
+ * (#166 D18, D53). Viz docs/exchange-format.md § 3 a § 10.
  *
- *   /validate  — schema + DocumentValidator, no DB writes, no resolve.
- *   /preview   — validate + full resolve, populates `_resolve`.
- *   /apply     — validate + resolve + reconcile with userAction +
- *                NestedTransaction { side-creates + saveDocument +
- *                lineage update } — vlastní transakce, nebo SAVEPOINT
- *                uvnitř transakce volajícího (generátory dokladů, #110).
+ *   /validate  — schéma + DocumentValidator, bez čtení databáze.
+ *   /preview   — validate + výchozí hodnoty + hledání referencí + částky
+ *                spočítané dokladem + validace dokladu pro cílový stav.
+ *   /apply     — totéž + uložení v `NestedTransaction` — vlastní transakce,
+ *                nebo SAVEPOINT uvnitř transakce volajícího (generátory
+ *                dokladů #110, vstup návrhu #166).
  *
- * The Applier never reaches below the Document layer — all business
- * logic (number assignment, snapshots, totals, recap) stays in
- * DocDocument::beforeSave. Applier's job is only to translate
- * canonical → internal $data and call the existing TableGateway.
+ * Applier **nic neodvozuje a nic nezakládá**: záznamy hledá jen přes
+ * reference, co payload neuvádí, doplní výchozími hodnotami jako formulář,
+ * a hodnoty DPH i zaokrouhlení bere jako záměr. Doklad z papírové podoby
+ * (pošta, ISDOC) připraví interpretace — `Interpret\DocumentProposal` z něj
+ * udělá hotový doklad a pošle ho sem; applier na jmenném prostoru
+ * interpretace nezávisí (D62).
+ *
+ * Pod vrstvu Document applier nesahá — číslo dokladu, snapshoty, součty
+ * a rekapitulaci drží `DocDocument::beforeSave`. Applier jen přeloží
+ * canonical → data dokladu a zavolá TableGateway.
  */
 class DocumentApplier
 {
@@ -79,7 +73,7 @@ class DocumentApplier
 
     /**
      * Kontext dokladu z payloadu — reference, data, registrace DPH, oprava,
-     * kurz; sdílí ho pokyn i interpretace návrhu ({@see PayloadContext}).
+     * kurz ({@see PayloadContext}; týž kód čte i interpretace návrhu).
      */
     private readonly PayloadContext $payload;
 
@@ -88,19 +82,6 @@ class DocumentApplier
 
     /** Dohledání dokladu podle `source.ref` ({@see SourceRefLookup}). */
     private readonly SourceRefLookup $sourceRefs;
-
-    /**
-     * Interpretace papírové podoby dokladu (#166 D51) — odvozování, které
-     * běží jen v režimu návrh. Applier ho jen volá; vlastní kopii pravidel
-     * nemá.
-     */
-    private readonly VatInterpretation $vatInterpretation;
-    private readonly RecapInterpretation $recapInterpretation;
-    private readonly RecordMatching $recordMatching;
-    private readonly PendingRecords $pendingRecords;
-    private readonly SupplierCodeLearning $supplierCodeLearning;
-    private readonly ProposalDefaults $proposalDefaults;
-    private readonly ProposalReport $proposalReport;
 
     /**
      * Varování dokladu z posledního úspěšného `apply()` — {@see savedDocumentWarnings()}.
@@ -115,15 +96,15 @@ class DocumentApplier
     /**
      * Pokyn (#166 D44): payload, jak přišel (po normalizaci tvarů) — z něj
      * se skládá odpověď; applier dál pracuje s kopií doplněnou o výchozí
-     * hodnoty. Null = návrh nebo `/validate`.
+     * hodnoty. Null = `/validate` (statická kontrola nic nedoplňuje).
      *
      * @var array<string, mixed>|null
      */
     private ?array $instructionPayload = null;
 
     /**
-     * Pole, která pokyn doplnil sám — `_resolve.defaults`. Null = návrh
-     * (klíč se nevypisuje).
+     * Pole, která pokyn doplnil sám — `_resolve.defaults`. Null =
+     * `/validate` (klíč se nevypisuje).
      *
      * @var list<array{path: string, value: mixed}>|null
      */
@@ -169,9 +150,6 @@ class DocumentApplier
         'message'  => 'Rekapitulaci DPH a součty dokladu nešlo spočítat'
             . ' — náhled ukazuje údaje přečtené z dokladu, ne výsledek výpočtu.',
     ];
-
-    /** Náhled nic nezakládá — `transform()` bez založených entit (D2). */
-    private const NO_SIDE_IDS = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
 
     /** Canonical `vat.calcSource` → docs_core_heads.vat_calc_source. */
     private const VAT_CALC_SOURCE_MAP = [
@@ -237,60 +215,30 @@ class DocumentApplier
         'cashRegisterDocument' => 'cashreg',
     ];
 
-    /**
-     * Apply-time options pulled from `$canonical['applyOptions']` at the
-     * start of apply(). Read by resolveOne() for autoCreateMode behaviour.
-     * Reset to [] on every apply().
-     *
-     * @var array<string, mixed>
-     */
-    private array $applyOptionsCache = [];
-
     public function __construct(
         private readonly Connection $db,
         private readonly ConfigRuntime $config,
         private readonly TransactionlessTableGateway $headsGateway,
-        private readonly TransactionlessTableGateway $personsGateway,
-        private readonly TransactionlessTableGateway $itemsGateway,
         private readonly SchemaValidator $schemaValidator,
         private readonly DocumentValidator $documentValidator,
+        /** Strana vlastní firmy (`selfParty`) — jediné, co pokyn nehledá referencí. */
         private readonly PartyResolver $partyResolver,
-        private readonly ItemResolver $itemResolver,
         private readonly UnitResolver $unitResolver,
         private readonly VatCodeResolver $vatCodeResolver,
         private readonly BankAccountResolver $bankAccountResolver,
-        private readonly AccountResolver $accountResolver,
-        private readonly VatCodeDerivation $vatCodeDerivation,
-        private readonly VatPlaceDerivation $vatPlaceDerivation,
-        /**
-         * Taxonomie `core.exchange.contentTags` (compiled, `name` už
-         * lokalizované): `crossBorderSupply` pro fallback druhu plnění
-         * a veto (tasks/exchange-received-supply-kind.md D2/D4), `name`
-         * pro zprávu `supply_kind_derived`. Prázdná = bez fallbacku.
-         *
-         * @var array<string, array<string, mixed>>
-         */
-        private readonly array $contentTags = [],
+        VatCodeDerivation $vatCodeDerivation,
         /**
          * Dimenze deníku z objektu `dimensions` (#110 T2) — přirozený klíč →
          * id záznamu. Null = DS bez dimenzí s přirozeným klíčem, objekt se ignoruje
          * (neznámé klíče hlásí DocumentValidator).
          */
-        private readonly ?DimensionResolver $dimensionResolver = null,
-        /**
-         * `economy_items.accounting_account` existuje (extension
-         * `economy.accounting`) — účet položky pro `effectiveAccount`
-         * v náhledu (#111 D7b). False = zdroj dat bez účetnictví: účet
-         * z položky se nedohledává (dotaz na chybějící sloupec by náhled
-         * shodil), `effectiveAccount` z položky je null.
-         */
-        private readonly bool $itemsHaveAccountingAccount = false,
+        ?DimensionResolver $dimensionResolver = null,
         /**
          * Kurz z lístku pro doklad v cizí měně bez kurzu (#121 D6) — náhled
          * i apply. Null = DS bez modulu kurzů (tabulka chybí): nic se
          * nedohledává, kurz zůstane, jak přišel.
          */
-        private readonly ?ExchangeRateResolver $exchangeRateResolver = null,
+        ?ExchangeRateResolver $exchangeRateResolver = null,
         /**
          * Hledání záznamů podle referencí formátu (#166 D30) — strany,
          * položky, řada, pokladna, vlastní účet, účet řádku, registrace DPH,
@@ -302,46 +250,13 @@ class DocumentApplier
         $this->payload = new PayloadContext($db, $config, $references, $exchangeRateResolver);
         $this->payloadResolve = new PayloadResolve($this->payload, $vatCodeResolver, $vatCodeDerivation, $dimensionResolver);
         $this->sourceRefs = new SourceRefLookup($db);
-        $this->vatInterpretation = new VatInterpretation(
-            $db,
-            $config,
-            $this->payload,
-            $this->payloadResolve,
-            $vatCodeResolver,
-            $vatCodeDerivation,
-            $vatPlaceDerivation,
-            $contentTags,
-        );
-        $this->recapInterpretation = new RecapInterpretation(
-            $this->payload,
-            $this->payloadResolve,
-            $this->vatInterpretation,
-            $vatCodeResolver,
-        );
-        $this->recordMatching = new RecordMatching(
-            $db,
-            $this->payload,
-            $this->payloadResolve,
-            $this->vatInterpretation,
-            $partyResolver,
-            $itemResolver,
-            $unitResolver,
-            $bankAccountResolver,
-            $accountResolver,
-        );
-        $this->pendingRecords = new PendingRecords($db, $personsGateway, $itemsGateway);
-        // Zápis přes executeSql() — testovací podtřídy ho zachytávají.
-        $this->supplierCodeLearning = new SupplierCodeLearning(fn (mixed ...$args) => $this->executeSql(...$args));
-        $this->proposalDefaults = new ProposalDefaults($db, $config, $this->payload);
-        $this->proposalReport = new ProposalReport($db, $itemsHaveAccountingAccount);
     }
 
     /**
-     * Production factory wiring a full Applier with all resolvers and
-     * gateways from a DataSourceConnection-backed environment.
+     * Applier nad zdrojem dat — resolvery a gateway hlaviček z prostředí
+     * zdroje dat.
      *
-     * @param array<string, TableDefinition> $tables Indexed by table name —
-     *        used to fish out childTables config for each gateway.
+     * @param array<string, TableDefinition> $tables aktivní tabulky zdroje dat
      */
     public static function create(
         Connection $db,
@@ -352,31 +267,21 @@ class DocumentApplier
         ?DocumentEventDispatcher $eventDispatcher = null,
     ): self {
         $vatRateResolver = new \Shipard\Module\World\Vat\VatRateResolver($config);
-        $own = new OwnCompanyResolver($db);
-        $contentTags = $config->cfgItem('core.exchange.contentTags');
 
         return new self(
             db: $db,
             config: $config,
-            // Only the heads gateway needs the event dispatcher — a document
-            // saved at state 40 must trigger DocsHeadsEventHandler (accounting).
-            // Persons/items never transition to an accounted state.
-            headsGateway: self::buildGateway('docs_core_heads', $db, $registry, $config, $dsConfig, $tables, $eventDispatcher),
-            personsGateway: self::buildGateway('base_persons_persons', $db, $registry, $config, $dsConfig, $tables),
-            itemsGateway: self::buildGateway('economy_items', $db, $registry, $config, $dsConfig, $tables),
+            // Gateway hlaviček nese dispatcher událostí — doklad uložený ve
+            // stavu 40 musí spustit DocsHeadsEventHandler (účtování).
+            headsGateway: TransactionlessTableGateway::forTable('docs_core_heads', $db, $registry, $config, $dsConfig, $tables, $eventDispatcher),
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
             documentValidator: new DocumentValidator(JournalDimensionSet::fromConfig($config), $tables),
-            partyResolver: new PartyResolver($db, $own),
-            itemResolver: new ItemResolver($db),
+            partyResolver: new PartyResolver($db, new OwnCompanyResolver($db)),
             unitResolver: new UnitResolver($db),
             vatCodeResolver: new VatCodeResolver($vatRateResolver),
             bankAccountResolver: new BankAccountResolver($db),
-            accountResolver: new AccountResolver($db),
             vatCodeDerivation: new VatCodeDerivation($vatRateResolver),
-            vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($config)),
-            contentTags: is_array($contentTags) ? $contentTags : [],
             dimensionResolver: new DimensionResolver($db, JournalDimensionSet::fromConfig($config), $tables),
-            itemsHaveAccountingAccount: self::hasColumn($tables['economy_items'] ?? null, 'accounting_account'),
             exchangeRateResolver: isset($tables[ExchangeRateResolver::TABLE_LISTS])
                 ? ExchangeRateResolver::create($db, $config, $dsConfig)
                 : null,
@@ -384,55 +289,23 @@ class DocumentApplier
         );
     }
 
-    private static function hasColumn(?TableDefinition $table, string $column): bool
-    {
-        foreach ($table?->columns ?? [] as $col) {
-            if ($col->id === $column) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
-     * @param array<string, TableDefinition> $tables
-     */
-    private static function buildGateway(
-        string $tableName,
-        Connection $db,
-        DocumentRegistry $registry,
-        ConfigRuntime $config,
-        DataSourceConfig $dsConfig,
-        array $tables,
-        ?DocumentEventDispatcher $eventDispatcher = null,
-    ): TransactionlessTableGateway {
-        return TransactionlessTableGateway::forTable($tableName, $db, $registry, $config, $dsConfig, $tables, $eventDispatcher);
-    }
-
-    /**
-     * Normalizace hodnot canonicalu (#118 D2): tvary v obou režimech; oprava
-     * bankovního spojení z redundance (IBAN ↔ číslo účtu) je interpretace
-     * předlohy a běží jen v návrhu (#166 D19, U5).
+     * Normalizace hodnot canonicalu (#118 D2): pokyn jen sjednotí **tvary**.
+     * Oprava bankovního spojení z redundance (IBAN ↔ číslo účtu) je
+     * interpretace předlohy a pokynu nepatří (#166 D19, U5).
      *
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>
      */
-    private static function normalizeValues(array $canonical, ApplyMode $mode): array
+    private static function normalizeValues(array $canonical): array
     {
         // Reference (#166 D30, D32): strana, partner a položka zadané jen
         // referencí → objekt s `ref`, aby zbytek applieru četl jeden tvar;
-        // pokyn `_resolve` nečte vůbec — blok se zahodí hned tady a volající
+        // `_resolve` pokyn nečte vůbec — blok se zahodí hned tady a volající
         // ho ohlásí ({@see appendResolveIgnoredIssue()}).
-        $canonical = CanonicalReferences::expand($canonical);
-        if (!$mode->derives()) {
-            $canonical = CanonicalReferences::withoutResolve($canonical);
-        }
-        return $mode->derives()
-            ? CanonicalValueNormalizer::normalize($canonical)
-            : CanonicalValueNormalizer::normalizeShapes($canonical);
+        $canonical = CanonicalReferences::withoutResolve(CanonicalReferences::expand($canonical));
+        return CanonicalValueNormalizer::normalizeShapes($canonical);
     }
-
-    // ── Reference formátu (#166 D30–D33) ────────────────────────────────────
 
     // ── Výchozí hodnoty pokynu (#166 D40–D44, D48–D50) ──────────────────────
 
@@ -440,8 +313,8 @@ class DocumentApplier
      * Pokyn: co payload neuvádí, doplní se týmž kódem jako ve formuláři
      * ({@see InstructionDefaults}) — do **pracovní kopie**, se kterou běží
      * zbytek náhledu i uložení. Odpověď se skládá z payloadu, jak přišel,
-     * a doplněná pole vyjmenuje `_resolve.defaults`. Návrh se nemění:
-     * výchozí hodnoty nedostává a klíč `defaults` nenese.
+     * a doplněná pole vyjmenuje `_resolve.defaults`. Hotový doklad z
+     * interpretace je úplný — nic se na něm nedoplní.
      *
      * Hlavička jde první — registrace DPH, datum a režim DPH určují kontext,
      * ve kterém se řádku vybírá kód DPH.
@@ -449,14 +322,9 @@ class DocumentApplier
      * @param array<string, mixed> $canonical payload po normalizaci tvarů
      * @return array<string, mixed> pracovní kopie
      */
-    private function applyInstructionDefaults(array $canonical, ApplyMode $mode): array
+    private function applyInstructionDefaults(array $canonical): array
     {
-        $this->instructionPayload = null;
-        $this->appliedDefaults = null;
         $this->defaultUnitIds = [];
-        if ($mode->derives()) {
-            return $canonical;
-        }
         $this->instructionPayload = $canonical;
         $this->instructionDefaults ??= new InstructionDefaults(
             $this->payload->headDefaults(),
@@ -509,7 +377,7 @@ class DocumentApplier
 
     /**
      * Pokyn `_resolve` nečte (#166 D32): payload, který blok nese, projde
-     * a dostane jeden info nález — volby uživatele patří návrhu.
+     * a dostane jeden info nález — volby uživatele patří vstupu návrhu.
      *
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
@@ -526,9 +394,9 @@ class DocumentApplier
     }
 
     /** Nese pokyn blok `_resolve`, který se bude ignorovat? Volat před {@see normalizeValues()}. */
-    private static function ignoresResolve(array $canonical, ApplyMode $mode): bool
+    private static function ignoresResolve(array $canonical): bool
     {
-        return !$mode->derives() && CanonicalReferences::carriesResolve($canonical);
+        return CanonicalReferences::carriesResolve($canonical);
     }
 
     // ── Hledání záznamů pokynu — jen přes reference (#166 D31) ──────────────
@@ -536,8 +404,8 @@ class DocumentApplier
     /**
      * Strana dokladu v pokynu: `ref`, jinak nic — objekt s názvem, IČO nebo
      * DIČ bez reference je chyba `reference_missing` (ne tiché „bez
-     * partnera“), prázdný objekt strana bez osoby. Návrh hledá i podle údajů
-     * ({@see RecordMatching}).
+     * partnera“), prázdný objekt strana bez osoby. Podle údajů z papíru
+     * hledá jen interpretace návrhu.
      *
      * @param array<string, mixed> $party
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
@@ -606,12 +474,8 @@ class DocumentApplier
      *        Reference; resolvers append issues for missing references.
      * @return array<string, mixed>  `_resolve`-shaped resolve data.
      */
-    private function resolveAll(array $canonical, array &$issues, ApplyMode $mode): array
+    private function resolveAll(array $canonical, array &$issues): array
     {
-        if ($mode->derives()) {
-            // Návrh hledá i podle údajů z papíru — resolve interpretace.
-            return $this->recordMatching->resolveAll($canonical, $issues);
-        }
         // Účetní doklad (cmnbkp): nemá supplier/customer/selfParty — saldo
         // identita žije per řádek. Resolvujeme jen řádky (item + účet z čísla).
         $docTypeCode = $this->payload->mapDocType($canonical);
@@ -632,8 +496,8 @@ class DocumentApplier
             $customer = is_array($canonical['customer'] ?? null) ? $canonical['customer'] : [];
             $supplierCountry = strtolower((string) ($supplier['country'] ?? ''));
 
-            // Strana vlastní firmy referenci nenese; druhá strana: `ref`,
-            // jinak v návrhu hledání podle údajů ({@see resolveParty()}).
+            // Strana vlastní firmy referenci nenese; druhá strana jen přes
+            // `ref` ({@see resolveParty()}).
             $supplierResult = $selfParty === 'supplier'
                 ? $this->partyResolver->resolveSelfParty()->toArray()
                 : $this->resolveParty('supplier', $supplier, $issues);
@@ -810,7 +674,7 @@ class DocumentApplier
         if ($headPartner !== null) {
             $resolved['partner'] = $headPartner;
             // Pokladní doklad: partnera hlavičky nese i strana podle směru —
-            // dvě různé osoby pokyn neuloží (v návrhu má pole přednost).
+            // dvě různé osoby pokyn neuloží.
             $headPartnerId = PayloadResolve::matchedPersonId($headPartner);
             $partyPartnerId = match ($canonical['selfParty'] ?? null) {
                 'customer' => PayloadResolve::matchedPersonId($supplierResult),
@@ -835,76 +699,15 @@ class DocumentApplier
         return $resolved;
     }
 
-    /**
-     * Řádky vynechané volbou uživatele v `_resolve` — jen návrh
-     * ({@see RecordMatching::skippedRowIndices()}); pokyn řádky nevynechává
-     * (#166 D19).
-     *
-     * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $clientResolve Klientské `_resolve`.
-     * @return list<int>
-     */
-    private function skippedRowIndices(array $canonical, array $clientResolve, ApplyMode $mode): array
-    {
-        return $mode->derives() ? $this->recordMatching->skippedRowIndices($canonical, $clientResolve) : [];
-    }
-
-    /**
-     * Plán uložení z bloků `_resolve`: id spárovaných záznamů, v návrhu
-     * i volby uživatele a co se má založit ({@see RecordMatching::reconcile()}).
-     * Pokyn `_resolve` nečte — plán je jen projekce nalezených referencí.
-     *
-     * @param array<string, mixed> $resolved        Fresh resolve output.
-     * @param array<string, mixed> $clientResolve   Client's _resolve with userAction set.
-     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     * @param list<int> $rowSkips
-     * @return array<string, mixed>
-     */
-    private function reconcile(array $resolved, array $clientResolve, array &$issues, array $rowSkips): array
-    {
-        return $this->recordMatching->reconcile(
-            $resolved,
-            $clientResolve,
-            $issues,
-            $rowSkips,
-            $this->applyOptionsCache['autoCreateMode'] ?? 'strict',
-        );
-    }
-
-    /**
-     * Založení osob, účtu dodavatele a položek podle plánu — jen návrh
-     * ({@see PendingRecords}); v pokynu je plán zakládání vždy prázdný (D31).
-     *
-     * @param array<string, mixed> $plan
-     * @param array<string, mixed> $resolved
-     * @return array{supplier: ?int, customer: ?int, balanceParty: ?int, supplierBank: ?int, rowItems: array<int, int>}
-     */
-    private function runSideCreates(array $plan, array $resolved): array
-    {
-        return $this->pendingRecords->create($plan);
-    }
-
-    /**
-     * Pohyb řádků, které ho nenesou — jen návrh ({@see ProposalDefaults::rowOperations()}).
-     *
-     * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $plan
-     * @param array<string, mixed> $sideIds
-     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     * @return array<int, string> index řádku → doplněný kód operace
-     */
-    private function defaultRowOperationsForApply(array $canonical, array $plan, array $sideIds, array &$issues): array
-    {
-        return $this->proposalDefaults->rowOperations($canonical, $plan, $sideIds, $issues);
-    }
-
     // ── Public entry points ─────────────────────────────────────────────────
 
     /**
+     * Statická kontrola pokynu: schéma a kontroly payloadu, bez hledání
+     * záznamů a bez výchozích hodnot.
+     *
      * @param array<string, mixed> $canonical
-     * @param ApplyMode $mode Pokyn (výchozí) neodvozuje, návrh interpretuje (#166 D18).
      */
-    public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
+    public function validate(array $canonical): ApplyResult
     {
         // Statická kontrola výchozí hodnoty nedoplňuje — stav z předchozího volání pryč.
         $this->instructionPayload = null;
@@ -920,10 +723,10 @@ class DocumentApplier
             );
         }
 
-        // Tvary hodnot (v návrhu i oprava IBAN ↔ číslo účtu, #118 D2) — po schématu, před DocumentValidator.
-        $resolveIgnored = self::ignoresResolve($canonical, $mode);
-        $canonical = self::normalizeValues($canonical, $mode);
-        $validatorIssues = $this->documentValidator->validate($canonical, $mode);
+        // Tvary hodnot (#118 D2) — po schématu, před DocumentValidator.
+        $resolveIgnored = self::ignoresResolve($canonical);
+        $canonical = self::normalizeValues($canonical);
+        $validatorIssues = $this->documentValidator->validate($canonical);
         self::appendResolveIgnoredIssue($resolveIgnored, $validatorIssues);
         $this->payload->appendAuthorIssue($canonical, $validatorIssues);
         $enriched = $this->withResolveIssues($canonical, $validatorIssues);
@@ -941,10 +744,13 @@ class DocumentApplier
     }
 
     /**
+     * Náhled pokynu: co by `apply()` uložil — nalezené reference, doplněné
+     * výchozí hodnoty, částky spočítané dokladem (`computed`) a nálezy
+     * včetně validace dokladu pro cílový stav. Nic nezapisuje.
+     *
      * @param array<string, mixed> $canonical
-     * @param ApplyMode $mode Pokyn (výchozí) neodvozuje, návrh interpretuje (#166 D18).
      */
-    public function preview(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
+    public function preview(array $canonical): ApplyResult
     {
         $this->instructionPayload = null;
         $this->appliedDefaults = null;
@@ -960,51 +766,33 @@ class DocumentApplier
             );
         }
 
-        // 1b. Tvary hodnot, v návrhu i oprava IBAN ↔ číslo účtu (#118 D2) — náhled
-        //     vrací normalizovaný canonical; `_resolve.valueRepairs` přenáší withResolve().
-        $resolveIgnored = self::ignoresResolve($canonical, $mode);
-        $canonical = self::normalizeValues($canonical, $mode);
-        // 1c. Pokyn: výchozí hodnoty, které payload neuvádí (#166 D40) — dál
-        //     běží vše nad doplněnou kopií, stejně jako v apply.
-        $canonical = $this->applyInstructionDefaults($canonical, $mode);
+        // 1b. Tvary hodnot (#118 D2) — náhled vrací normalizovaný canonical.
+        $resolveIgnored = self::ignoresResolve($canonical);
+        $canonical = self::normalizeValues($canonical);
+        // 1c. Výchozí hodnoty, které payload neuvádí (#166 D40) — dál běží
+        //     vše nad doplněnou kopií, stejně jako v apply.
+        $canonical = $this->applyInstructionDefaults($canonical);
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
-        //    Vynechané řádky (#111 D9, D12) z klientského _resolve jednou pro
-        //    všechny kroky: důvod přepočtu rekapitulace, náhledový plán,
-        //    bloky řádků.
-        $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
-        $rowSkips = $this->skippedRowIndices($canonical, $clientResolve, $mode);
-        $issues = $this->documentValidator->validate($canonical, $mode);
+        $issues = $this->documentValidator->validate($canonical);
         self::appendResolveIgnoredIssue($resolveIgnored, $issues);
         $this->payload->appendAuthorIssue($canonical, $issues);
-        $this->appendVatModeIssue($canonical, $issues, $mode);
-        $this->appendVatHeaderIssues($canonical, $issues, $mode);
+        $this->appendVatHeaderIssues($canonical, $issues);
         $this->payload->appendVatRateDateIssue($canonical, $issues);
-        $this->appendRecapSourceIssue($canonical, $issues, $rowSkips, $mode);
+        $this->appendRecapSourceIssue($canonical, $issues);
         $this->payload->appendExchangeRateIssue($canonical, $issues);
         $this->payload->appendCorrectionIssues($canonical, $issues);
         $this->payload->appendVatRegistrationIssue($canonical, $issues);
         // Idempotence (#166 U4): doklad se stejným `source.ref` už existuje —
         // apply ho vrátí beze změny. Náhled to říká, zbytek běží jako obvykle.
-        $this->appendSourceRefIssue($canonical, $issues);
-        $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues, $mode), $mode);
-        // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
-        //     — čte uložené volby z klientského _resolve, ale nerozhoduje
-        //     (reconcile se v náhledu nevolá).
-        //     Jen návrh: je to zpráva interpretace, pokyn ji nenese (#166 D62).
-        if ($mode->derives()) {
-            $resolved = $this->proposalReport->annotateRowDisplay($canonical, $resolved, $rowSkips);
-        }
+        $this->sourceRefs->appendIssue($canonical, $issues);
+        $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues));
         // 3. Rekapitulace a součty, jak skončí na dokladu — stejným kódem
-        //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6);
-        //    vynechané řádky v nich nejsou (#111 D9).
-        $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues, $rowSkips, $mode);
-        // 4. Náhled pokynu (#166 D21, U6): validace dokladu pro cílový stav —
-        //    nález je vidět před uložením. Návrh ji v náhledu nemá (review
-        //    pracuje s konceptem; chybu uložení dostane až apply).
-        if (!$mode->derives()) {
-            $this->appendDocumentValidation($canonical, $resolved, $clientResolve, $rowSkips, $issues, $mode);
-        }
+        //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6).
+        $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues);
+        // 4. Validace dokladu pro cílový stav (#166 D21, U6) — nález je vidět
+        //    před uložením.
+        $this->appendDocumentValidation($canonical, $resolved, $issues);
         $enriched = $this->withResolve($canonical, $resolved, $issues);
 
         // preview always succeeds even with errors — client renders the
@@ -1013,61 +801,41 @@ class DocumentApplier
     }
 
     /**
-     * Náhled návrhu: rekapitulace DPH, součty a sazby řádků, **které skončí
-     * na dokladu** — spočítané `DocDocument::computeAmounts()`, tedy stejným
-     * kódem jako `beforeSave()` při apply, ne opsané z toho, co přečetla AI
+     * Náhled: rekapitulace DPH, součty a sazby řádků, **které skončí na
+     * dokladu** — spočítané `DocDocument::computeAmounts()`, tedy stejným
+     * kódem jako `beforeSave()` při apply
      * (tasks/exchange-preview-vat-recompute.md D2–D4, D6; #87 task A).
      *
      * Vstup staví tentýž `transform()` jako apply, s náhledovým plánem
      * ({@see previewPlan}): kódy DPH a jednotky z čerstvého resolve, bez
-     * založených entit a bez řady. Instanci dokumentu dává gateway podle
-     * typu dokladu, takže platí přetížení podtříd (účetní doklad sčítá
-     * z řádků, rekapitulaci nemá).
+     * řady. Instanci dokumentu dává gateway podle typu dokladu, takže platí
+     * přetížení podtříd (účetní doklad sčítá z řádků, rekapitulaci nemá).
      *
-     * D4: v návrhu se částka k úhradě porovná s dokladem dodavatele →
-     * warning `computed_total_mismatch` (u samovyměření se liší daň,
-     * k úhradě sedí). Heuristický `totals_mismatch` validátoru (odhad
-     * z canonicalu) skutečný výpočet nahrazuje — z issues se vyřadí, dvě
-     * hlášky o tomtéž by mátly. Bez `canonical.totals.totalAmount` se
-     * neporovnává. V pokynu jsou `totals` kontrolní součet (#166 D27):
-     * každé uvedené pole proti výpočtu, neshoda je chyba
-     * `totals_check_failed` ({@see TotalsCheck}).
+     * `totals` pokynu jsou kontrolní součet (#166 D27): každé uvedené pole
+     * proti výpočtu, neshoda je chyba `totals_check_failed`
+     * ({@see TotalsCheck}). Porovnání s částkou z papíru
+     * (`computed_total_mismatch`) dělá vstup návrhu nad tímto blokem.
      *
      * D6: výjimka náhled neshodí — `null` + info `computed_unavailable`
-     * (zalogováno), frontend ukáže data z canonicalu s poznámkou.
+     * (zalogováno).
      *
      * `rows` (#97): cena za jednotku a cena položkových řádků, jak je
-     * spočítal doklad, klíčované **indexem canonicalu** (`index`) — pořadí
-     * z {@see transformedRowIndices()}, ne z pozice ve výstupu. U přijatého
-     * dokladu neplátce DPH jsou to ceny včetně daně dodavatele; bez nich by
-     * náhled ukazoval řádky bez daně a součty s daní.
-     *
-     * Vynechané řádky (#111 D9): náhledový plán nese `rowSkips` stejně jako
-     * apply, takže vynechaný řádek chybí v `rows`, rekapitulaci i součtech
-     * a rozdíl proti dokladu dodavatele hlásí `computed_total_mismatch`.
-     * Rekapitulace se při vynechání přepočítá z řádků (D12,
-     * {@see resolveRecapSource()}).
+     * spočítal doklad, klíčované indexem řádku payloadu (`index`).
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array{recapSource: string, recapFallback: ?string, vatRecap: list<array<string, mixed>>, totals: array<string, float>, rows: list<array{index: int, unitPrice: ?float, totalPrice: ?float}>}|null
      *         Blok `_resolve.computed` (D3) v měně dokladu; domácí měna se nevrací.
      */
-    private function computePreviewAmounts(
-        array $canonical,
-        array $resolved,
-        array &$issues,
-        array $rowSkips,
-        ApplyMode $mode,
-    ): ?array {
+    private function computePreviewAmounts(array $canonical, array $resolved, array &$issues): ?array
+    {
         $unavailable = static function (array &$issues): void {
             $issues[] = self::COMPUTED_UNAVAILABLE_ISSUE;
         };
-        $plan = $this->previewPlan($resolved, $rowSkips);
+        $plan = $this->previewPlan($resolved);
         try {
-            $data = $this->transform($canonical, $plan, self::NO_SIDE_IDS, null, $mode);
+            $data = $this->transform($canonical, $plan, null);
             $doc = $this->headsGateway->createDocument($data);
             if (!$doc instanceof DocDocument) {
                 // Registr bez DocDocument pro typ (holý DefaultDocument) —
@@ -1082,7 +850,7 @@ class DocumentApplier
             return null;
         }
 
-        $recapSource = $this->resolveRecapSource($canonical, $rowSkips, $mode);
+        $recapSource = $this->resolveRecapSource($canonical);
         $rowIndices = $this->transformedRowIndices(
             is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [],
             $plan,
@@ -1124,34 +892,21 @@ class DocumentApplier
                 'totalAmount'   => (float) ($data['total_amount'] ?? 0),
                 'totalRounding' => (float) ($data['total_rounding'] ?? 0),
                 // Mód, který skončí na dokladu — při automatice (#73 D8) ho
-                // určil computeAmounts, jinak výslovný mód z payloadu,
-                // v návrhu bez něj odvození z čísel.
+                // určil computeAmounts, jinak výslovný mód z payloadu.
                 'totalRoundingMode' => (int) ($data['total_rounding_mode'] ?? 0),
             ],
             'rows' => $computedRows,
         ];
 
-        // D4: skutečný výpočet nahrazuje heuristiku validátoru.
-        $issues = array_values(array_filter(
-            $issues,
-            static fn (array $issue): bool => ($issue['code'] ?? null) !== 'totals_mismatch',
-        ));
-        if (!$mode->derives()) {
-            // Pokyn (#166 D27): `totals` jsou kontrolní součet — náhled hlásí
-            // týž nález, kterým by uložení skončilo, jako chybu; varování
-            // o nepoužitém módu zaokrouhlení (D26) jako apply.
-            foreach (TotalsCheck::mismatches($canonical, $data) as $issue) {
-                $issues[] = $issue;
-            }
-            $ignored = TotalsCheck::ignoredMode($canonical, $data);
-            if ($ignored !== null) {
-                $issues[] = $ignored;
-            }
-            return $result;
+        // `totals` jsou kontrolní součet (#166 D27) — náhled hlásí týž nález,
+        // kterým by uložení skončilo, jako chybu; varování o nepoužitém módu
+        // zaokrouhlení (D26) jako apply.
+        foreach (TotalsCheck::mismatches($canonical, $data) as $issue) {
+            $issues[] = $issue;
         }
-        $mismatch = ProposalReport::computedTotalIssue($canonical, $result['totals']['totalAmount']);
-        if ($mismatch !== null) {
-            $issues[] = $mismatch;
+        $ignored = TotalsCheck::ignoredMode($canonical, $data);
+        if ($ignored !== null) {
+            $issues[] = $ignored;
         }
 
         return $result;
@@ -1191,32 +946,24 @@ class DocumentApplier
      * cílový stav z `applyOptions.targetDocState` nad daty, která by apply
      * uložil, a nálezy (chyby i varování) přidá do issues. Nic se neukládá.
      *
-     * Data skládá stejnou cestou jako apply — {@see reconcile()} (spárovaná
-     * id stran a položek), {@see resolveSaveTargets()} bez zakládání řady,
-     * výchozí pohyby řádků a {@see transform()} — a validuje **před**
+     * Data skládá stejnou cestou jako apply — plán z nalezených referencí
+     * ({@see PayloadResolve::plan()}), {@see resolveSaveTargets()} bez
+     * zakládání řady a {@see transform()} — a validuje **před**
      * `computeAmounts()`, v pořadí `TableGateway::saveDocument()`. Chyba
      * dohledání pokladny, řady nebo vlastního účtu je nález s týmž kódem,
      * jaký vrátí apply.
      *
-     * Co náhled posoudit nemůže, nehlásí: nálezy na referenci, kterou apply
-     * teprve založí nebo která čeká na rozhodnutí (partner, položka řádku
-     * a její pohyb), a na řadě, kterou apply teprve zkusí založit. Zámky
-     * záznamu (`TableGateway::enforceLock`) se v náhledu nevyhodnocují.
+     * Co náhled posoudit nemůže, nehlásí: nálezy na referenci, která se
+     * nenašla (partner, položka řádku a její pohyb — chybu už nese nález),
+     * a na řadě, kterou apply teprve zkusí založit. Zámky záznamu
+     * (`TableGateway::enforceLock`) se v náhledu nevyhodnocují.
      *
      * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $resolved      Výstup {@see resolveAll}.
-     * @param array<string, mixed> $clientResolve Klientské `_resolve`.
-     * @param list<int> $rowSkips
+     * @param array<string, mixed> $resolved Výstup {@see resolveAll}.
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function appendDocumentValidation(
-        array $canonical,
-        array $resolved,
-        array $clientResolve,
-        array $rowSkips,
-        array &$issues,
-        ApplyMode $mode,
-    ): void {
+    private function appendDocumentValidation(array $canonical, array $resolved, array &$issues): void
+    {
         // Plán pokynu je projekce nalezených referencí; jeho nálezy náhled
         // nehlásí — stav referencí nesou bloky `_resolve`.
         $discarded = [];
@@ -1235,11 +982,7 @@ class DocumentApplier
         $plan['ownBankAccountId'] = $targets['ownBankAccountId'];
 
         try {
-            // Pohyb řádku pokyn dostal mezi výchozími hodnotami
-            // ({@see applyInstructionDefaults()}); řádek bez něj je záměrně
-            // prázdný — mapa návrhu se tu nevolá.
-            $plan['rowOperationDefaults'] = [];
-            $data = $this->transform($canonical, $plan, self::NO_SIDE_IDS, $targets['numberSeriesId'], $mode);
+            $data = $this->transform($canonical, $plan, $targets['numberSeriesId']);
             $doc = $this->headsGateway->createDocument($data);
             // validate() data mění (denormalizace z řady, DPPD) — jen nad kopií.
             $copy = $data;
@@ -1274,11 +1017,10 @@ class DocumentApplier
     }
 
     /**
-     * Sloupce dokladu, jejichž nález náhled pokynu nehlásí, protože hodnotu
-     * doplní až apply ({@see appendDocumentValidation()}): řada, kterou
-     * náhled nedohledal; partner, kterého payload nese, ale ještě nemá id
-     * (založí se, nebo čeká na rozhodnutí); položka řádku bez id a pohyb,
-     * který se z ní odvodí.
+     * Sloupce dokladu, jejichž nález náhled pokynu nehlásí
+     * ({@see appendDocumentValidation()}): řada, kterou náhled nedohledal
+     * (apply ji teprve zkusí založit); partner a položka řádku, které payload
+     * nese, ale jejichž reference se nenašla — chybu už nese nález.
      *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $resolved
@@ -1324,94 +1066,53 @@ class DocumentApplier
     }
 
     /**
-     * Plán pro náhled (D2): tvar {@see reconcile}, ale z klientských
-     * rozhodnutí jen vynechané řádky (`rowSkips`, #111 D9) a bez založených
-     * entit — strany, položky a účty `null`, jen kódy DPH a jednotky
-     * z čerstvého resolve. `reconcile()` se **nevolá**: u nespárované
-     * strany či položky by nastavil `unresolved_required` a přidal error
-     * issue, které náhled nehlásí. Číselná řada je parametr `transform()`
-     * (null), `rowOperationDefaults` chybí (pohyb řádku výpočet částek
-     * neovlivní).
+     * Plán pro výpočet částek v náhledu (D2): jen to, co výpočet potřebuje
+     * — kódy DPH, předmět plnění a jednotky z čerstvého resolve; strany,
+     * položky a účty `null`. Číselná řada je parametr `transform()` (null).
      *
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
-     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array<string, mixed>
      */
-    private function previewPlan(array $resolved, array $rowSkips): array
+    private function previewPlan(array $resolved): array
     {
-        $plan = [
-            'errorCode'            => null,
-            'errorMessage'         => null,
-            'partyCreates'         => [],
-            'bankCreate'           => null,
-            'rowItemCreates'       => [],
-            'rowSkips'             => $rowSkips,
-            'rowItemPins'          => [],
-            'resolvedSupplier'     => null,
-            'resolvedCustomer'     => null,
-            'resolvedBalanceParty' => null,
-            'resolvedSupplierBank' => null,
-            'resolvedRowItems'     => [],
-            'resolvedRowUnits'     => [],
-            'resolvedRowVatCodes'  => [],
-            'resolvedRowReverseChargeCodes' => [],
-            'resolvedRowAccounts'  => [],
-            'resolvedRowPartners'  => [],
-            'resolvedHeadPartner'  => null,
-            'cashDeskId'           => null,
-        ];
-        foreach ($resolved['rows'] ?? [] as $rowResolve) {
-            if (!is_array($rowResolve) || !isset($rowResolve['index'])) {
-                continue;
-            }
-            $i = (int) $rowResolve['index'];
-            $unitFresh = $rowResolve['unit'] ?? null;
-            $plan['resolvedRowUnits'][$i] = ($unitFresh['status'] ?? null) === 'matched'
-                ? ($unitFresh['matchedId'] ?? null)
-                : null;
-            $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
-            $plan['resolvedRowReverseChargeCodes'][$i] = PayloadResolve::matchedReverseChargeCode($rowResolve);
+        $plan = PayloadResolve::basePlan($resolved, []);
+        $plan['resolvedHeadPartner'] = null;
+        $plan['resolvedHeadDimensions'] = [];
+        foreach (array_keys($plan['resolvedRowItems']) as $i) {
+            $plan['resolvedRowAccounts'][$i] = null;
+            $plan['resolvedRowPartners'][$i] = null;
+            $plan['resolvedRowDimensions'][$i] = [];
         }
         return $plan;
     }
 
     /**
+     * Uloží doklad, jak ho payload říká: reference, výchozí hodnoty jako ve
+     * formuláři, validace a výpočet `DocDocument`. Nic neodvozuje a nic
+     * nezakládá — doklad z papírové podoby připraví interpretace
+     * (`Interpret\DocumentProposal`) a pošle sem hotový.
+     *
      * @param array<string, mixed> $canonical
-     * @param ApplyMode $mode Pokyn (výchozí) neodvozuje, návrh interpretuje (#166 D18).
      */
-    public function apply(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
+    public function apply(array $canonical): ApplyResult
     {
         $this->instructionPayload = null;
         $this->appliedDefaults = null;
         $this->defaultUnitIds = [];
         $this->savedWarnings = [];
-        $this->applyOptionsCache = is_array($canonical['applyOptions'] ?? null)
-            ? $canonical['applyOptions']
-            : [];
 
         // Přegenerovat v místě (#110 D24, Q2): cílový koncept se nahradí
-        // z payloadu; idempotence podle zprávy se pro výslovné
-        // přegenerování nehodí (zpráva už na doklad ukazuje).
-        $replaceId = self::replaceConceptId($this->applyOptionsCache);
+        // z payloadu.
+        $replaceId = self::replaceConceptId(is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : []);
 
-        // 0. Idempotency check — same extracted_document already applied?
-        //    Return existing savedDocId without re-saving. See Phase 2 spec
-        //    "Idempotency apply".
-        //    Patří návrhu (#166 U3): zprávu pošty nese jen doklad z pošty;
-        //    pokyn s `source.message` ukládá jen sloupec dokladu.
-        $idempotent = $replaceId === null && $mode->derives() ? $this->checkIdempotent($canonical) : null;
-        if ($idempotent !== null) {
-            return $idempotent;
-        }
-
-        // 0b. Idempotence pokynu (#166 D46): živý doklad se stejným
-        //     `source.kind` + `source.ref` se vrací beze změny — dřív, než se
-        //     obsah posuzuje, aby opakování po výpadku spojení prošlo i poté,
-        //     co se ve zdroji dat něco změnilo. Obsah se neporovnává. Při
-        //     přegenerování se cílový koncept z dohledání vylučuje.
+        // 0. Idempotence pokynu (#166 D46): živý doklad se stejným
+        //    `source.kind` + `source.ref` se vrací beze změny — dřív, než se
+        //    obsah posuzuje, aby opakování po výpadku spojení prošlo i poté,
+        //    co se ve zdroji dat něco změnilo. Obsah se neporovnává. Při
+        //    přegenerování se cílový koncept z dohledání vylučuje.
         $sourceKey = SourceRef::fromCanonical($canonical);
         if ($sourceKey !== null) {
-            $existing = $this->findBySourceRef($sourceKey, $replaceId);
+            $existing = $this->sourceRefs->find($sourceKey, $replaceId);
             if ($existing !== null) {
                 return $this->existingBySourceRef($canonical, $existing);
             }
@@ -1427,46 +1128,37 @@ class DocumentApplier
                 statusCode: 400,
             );
         }
-        // Tvary hodnot (#118 D2) — i v importním módu; na hlavičku i do
-        // založených účtů jdou normalizované hodnoty. Oprava IBAN ↔ číslo
-        // účtu je interpretace, běží jen v návrhu (#166 D19).
-        $resolveIgnored = self::ignoresResolve($canonical, $mode);
-        $canonical = self::normalizeValues($canonical, $mode);
-        // Pokyn: výchozí hodnoty, které payload neuvádí (#166 D40) — po
-        // normalizaci, před kontrolami; stejné místo jako v náhledu.
-        $canonical = $this->applyInstructionDefaults($canonical, $mode);
-        $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
-        // Vynechané řádky (#111 D9, D12) — tentýž seznam pro důvod přepočtu
-        // rekapitulace i pro plán.
-        $rowSkips = $this->skippedRowIndices($canonical, $clientResolve, $mode);
-        $validatorIssues = $this->documentValidator->validate($canonical, $mode);
+        // Tvary hodnot (#118 D2) — i v importním módu; na hlavičku jdou
+        // normalizované hodnoty.
+        $resolveIgnored = self::ignoresResolve($canonical);
+        $canonical = self::normalizeValues($canonical);
+        // Výchozí hodnoty, které payload neuvádí (#166 D40) — po normalizaci,
+        // před kontrolami; stejné místo jako v náhledu.
+        $canonical = $this->applyInstructionDefaults($canonical);
+        $validatorIssues = $this->documentValidator->validate($canonical);
         self::appendResolveIgnoredIssue($resolveIgnored, $validatorIssues);
         $this->payload->appendAuthorIssue($canonical, $validatorIssues);
-        $this->appendVatModeIssue($canonical, $validatorIssues, $mode);
-        $this->appendVatHeaderIssues($canonical, $validatorIssues, $mode);
+        $this->appendVatHeaderIssues($canonical, $validatorIssues);
         $this->payload->appendVatRateDateIssue($canonical, $validatorIssues);
-        $this->appendRecapSourceIssue($canonical, $validatorIssues, $rowSkips, $mode);
+        $this->appendRecapSourceIssue($canonical, $validatorIssues);
         $this->payload->appendExchangeRateIssue($canonical, $validatorIssues);
         $this->payload->appendCorrectionIssues($canonical, $validatorIssues);
         $this->payload->appendVatRegistrationIssue($canonical, $validatorIssues);
 
-        // 3. Re-run resolve (fresh DB read; client's _resolve might be stale).
-        $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues, $mode), $mode);
+        // 3. Hledání záznamů podle referencí (čerstvé čtení databáze).
+        $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues));
 
-        // 4. Plán uložení: návrh rozhoduje nad volbami uživatele
-        //    (`_resolve.*.userAction`), pokyn jen promítne nalezené reference.
-        $plan = $mode->derives()
-            ? $this->reconcile($resolved, $clientResolve, $validatorIssues, $rowSkips)
-            : PayloadResolve::plan($resolved, $validatorIssues);
+        // 4. Plán uložení: projekce nalezených referencí.
+        $plan = PayloadResolve::plan($resolved, $validatorIssues);
 
         $enriched = $this->withResolve($canonical, $resolved, $validatorIssues);
 
         if ($plan['errorCode'] !== null) {
             return ApplyResult::error(
                 $plan['errorCode'],
-                $plan['errorMessage'] ?? 'Reconcile selhal.',
+                $plan['errorMessage'] ?? 'Doklad nelze uložit.',
                 $enriched,
-                statusCode: $plan['errorCode'] === 'conflict' ? 409 : 422,
+                statusCode: 422,
             );
         }
 
@@ -1492,17 +1184,17 @@ class DocumentApplier
         $plan['cashDeskId'] = $targets['cashDeskId'];
         $plan['ownBankAccountId'] = $targets['ownBankAccountId'];
 
-        // 6–11. Transactional save — NestedTransaction: vlastní transakce,
-        //       nebo SAVEPOINT uvnitř cizí (periodická fakturace volá apply()
-        //       ve své transakci a atomicky navazuje doklad na období, #110).
-        //       Neúspěch closure = rollback vlastní práce; vnější transakce
-        //       zůstává volajícímu.
+        // 6–9. Transactional save — NestedTransaction: vlastní transakce,
+        //      nebo SAVEPOINT uvnitř cizí (periodická fakturace i vstup
+        //      návrhu volají apply() ve své transakci, #110, #166 D53).
+        //      Neúspěch closure = rollback vlastní práce; vnější transakce
+        //      zůstává volajícímu.
         //
-        //       Souběh pokynů se stejným `source.ref` (#166 U3): pojmenovaný
-        //       zámek podle klíče držený od chvíle před transakcí do jejího
-        //       commitu; první dotaz transakce doklad dohledá znovu (čerstvý
-        //       snímek), takže druhý pokyn po uvolnění zámku najde doklad
-        //       prvního. Zámek uvolňuje `finally` níž.
+        //      Souběh pokynů se stejným `source.ref` (#166 U3): pojmenovaný
+        //      zámek podle klíče držený od chvíle před transakcí do jejího
+        //      commitu; první dotaz transakce doklad dohledá znovu (čerstvý
+        //      snímek), takže druhý pokyn po uvolnění zámku najde doklad
+        //      prvního. Zámek uvolňuje `finally` níž.
         if ($sourceKey !== null && !$this->acquireSourceLock($sourceKey)) {
             return ApplyResult::error(
                 'source_ref_busy',
@@ -1514,11 +1206,11 @@ class DocumentApplier
         try {
         try {
             $savedValidation = null;
-            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, &$savedValidation, $numberSeriesId, $replaceId, $docTypeCode, $mode, $sourceKey): array {
+            $savedDocId = NestedTransaction::run($this->db, function () use ($canonical, $plan, &$validatorIssues, &$savedValidation, $numberSeriesId, $replaceId, $docTypeCode, $sourceKey): int {
             // Idempotence pod zámkem (#166 U3): doklad mohl vzniknout mezi
             // prvním dohledáním a zámkem.
             if ($sourceKey !== null) {
-                $existing = $this->findBySourceRef($sourceKey, $replaceId);
+                $existing = $this->sourceRefs->find($sourceKey, $replaceId);
                 if ($existing !== null) {
                     throw new SourceRefExistsException($existing);
                 }
@@ -1528,22 +1220,8 @@ class DocumentApplier
             // „koncept mezitím potvrzený“ (ApplyAbortedException → 409/422).
             $this->lockReplaceTarget($replaceId, $docTypeCode);
 
-            // Side-creates first so we have ids to link in the doc.
-            $sideCreatedIds = $this->runSideCreates($plan, $resolved);
-
-            // Doplnění pohybu (operation) item řádkům — až po side-creates,
-            // kdy jsou finální ID položek v DB (matched i právě založené),
-            // takže item_type se čte jednotně přes ID. Issues se propíší do
-            // finální response přes withResolve() po commitu.
-            // Jen návrh: pokyn pohyb dostal mezi výchozími hodnotami
-            // společným pravidlem ({@see applyInstructionDefaults()}) a řádek
-            // bez něj je záměrně prázdný (#166 D50).
-            $plan['rowOperationDefaults'] = $mode->derives()
-                ? $this->defaultRowOperationsForApply($canonical, $plan, $sideCreatedIds, $validatorIssues)
-                : [];
-
             // Transform canonical → internal $data.
-            $data = $this->transform($canonical, $plan, $sideCreatedIds, $numberSeriesId, $mode);
+            $data = $this->transform($canonical, $plan, $numberSeriesId);
             if ($replaceId !== null) {
                 $data = $this->applyReplaceConcept($data, $replaceId, $validatorIssues);
             }
@@ -1552,8 +1230,8 @@ class DocumentApplier
             $result = $this->headsGateway->saveDocument($data);
             if (!$result->isSuccess()) {
                 // Doklad neprošel validací DocDocument (#166 D21): chyba apply
-                // s nálezy dokladu, ne internal_error. Výjimka vrátí transakci
-                // (založené entity); nálezy z ní poskládá catch níž.
+                // s nálezy dokladu, ne internal_error. Výjimka vrátí transakci;
+                // nálezy z ní poskládá catch níž.
                 $validation = $result->getValidation();
                 if ($result->getErrorMessage() === null && $validation !== null && !$validation->isValid()) {
                     throw new DocumentValidationFailedException($validation);
@@ -1561,31 +1239,13 @@ class DocumentApplier
                 throw new \RuntimeException('Save failed: ' . ($result->getErrorMessage() ?? 'unknown error'));
             }
             $savedValidation = $result->getValidation();
-            $savedDocId = (int) $result->getData()['id'];
 
             // Kontrolní součet (#166 D4, D27): `totals` pokynu proti tomu, co
             // doklad skutečně spočítal a uložil. Neshoda vrátí transakci —
-            // doklad, založené entity ani číslo z řady nezůstanou. Návrh
-            // `totals` nekontroluje (D28), jsou tam signálem pro review.
-            if (!$mode->derives()) {
-                $this->checkDeclaredTotals($canonical, $result->getData(), $validatorIssues);
-            }
+            // doklad ani číslo z řady nezůstanou.
+            $this->checkDeclaredTotals($canonical, $result->getData(), $validatorIssues);
 
-            // Per-partner item-code mapping learning — only after we know
-            // which row.item ids ended up actually linked. Učení patří
-            // interpretaci (#166 D6, D19): pokyn mapování kódů nezapisuje.
-            if ($mode->derives()) {
-                $this->supplierCodeLearning->learn($canonical, $plan, $sideCreatedIds);
-            }
-
-            // Lineage targets only — analysis resolution / message docState
-            // update lives in MessageProposalApplier so the verdict write
-            // stays one place. See tasks/mail-message-centric.md D6.
-            if ($mode->derives()) {
-                $this->writeLineageTargets($canonical, $savedDocId);
-            }
-
-            return [$savedDocId, $sideCreatedIds];
+            return (int) $result->getData()['id'];
             });
         } catch (ApplyAbortedException $e) {
             if ($e->issues !== []) {
@@ -1598,8 +1258,8 @@ class DocumentApplier
         } catch (SourceRefExistsException $e) {
             return $this->existingBySourceRef($canonical, $e->existing);
         } catch (DocumentValidationFailedException $e) {
-            // D21 (#166), oba režimy: nálezy dokladu do `_resolve.issues`
-            // s cestou v canonicalu; nic se neuložilo.
+            // D21 (#166): nálezy dokladu do `_resolve.issues` s cestou
+            // v canonicalu; nic se neuložilo.
             $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
             foreach (DocumentIssuePaths::issues($e->validation, $canonical, $rowIndices) as $issue) {
                 $validatorIssues[] = $issue;
@@ -1619,9 +1279,8 @@ class DocumentApplier
             }
         }
 
-        // Varování dokladu z úspěšného uložení (#166 U6) — jen v pokynu:
-        // výstup apply návrhu se nemění, jeho varování ukazuje review.
-        if (!$mode->derives() && $savedValidation !== null) {
+        // Varování dokladu z úspěšného uložení (#166 U6).
+        if ($savedValidation !== null) {
             $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
             $this->savedWarnings = DocumentIssuePaths::warnings($savedValidation, $canonical, $rowIndices);
             foreach ($this->savedWarnings as $issue) {
@@ -1629,17 +1288,13 @@ class DocumentApplier
             }
         }
 
-        // Mark canCreate references as matched (with newly-assigned ids).
-        $resolved = $this->annotateSideCreated($resolved, $sideCreatedIds);
         $finalCanonical = $this->withResolve($canonical, $resolved, $validatorIssues);
         $finalCanonical['savedDocId'] = $savedDocId;
 
         return ApplyResult::ok($finalCanonical, $savedDocId);
     }
 
-    // ── Resolve all references ──────────────────────────────────────────────
-
-    // ── Vynechané řádky (#111 D9, D12) ──────────────────────────────────────
+    // ── Cíle uložení: pokladna, řada, vlastní účet ──────────────────────────
 
     /**
      * Cíle uložení, které apply dohledává před transakcí: pokladna, číselná
@@ -1790,36 +1445,19 @@ class DocumentApplier
         ];
     }
 
-    // ── Reconcile: validate userAction → execution plan ─────────────────────
-
-    // ── Side-creates ────────────────────────────────────────────────────────
-
-    /**
-     * Thin wrapper around `Connection::query()` so subclasses (especially
-     * testing doubles) can intercept. `Connection::query()` itself is
-     * final and cannot be mocked directly. Pattern matches DocDocument.
-     */
-    protected function executeSql(mixed ...$args): void
-    {
-        $this->db->query(...$args);
-    }
-
     // ── Transform canonical → internal $data ───────────────────────────────
 
     /**
+     * Payload pokynu → data dokladu pro `DocDocument`. Jen překládá: co
+     * payload říká (po doplnění výchozích hodnot) a co se našlo referencí.
+     *
      * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $plan
-     * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
+     * @param array<string, mixed> $plan {@see PayloadResolve::plan()}
      * @param ?int $numberSeriesId Pre-resolved by apply() ({@see resolveSaveTargets()}).
      * @return array<string, mixed>
      */
-    private function transform(
-        array $canonical,
-        array $plan,
-        array $sideIds,
-        ?int $numberSeriesId,
-        ApplyMode $mode,
-    ): array {
+    private function transform(array $canonical, array $plan, ?int $numberSeriesId): array
+    {
         $docType = $this->payload->mapDocType($canonical);
         $selfParty = $canonical['selfParty'] ?? null;
         $targetDocState = (int) ($canonical['applyOptions']['targetDocState'] ?? 10);
@@ -1829,15 +1467,13 @@ class DocumentApplier
         $taxDocument = DocTypes::isTaxDocument($this->config, $docType);
 
         // Účetní doklad (cmnbkp): hlavičkový partner je nepovinný a žije per
-        // řádek; bere se z pole `partner` (resolvedHeadPartner, v návrhu
-        // i z volby), bez selfParty resolution. Faktura: partner = ta druhá
-        // strana. Pokladní doklad / prodejka: nepovinný — pole `partner`,
-        // jinak strana z payloadu.
+        // řádek; bere se z pole `partner` (resolvedHeadPartner), bez selfParty
+        // resolution. Faktura: partner = ta druhá strana. Pokladní doklad /
+        // prodejka: nepovinný — pole `partner`, jinak strana z payloadu.
         $partyPartner = match ($selfParty) {
-            'customer' => $sideIds['supplier'] ?? $plan['resolvedSupplier'] ?? null,
-            'supplier' => $sideIds['customer'] ?? $plan['resolvedCustomer'] ?? null,
-            default    => $sideIds['supplier'] ?? $plan['resolvedSupplier']
-                           ?? ($sideIds['customer'] ?? $plan['resolvedCustomer'] ?? null),
+            'customer' => $plan['resolvedSupplier'] ?? null,
+            'supplier' => $plan['resolvedCustomer'] ?? null,
+            default    => $plan['resolvedSupplier'] ?? ($plan['resolvedCustomer'] ?? null),
         };
         $isCashDeskBound = $this->payload->isCashDeskBoundDocType($docType);
         $partnerId = match (true) {
@@ -1847,56 +1483,38 @@ class DocumentApplier
         };
         // Směr pokladního dokladu (jen cashDocument; validátor hlídá 1/2).
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
-        $totalRoundingAuto = $this->resolveTotalRoundingAuto($canonical, $docType, $cashDir, $mode);
+        $totalRoundingAuto = $this->resolveTotalRoundingAuto($canonical, $docType, $cashDir);
         $totalRoundingMode = RoundingModeNames::totalCode($canonical['totals']['totalRoundingMode'] ?? null);
         // Ruční plátce (#72): poslaná strana = partner_balance s příznakem
         // ručního zadání, aby ho odvození (terminál / dopravce) nepřepsalo.
-        $balancePartyId = $sideIds['balanceParty'] ?? $plan['resolvedBalanceParty'] ?? null;
+        $balancePartyId = $plan['resolvedBalanceParty'] ?? null;
 
-        $vatRegistrationId = $this->resolveVatRegistrationFor($canonical, $mode);
-        $vatCtx = $this->vatContext($canonical, $mode);
-        // Režim výpočtu: volba uživatele → derivace → canonical → default,
-        // s ochranou „Bez DPH“ + samovyměření ({@see effectiveVatMode}).
-        // Koriguje se jen interní vat_mode, canonical vč. totals zůstává
-        // nedotčený a DocDocument si base/VAT/totals přepočítá sám.
-        $vatMode = self::VAT_MODE_MAP[$this->effectiveVatMode($canonical, $vatCtx)['value']];
-        // Přijatý doklad neplátce DPH (#97) a doklad mimo české DPH (#89):
-        // ceny řádků včetně daně dodavatele (prázdné = nic se nepřevádí).
-        // Doklad bez rekapitulace plyne z téhož kontextu v resolveRecapSource();
-        // registraci nenese jen neplátce (resolveVatRegistrationFor()).
-        $supplierVatGross = $mode->derives()
-            ? $this->vatInterpretation->supplierVatGrossTotals($canonical, $vatCtx)
-            : [];
-        // Místo plnění: u přijatého dokladu efektivní místo z kontextu
-        // (odvozené z prefixu DIČ dodavatele, jinak hodnota z canonicalu) —
-        // tasks/exchange-received-vat-place.md D1. Stejné místo dostala
-        // derivace kódů řádků, jinak by kód a hlavička nesouhlasily.
+        // Kontext DPH pokynu (#166 D19, D20): nic se neodvozuje — režim,
+        // místo plnění a registrace jsou záměr z payloadu. Canonical vč.
+        // totals zůstává nedotčený a DocDocument si base/VAT/totals přepočítá
+        // sám.
+        $vatCtx = $this->payload->vatContext($canonical);
+        $vatRegistrationId = $vatCtx['ownRegistrationId'];
+        $vatMode = self::VAT_MODE_MAP[$this->effectiveVatMode($canonical)['value']];
         $vatPlace = self::VAT_PLACE_MAP[(string) ($vatCtx['place'] ?? 'domestic')] ?? 0;
         // Autorita rekapitulace + řádky k převzetí (R3/I4/I7). Přepočítanou
         // rekapitulaci si DocDocument spočítá z řádků sám, `vatRecap` se pak
         // do payloadu nedává — prázdný child set by u nového dokladu nic
         // nezměnil, ale u převzaté je to jediná cesta, jak se data dostanou
         // do docs_core_vat_recap.
-        $recapSource = $this->resolveRecapSource($canonical, $plan['rowSkips'] ?? [], $mode);
+        $recapSource = $this->resolveRecapSource($canonical);
         $calcSource = self::VAT_CALC_SOURCE_MAP[(string) ($canonical['vat']['calcSource'] ?? 'header')] ?? 0;
         $csMode = self::CS_MODE_MAP[(string) ($canonical['vat']['controlStatementMode'] ?? 'auto')] ?? 0;
-        // Způsob úhrady z payloadu. Pokyn ho bez hodnoty dostal mezi
+        // Způsob úhrady z payloadu. Bez hodnoty ho pokyn dostal mezi
         // výchozími hodnotami ({@see applyInstructionDefaults()}); když tu
-        // chybí, je záměrně prázdný a platí výchozí hodnota sloupce. Návrh
-        // se ptá téhož pravidla jako formulář: doklad pokladny Hotově,
-        // ostatní Převodem.
-        $paymentMethod = $mode->derives()
-            ? $this->proposalDefaults->paymentMethodFor($canonical, $docType)
-            : (self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')] ?? null);
+        // chybí, je záměrně prázdný a platí výchozí hodnota sloupce.
+        $paymentMethod = self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')] ?? null;
 
-        // AI extractors sometimes omit accountingDate even when issueDate
-        // is present. DocDocument::beforeSave (applyDateDefaults) would
-        // backfill it, but its validate() runs first and rejects an empty
-        // accounting_date — so default it here by the same rule
-        // (AccountingDateRule, #103 D78: přijatá faktura DUZP, jinak datum
-        // vystavení). The form-based flow still requires accounting_date
-        // explicitly (DocsHeadsForm marks it required); this fallback
-        // applies only to the Exchange apply path.
+        // Účetní datum, které payload neuvádí: DocDocument::beforeSave
+        // (applyDateDefaults) by ho doplnil, ale jeho validate() běží dřív
+        // a prázdné účetní datum odmítne — proto se doplní už tady týmž
+        // pravidlem (AccountingDateRule, #103 D78: přijatá faktura DUZP,
+        // jinak datum vystavení).
         $issueDate = $canonical['dates']['issueDate'] ?? null;
         $accountingDate = AccountingDateRule::fromCanonical($canonical);
 
@@ -1941,7 +1559,7 @@ class DocumentApplier
             // Vlastní bankovní účet dokladu (`payment.ownBankAccount`, #166
             // D30) — vydaná faktura ho ve stavu V pořádku vyžaduje.
             'bank_account'         => $plan['ownBankAccountId'] ?? null,
-            'partner_bank'         => $sideIds['supplierBank'] ?? $plan['resolvedSupplierBank'] ?? null,
+            'partner_bank'         => $plan['resolvedSupplierBank'] ?? null,
             'partner_bank_account' => $canonical['supplier']['bankAccount']['accountNumber'] ?? null,
             'partner_bank_iban'    => $canonical['supplier']['bankAccount']['iban'] ?? null,
             'partner_bank_bic'     => $canonical['supplier']['bankAccount']['bic'] ?? null,
@@ -1976,21 +1594,18 @@ class DocumentApplier
             'exchange_rate'        => $canonical['exchangeRate'] ?? ($this->payload->exchangeRateDecision($canonical)['value'] ?? null),
             // Automatické zaokrouhlení podle způsobu úhrady (#73 D8), viz
             // resolveTotalRoundingAuto(). Při zapnuté automatice mód určí
-            // DocDocument::computeAmounts (klíč vypadne). Jinak platí
-            // výslovný `totals.totalRoundingMode` (#166 D25, D26); bez něj
-            // je pokyn na haléře (mód neodhaduje, D19) a návrh mód odvodí
-            // z čísel (computed vs declared) — extrahovaný
-            // totals.totalRounding je jen signál; null → klíč vypadne přes
-            // array_filter níže a platí default 0.
+            // DocDocument::computeAmounts (klíč vypadne přes array_filter
+            // níže). Jinak platí výslovný `totals.totalRoundingMode` (#166
+            // D25, D26); bez něj je doklad na haléře — mód se neodhaduje
+            // (D19), odhad z čísel předlohy dělá interpretace.
             'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
             'total_rounding_mode'  => match (true) {
-                $mode->derives()            => RoundingInterpretation::resolveMode($canonical, $totalRoundingAuto, $supplierVatGross),
                 $totalRoundingAuto          => null,
                 $totalRoundingMode !== null => $totalRoundingMode,
                 default                     => RoundingModes::ON_CENT,
             },
-            // Zaokrouhlení DPH (#166 D25): záměr z payloadu v obou režimech,
-            // odhad neexistuje; null → klíč vypadne a platí default 0.
+            // Zaokrouhlení DPH (#166 D25): záměr z payloadu, odhad
+            // neexistuje; null → klíč vypadne a platí default 0.
             'vat_rounding_mode'    => RoundingModeNames::vatCode($canonical['vat']['roundingMode'] ?? null),
             'payment_method'       => $paymentMethod,
             'payment_reference'    => $canonical['payment']['paymentReference'] ?? null,
@@ -2012,13 +1627,7 @@ class DocumentApplier
             // (`headColumn`); chybějící objekt = sloupce se nezapíší (NULL).
             ...$this->dimensionColumns($plan['resolvedHeadDimensions'] ?? [], head: true),
             'docState'             => $targetDocState,
-            'rows'                 => $this->transformRows(
-                $canonical['rows'] ?? [],
-                $plan,
-                $sideIds,
-                self::savedWithoutVat($vatCtx),
-                $supplierVatGross,
-            ),
+            'rows'                 => $this->transformRows($canonical['rows'] ?? [], $plan, $vatCtx['withoutVat']),
             'vatRecap'             => $recapSource['recap'] !== [] ? $recapSource['recap'] : null,
         ];
 
@@ -2139,40 +1748,19 @@ class DocumentApplier
         );
     }
 
-    // ── Kód DPH řádků přijatého dokladu (VatCodeDerivation, D1–D3) ─────────
-
-    // ── Režim: návrh se ptá interpretace, pokyn payloadu (#166 D51) ─────────
-
-    /**
-     * Kontext DPH dokladu. Návrh: odvození z papírové podoby
-     * ({@see VatInterpretation::context()}); pokyn: jen co říká payload
-     * ({@see PayloadContext::vatContext()}).
-     *
-     * @param array<string, mixed> $canonical
-     * @return array<string, mixed>
-     */
-    private function vatContext(array $canonical, ApplyMode $mode): array
-    {
-        return $mode->derives()
-            ? $this->vatInterpretation->context($canonical)
-            : $this->payload->vatContext($canonical);
-    }
+    // ── DPH pokynu: hodnoty jsou záměr (#166 D19, D20) ──────────────────────
 
     /**
      * Režim výpočtu DPH, který skončí na dokladu — jediné místo pro
-     * transform() i blok `_resolve.vat.mode`. Pokyn (#166 D20): režim je
-     * záměr — bez volby uživatele, bez korekce ze součtů a bez přepnutí kvůli
-     * samovyměření; návrh {@see VatInterpretation::effectiveVatMode()}.
+     * transform() i blok `_resolve.vat.mode`. Režim je záměr z payloadu:
+     * bez korekce ze součtů a bez přepnutí kvůli samovyměření (odvození
+     * z předlohy dělá interpretace návrhu).
      *
      * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $vatCtx {@see vatContext()}
      * @return array{value: string, source: string, reason: ?string, pinned: bool, auto: string}
      */
-    private function effectiveVatMode(array $canonical, array $vatCtx): array
+    private function effectiveVatMode(array $canonical): array
     {
-        if ($vatCtx['mode']->derives()) {
-            return $this->vatInterpretation->effectiveVatMode($canonical, $vatCtx);
-        }
         ['mode' => $value, 'source' => $source] = $this->payload->declaredVatMode($canonical);
         // Režim doplněný výchozí hodnotou není hodnota z payloadu.
         $source = $this->isDefaulted('vat.mode') ? 'default' : $source;
@@ -2180,33 +1768,14 @@ class DocumentApplier
     }
 
     /**
-     * Nálezy k režimu DPH (odvozený režim, neplátce, doklad mimo české DPH)
-     * — jen návrh; pokyn režim neodvozuje.
+     * Hlavičkové nálezy DPH: neznámé `vat.mode` / `vat.place` (schéma má
+     * pole jako enum — pojistka pro volání mimo schema validaci).
      *
      * @param array<string, mixed> $canonical
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function appendVatModeIssue(array $canonical, array &$issues, ApplyMode $mode): void
+    private function appendVatHeaderIssues(array $canonical, array &$issues): void
     {
-        if ($mode->derives()) {
-            $this->vatInterpretation->appendVatModeIssue($canonical, $issues);
-        }
-    }
-
-    /**
-     * Hlavičkové nálezy DPH: neznámé `vat.mode` / `vat.place` v obou
-     * režimech; návrh k nim přidává volby uživatele a odvozené místo plnění
-     * ({@see VatInterpretation::appendVatHeaderIssues()}).
-     *
-     * @param array<string, mixed> $canonical
-     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     */
-    private function appendVatHeaderIssues(array $canonical, array &$issues, ApplyMode $mode): void
-    {
-        if ($mode->derives()) {
-            $this->vatInterpretation->appendVatHeaderIssues($canonical, $issues);
-            return;
-        }
         foreach ([PayloadContext::unknownVatModeIssue($canonical), PayloadContext::unknownVatPlaceIssue($canonical)] as $issue) {
             if ($issue !== null) {
                 $issues[] = $issue;
@@ -2215,13 +1784,12 @@ class DocumentApplier
     }
 
     /**
-     * `_resolve.rows[].vatCode` jednoho řádku. Návrh o kódu rozhoduje
-     * ({@see VatInterpretation::rowVatCode()}); kde nerozhoduje, a v pokynu
-     * vždy, se kód z payloadu jen ověří ({@see PayloadResolve::rowVatCode()}).
-     * Doklad Bez DPH v pokynu kódy nenese — neověřují se.
+     * `_resolve.rows[].vatCode` jednoho řádku: kód z payloadu se jen ověří
+     * proti číselníku ({@see PayloadResolve::rowVatCode()}). Doklad Bez DPH
+     * kódy nenese — neověřují se.
      *
      * @param array<string, mixed> $row
-     * @param array<string, mixed> $vatCtx {@see vatContext()}
+     * @param array<string, mixed> $vatCtx {@see PayloadContext::vatContext()}
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      * @return array<string, mixed>|null
      */
@@ -2233,73 +1801,30 @@ class DocumentApplier
         string $supplierCountry,
         array &$issues,
     ): ?array {
-        $fallbackPct = null;
-        if ($vatCtx['mode']->derives()) {
-            $decided = $this->vatInterpretation->rowVatCode($idx, $row, $vatCtx, $vatCountry, $issues);
-            if ($decided !== null) {
-                return $decided['block'];
-            }
-            $pct = is_array($row['vat'] ?? null) ? ($row['vat']['pct'] ?? null) : null;
-            $fallbackPct = is_numeric($pct) ? (float) $pct : null;
-        } elseif ($vatCtx['withoutVat']) {
+        if ($vatCtx['withoutVat']) {
             return null;
         }
-        return $this->payloadResolve->rowVatCode($idx, $row, $vatCtx, $vatCountry, $supplierCountry, $issues, $fallbackPct);
-    }
-
-    /**
-     * Registrace DPH dokladu: pokyn z reference `vat.registration` (#166
-     * D20, D36), návrh {@see VatInterpretation::registrationId()}.
-     *
-     * @param array<string, mixed> $canonical
-     */
-    private function resolveVatRegistrationFor(array $canonical, ApplyMode $mode): ?int
-    {
-        return $mode->derives()
-            ? $this->vatInterpretation->registrationId($canonical)
-            : $this->payload->vatContext($canonical)['ownRegistrationId'];
+        return $this->payloadResolve->rowVatCode($idx, $row, $vatCtx, $vatCountry, $supplierCountry, $issues, null);
     }
 
     /**
      * Zdroj rekapitulace pro `docs_core_heads.vat_recap_source` a řádky
-     * rekapitulace k převzetí. Pokyn: `vat.recapSource` je záměr
-     * ({@see instructionRecapSource()}); návrh rozhoduje z předlohy
-     * ({@see RecapInterpretation::recapSource()}). Doklad Bez DPH
-     * rekapitulaci nemá.
+     * rekapitulace k převzetí: `vat.recapSource` je záměr
+     * ({@see instructionRecapSource()}). Doklad Bez DPH — ten, který to říká
+     * (`vat.mode` none) — rekapitulaci nemá.
      *
      * @param array<string, mixed> $canonical
-     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string,
      *     issues?: list<array{severity: string, path: string, code: string, message: string}>}
      */
-    private function resolveRecapSource(array $canonical, array $rowSkips, ApplyMode $mode): array
+    private function resolveRecapSource(array $canonical): array
     {
-        if ($mode->derives()) {
-            return $this->recapInterpretation->recapSource($canonical, $rowSkips);
-        }
         $vatCtx = $this->payload->vatContext($canonical);
-        if (self::savedWithoutVat($vatCtx)) {
+        if ($vatCtx['withoutVat']) {
             return ['source' => 0, 'recap' => [], 'fallback' => null];
         }
         return $this->instructionRecapSource($canonical, $vatCtx);
     }
-
-    /**
-     * Doklad vznikne **Bez DPH** bez ohledu na to, co říká canonical:
-     * přijatý doklad neplátce (#97), nebo doklad mimo české DPH (#89, vč.
-     * dokladu od neplátce v tuzemsku — #164 D5a).
-     * Jedna podmínka pro režim, kódy řádků, rekapitulaci i převod cen.
-     * V pokynu (#166 D20) je to doklad, který Bez DPH **říká** (`vat.mode`
-     * none). Rozhoduje se jednou ve {@see vatContext()} (`withoutVat`).
-     *
-     * @param array<string, mixed> $vatCtx {@see vatContext()}
-     */
-    private static function savedWithoutVat(array $vatCtx): bool
-    {
-        return $vatCtx['withoutVat'];
-    }
-
-    // ── Datum sazby DPH (#159 D11, tasks/vat-rate-date-exchange.md) ─────────
 
     // ── Autorita rekapitulace DPH (vat.recapSource) ─────────────────────────
 
@@ -2383,55 +1908,35 @@ class DocumentApplier
     }
 
     /**
-     * Info issue, když rekapitulace nešla převzít a spočítá se z řádků —
-     * bez něj by uživatel nepoznal, proč je na dokladu jiná rekapitulace
-     * než na předloze. Přenesení daňové povinnosti není chyba předlohy
-     * („nešlo převzít“ by mátlo): dodavatel správně uvádí 0 %, daň
-     * přiznáváme my, proto vlastní text; ostatní důvody šablonou.
+     * Nálezy k převzaté rekapitulaci (chybějící řádky, kód, neznámý kód) —
+     * pokyn rekapitulaci z řádků nepřepočítává potichu, je to chyba.
      *
      * @param array<string, mixed> $canonical
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}, D12).
      */
-    private function appendRecapSourceIssue(array $canonical, array &$issues, array $rowSkips, ApplyMode $mode): void
+    private function appendRecapSourceIssue(array $canonical, array &$issues): void
     {
-        $resolved = $this->resolveRecapSource($canonical, $rowSkips, $mode);
-        foreach ($resolved['issues'] ?? [] as $issue) {
+        foreach ($this->resolveRecapSource($canonical)['issues'] ?? [] as $issue) {
             $issues[] = $issue;
-        }
-        // Důvod přepočtu hlásí jen návrh — pokyn rekapitulaci z řádků nepřepočítává potichu.
-        $fallback = $mode->derives() ? RecapInterpretation::fallbackIssue($resolved) : null;
-        if ($fallback !== null) {
-            $issues[] = $fallback;
         }
     }
 
-    // ── Kurz cizí měny (#121 D6, U5) ───────────────────────────────────────
-
-    // ── Opravný daňový doklad (#92 D10, task B U2–U4) ───────────────────────
-
-    // ── Doklad Bez DPH s daní dodavatele v cenách řádků (#97, #89) ─────────
-
-    // ── Doplnění pohybu (operation) na item řádcích ─────────────────────────
+    // ── Zaokrouhlení a řádky ────────────────────────────────────────────────
 
     /**
      * Příznak automatického zaokrouhlení nového dokladu (#73 D8, U9): jen
      * doklad, kde automatika platí ({@see TotalRoundingAuto::applies()} —
      * prodejní typ, u pokladního dokladu příjem). Explicitní
      * `totals.totalRoundingAuto` vyhrává (dump → seed zachová stav dokladu).
-     * Bez něj: pokyn ji zapne všude, kde platí (#166 D26) — na `totals`
-     * nezáleží, mód při vypnuté automatice říká `totals.totalRoundingMode`;
-     * návrh ji zapne právě tehdy, když canonical nemá deklarovanou
-     * `totals.totalAmount`. Pošta i ISDOC částku nesou — zůstávají u módu
-     * uvedeného, jinak odvozeného z čísel ({@see RoundingInterpretation::deriveTotalRoundingMode()}).
+     * Bez něj je zapnutá všude, kde platí (#166 U4, D26, D50) — na `totals`
+     * nezáleží, mód při vypnuté automatice říká `totals.totalRoundingMode`.
+     * Chybějící klíč = výchozí hodnota jako ve formuláři (`DocHeadDefaults`);
+     * výslovné `null` = záměrně bez automatiky.
      *
      * @param array<string, mixed> $canonical
      */
-    private function resolveTotalRoundingAuto(array $canonical, string $docType, int $cashDir, ApplyMode $mode): bool
+    private function resolveTotalRoundingAuto(array $canonical, string $docType, int $cashDir): bool
     {
-        if ($mode->derives()) {
-            return RoundingInterpretation::resolveAuto($this->config, $canonical, $docType, $cashDir);
-        }
         if (!TotalRoundingAuto::applies($this->config, $docType, $cashDir)) {
             return false;
         }
@@ -2440,10 +1945,6 @@ class DocumentApplier
         if (is_bool($explicit)) {
             return $explicit;
         }
-        // Pokyn (#166 U4, D26, D50): automatika nezávisí na `totals`.
-        // Chybějící klíč = výchozí hodnota jako ve formuláři (zapnutá
-        // u typu s automatikou, `DocHeadDefaults`); výslovné `null` =
-        // záměrně bez automatiky.
         return !(is_array($totals) && array_key_exists('totalRoundingAuto', $totals))
             && $this->payload->headDefaults()->totalRoundingAuto($docType);
     }
@@ -2451,23 +1952,12 @@ class DocumentApplier
     /**
      * @param array<int, mixed> $rows
      * @param array<string, mixed> $plan
-     * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
-     * @param bool $withoutVat Doklad vznikne Bez DPH z rozhodnutí applieru
-     *        ({@see savedWithoutVat()}): kód z historie řádků ani sazba
-     *        dodavatele se na řádky nepropisují.
-     * @param array<int, float> $grossTotals {@see VatInterpretation::supplierVatGrossTotals()} — řádek
-     *        s cenou včetně daně jde na doklad z celkové ceny: bez jednotkové
-     *        ceny bez daně (dopočítá ji DocRowCalculator) a bez slev, které
-     *        cena už obsahuje.
+     * @param bool $withoutVat Doklad Bez DPH (`vat.mode` none): kód ani sazba
+     *        se na řádky nepropisují.
      * @return array<int, array<string, mixed>>
      */
-    private function transformRows(
-        array $rows,
-        array $plan,
-        array $sideIds,
-        bool $withoutVat = false,
-        array $grossTotals = [],
-    ): array {
+    private function transformRows(array $rows, array $plan, bool $withoutVat = false): array
+    {
         // Kontační operace (vlajka rowSide v docs.core.rowOperations) účtují
         // částku přímo — detekce nesmí stát jen na přítomnosti accSide:
         // operace s rowSide: 0 (FX) stranu z konstrukce nenesou.
@@ -2482,7 +1972,7 @@ class DocumentApplier
             $orderPos++;
             $contation = isset($row['accSide'])
                 || isset($cfgOps[(string) ($row['operation'] ?? '')]['rowSide']);
-            $itemId = $sideIds['rowItems'][$i] ?? ($plan['resolvedRowItems'][$i] ?? null);
+            $itemId = $plan['resolvedRowItems'][$i] ?? null;
             $unitId = $plan['resolvedRowUnits'][$i] ?? null;
             $vat = $plan['resolvedRowVatCodes'][$i] ?? null;
             $vatPct = null;
@@ -2496,31 +1986,27 @@ class DocumentApplier
             $reverseChargeCode = $vatCode !== null
                 ? ($plan['resolvedRowReverseChargeCodes'][$i] ?? null)
                 : null;
-            $gross = $grossTotals[$i] ?? null;
 
             $out[] = array_filter([
                 'row_kind'        => self::ROW_KIND_MAP[(string) ($row['rowKind'] ?? 'item')] ?? 1,
-                // Row movement (docs.core.rowOperations). Explicit canonical
-                // value wins (passthrough); null on item rows falls back to
-                // the default computed by defaultRowOperationsForApply()
-                // (cfgItem docs.core.applyRowOperations) — without a movement
-                // the row cannot be confirmed at 40 (DocRowOperationRules).
-                'operation'       => ($row['operation'] ?? null)
-                                      ?: ($plan['rowOperationDefaults'][$i] ?? null),
+                // Pohyb řádku (docs.core.rowOperations) z payloadu — bez hodnoty
+                // ho pokyn dostal mezi výchozími hodnotami; řádek bez něj je
+                // záměrně prázdný (#166 D50).
+                'operation'       => ($row['operation'] ?? null) ?: null,
                 'order_pos'       => $orderPos,
                 'item'            => $itemId,
                 'unit'            => $unitId,
                 'quantity'        => $row['quantity'] ?? null,
-                'unit_price'      => $gross !== null ? null : ($row['unitPrice'] ?? null),
-                'total_price'     => $gross ?? ($row['totalPrice'] ?? null),
+                'unit_price'      => $row['unitPrice'] ?? null,
+                'total_price'     => $row['totalPrice'] ?? null,
                 // Kontační řádek (accSide nebo operace s vlajkou rowSide —
                 // FX řádky stranu nenesou) účtuje částku přímo → fromTotal,
                 // jinak by calculateRowPrice přepsal total_price z qty×unit (0).
-                'price_calc_mode' => $contation || $gross !== null
+                'price_calc_mode' => $contation
                                       ? 1
                                       : (self::PRICE_CALC_MODE_MAP[(string) ($row['priceCalcMode'] ?? 'fromUnitPrice')] ?? 0),
-                'discount_pct'    => $gross !== null ? null : ($row['discountPct'] ?? null),
-                'discount_amount' => $gross !== null ? null : ($row['discountAmount'] ?? null),
+                'discount_pct'    => $row['discountPct'] ?? null,
+                'discount_amount' => $row['discountAmount'] ?? null,
                 'vat_code'        => $vatCode,
                 'vat_pct'         => $vatPct,
                 // Vlastní datum sazby řádku (#159 U4) — jen se předá.
@@ -2836,66 +2322,11 @@ class DocumentApplier
         }
     }
 
-    // ── Lineage update ─────────────────────────────────────────────────────
-
-    /**
-     * Stamp the source message with target_table_id + target_row (where the
-     * canonical went) — the reverse side of heads.source_message, written
-     * atomically inside the doc-save transaction (D6 z mail-message-centric).
-     * Analysis resolution / message docState are intentionally NOT touched
-     * here — those move through MessageProposalApplier so the verdict write
-     * stays one place.
-     *
-     * @param array<string, mixed> $canonical
-     */
-    private function writeLineageTargets(array $canonical, int $savedDocId): void
-    {
-        $messageNdx = $canonical['source']['message'] ?? null;
-        if (!is_int($messageNdx) || $messageNdx <= 0) {
-            return;
-        }
-        $this->executeSql(
-            'UPDATE [core_mail_incoming_messages]
-             SET [target_table_id] = %s,
-                 [target_row] = %i
-             WHERE [id] = %i',
-            'docs_core_heads', $savedDocId, $messageNdx,
-        );
-    }
-
-    /**
-     * Idempotency pre-check for apply(). If the canonical's source.message
-     * already points at a docs target (target_table_id + target_row set),
-     * return the existing savedDocId without re-saving. Saves a duplicate
-     * INSERT on retries / double-clicks.
-     *
-     * @param array<string, mixed> $canonical
-     */
-    private function checkIdempotent(array $canonical): ?ApplyResult
-    {
-        $messageNdx = $canonical['source']['message'] ?? null;
-        if (!is_int($messageNdx) || $messageNdx <= 0) {
-            return null;
-        }
-        $row = $this->db->fetch(
-            'SELECT [target_table_id], [target_row]
-             FROM [core_mail_incoming_messages]
-             WHERE [id] = %i',
-            $messageNdx,
-        );
-        if ($row === null
-            || empty($row['target_row'])
-            || (string) $row['target_table_id'] !== 'docs_core_heads'
-        ) {
-            return null;
-        }
-        return self::alreadyAppliedResult($canonical, (int) $row['target_row']);
-    }
-
     /**
      * Odpověď opakovaného apply: payload, jak přišel, `savedDocId`
      * existujícího dokladu a `_resolve.summary.status = "alreadyApplied"`.
-     * Společný tvar idempotence podle zprávy pošty i podle `source.ref`.
+     * Společný tvar idempotence podle `source.ref` i podle zprávy pošty
+     * (tu hlídá vstup návrhu).
      *
      * @param array<string, mixed> $canonical
      * @param list<array<string, mixed>> $issues
@@ -2923,14 +2354,6 @@ class DocumentApplier
     private const SOURCE_LOCK_TIMEOUT = 10;
 
     /**
-     * @return array{id: int, docType: string, docNumber: ?string}|null
-     */
-    private function findBySourceRef(SourceRef $key, ?int $excludeId): ?array
-    {
-        return $this->sourceRefs->find($key, $excludeId);
-    }
-
-    /**
      * Odpověď apply, když doklad se stejným klíčem existuje: tentýž typ →
      * existující doklad beze změny (200, `alreadyApplied`); jiný typ než
      * `docType` payloadu → `source_ref_conflict` (422) — stejný identifikátor
@@ -2943,7 +2366,7 @@ class DocumentApplier
     {
         // Pokyn odpovídá payloadem, jak přišel.
         $canonical = $this->instructionPayload ?? $canonical;
-        $issue = $this->sourceRefIssue($canonical, $existing);
+        $issue = SourceRefLookup::issue($canonical, $existing);
         if ($issue['severity'] === 'error') {
             return ApplyResult::error(
                 'source_ref_conflict',
@@ -2953,25 +2376,6 @@ class DocumentApplier
             );
         }
         return self::alreadyAppliedResult($canonical, $existing['id'], [$issue]);
-    }
-
-    /**
-     * @param array<string, mixed> $canonical
-     * @param array{id: int, docType: string, docNumber: ?string} $existing
-     * @return array<string, mixed>
-     */
-    private function sourceRefIssue(array $canonical, array $existing): array
-    {
-        return SourceRefLookup::issue($canonical, $existing);
-    }
-
-    /**
-     * @param array<string, mixed> $canonical
-     * @param array<int, array<string, mixed>> $issues
-     */
-    private function appendSourceRefIssue(array $canonical, array &$issues): void
-    {
-        $this->sourceRefs->appendIssue($canonical, $issues);
     }
 
     /**
@@ -3066,10 +2470,14 @@ class DocumentApplier
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
      * @return array<string, mixed>
      */
-    private function withVatBlocks(array $canonical, array $resolved, ApplyMode $mode): array
+    private function withVatBlocks(array $canonical, array $resolved): array
     {
-        $vatCtx = $this->vatContext($canonical, $mode);
-        return $this->payloadResolve->vatBlocks($canonical, $resolved, $vatCtx, $this->effectiveVatMode($canonical, $vatCtx));
+        return $this->payloadResolve->vatBlocks(
+            $canonical,
+            $resolved,
+            $this->payload->vatContext($canonical),
+            $this->effectiveVatMode($canonical),
+        );
     }
 
     /**
@@ -3117,23 +2525,13 @@ class DocumentApplier
     {
         // Pokyn odpovídá payloadem, jak přišel (#166 D44) — applier pracoval
         // s kopií doplněnou o výchozí hodnoty; která pole doplnil, říká
-        // `_resolve.defaults` (cesta a hodnota). Návrh klíč nenese.
+        // `_resolve.defaults` (cesta a hodnota).
         $canonical = $this->instructionPayload ?? $canonical;
         $resolve = $resolved + ['issues' => $issues];
         if ($this->appliedDefaults !== null) {
             $resolve['defaults'] = $this->appliedDefaults;
         }
         $resolve['summary'] = PayloadResolve::summary($resolved, $issues);
-        // Per-row enrichment audit (RowHistoryEnricher) is not part of the
-        // fresh resolve — carry it over from the incoming _resolve by index,
-        // otherwise preview/apply responses would drop it. Jen návrh: pokyn
-        // `_resolve` nečte, není co přenášet (#166 D62).
-        if ($this->instructionPayload === null && is_array($resolve['rows'] ?? null)) {
-            $resolve['rows'] = ProposalReport::carryOverEnrichment(
-                $canonical['_resolve']['rows'] ?? null,
-                $resolve['rows'],
-            );
-        }
         // Auditní blok oprav hodnot (#118 D14) — zapsal ho normalizátor při
         // /result nebo v tomto volání; čerstvý resolve ho nezná, přenáší se.
         $repairs = $canonical['_resolve'][CanonicalValueNormalizer::REPAIRS_KEY] ?? null;
@@ -3143,8 +2541,6 @@ class DocumentApplier
         $canonical['_resolve'] = $resolve;
         return $canonical;
     }
-
-    // ── Náhled: efektivní položka a účet řádku (#111) ──────────────────────
 
     /**
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
@@ -3157,15 +2553,5 @@ class DocumentApplier
             }
         }
         return false;
-    }
-
-    /**
-     * @param array<string, mixed> $resolved
-     * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
-     * @return array<string, mixed>
-     */
-    private function annotateSideCreated(array $resolved, array $sideIds): array
-    {
-        return ProposalReport::withCreated($resolved, $sideIds);
     }
 }

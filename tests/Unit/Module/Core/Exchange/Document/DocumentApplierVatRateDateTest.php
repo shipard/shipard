@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -179,7 +178,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         );
         $vatRates = new VatRateResolver($vatConfig);
 
-        return new class(
+        return new TestableDocumentApplier(
             db: $this->db(),
             config: $config,
             headsGateway: $heads,
@@ -196,11 +195,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             vatCodeDerivation: new VatCodeDerivation($vatRates),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($tradeConfig)),
             references: $this->referenceResolver(self::REFERENCE_RECORDS),
-        ) extends DocumentApplier {
-            protected function executeSql(mixed ...$args): void
-            {
-            }
-        };
+        );
     }
 
     // ── Payloady ────────────────────────────────────────────────────────────
@@ -367,7 +362,7 @@ class DocumentApplierVatRateDateTest extends TestCase
         ];
         $payload['applyOptions'] = self::IMPORT;
 
-        $result = $this->applier()->apply(self::asInstruction($payload), ApplyMode::Instruction);
+        $result = $this->applier()->apply(self::asInstruction($payload));
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertNotContains('recap_source_computed_fallback', self::issueCodes($result));
@@ -390,7 +385,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'rateDate' => '2023-12-15'])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT]), ApplyMode::Instruction);
+        ) + ['applyOptions' => self::IMPORT]));
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame('cz-311', $this->saved['rows'][0]['vat_code']);
@@ -406,7 +401,7 @@ class DocumentApplierVatRateDateTest extends TestCase
             ['issueDate' => '2024-02-10', 'taxPointDate' => '2024-02-10'],
             [self::row(['code' => 'cz-311', 'pct' => 10])],
             ['rateSource' => 'rows'],
-        ) + ['applyOptions' => self::IMPORT]), ApplyMode::Instruction);
+        ) + ['applyOptions' => self::IMPORT]));
 
         $this->assertFalse($result->success);
         $this->assertSame(['vat_rate_missing'], $this->validationCodes);

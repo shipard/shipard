@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Document\DocumentResult;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\PayloadResolve;
@@ -54,7 +53,7 @@ final class DocumentApplierReferencesTest extends TestCase
 
     private function instruction(array $payload, ?DocumentApplier $applier = null): ApplyResult
     {
-        return ($applier ?? $this->buildApplier())->apply($payload, ApplyMode::Instruction);
+        return ($applier ?? $this->buildApplier())->apply($payload);
     }
 
     /** @return array{severity: ?string, path: ?string} */
@@ -379,7 +378,7 @@ final class DocumentApplierReferencesTest extends TestCase
     /** D62: `item.display` a `effectiveAccount` jsou zpráva návrhu — náhled pokynu je nenese. */
     public function testInstructionPreviewCarriesNoProposalReport(): void
     {
-        $result = $this->buildApplier()->preview(self::asInstruction($this->payload()), ApplyMode::Instruction);
+        $result = $this->buildApplier()->preview(self::asInstruction($this->payload()));
 
         $row = $result->canonical['_resolve']['rows'][0];
         $this->assertSame(18, $row['item']['matchedId']);
@@ -651,7 +650,7 @@ final class DocumentApplierReferencesTest extends TestCase
             $issues = [];
             // Reference jen hodnotou rozbaluje applier před resolve ({@see CanonicalReferences::expand()}).
             $canonical = CanonicalReferences::expand($canonical);
-            $resolved = (new \ReflectionMethod($applier, 'resolveAll'))->invokeArgs($applier, [$canonical, &$issues, ApplyMode::Instruction]);
+            $resolved = (new \ReflectionMethod($applier, 'resolveAll'))->invokeArgs($applier, [$canonical, &$issues]);
             $discarded = [];
             $plan = PayloadResolve::plan($resolved, $discarded);
             return [$plan, array_column($issues, 'code', 'path')];

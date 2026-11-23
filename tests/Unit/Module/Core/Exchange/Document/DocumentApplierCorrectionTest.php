@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
@@ -128,7 +127,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $tradeConfig->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $id === 'world.trade.unions' ? self::$tradeUnions : null);
         $vatRates = new VatRateResolver($vatConfig);
 
-        return new class(
+        return new TestableDocumentApplier(
             db: $db,
             config: $config,
             headsGateway: $heads,
@@ -146,11 +145,7 @@ class DocumentApplierCorrectionTest extends TestCase
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($tradeConfig)),
             exchangeRateResolver: $rates,
             references: $this->referenceResolver(self::REFERENCE_RECORDS + ['docs_core_heads' => $known ?? self::KNOWN_DOCS]),
-        ) extends DocumentApplier {
-            protected function executeSql(mixed ...$args): void
-            {
-            }
-        };
+        );
     }
 
     /** Faktura vydaná (typ s příznakem), jeden řádek se sníženou sazbou cz-111, rok 2026 (12 %). */
@@ -272,7 +267,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $result = $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
             'correction'   => self::linked(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ])), ApplyMode::Instruction);
+        ])));
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(40, $this->saved['docState']);
@@ -375,7 +370,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $result = $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
             'correction' => self::block(),
             '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
-        ])), ApplyMode::Instruction);
+        ])));
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertArrayNotHasKey('corrected_doc', $this->saved);
@@ -455,7 +450,7 @@ class DocumentApplierCorrectionTest extends TestCase
         $this->applier(original: self::ORIGINAL)->apply(self::asInstruction(self::issued([
             'correction'   => self::linked(),
             'applyOptions' => ['targetDocState' => 40, 'importNumber' => ['docNumber' => 'FV26-00200', 'sequenceNumber' => 200]],
-        ])), ApplyMode::Instruction);
+        ])));
 
         $this->assertSame(15.0, $this->saved['rows'][0]['vat_pct']);
     }
@@ -561,36 +556,6 @@ class DocumentApplierCorrectionTest extends TestCase
         foreach (['corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
             $this->assertArrayHasKey($column, $reset, $column);
             $this->assertNull($reset[$column]);
-        }
-    }
-
-    // ── Stínový test: návrh × pokyn nad hotovým dokladem (#166 U5) ──────────
-
-    public function testProposalShadowHoldsForCorrectiveDocument(): void
-    {
-        $eur = ['currency' => 'EUR', 'exchangeRate' => null];
-        $cases = [
-            'odkaz referencí'         => [self::issued(['correction' => self::linked()]), self::ORIGINAL],
-            'odkaz volbou uživatele'  => [self::issued([
-                'correction' => self::block('jiné číslo'),
-                '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
-            ]), self::ORIGINAL],
-            'blok bez odkazu'         => [self::issued(['correction' => self::block()]), null],
-            'kurz původního dokladu'  => [
-                self::issued(['correction' => self::linked()] + $eur),
-                ['exchange_rate' => 25.5, 'doc_currency' => 'eur'] + self::ORIGINAL,
-            ],
-        ];
-        foreach ($cases as $name => [$payload, $original]) {
-            $shadow = self::shadowOf(
-                $this->applier(original: $original, rates: new FakeExchangeRateResolver([])),
-                fn (): array => $this->saved !== null ? [$this->saved] : [],
-                function (): void {
-                    $this->saved = null;
-                },
-            );
-            $this->assertSame([], $shadow->preview($payload), "{$name}: náhled");
-            $this->assertSame([], $shadow->apply($payload)['differences'], "{$name}: uložení");
         }
     }
 }

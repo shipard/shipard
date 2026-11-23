@@ -6,7 +6,6 @@ namespace Shipard\Module\Core\Exchange\Dataset\Seed;
 
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 
 /**
@@ -29,7 +28,7 @@ final class DocumentSeeder extends ApplierSeeder
     {
         // Sekce `docs/` datové sady je pokyn (#166 U10, U11): doklad se uloží,
         // jak ho sada říká — nic se neodvozuje.
-        return $this->applier->apply($canonical, ApplyMode::Instruction);
+        return $this->applier->apply($canonical);
     }
 
     protected function forMerge(array $canonical): array

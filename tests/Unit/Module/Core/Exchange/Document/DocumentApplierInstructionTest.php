@@ -8,7 +8,6 @@ use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 
 /**
@@ -45,7 +44,7 @@ final class DocumentApplierInstructionTest extends TestCase
     private function instruction(array $payload, ?Connection $db = null, bool $checksum = false): ApplyResult
     {
         $payload = self::asInstruction($payload);
-        return $this->buildApplier($db)->apply($checksum ? $payload : self::withoutChecksum($payload), ApplyMode::Instruction);
+        return $this->buildApplier($db)->apply($checksum ? $payload : self::withoutChecksum($payload));
     }
 
     /** @return array<string, mixed> hlavička posledního uložení po `beforeSave()` */
@@ -63,7 +62,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->hotelPayload();
 
         $default = $this->buildApplier()->preview($payload)->canonical['_resolve']['vat'];
-        $explicit = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat'];
+        $explicit = $this->buildApplier()->preview($payload)->canonical['_resolve']['vat'];
         $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical['_resolve']['vat'];
 
         $this->assertSame($explicit, $default);
@@ -76,9 +75,9 @@ final class DocumentApplierInstructionTest extends TestCase
         $applier = $this->buildApplier();
         $payload = $this->hotelPayload();
 
-        $instruction = $applier->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat']['mode'];
+        $instruction = $applier->preview($payload)->canonical['_resolve']['vat']['mode'];
         $proposal = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['vat']['mode'];
-        $again = $applier->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat']['mode'];
+        $again = $applier->preview($payload)->canonical['_resolve']['vat']['mode'];
 
         $this->assertSame('fromBase', $instruction['value']);
         $this->assertSame('outOfScope', $proposal['source']);
@@ -213,7 +212,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertGreaterThan(0, $this->itemTagQueries, 'návrh štítky položek čte');
 
         $this->itemTagQueries = 0;
-        $result = $this->buildApplier($db)->preview($payload, ApplyMode::Instruction);
+        $result = $this->buildApplier($db)->preview($payload);
         $this->assertSame(0, $this->itemTagQueries);
         $this->assertSame([], array_intersect(
             ['supply_kind_derived', 'vat_special_place', 'vat_special_place_ambiguous'],
@@ -537,7 +536,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertSame('CZ8520100000002308417557', $proposal['supplier']['bankAccount']['iban']);
 
-        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical;
+        $canonical = $this->buildApplier()->preview($payload)->canonical;
         $this->assertSame('CZ8520100000002308417558', $canonical['supplier']['bankAccount']['iban']);
         $this->assertArrayNotHasKey('valueRepairs', $canonical['_resolve']);
         $this->assertNotContains('bank_account_repaired', $this->issueCodes($canonical));
@@ -573,7 +572,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['_resolve']['rows'][1]['reverseChargeCode']['userAction'] = 'useValue:4';
         $payload['_resolve']['rows'][1]['vatCode']['userAction'] = 'nesmysl';
 
-        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical;
+        $canonical = $this->buildApplier()->preview($payload)->canonical;
 
         $ignored = array_values(array_filter(
             $canonical['_resolve']['issues'],
@@ -865,7 +864,7 @@ final class DocumentApplierInstructionTest extends TestCase
         // Jako náhled a uložení: kontext se počítá nad payloadem doplněným
         // o výchozí hodnoty pokynu.
         $payload = (new \ReflectionMethod($applier, 'applyInstructionDefaults'))
-            ->invoke($applier, $payload, ApplyMode::Instruction);
-        return (new \ReflectionMethod($applier, 'vatContext'))->invoke($applier, $payload, ApplyMode::Instruction);
+            ->invoke($applier, $payload);
+        return (new \ReflectionProperty(DocumentApplier::class, 'payload'))->getValue($applier)->vatContext($payload);
     }
 }

@@ -127,7 +127,7 @@ final class PayloadContext
      */
     public function vatCodeCountry(array $vatCtx, array $canonical): string
     {
-        if ($vatCtx['derive'] || (!$vatCtx['mode']->derives() && $vatCtx['ownCountry'] !== null)) {
+        if ($vatCtx['derive'] || (!$vatCtx['interpreted'] && $vatCtx['ownCountry'] !== null)) {
             return (string) $vatCtx['ownCountry'];
         }
         // Návrh: reference `vat.registration` má přednost před signálem země.
@@ -762,7 +762,7 @@ final class PayloadContext
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>
      */
-    public function baseVatContext(array $canonical, ApplyMode $mode): array
+    public function baseVatContext(array $canonical, bool $interpreted = false): array
     {
         // Dvě data (#159 D11): `taxPointDate` (DUZP, fallback datum vystavení)
         // řídí místo plnění, registraci k datu, neplátce a období; kód DPH,
@@ -773,7 +773,8 @@ final class PayloadContext
         $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
         $inputPlace = is_string($vat['place'] ?? null) ? $vat['place'] : null;
         return [
-            'mode'              => $mode,
+            // Kontext staví interpretace papírové podoby (ne pokyn).
+            'interpreted'       => $interpreted,
             'withoutVat'        => false,
             'derive'            => false,
             'nonPayer'          => false,
@@ -820,7 +821,7 @@ final class PayloadContext
         if ($this->vatContextCache !== null && $this->vatContextCache['key'] === $key) {
             return $this->vatContextCache['ctx'];
         }
-        $ctx = $this->baseVatContext($canonical, ApplyMode::Instruction);
+        $ctx = $this->baseVatContext($canonical);
         $ctx['withoutVat'] = ($canonical['vat']['mode'] ?? null) === 'none';
         $own = $this->instructionVatRegistration($canonical);
         if ($own !== null) {

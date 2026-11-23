@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -208,7 +207,7 @@ class DocumentApplierSupplierNonPayerTest extends TestCase
         $payload = $this->nonPayerPayload();
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
 
-        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical;
+        $canonical = $this->buildApplier()->preview($payload)->canonical;
 
         $this->assertNotSame('outOfScope', $canonical['_resolve']['vat']['mode']['source']);
         $this->assertNotContains('vat_supplier_non_payer', $this->issueCodes($canonical));

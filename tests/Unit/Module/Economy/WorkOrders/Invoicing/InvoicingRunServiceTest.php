@@ -8,7 +8,6 @@ use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\AbstractInvoiceContributor;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionContext;
@@ -57,8 +56,12 @@ class InvoicingRunServiceTest extends TestCase
         $this->assertSame(3, $report->count(RunReport::OUTCOME_ISSUED));
         $this->assertSame([1001, 1002, 1003], array_column(array_map(static fn($l) => $l->toArray(), $report->lines), 'docId'));
         $this->assertSame(3, $service->fakeApplier->applied);
-        // Generovaný doklad jde applierem jako pokyn (#166 U10).
-        $this->assertSame([ApplyMode::Instruction, ApplyMode::Instruction, ApplyMode::Instruction], $service->fakeApplier->modes);
+        // Generovaný doklad jde applierem jako pokyn (#166 U10) — volby
+        // interpretace neposílá.
+        foreach ($service->fakeApplier->canonicals as $canonical) {
+            $this->assertArrayNotHasKey('interpret', $canonical['applyOptions'] ?? []);
+            $this->assertArrayNotHasKey('_resolve', $canonical);
+        }
         $this->assertSame(['2026-08-01', '2026-09-01', '2026-10-01'], array_keys($service->fakeRepo->periods[6]));
         foreach ($service->fakeRepo->periods[6] as $period) {
             $this->assertSame('issued', $period['state']);
@@ -647,17 +650,14 @@ class FakeApplier extends DocumentApplier
     public array $failFor = [];
     /** @var list<array<string, mixed>> */
     public array $canonicals = [];
-    /** @var list<ApplyMode> režim každého volání — generátor dokladů volá pokyn (#166 U10) */
-    public array $modes = [];
 
     public function __construct()
     {
     }
 
-    public function apply(array $canonical, ApplyMode $mode = ApplyMode::Instruction): ApplyResult
+    public function apply(array $canonical): ApplyResult
     {
         $this->canonicals[] = $canonical;
-        $this->modes[] = $mode;
         if (in_array($canonical['dates']['periodFrom'] ?? '', $this->failFor, true)) {
             return ApplyResult::error('validation_failed', 'Doklad neprošel validací', $canonical, statusCode: 422);
         }

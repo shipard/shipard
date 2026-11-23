@@ -6,7 +6,6 @@ namespace Shipard\Module\Core\Exchange\Document\Interpret;
 
 use Dibi\Connection;
 use Shipard\Core\Config\ConfigRuntime;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\PayloadContext;
@@ -223,7 +222,7 @@ final class VatInterpretation
         }
 
         $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
-        $ctx = ['pins' => $pins] + $this->payload->baseVatContext($canonical, ApplyMode::Proposal);
+        $ctx = ['pins' => $pins] + $this->payload->baseVatContext($canonical, interpreted: true);
 
         // Návrh je vždy mimo importní mód (#166 D22 — `importNumber` v návrhu
         // odmítá validátor): plátcovství se posuzuje k datu dokladu.

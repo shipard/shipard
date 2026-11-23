@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Document;
 
 use Shipard\Core\Accounting\JournalDimensionSet;
-use Shipard\Module\Core\Exchange\Document\Interpret\PaperChecks;
 use Shipard\Module\Core\Exchange\Values\CanonicalValueValidator;
 
 /**
@@ -51,11 +50,8 @@ final class DocumentValidator
      * @param array<string, mixed> $canonical
      * @return array<int, array{severity: string, path: string, code: string, message: string}>
      */
-    public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): array
+    public function validate(array $canonical): array
     {
-        if ($mode->derives()) {
-            return PaperChecks::validate($canonical, $this);
-        }
         $issues = [];
         // Strana a položka jen referencí → objekt s `ref` (volající mimo
         // applier, např. kontrola sady před seedem, posílá tvar ze souboru).
