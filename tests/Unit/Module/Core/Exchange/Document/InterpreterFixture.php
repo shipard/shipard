@@ -16,6 +16,15 @@ use Shipard\Tests\Unit\Module\Core\Exchange\Document\Shadow\ShadowRunner;
  */
 trait InterpreterFixture
 {
+    /**
+     * Část, kterou si applier testu postavil (třídy interpretace, sdílená
+     * vrstva) — testy pravidel návrhu ji volají přímo.
+     */
+    private static function partOf(DocumentApplier $applier, string $property): mixed
+    {
+        return (new \ReflectionProperty(DocumentApplier::class, $property))->getValue($applier);
+    }
+
     private static function interpreterOf(DocumentApplier $applier): DocumentInterpreter
     {
         $part = static fn (string $property): mixed

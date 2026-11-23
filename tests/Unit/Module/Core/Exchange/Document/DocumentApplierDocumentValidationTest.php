@@ -20,6 +20,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
  */
 final class DocumentApplierDocumentValidationTest extends TestCase
 {
+    use InterpreterFixture;
     use OutOfScopeHarness;
 
     /** DB: registrace DPH cz (id 5), číselná řada přijatých faktur (id 7); vlastní firma nenastavená. */
@@ -126,7 +127,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         $payload = $this->happyPayload();
         $payload['applyOptions'] = ['targetDocState' => 40];
 
-        $result = $this->applier()->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier())->apply($payload);
 
         $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
         $ownCompany = $this->issuesByCode($result->canonical, 'no_own_company');
@@ -142,7 +143,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         $payload = $this->happyPayload();
         $payload['applyOptions'] = ['targetDocState' => 40];
 
-        $canonical = $this->applier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $canonical = self::proposalOf($this->applier())->preview($payload)->canonical;
 
         $this->assertSame([], $this->issuesByCode($canonical, 'no_own_company'));
         $this->assertSame([], $this->issuesByCode($canonical, 'vat_code_missing'));
@@ -157,7 +158,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
 
         // Pokyn bez číselných `totals`: řádek bez DPH by neprošel kontrolním součtem (#166 D27).
         $instruction = $this->applier()->apply(self::asInstruction(self::withoutChecksum($payload)));
-        $proposal = $this->applier()->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->applier())->apply($payload);
 
         $this->assertTrue($instruction->success && $proposal->success);
         $this->assertCount(1, $this->issuesByCode($instruction->canonical, 'vat_code_missing'));
@@ -175,7 +176,7 @@ final class DocumentApplierDocumentValidationTest extends TestCase
         $payload['_resolve']['rows'][0]['userAction'] = 'skip';
         $payload['applyOptions'] = ['targetDocState' => 40];
 
-        $result = $this->applier()->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier())->apply($payload);
 
         $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame(['rows.1.vat.code'], array_column($this->issuesByCode($result->canonical, 'vat_code_missing'), 'path'));

@@ -587,10 +587,13 @@ final class PayloadResolve
         if (!empty($block['referenceError'])) {
             return null;
         }
-        if (($block['status'] ?? null) === ResolveStatus::Matched->value) {
+        $status = $block['status'] ?? null;
+        if ($status === ResolveStatus::Matched->value) {
             return isset($block['matchedId']) ? (int) $block['matchedId'] : null;
         }
-        self::unresolvedRequired($path, $plan, $issues);
+        if (in_array($status, ['canCreate', 'ambiguous', 'notFound'], true)) {
+            self::unresolvedRequired($path, $plan, $issues);
+        }
         return null;
     }
 

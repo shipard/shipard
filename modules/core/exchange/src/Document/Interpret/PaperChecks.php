@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Document\Interpret;
 
+use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\VatModeDerivation;
@@ -25,6 +26,55 @@ use Shipard\Module\Docs\Core\RoundingModes;
  */
 final class PaperChecks
 {
+    /**
+     * Kontroly papírové podoby v pořadí, v jakém je nese zpráva návrhu:
+     * kontroly předlohy prokládané kontrolami payloadu, které platí i pro
+     * pokyn ({@see DocumentValidator} — pokladna vázaného typu, číslo
+     * dokladu dodavatele, volby `applyOptions`, `source.ref`, dimenze,
+     * tvary hodnot stran).
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<int, array{severity: string, path: string, code: string, message: string}>
+     */
+    public static function validate(array $canonical, DocumentValidator $payloadChecks): array
+    {
+        $issues = [];
+        $canonical = CanonicalReferences::expand($canonical);
+
+        self::checkCommonRequired($canonical, $issues);
+        self::checkParties($canonical, $issues);
+        $payloadChecks->checkDocTypeFields($canonical, $issues);
+        self::checkHeadPartner($canonical, $issues);
+        self::checkTotalsCoherence($canonical, $issues);
+        self::checkVatModeSuspect($canonical, $issues);
+        self::checkRowsVsRecap($canonical, $issues);
+        self::checkVatRecapArithmetic($canonical, $issues);
+        $payloadChecks->checkPartnerDocNumber($canonical, $issues);
+        self::checkImportRequiresInstruction($canonical, $issues);
+        $payloadChecks->checkOptionsAndValues($canonical, $issues);
+
+        return $issues;
+    }
+
+    /**
+     * Pole `partner` na hlavičce faktury (#166 D30): předloha z papíru, kde
+     * pole vyplnil model — návrh ho s varováním ignoruje, partnerem je
+     * strana dokladu. Pokyn totéž odmítá chybou.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    public static function checkHeadPartner(array $canonical, array &$issues): void
+    {
+        if (CanonicalReferences::headPartnerMisplaced($canonical)) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => CanonicalReferences::PARTNER,
+                'code'     => 'partner_not_supported',
+                'message'  => 'Pole partner platí jen u účetního a pokladního dokladu — ignorováno, partnerem je strana dokladu.',
+            ];
+        }
+    }
+
     /**
      * Strana povinná podle typu dokladu: přijatá faktura a zálohová faktura
      * přijatá dodavatele, vydaná odběratele. Pokladní doklad a prodejka mají

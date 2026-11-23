@@ -41,6 +41,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierVatPinsTest extends TestCase
 {
+    use InterpreterFixture;
+    use ReferenceFixture;
     private const ROOT = __DIR__ . '/../../../../../..';
 
     private string $tmpDir;
@@ -175,7 +177,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
         $account = $this->createMock(AccountResolver::class);
         $account->method('resolve')->willReturn(null);
@@ -196,6 +198,7 @@ class DocumentApplierVatPinsTest extends TestCase
             accountResolver: $account,
             vatCodeDerivation: new VatCodeDerivation($this->vatCzRateResolver()),
             vatPlaceDerivation: new VatPlaceDerivation($this->tradeUnionResolver()),
+            references: $this->anyIdReferenceResolver(),
         );
     }
 
@@ -310,7 +313,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload['vatRecap'] = [];
         $payload['totals'] = ['totalBase' => null, 'totalVat' => null, 'totalAmount' => $payload['totals']['totalAmount'], 'totalRounding' => 0];
 
-        $canonical = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $canonical = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $this->assertNotContains('vat_code_unknown', $this->issueCodes($canonical));
         $this->assertSame('supplierNonPayer', $canonical['_resolve']['vat']['mode']['reason']);
@@ -326,12 +329,12 @@ class DocumentApplierVatPinsTest extends TestCase
 
         // Bez volby: samovyměření se odvozuje jen v základní sazbě (D4 z #86)
         // — dodavatelova 12 % se ignoruje, řádek dostane cz-217 / 21 %.
-        $plain = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['rows'][0]['vatCode'];
+        $plain = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('derived', $plain['matchedBy']);
         $this->assertSame('cz-217', $plain['createPayload']['code']);
         $this->assertSame(21.0, $plain['createPayload']['pct']);
 
-        $pinned = $applier->preview($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-218']), ApplyMode::Proposal)->canonical;
+        $pinned = self::proposalOf($applier)->preview($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-218']))->canonical;
         $codes = $this->issueCodes($pinned);
         $this->assertNotContains('vat_code_unknown', $codes);
         $this->assertNotContains('vat_code_pin_invalid', $codes);
@@ -357,7 +360,7 @@ class DocumentApplierVatPinsTest extends TestCase
         // Služby z EU → derivace cz-217; uživatel zvolí zboží cz-215.
         $payload = $this->withPins($this->euServicesPayload(), ['rows[0].vatCode' => 'useCode:cz-215']);
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $result = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $vatCode = $result['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('matched', $vatCode['status']);
@@ -376,7 +379,7 @@ class DocumentApplierVatPinsTest extends TestCase
     {
         $payload = $this->withPins($this->happyPayload(), ['rows[0].vatCode' => 'useCode:cz-118']);
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $result = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $vatCode = $result['_resolve']['rows'][0]['vatCode'];
         $this->assertSame('user', $vatCode['matchedBy']);
@@ -393,14 +396,14 @@ class DocumentApplierVatPinsTest extends TestCase
         foreach (['cz-217' => 'kód jiného místa', 'cz-301' => 'kód bez sazby k datu', 'xx-1' => 'neexistující klíč'] as $code => $why) {
             $payload = $this->withPins($this->happyPayload(), ['rows[0].vatCode' => "useCode:{$code}"]);
 
-            $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+            $preview = self::proposalOf($applier)->preview($payload)->canonical;
             $invalid = $this->issuesOf($preview, 'vat_code_pin_invalid');
             $this->assertCount(1, $invalid, $why);
             $this->assertSame('error', $invalid[0]['severity'], $why);
             $this->assertSame('rows.0.vat.code', $invalid[0]['path'], $why);
             $this->assertSame('notFound', $preview['_resolve']['rows'][0]['vatCode']['status'], $why);
 
-            $applied = $applier->apply($payload, ApplyMode::Proposal);
+            $applied = self::proposalOf($applier)->apply($payload);
             $this->assertFalse($applied->success, $why);
             $this->assertSame('validation_failed', $applied->errorCode, $why);
         }
@@ -413,7 +416,7 @@ class DocumentApplierVatPinsTest extends TestCase
         // intracom k DUZP 2026: 8 kódů samovyměření − 4 bez platné sazby
         // (cz-390–393), vstupní „Osvobozeno“, třístranný obchod a jako
         // poslední „Mimo DPH“ (#164 D1, D4, D8).
-        $eu = $applier->preview($this->euServicesPayload(), ApplyMode::Proposal)->canonical;
+        $eu = self::proposalOf($applier)->preview($this->euServicesPayload())->canonical;
         $this->assertSame(
             ['cz-215', 'cz-216', 'cz-217', 'cz-218', 'cz-214', 'cz-220', 'cz-000'],
             $this->optionCodes($eu),
@@ -425,7 +428,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertFalse($option['reducedDeduction']);
 
         // tuzemsko: včetně kráceného odpočtu, bez hidden a bez kódů bez sazby.
-        $domestic = $this->optionCodes($applier->preview($this->happyPayload(), ApplyMode::Proposal)->canonical);
+        $domestic = $this->optionCodes(self::proposalOf($applier)->preview($this->happyPayload())->canonical);
         $this->assertContains('cz-118', $domestic);
         $this->assertContains('cz-110', $domestic);
         $this->assertNotContains('cz-301', $domestic);
@@ -440,7 +443,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($this->euServicesPayload(), ['vat.place' => 'useValue:domestic']);
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         // `auto` = místo bez volby (z DIČ) — select ukazuje „Automaticky (EU)“ i po volbě.
         $this->assertSame(['value' => 'domestic', 'source' => 'user', 'auto' => 'intracom'], $preview['_resolve']['vat']['place']);
         $this->assertNotContains('vat_place_derived', $this->issueCodes($preview));
@@ -448,11 +451,11 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertNotContains('cz-217', $this->optionCodes($preview));
 
         // Bez volby by DIČ DE dalo intracom.
-        $plain = $applier->preview($this->euServicesPayload(), ApplyMode::Proposal)->canonical;
+        $plain = self::proposalOf($applier)->preview($this->euServicesPayload())->canonical;
         $this->assertSame(['value' => 'intracom', 'source' => 'vatId', 'auto' => 'intracom'], $plain['_resolve']['vat']['place']);
 
         // Doklad dostane tuzemsko; kód řádku si uživatel dovolí tuzemský.
-        $applied = $applier->apply($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-110']), ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($this->withPins($payload, ['rows[0].vatCode' => 'useCode:cz-110']));
         $this->assertTrue($applied->success, (string) $applied->errorMessage);
         $this->assertSame(0, $this->savedHeadsData['vat_place']);
         $this->assertSame('cz-110', $this->savedHeadsData['rows'][0]['vat_code']);
@@ -465,7 +468,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($payload, ['vat.mode' => 'useValue:fromTotal']);
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         $this->assertSame(['value' => 'fromTotal', 'source' => 'user', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
         $codes = $this->issueCodes($preview);
         $this->assertNotContains('vat_mode_derived', $codes);
@@ -473,7 +476,7 @@ class DocumentApplierVatPinsTest extends TestCase
         // Ceny řádků jsou teď s DPH: 10 × 1 033,06 = celkem k úhradě.
         $this->assertSame(10330.60, $preview['_resolve']['computed']['totals']['totalAmount']);
 
-        $this->assertTrue($applier->apply($payload, ApplyMode::Proposal)->success);
+        $this->assertTrue(self::proposalOf($applier)->apply($payload)->success);
         $this->assertSame(2, $this->savedHeadsData['vat_mode']);
     }
 
@@ -495,14 +498,14 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($payload, ['vat.mode' => 'useValue:none']);
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         $this->assertSame('cz-115', $preview['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
         $this->assertSame(['value' => 'fromBase', 'source' => 'derived', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
         $codes = $this->issueCodes($preview);
         $this->assertNotContains('vat_mode_derived', $codes, 'proti volbě tiše (D11)');
         $this->assertNotContains('vat_out_of_scope_user', $codes);
 
-        $this->assertTrue($applier->apply($payload, ApplyMode::Proposal)->success);
+        $this->assertTrue(self::proposalOf($applier)->apply($payload)->success);
         $this->assertSame(1, $this->savedHeadsData['vat_mode']);
     }
 
@@ -515,7 +518,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($this->euServicesPayload(), ['vat.mode' => 'useValue:none']);
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         $resolve = $preview['_resolve'];
         $this->assertSame(
             ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'fromBase', 'reason' => 'user'],
@@ -534,7 +537,7 @@ class DocumentApplierVatPinsTest extends TestCase
             $this->assertNotContains($code, $codes);
         }
 
-        $this->assertTrue($applier->apply($payload, ApplyMode::Proposal)->success);
+        $this->assertTrue(self::proposalOf($applier)->apply($payload)->success);
         $this->assertSame(0, (int) $this->savedHeadsData['vat_mode']);
         $this->assertSame([], $this->savedHeadsData['vatRecap']);
         $this->assertTrue(empty($this->savedHeadsData['rows'][0]['vat_code']));
@@ -547,7 +550,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->euServicesPayload();
         $payload['vat']['mode'] = 'none';
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $this->assertSame(['value' => 'fromBase', 'source' => 'derived', 'auto' => 'fromBase'], $preview['_resolve']['vat']['mode']);
         $this->assertSame('cz-217', $preview['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
@@ -567,7 +570,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload['totals'] = ['totalAmount' => 12293.39];
         $payload = $this->withPins($payload, ['vat.mode' => 'useValue:none']);
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $this->assertSame(
             ['value' => 'none', 'source' => 'outOfScope', 'auto' => 'none', 'reason' => 'user'],
@@ -588,7 +591,7 @@ class DocumentApplierVatPinsTest extends TestCase
             'rows[0].vatCode' => 'useCode:cz-217',
         ]);
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $this->assertSame('user', $preview['_resolve']['vat']['mode']['reason']);
         $this->assertSame(['status' => 'matched', 'matchedBy' => 'outOfScope'], $preview['_resolve']['rows'][0]['vatCode']);
@@ -600,7 +603,7 @@ class DocumentApplierVatPinsTest extends TestCase
 
     public function testHeaderWithoutPinsReportsEffectiveSources(): void
     {
-        $preview = $this->buildApplier()->preview($this->happyPayload(), ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($this->happyPayload())->canonical;
 
         $this->assertSame(['value' => 'domestic', 'source' => 'vatId', 'auto' => 'domestic'], $preview['_resolve']['vat']['place']);
         $this->assertSame('fromBase', $preview['_resolve']['vat']['mode']['value']);
@@ -618,7 +621,7 @@ class DocumentApplierVatPinsTest extends TestCase
             'rows[0].vatCode'  => 'useCode:cz-118',
         ]);
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $ignored = $this->issuesOf($preview, 'vat_pin_ignored');
         $this->assertSame(['vat.place', 'vat.mode', 'rows.0.vat.code'], array_column($ignored, 'path'));
@@ -637,7 +640,7 @@ class DocumentApplierVatPinsTest extends TestCase
             'rows[0].vatCode' => 'useCode:',
         ]);
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $invalid = $this->issuesOf($preview, 'vat_pin_invalid');
         $this->assertSame(['vat.place', 'vat.mode', 'rows.0.vat.code'], array_column($invalid, 'path'));
@@ -654,8 +657,8 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($this->euServicesPayload(12.0), ['rows[0].vatCode' => 'useCode:cz-218']);
         $applier = $this->buildApplier();
 
-        $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $computed = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['computed'];
+        $applied = self::proposalOf($applier)->apply($payload);
 
         $this->assertTrue($applied->success, (string) $applied->errorMessage);
         $saved = $this->savedHeadsData;
@@ -689,16 +692,16 @@ class DocumentApplierVatPinsTest extends TestCase
         $missing = $this->domesticReverseChargePayload(null);
 
         // Bez volby: chybí, nabídka je k dispozici, apply stojí.
-        $preview = $applier->preview($missing, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($missing)->canonical;
         $this->assertContains('reverse_charge_code_missing', $this->issueCodes($preview));
         $options = array_column($preview['_resolve']['reverseChargeOptions'], 'label', 'code');
         $this->assertArrayHasKey('4', $options);
         $this->assertArrayHasKey('4a', $options);
         $this->assertStringStartsWith('14 — ', $options['14']);
-        $this->assertFalse($applier->apply($missing, ApplyMode::Proposal)->success);
+        $this->assertFalse(self::proposalOf($applier)->apply($missing)->success);
 
         $payload = $this->withPins($missing, ['rows[0].reverseChargeCode' => 'useValue:14']);
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         $this->assertSame(
             ['value' => '14', 'source' => 'user', 'status' => 'matched'],
             $preview['_resolve']['rows'][0]['reverseChargeCode'],
@@ -707,7 +710,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertNotContains('reverse_charge_code_missing', $codes);
         $this->assertNotContains('reverse_charge_code_pin_invalid', $codes);
 
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($payload);
         $this->assertTrue($applied->success, (string) $applied->errorMessage);
         $this->assertSame('cz-115', $this->savedHeadsData['rows'][0]['vat_code']);
         $this->assertSame('14', $this->savedHeadsData['rows'][0]['reverse_charge_code']);
@@ -721,7 +724,7 @@ class DocumentApplierVatPinsTest extends TestCase
             ['rows[0].reverseChargeCode' => 'useValue:4a'],
         );
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $this->assertSame(
             ['value' => '4a', 'source' => 'user', 'status' => 'matched'],
@@ -738,7 +741,7 @@ class DocumentApplierVatPinsTest extends TestCase
             ['rows[0].reverseChargeCode' => 'useValue:99'],
         );
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
 
         $this->assertSame('notFound', $preview['_resolve']['rows'][0]['reverseChargeCode']['status']);
         $invalid = $this->issuesOf($preview, 'reverse_charge_code_pin_invalid');
@@ -746,7 +749,7 @@ class DocumentApplierVatPinsTest extends TestCase
         $this->assertSame('error', $invalid[0]['severity']);
         $this->assertSame('rows.0.vat.reverseChargeCode', $invalid[0]['path']);
 
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($payload);
         $this->assertFalse($applied->success);
         $this->assertSame('validation_failed', $applied->errorCode);
     }
@@ -757,13 +760,13 @@ class DocumentApplierVatPinsTest extends TestCase
         $payload = $this->withPins($this->happyPayload(), ['rows[0].reverseChargeCode' => 'useValue:4']);
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
 
         $this->assertArrayNotHasKey('reverseChargeCode', $preview['_resolve']['rows'][0]);
         $this->assertArrayNotHasKey('reverseChargeOptions', $preview['_resolve']);
         $this->assertSame([], $this->issuesOf($preview, 'reverse_charge_code_pin_invalid'));
 
-        $this->assertTrue($applier->apply($payload, ApplyMode::Proposal)->success);
+        $this->assertTrue(self::proposalOf($applier)->apply($payload)->success);
         $this->assertArrayNotHasKey('reverse_charge_code', $this->savedHeadsData['rows'][0]);
     }
 
@@ -775,7 +778,7 @@ class DocumentApplierVatPinsTest extends TestCase
             'rows[0].reverseChargeCode' => 'useValue:4',
         ]);
 
-        $row = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['rows'][0];
+        $row = self::proposalOf($this->buildApplier())->preview($payload)->canonical['_resolve']['rows'][0];
 
         $this->assertSame('cz-116', $row['vatCode']['createPayload']['code']);
         $this->assertSame(['value' => '4', 'source' => 'user', 'status' => 'matched'], $row['reverseChargeCode']);
@@ -788,7 +791,7 @@ class DocumentApplierVatPinsTest extends TestCase
             ['rows[0].reverseChargeCode' => 'useCode:14'],
         );
 
-        $preview = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
 
         $invalid = $this->issuesOf($preview, 'vat_pin_invalid');
         $this->assertSame(['rows.0.vat.reverseChargeCode'], array_column($invalid, 'path'));

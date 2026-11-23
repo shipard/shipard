@@ -81,6 +81,7 @@ final class FinishedDocument
             }
         }
         $doc = self::headPartner($doc, $canonical, $plan['resolvedHeadPartner'] ?? null, $facts['headPartnerAllowed']);
+        $doc = self::withoutPartyOverriddenByPartner($doc, $canonical, $plan, $facts['headPartnerAllowed']);
         $doc = self::partnerBank($doc, $facts['resolved']['supplierBank'] ?? null, $plan['resolvedSupplierBank'] ?? null);
 
         foreach ($plan['resolvedHeadDimensions'] ?? [] as $dimension => $recordId) {
@@ -173,6 +174,38 @@ final class FinishedDocument
         $partner = $canonical[CanonicalReferences::PARTNER] ?? null;
         if (!($allowed && is_array($partner) && CanonicalReferences::isSet($partner['ref'] ?? null))) {
             unset($doc[CanonicalReferences::PARTNER]);
+        }
+        return $doc;
+    }
+
+    /**
+     * Pokladní doklad s polem `partner` a se stranou, která určuje **jinou**
+     * osobu: v návrhu má pole přednost a strana se jako partner nepoužije
+     * (#166 D30). Pokyn by dvě různé osoby odmítl (`partner_conflict`), proto
+     * strana v hotovém dokladu ztrácí referenci i údaje osoby — stejně jako
+     * strana „bez osoby“.
+     *
+     * @param array<string, mixed> $doc
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $plan
+     * @return array<string, mixed>
+     */
+    private static function withoutPartyOverriddenByPartner(array $doc, array $canonical, array $plan, bool $headPartnerAllowed): array
+    {
+        $partnerId = $headPartnerAllowed ? ($plan['resolvedHeadPartner'] ?? null) : null;
+        if ($partnerId === null) {
+            return $doc;
+        }
+        // Strana, která by jinak partnera dokladu určila — jako v pokynu.
+        $key = match ($canonical['selfParty'] ?? null) {
+            'customer' => 'supplier',
+            'supplier' => 'customer',
+            default    => ($plan['resolvedSupplier'] ?? null) !== null ? 'supplier' : 'customer',
+        };
+        $partyId = $plan['resolved' . ucfirst($key)] ?? null;
+        if ($partyId !== null && (int) $partyId !== (int) $partnerId && is_array($doc[$key] ?? null)) {
+            unset($doc[$key]['ref']);
+            $doc[$key] = CanonicalReferences::withoutPartyIdentity($doc[$key]);
         }
         return $doc;
     }
@@ -284,12 +317,18 @@ final class FinishedDocument
         }
         $out['vat'] = $vat;
 
-        // Účet: id; holé číslo (signál návrhu) do pokynu nepatří, nenalezená
-        // reference zůstává (chybu nese nález).
+        // Účet: id; holé číslo (signál návrhu) do pokynu nepatří. Účet, který
+        // se našel, ale interpretace ho na řádek nedala (účet navržený
+        // historií u ručně zvolené položky, #111 D7b), v dokladu není;
+        // reference, která se nenašla, zůstává (chybu nese nález).
         $accountId = $plan['resolvedRowAccounts'][$i] ?? null;
+        $accountFound = ($facts['resolved']['rows'][$i]['account']['status'] ?? null) === ResolveStatus::Matched->value;
         if ($accountId !== null) {
             $out['account'] = (int) $accountId;
-        } elseif (!CanonicalReferences::isSet($row['account'] ?? null) || CanonicalReferences::isAccountSignal($row['account'])) {
+        } elseif ($accountFound
+            || !CanonicalReferences::isSet($row['account'] ?? null)
+            || CanonicalReferences::isAccountSignal($row['account'])
+        ) {
             unset($out['account']);
         }
 

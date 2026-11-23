@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\PayloadResolve;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
@@ -31,6 +32,7 @@ use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
  */
 final class DocumentApplierReferencesTest extends TestCase
 {
+    use InterpreterFixture;
     use OutOfScopeHarness;
 
     /** @return array<string, array<string, mixed>> */
@@ -144,7 +146,7 @@ final class DocumentApplierReferencesTest extends TestCase
     /** D33: návrh hledá podle údajů jako dřív; `ref` má přednost a hledání se přeskočí. */
     public function testProposalLooksUpByDataAndPrefersReference(): void
     {
-        $byData = $this->buildApplier()->apply($this->happyPayload(), ApplyMode::Proposal);
+        $byData = self::proposalOf($this->buildApplier())->apply($this->happyPayload());
         $this->assertTrue($byData->success, json_encode($this->issueCodes($byData->canonical)));
         $this->assertSame('companyId', $byData->canonical['_resolve']['supplier']['matchedBy']);
 
@@ -156,7 +158,7 @@ final class DocumentApplierReferencesTest extends TestCase
         $payload['supplier']['ref'] = '@F00042';
         $payload['rows'][0]['item']['ref'] = '@SLUZBA';
 
-        $byRef = $this->buildApplier(party: $party, item: $item)->apply($payload, ApplyMode::Proposal);
+        $byRef = self::proposalOf($this->buildApplier(party: $party, item: $item))->apply($payload);
 
         $this->assertTrue($byRef->success, json_encode($this->issueCodes($byRef->canonical)));
         $this->assertSame('ref', $byRef->canonical['_resolve']['supplier']['matchedBy']);
@@ -170,7 +172,7 @@ final class DocumentApplierReferencesTest extends TestCase
         $payload['supplier']['ref'] = '@F99999';
         $payload['_resolve'] = ['supplier' => ['userAction' => 'useExisting:42']];
 
-        $result = $this->buildApplier()->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->apply($payload);
 
         $this->assertRejected($result, 'reference_not_found', 'supplier');
     }
@@ -209,7 +211,7 @@ final class DocumentApplierReferencesTest extends TestCase
         $this->assertRejected($result, 'signal_not_allowed', 'rows.0.item.ourCode');
         $this->assertNotContains('reference_missing', $this->issueCodes($result->canonical), 'jedna chyba na pole');
 
-        $proposal = $this->buildApplier()->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier())->apply($payload);
         $this->assertTrue($proposal->success, json_encode($this->issueCodes($proposal->canonical)));
         $this->assertSame(18, $this->savedHeadsData['rows'][0]['item']);
     }
@@ -238,7 +240,7 @@ final class DocumentApplierReferencesTest extends TestCase
         // Návrh: holé číslo hledá jako dřív, nenalezené jen varuje.
         $account = $this->createMock(AccountResolver::class);
         $account->expects($this->once())->method('resolve')->with('518100')->willReturn(null);
-        $proposal = $this->buildApplier(account: $account)->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier(account: $account))->apply($payload);
         $this->assertTrue($proposal->success, json_encode($this->issueCodes($proposal->canonical)));
         $this->assertSame('warning', $this->issue($proposal->canonical, 'account_not_found')['severity'] ?? null);
     }
@@ -247,13 +249,17 @@ final class DocumentApplierReferencesTest extends TestCase
     public function testUnknownUnitIsAnErrorOnlyInInstruction(): void
     {
         $unit = $this->createMock(UnitResolver::class);
+        // Jednotka se systémovým kódem `hr`; zkratku `h` zná jen návrh (alias).
         $unit->method('resolve')->willReturnCallback(
-            static fn (?string $code, bool $systemCodeOnly = false): ResolveResult => $code === 'hour'
-                || (!$systemCodeOnly && $code === 'h') ? ResolveResult::matched(3, 'systemCode') : ResolveResult::notFound(),
+            static fn (?string $code, bool $systemCodeOnly = false): ResolveResult => match (true) {
+                $code === 'hr'                     => ResolveResult::matched(3, 'systemCode'),
+                !$systemCodeOnly && $code === 'h' => ResolveResult::matched(3, 'alias'),
+                default                            => ResolveResult::notFound(),
+            },
         );
         $payload = self::asInstruction($this->payload());
 
-        $payload['rows'][0]['unit'] = 'hour';
+        $payload['rows'][0]['unit'] = 'hr';
         $result = $this->instruction($payload, $this->buildApplier(unit: $unit));
         $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
         $this->assertSame(3, $this->savedHeadsData['rows'][0]['unit']);
@@ -261,10 +267,10 @@ final class DocumentApplierReferencesTest extends TestCase
         $payload['rows'][0]['unit'] = 'h';
         $this->assertRejected($this->instruction($payload, $this->buildApplier(unit: $unit)), 'unit_not_found', 'rows.0.unit');
 
-        $proposal = $this->buildApplier(unit: $unit)->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier(unit: $unit))->apply($payload);
         $this->assertTrue($proposal->success);
         $payload['rows'][0]['unit'] = 'sáh';
-        $proposal = $this->buildApplier(unit: $unit)->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier(unit: $unit))->apply($payload);
         $this->assertTrue($proposal->success);
         $this->assertSame('warning', $this->issue($proposal->canonical, 'unit_not_found')['severity'] ?? null);
     }
@@ -358,14 +364,14 @@ final class DocumentApplierReferencesTest extends TestCase
     {
         $payload = $this->payload();
         $payload['supplier']['bankAccount']['ref'] = 31;
-        $records = ['base_persons_bank_accounts' => ['id=31' => 31]] + self::REFERENCE_RECORDS;
+        $records = ['base_persons_bank_accounts' => ['id=31' => 31, 'id=7' => 7]] + self::REFERENCE_RECORDS;
 
-        $result = $this->buildApplier(records: $records)->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(records: $records))->apply($payload);
         $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
         $this->assertSame(31, $this->savedHeadsData['partner_bank']);
 
         $payload['supplier']['bankAccount']['ref'] = null;
-        $result = $this->buildApplier(records: $records)->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(records: $records))->apply($payload);
         $this->assertTrue($result->success);
         $this->assertSame(7, $this->savedHeadsData['partner_bank'], 'bez reference účet podle čísla');
     }
@@ -381,7 +387,7 @@ final class DocumentApplierReferencesTest extends TestCase
         $this->assertArrayNotHasKey('matchedDisplay', $row['item']);
         $this->assertArrayNotHasKey('effectiveAccount', $row);
 
-        $proposal = $this->buildApplier()->preview($this->payload(), ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier())->preview($this->payload());
         $this->assertArrayHasKey('effectiveAccount', $proposal->canonical['_resolve']['rows'][0]);
     }
 
@@ -590,7 +596,7 @@ final class DocumentApplierReferencesTest extends TestCase
         ];
 
         $payload = $this->accountingPayload() + ['_resolve' => $pins];
-        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS))->apply($payload);
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
         $this->assertSame(77, $this->savedHeadsData['partner'], 'volba hlavičky');
         $this->assertSame(77, $this->savedHeadsData['rows'][1]['partner'], 'volba řádku');
@@ -598,14 +604,14 @@ final class DocumentApplierReferencesTest extends TestCase
 
         $payload['partner'] = '@F00042';
         $payload['rows'][1]['partner'] = ['ref' => 42];
-        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS))->apply($payload);
         $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
         $this->assertSame(42, $this->savedHeadsData['partner'], 'pole má přednost před volbou');
         $this->assertSame(42, $this->savedHeadsData['rows'][1]['partner']);
 
         // Partner jen údaji: návrh podle nich nehledá, pole se s varováním nepoužije a platí volba.
         $payload['partner'] = ['name' => 'Partner s.r.o.'];
-        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS))->apply($payload);
         $this->assertTrue($result->success);
         $this->assertSame(['severity' => 'warning', 'path' => 'partner'], $this->finding($result, 'reference_missing'));
         $this->assertSame(77, $this->savedHeadsData['partner']);
@@ -624,7 +630,7 @@ final class DocumentApplierReferencesTest extends TestCase
 
         $proposal = $this->happyPayload();
         $proposal['partner'] = '@F00077';
-        $result = $this->buildApplier(records: self::PARTNER_RECORDS)->apply($proposal, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(records: self::PARTNER_RECORDS))->apply($proposal);
         $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
         $this->assertSame('warning', $this->issue($result->canonical, 'partner_not_supported')['severity'] ?? null);
         $this->assertSame(42, $this->savedHeadsData['partner'], 'partnerem je strana');
@@ -640,34 +646,40 @@ final class DocumentApplierReferencesTest extends TestCase
             'dates' => ['issueDate' => '2026-06-10', 'accountingDate' => '2026-06-10'],
             'rows' => [['operation' => 'payment.receivable', 'totalPrice' => 500.0, 'paymentReference' => '2026000011', 'partner' => '@F00042']],
         ];
-        $resolve = fn (array $canonical, ApplyMode $mode): array => (function () use ($canonical, $mode): array {
+        $resolve = fn (array $canonical): array => (function () use ($canonical): array {
             $applier = $this->buildApplier(records: self::PARTNER_RECORDS);
             $issues = [];
             // Reference jen hodnotou rozbaluje applier před resolve ({@see CanonicalReferences::expand()}).
             $canonical = CanonicalReferences::expand($canonical);
-            $resolved = (new \ReflectionMethod($applier, 'resolveAll'))->invokeArgs($applier, [$canonical, &$issues, $mode]);
+            $resolved = (new \ReflectionMethod($applier, 'resolveAll'))->invokeArgs($applier, [$canonical, &$issues, ApplyMode::Instruction]);
             $discarded = [];
-            $plan = (new \ReflectionMethod($applier, 'reconcile'))->invokeArgs($applier, [$resolved, [], &$discarded, []]);
+            $plan = PayloadResolve::plan($resolved, $discarded);
             return [$plan, array_column($issues, 'code', 'path')];
         })();
 
-        [$plan, $issues] = $resolve($cash + ['partner' => '@F00077'], ApplyMode::Instruction);
+        [$plan, $issues] = $resolve($cash + ['partner' => '@F00077']);
         $this->assertSame([], $issues);
         $this->assertSame(77, $plan['resolvedHeadPartner']);
         $this->assertSame([0 => 42], $plan['resolvedRowPartners']);
 
         // Tatáž osoba polem i stranou rozpor není.
-        [$plan, $issues] = $resolve($cash + ['partner' => '@F00042', 'customer' => ['ref' => 42]], ApplyMode::Instruction);
+        [$plan, $issues] = $resolve($cash + ['partner' => '@F00042', 'customer' => ['ref' => 42]]);
         $this->assertSame([], $issues);
         $this->assertSame([42, 42], [$plan['resolvedHeadPartner'], $plan['resolvedCustomer']]);
 
-        [, $issues] = $resolve($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]], ApplyMode::Instruction);
+        [, $issues] = $resolve($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]]);
         $this->assertSame(['partner' => 'partner_conflict'], $issues);
 
-        // Návrh: pole má přednost jako dřív volba, rozpor se nehlásí.
-        [$plan, $issues] = $resolve($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]], ApplyMode::Proposal);
-        $this->assertSame([], $issues);
-        $this->assertSame(77, $plan['resolvedHeadPartner']);
+        // Návrh: pole má přednost jako dřív volba, rozpor se nehlásí — strana
+        // s jinou osobou se v hotovém dokladu jako partner nepoužije a pokyn
+        // nad ním rozpor nevidí.
+        $applier = $this->buildApplier(records: self::PARTNER_RECORDS);
+        $interpreted = self::interpreterOf($applier)->interpret($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]]);
+        $this->assertNotContains('partner_conflict', array_column($interpreted->report['issues'], 'code'));
+        $this->assertSame(['ref' => 77], $interpreted->document['partner']);
+        $this->assertArrayNotHasKey('ref', $interpreted->document['customer']);
+        $preview = $applier->preview($interpreted->document);
+        $this->assertNotContains('partner_conflict', $this->issueCodes($preview->canonical));
     }
 
     // ── Importní mód ────────────────────────────────────────────────────────

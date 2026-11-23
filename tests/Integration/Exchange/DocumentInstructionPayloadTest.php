@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shipard\Tests\Integration\Exchange;
 
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripEnvironment;
 use Shipard\Tests\Integration\Exchange\RoundTrip\RoundTripFixtures as F;
@@ -307,7 +306,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
     {
         $payload = $this->options($this->grossRowsPayload(), 10);
 
-        $preview = $this->applier->preview($payload, ApplyMode::Proposal);
+        $preview = $this->proposal->preview($payload);
 
         $this->assertContains('vat_mode_derived', self::codes($preview));
         $this->assertSame('fromTotal', $preview->canonical['_resolve']['vat']['mode']['value']);
@@ -433,8 +432,8 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
 
         $this->assertSame('totals_check_failed', $this->applier->apply($payload)->errorCode, 'pokyn tentýž payload odmítne');
 
-        $preview = $this->applier->preview($payload, ApplyMode::Proposal);
-        $result = $this->applier->apply($payload, ApplyMode::Proposal);
+        $preview = $this->proposal->preview($payload);
+        $result = $this->proposal->apply($payload);
         $saved = $this->saved($result);
 
         $this->assertSame([['warning', 'totals.totalAmount']], self::findings($preview, 'computed_total_mismatch'));
@@ -451,7 +450,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         ]]);
         $before = $this->documentCount();
 
-        $result = $this->applier->apply($this->options($payload, 40, import: true), ApplyMode::Proposal);
+        $result = $this->proposal->apply($this->options($payload, 40, import: true));
 
         $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
         $this->assertSame([['error', 'applyOptions.importNumber']], self::findings($result, 'import_requires_instruction'));
@@ -551,7 +550,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame($before, $this->documentCount());
 
         // Návrh podle údajů hledá jako dřív (IČO dodavatele je v adresáři).
-        $proposal = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $proposal = $this->saved($this->proposal->apply($this->options($payload, 10)));
         $this->assertSame($this->fixtures->person('supplier'), (int) $proposal->head['partner']);
     }
 
@@ -582,7 +581,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame('validation_failed', $result->errorCode);
         $this->assertSame([['error', 'rows.0.account']], self::findings($result, 'signal_not_allowed'));
 
-        $proposal = $this->applier->apply($this->options($payload, 10), ApplyMode::Proposal);
+        $proposal = $this->proposal->apply($this->options($payload, 10));
         $this->saved($proposal);
         $this->assertSame([['warning', 'rows.0.account']], self::findings($proposal, 'account_not_found'));
     }
@@ -614,7 +613,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertSame([['error', 'rows.0.item.ourCode']], self::findings($result, 'signal_not_allowed'));
         $this->assertSame($before, $this->documentCount());
 
-        $saved = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $saved = $this->saved($this->proposal->apply($this->options($payload, 10)));
         $this->assertSame($f->item(false), (int) $saved->rows[0]['item']);
     }
 
@@ -626,7 +625,7 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $payload['supplier'] = ['ref' => '@IT-RT-P2', 'name' => 'Někdo úplně jiný a.s.', 'companyId' => '88300013', 'country' => 'cz'];
         $nonPayer = $f->person('nonPayer');
 
-        $saved = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $saved = $this->saved($this->proposal->apply($this->options($payload, 10)));
 
         $this->assertSame($f->person('supplier'), (int) $saved->head['partner']);
         $this->assertNotSame($nonPayer, (int) $saved->head['partner'], 'IČO v údajích patří jiné osobě — nehledá se');
@@ -761,12 +760,12 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
             'rows'    => [1 => ['partner' => ['userAction' => 'useExisting:' . $f->person('supplier')]]],
         ];
 
-        $pinned = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $pinned = $this->saved($this->proposal->apply($this->options($payload, 10)));
         $this->assertSame($f->person('supplier'), (int) $pinned->head['partner']);
         $this->assertSame($f->person('supplier'), (int) $pinned->rows[1]['partner']);
 
         $payload['rows'][1]['partner'] = $f->person('customer');
-        $withField = $this->saved($this->applier->apply($this->options($payload, 10), ApplyMode::Proposal));
+        $withField = $this->saved($this->proposal->apply($this->options($payload, 10)));
         $this->assertSame($f->person('supplier'), (int) $withField->head['partner'], 'hlavička dál z volby');
         $this->assertSame($f->person('customer'), (int) $withField->rows[1]['partner'], 'pole má přednost před volbou');
     }

@@ -102,6 +102,13 @@ class DocumentApplier
     private readonly ProposalDefaults $proposalDefaults;
     private readonly ProposalReport $proposalReport;
 
+    /**
+     * Varování dokladu z posledního úspěšného `apply()` — {@see savedDocumentWarnings()}.
+     *
+     * @var list<array<string, mixed>>
+     */
+    private array $savedWarnings = [];
+
     /** Adaptér výchozích hodnot pokynu — viz applyInstructionDefaults(). */
     private ?InstructionDefaults $instructionDefaults = null;
 
@@ -1377,6 +1384,7 @@ class DocumentApplier
         $this->instructionPayload = null;
         $this->appliedDefaults = null;
         $this->defaultUnitIds = [];
+        $this->savedWarnings = [];
         $this->applyOptionsCache = is_array($canonical['applyOptions'] ?? null)
             ? $canonical['applyOptions']
             : [];
@@ -1615,7 +1623,8 @@ class DocumentApplier
         // výstup apply návrhu se nemění, jeho varování ukazuje review.
         if (!$mode->derives() && $savedValidation !== null) {
             $rowIndices = $this->transformedRowIndices(is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [], $plan);
-            foreach (DocumentIssuePaths::warnings($savedValidation, $canonical, $rowIndices) as $issue) {
+            $this->savedWarnings = DocumentIssuePaths::warnings($savedValidation, $canonical, $rowIndices);
+            foreach ($this->savedWarnings as $issue) {
                 $validatorIssues[] = $issue;
             }
         }
@@ -2963,6 +2972,20 @@ class DocumentApplier
     private function appendSourceRefIssue(array $canonical, array &$issues): void
     {
         $this->sourceRefs->appendIssue($canonical, $issues);
+    }
+
+    /**
+     * Varování, která doklad ohlásil při posledním **úspěšném** `apply()`
+     * (#166 U6) — tatáž, jaká nese odpověď v `_resolve.issues`. Pro
+     * volajícího, který z odpovědi pokynu skládá vlastní (vstup návrhu:
+     * varování uloženého dokladu ukazuje review, odpověď použití návrhu je
+     * nenese).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function savedDocumentWarnings(): array
+    {
+        return $this->savedWarnings;
     }
 
     // ── Idempotence a zámek pro volajícího s vlastní transakcí ──────────────

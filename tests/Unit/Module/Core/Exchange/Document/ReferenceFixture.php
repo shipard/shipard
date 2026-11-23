@@ -100,14 +100,35 @@ trait ReferenceFixture
     }
 
     /**
+     * Resolver, ve kterém existuje každý záznam, na který se odkáže **číslem**
+     * — pro testy návrhu, které pracují s údaji z papíru a reference samy
+     * neposílají: hotový doklad interpretace nese nalezené záznamy jako id
+     * a pokyn je podle nich dohledává. Hledání přirozeným klíčem nic nenajde.
+     */
+    private function anyIdReferenceResolver(): ReferenceResolver
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetchAll')->willReturnCallback(static function (string $sql, mixed $arg): array {
+            return preg_match('/WHERE \[id\] = /', $sql) === 1 && is_int($arg) ? [new Row(['id' => $arg])] : [];
+        });
+        $db->method('fetch')->willReturn(null);
+        return new ReferenceResolver($db, self::referenceTables());
+    }
+
+    /**
      * @param array<string, array<string, int|list<int>>> $records tabulka →
      *        `"sloupec=hodnota"` → id (seznam = víc záznamů téže hodnoty);
      *        hledání podle id projde pro každé id, které se v tabulce vyskytuje
+     * @param bool $anyId hledání podle id projde vždy — pro testy návrhu,
+     *        kde hotový doklad nese nalezené a založené záznamy číslem
      */
-    private function referenceResolver(array $records): ReferenceResolver
+    private function referenceResolver(array $records, bool $anyId = false): ReferenceResolver
     {
-        $ids = static function (string $table, string $column, mixed $value) use ($records): array {
+        $ids = static function (string $table, string $column, mixed $value) use ($records, $anyId): array {
             $rows = $records[$table] ?? [];
+            if ($column === 'id' && $anyId) {
+                return [(int) $value];
+            }
             if ($column === 'id' && $table === 'base_persons_bank_accounts' && !isset($records[$table])) {
                 // Účty partnerů testy nevyjmenovávají — existuje každý, na
                 // který hotový doklad odkáže (id dává mock resolveru účtů).

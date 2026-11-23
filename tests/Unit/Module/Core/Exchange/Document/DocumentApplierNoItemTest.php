@@ -34,6 +34,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierNoItemTest extends TestCase
 {
+    use InterpreterFixture;
+    use ReferenceFixture;
     /** Zachycený payload posledního heads saveDocument. */
     private ?array $savedHeadsData = null;
 
@@ -59,7 +61,7 @@ class DocumentApplierNoItemTest extends TestCase
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $account = $this->createMock(AccountResolver::class);
@@ -94,6 +96,7 @@ class DocumentApplierNoItemTest extends TestCase
             // DB mock nevrací registraci DPH → derivace kódu se neuplatní.
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($this->createMock(ConfigRuntime::class))),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($this->createMock(ConfigRuntime::class))),
+            references: $this->anyIdReferenceResolver(),
         );
     }
 
@@ -128,7 +131,7 @@ class DocumentApplierNoItemTest extends TestCase
             items: $items,
         );
 
-        $result = $applier->apply($this->payloadWithNoItemPin('503100'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payloadWithNoItemPin('503100'));
 
         $this->assertFalse($result->success);
         $this->assertSame('conflict', $result->errorCode);

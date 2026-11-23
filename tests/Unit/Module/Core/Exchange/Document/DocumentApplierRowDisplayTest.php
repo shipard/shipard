@@ -35,6 +35,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierRowDisplayTest extends TestCase
 {
+    use InterpreterFixture;
+    use ReferenceFixture;
     /** Položky pro dotaz displeje: id → řádek (tvar výsledku JOINu). */
     private const ITEMS = [
         18 => ['id' => 18, 'code' => 'SPOTR-TON', 'name' => 'Tonery a náplně', 'item_type' => 2,
@@ -75,7 +77,7 @@ class DocumentApplierRowDisplayTest extends TestCase
             createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
         ));
 
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
         $account = $this->createMock(AccountResolver::class);
@@ -126,6 +128,7 @@ class DocumentApplierRowDisplayTest extends TestCase
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($this->createMock(ConfigRuntime::class))),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($this->createMock(ConfigRuntime::class))),
             itemsHaveAccountingAccount: $itemsHaveAccountingAccount,
+            references: $this->anyIdReferenceResolver(),
         );
     }
 
@@ -161,7 +164,7 @@ class DocumentApplierRowDisplayTest extends TestCase
     /** @return array<string, mixed> */
     private function previewRow(DocumentApplier $applier, array $payload, int $pos = 0): array
     {
-        $result = $applier->preview($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->preview($payload);
         $this->assertTrue($result->success);
         $row = $result->canonical['_resolve']['rows'][$pos] ?? null;
         $this->assertIsArray($row);
@@ -319,7 +322,7 @@ class DocumentApplierRowDisplayTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->preview($this->payload('503100', null, 5), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->preview($this->payload('503100', null, 5));
         $this->assertTrue($result->success);
 
         $displayQueries = array_values(array_filter(

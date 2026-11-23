@@ -10,6 +10,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Core\Exchange\Document\Interpret\DocumentProposal;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 
 /**
@@ -25,6 +26,8 @@ trait RoundTripEnvironment
 {
     private RoundTripFixtures $fixtures;
     private DocumentApplier $applier;
+    /** Vstup návrhu nad týmž pokynem — pro případy s papírovou podobou dokladu. */
+    private DocumentProposal $proposal;
     private ConfigRuntime $configRuntime;
     private FormPath $formPath;
 
@@ -67,6 +70,15 @@ trait RoundTripEnvironment
             $registry,
             $this->tables,
             $dispatcher,
+        );
+        $this->proposal = DocumentProposal::create(
+            $dibi,
+            $this->configRuntime,
+            $this->dsConfig,
+            $registry,
+            $this->tables,
+            $dispatcher,
+            $this->applier,
         );
 
         // Cesta formuláře přes skutečný FormController (invariant U10).

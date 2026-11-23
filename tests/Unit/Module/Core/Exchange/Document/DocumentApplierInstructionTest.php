@@ -22,6 +22,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
  */
 final class DocumentApplierInstructionTest extends TestCase
 {
+    use InterpreterFixture;
     use OutOfScopeHarness;
 
     private const HEURISTIC_CODES = ['totals_mismatch', 'rows_recap_mismatch', 'vat_mode_suspect', 'vat_recap_inconsistent'];
@@ -63,7 +64,7 @@ final class DocumentApplierInstructionTest extends TestCase
 
         $default = $this->buildApplier()->preview($payload)->canonical['_resolve']['vat'];
         $explicit = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat'];
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['vat'];
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical['_resolve']['vat'];
 
         $this->assertSame($explicit, $default);
         $this->assertNotSame($proposal['mode'], $default['mode'], 'návrh hotel mimo české DPH přepíná na Bez DPH');
@@ -76,7 +77,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->hotelPayload();
 
         $instruction = $applier->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat']['mode'];
-        $proposal = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['vat']['mode'];
+        $proposal = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['vat']['mode'];
         $again = $applier->preview($payload, ApplyMode::Instruction)->canonical['_resolve']['vat']['mode'];
 
         $this->assertSame('fromBase', $instruction['value']);
@@ -91,7 +92,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->hotelPayload();
         $payload['vat']['place'] = 'domestic';
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertSame('vatId', $proposal['_resolve']['vat']['place']['source']);
 
         $result = $this->instruction($payload);
@@ -106,7 +107,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['rows'][0]['vat'] = ['pct' => 21];
         unset($payload['vatRecap']);
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertSame('cz-110', $proposal['_resolve']['rows'][0]['vatCode']['createPayload']['code'] ?? null);
 
         $result = $this->instruction($payload);
@@ -136,7 +137,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->happyPayload();
         $db = $this->dbWithoutVatRegistration();
 
-        $proposal = $this->buildApplier($db)->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier($db))->preview($payload)->canonical;
         $this->assertSame('nonPayer', $proposal['_resolve']['vat']['mode']['source']);
 
         $result = $this->instruction($payload, $db);
@@ -175,7 +176,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['rows'][0]['totalPrice'] = 12500.00;
         unset($payload['rows'][0]['computed']);
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertContains('vat_mode_derived', $this->issueCodes($proposal));
         $this->assertSame('fromTotal', $proposal['_resolve']['vat']['mode']['value']);
 
@@ -195,7 +196,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['rows'][0]['vat'] = ['pct' => 0, 'reverseChargeCode' => '4'];
         unset($payload['vatRecap'], $payload['rows'][0]['computed']);
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertSame('fromBase', $proposal['_resolve']['vat']['mode']['value']);
 
         $saved = $this->savedAfter($this->instruction($payload));
@@ -208,7 +209,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->coveredPayload();
         $db = $this->db(self::TAGGED_ITEMS);
 
-        $this->buildApplier($db)->preview($payload, ApplyMode::Proposal);
+        self::proposalOf($this->buildApplier($db))->preview($payload);
         $this->assertGreaterThan(0, $this->itemTagQueries, 'návrh štítky položek čte');
 
         $this->itemTagQueries = 0;
@@ -224,7 +225,7 @@ final class DocumentApplierInstructionTest extends TestCase
     {
         $payload = $this->happyPayload();
 
-        $proposal = $this->buildApplier()->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier())->apply($payload);
         $this->assertSame(1, $this->savedAfter($proposal)['vat_recap_source'], 'návrh rekapitulaci přijatého dokladu přebírá');
 
         $saved = $this->savedAfter($this->instruction($payload));
@@ -251,7 +252,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['vat']['recapSource'] = 'declared';
         $payload['vatRecap'][0]['vatCode'] = null;
 
-        $proposal = $this->buildApplier()->apply($payload, ApplyMode::Proposal);
+        $proposal = self::proposalOf($this->buildApplier())->apply($payload);
         $this->assertSame(1, $this->savedAfter($proposal)['vat_recap_source'], 'návrh kód dohledá z řádků');
 
         $this->savedHeadsData = null;
@@ -284,7 +285,7 @@ final class DocumentApplierInstructionTest extends TestCase
     {
         $payload = $this->roundedReceivedPayload();
 
-        $proposal = $this->savedAfter($this->buildApplier()->apply($payload, ApplyMode::Proposal));
+        $proposal = $this->savedAfter(self::proposalOf($this->buildApplier())->apply($payload));
         $this->assertSame(1, $proposal['total_rounding_mode'], 'návrh mód odhadne z částek');
 
         $saved = $this->savedAfter($this->instruction($payload));
@@ -369,15 +370,15 @@ final class DocumentApplierInstructionTest extends TestCase
         $applier = $this->buildApplier();
 
         $payload['totals']['totalRoundingMode'] = 'unitUp';
-        $this->assertSame(3, $this->savedAfter($applier->apply($payload, ApplyMode::Proposal))['total_rounding_mode']);
+        $this->assertSame(3, $this->savedAfter(self::proposalOf($applier)->apply($payload))['total_rounding_mode']);
 
         $payload['totals']['totalRoundingMode'] = 'cent';
-        $saved = $this->savedAfter($applier->apply($payload, ApplyMode::Proposal));
+        $saved = $this->savedAfter(self::proposalOf($applier)->apply($payload));
         $this->assertSame([0, 12499.66], [$saved['total_rounding_mode'], $saved['total_amount']], 'odhad z částek by dal mód 1');
 
         $payload['totals']['totalRoundingMode'] = null;
         $payload['vat']['roundingMode'] = 'unit';
-        $saved = $this->savedAfter($applier->apply($payload, ApplyMode::Proposal));
+        $saved = $this->savedAfter(self::proposalOf($applier)->apply($payload));
         $this->assertSame([1, 1], [$saved['total_rounding_mode'], $saved['vat_rounding_mode']], 'null = neuvedeno, odhad zůstává');
     }
 
@@ -388,7 +389,7 @@ final class DocumentApplierInstructionTest extends TestCase
         // 10 × 1 033,06 + 21 % — částky, které doklad opravdu spočítá.
         $payload['totals'] = ['totalBase' => 10330.60, 'totalVat' => 2169.43, 'totalAmount' => 12500.03, 'totalRounding' => 0.0];
 
-        $proposal = $this->savedAfter($this->buildApplier()->apply($payload, ApplyMode::Proposal));
+        $proposal = $this->savedAfter(self::proposalOf($this->buildApplier())->apply($payload));
         $this->assertSame(0, $proposal['total_rounding_auto'], 'návrh s deklarovanou částkou automatiku vypíná');
 
         $this->assertSame(1, $this->savedAfter($this->instruction($payload, checksum: true))['total_rounding_auto']);
@@ -491,11 +492,11 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['totals']['totalAmount'] = 12600.00;
         $applier = $this->buildApplier();
 
-        $preview = $applier->preview($payload, ApplyMode::Proposal)->canonical;
+        $preview = self::proposalOf($applier)->preview($payload)->canonical;
         $this->assertContains('computed_total_mismatch', $this->issueCodes($preview));
         $this->assertNotContains('totals_check_failed', $this->issueCodes($preview));
 
-        $result = $applier->apply($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($payload);
         $this->assertSame(12500.03, $this->savedAfter($result)['total_amount']);
         $this->assertNotContains('totals_check_failed', $this->issueCodes($result->canonical));
     }
@@ -505,7 +506,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload = $this->hotelPayload();
         $payload['_resolve']['rows'][0]['userAction'] = 'skip';
 
-        $this->assertCount(1, $this->savedAfter($this->buildApplier()->apply($payload, ApplyMode::Proposal))['rows']);
+        $this->assertCount(1, $this->savedAfter(self::proposalOf($this->buildApplier())->apply($payload))['rows']);
         $this->assertCount(2, $this->savedAfter($this->instruction($payload))['rows']);
     }
 
@@ -517,7 +518,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['vatRecap'][0]['base'] = 5.00;
         $applier = $this->buildApplier();
 
-        $proposal = $this->issueCodes($applier->validate($payload, ApplyMode::Proposal)->canonical);
+        $proposal = $this->issueCodes(self::proposalOf($applier)->validate($payload)->canonical);
         $this->assertGreaterThanOrEqual(2, count(array_intersect(self::HEURISTIC_CODES, $proposal)));
 
         foreach ([$applier->validate($payload), $applier->preview($payload), $applier->apply($payload)] as $result) {
@@ -533,7 +534,7 @@ final class DocumentApplierInstructionTest extends TestCase
             'accountNumber' => '2308417557/2010', 'iban' => 'CZ8520100000002308417558', 'bic' => 'FIOBCZPP', 'currency' => 'CZK',
         ];
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertSame('CZ8520100000002308417557', $proposal['supplier']['bankAccount']['iban']);
 
         $canonical = $this->buildApplier()->preview($payload, ApplyMode::Instruction)->canonical;
@@ -553,7 +554,7 @@ final class DocumentApplierInstructionTest extends TestCase
         ));
 
         $proposal = $this->buildApplier();
-        $this->assertTrue($proposal->apply($this->happyPayload(), ApplyMode::Proposal)->success);
+        $this->assertTrue(self::proposalOf($proposal)->apply($this->happyPayload())->success);
         $this->assertNotSame([], $learned($proposal), 'návrh mapování kódu dodavatele zapisuje');
 
         $instruction = $this->buildApplier();
@@ -623,7 +624,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertArrayNotHasKey('vat', $instruction, 'odpověď nese payload, jak přišel');
         $this->assertArrayNotHasKey('method', $instruction['payment'] ?? []);
 
-        $proposal = $this->buildApplier()->preview($payload, ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($payload)->canonical;
         $this->assertArrayNotHasKey('defaults', $proposal['_resolve']);
     }
 
@@ -726,7 +727,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertSame(['error', 'vat.registrationCountry'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
         $this->assertStringContainsString('vat.registration', (string) ($issue['message'] ?? ''));
 
-        $proposal = $this->buildApplier()->preview($this->happyPayload(), ApplyMode::Proposal)->canonical;
+        $proposal = self::proposalOf($this->buildApplier())->preview($this->happyPayload())->canonical;
         $this->assertNotContains('signal_not_allowed', $this->issueCodes($proposal));
     }
 
@@ -767,7 +768,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $payload['applyOptions'] = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
         $applier = $this->buildApplier();
 
-        foreach ([$applier->validate($payload, ApplyMode::Proposal), $applier->apply($payload, ApplyMode::Proposal)] as $result) {
+        foreach ([self::proposalOf($applier)->validate($payload), self::proposalOf($applier)->apply($payload)] as $result) {
             $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
             $issue = $this->issue($result->canonical, 'import_requires_instruction');
             $this->assertSame(['error', 'applyOptions.importNumber'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
@@ -775,7 +776,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertNull($this->savedHeadsData);
         $this->assertContains(
             'import_requires_instruction',
-            $this->issueCodes($applier->preview($payload, ApplyMode::Proposal)->canonical),
+            $this->issueCodes(self::proposalOf($applier)->preview($payload)->canonical),
         );
         $this->assertNotContains(
             'import_requires_instruction',

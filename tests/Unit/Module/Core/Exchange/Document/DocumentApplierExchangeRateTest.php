@@ -141,7 +141,7 @@ class DocumentApplierExchangeRateTest extends TestCase
     public function testPreviewAddsInfoWithRateAndList(): void
     {
         $resolver = new FakeExchangeRateResolver(self::RATES);
-        $result = $this->applier($resolver)->preview(self::payload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier($resolver))->preview(self::payload());
 
         $this->assertTrue($result->success, self::describe($result));
         $issues = self::issuesByCode($result->canonical);
@@ -155,7 +155,7 @@ class DocumentApplierExchangeRateTest extends TestCase
 
     public function testApplySavesRateFromListAndReportsInfo(): void
     {
-        $result = $this->applier(new FakeExchangeRateResolver(self::RATES))->apply(self::payload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier(new FakeExchangeRateResolver(self::RATES)))->apply(self::payload());
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(24.325, $this->saved['exchange_rate'] ?? null);
@@ -166,7 +166,7 @@ class DocumentApplierExchangeRateTest extends TestCase
     public function testRateOnTheDocumentWins(): void
     {
         $resolver = new FakeExchangeRateResolver(self::RATES);
-        $result = $this->applier($resolver)->apply(self::payload(['exchangeRate' => 25.1]), ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier($resolver))->apply(self::payload(['exchangeRate' => 25.1]));
 
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame(25.1, $this->saved['exchange_rate']);
@@ -193,12 +193,12 @@ class DocumentApplierExchangeRateTest extends TestCase
     {
         $applier = $this->applier(new FakeExchangeRateResolver([]));
 
-        $preview = $applier->preview(self::payload(), ApplyMode::Proposal);
+        $preview = self::proposalOf($applier)->preview(self::payload());
         $issues = self::issuesByCode($preview->canonical);
         $this->assertSame('warning', $issues['exchange_rate_missing']['severity'] ?? null);
         $this->assertSame('Kurz EUR k 16. 10. 2026 není v kurzovním lístku — doklad nepůjde potvrdit bez ručního kurzu.', $issues['exchange_rate_missing']['message']);
 
-        $result = $applier->apply(self::payload(), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply(self::payload());
         $this->assertTrue($result->success, self::describe($result));
         $this->assertArrayNotHasKey('exchange_rate', $this->saved);
         $this->assertArrayHasKey('exchange_rate_missing', self::issuesByCode($result->canonical));
@@ -207,12 +207,12 @@ class DocumentApplierExchangeRateTest extends TestCase
     public function testHomeCurrencyAndMissingResolverDoNothing(): void
     {
         $resolver = new FakeExchangeRateResolver(self::RATES);
-        $result = $this->applier($resolver)->apply(self::payload(['currency' => 'CZK']), ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier($resolver))->apply(self::payload(['currency' => 'CZK']));
         $this->assertTrue($result->success, self::describe($result));
         $this->assertSame([], $resolver->lookups);
         $this->assertArrayNotHasKey('exchange_rate', $this->saved);
 
-        $result = $this->applier(null)->preview(self::payload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->applier(null))->preview(self::payload());
         $this->assertTrue($result->success, self::describe($result));
         $issues = self::issuesByCode($result->canonical);
         $this->assertArrayNotHasKey('exchange_rate_from_list', $issues);
@@ -228,7 +228,7 @@ class DocumentApplierExchangeRateTest extends TestCase
         $payload['dates']['taxPointDate'] = '2026-10-16';
         $payload['dates']['issueDate'] = '2026-10-20';
 
-        $this->applier($resolver)->apply($payload, ApplyMode::Proposal);
+        self::proposalOf($this->applier($resolver))->apply($payload);
 
         $this->assertSame(24.325, $this->saved['exchange_rate']);
         $this->assertSame('2026-10-16', $this->saved['accounting_date']);
@@ -245,7 +245,7 @@ class DocumentApplierExchangeRateTest extends TestCase
         $payload['dates']['taxPointDate'] = null;
         $payload['dates']['issueDate'] = '2026-10-20';
 
-        $this->applier($resolver)->apply($payload, ApplyMode::Proposal);
+        self::proposalOf($this->applier($resolver))->apply($payload);
 
         $this->assertSame(24.5, $this->saved['exchange_rate']);
         $this->assertSame('2026-10-20', $this->saved['accounting_date']);

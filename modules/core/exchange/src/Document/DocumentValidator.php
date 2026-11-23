@@ -40,44 +40,45 @@ final class DocumentValidator
     ) {}
 
     /**
-     * Heuristická varování nad čísly předlohy (`totals_mismatch`,
-     * `vat_mode_suspect`, `rows_recap_mismatch`, `vat_recap_inconsistent`)
-     * patří interpretaci — běží jen v režimu návrh (#166 D19). Pokyn čísla
-     * neposuzuje: počítá je `DocDocument`.
+     * Kontroly **pokynu**. Povinnost polí validátor nehlídá (#166 D45, U7):
+     * pokyn vyžaduje jen obálku a `docType` (schéma) — co payload neuvádí,
+     * má výchozí hodnotu jako ve formuláři, a co chybí i potom, ohlásí
+     * `DocDocument::validate()` pro cílový stav, jeden nález na pole.
+     * Čísla pokyn neposuzuje, počítá je `DocDocument`. Kontroly papírové
+     * podoby (povinná pole předlohy, heuristiky nad čísly) drží interpretace
+     * — `Interpret\PaperChecks::validate()` je prokládá kontrolami odsud.
      *
      * @param array<string, mixed> $canonical
      * @return array<int, array{severity: string, path: string, code: string, message: string}>
      */
     public function validate(array $canonical, ApplyMode $mode = ApplyMode::Instruction): array
     {
+        if ($mode->derives()) {
+            return PaperChecks::validate($canonical, $this);
+        }
         $issues = [];
         // Strana a položka jen referencí → objekt s `ref` (volající mimo
         // applier, např. kontrola sady před seedem, posílá tvar ze souboru).
         $canonical = CanonicalReferences::expand($canonical);
 
-        // Povinnost polí hlídá validátor jen v návrhu (#166 D45, U7). Pokyn
-        // vyžaduje jen obálku a `docType` (schéma): co payload neuvádí, má
-        // výchozí hodnotu jako ve formuláři, a co chybí i potom, ohlásí
-        // `DocDocument::validate()` pro cílový stav — jeden nález na pole.
-        // Výjimka je pokladna vázaného typu, viz checkPerDocType().
-        if ($mode->derives()) {
-            PaperChecks::checkCommonRequired($canonical, $issues);
-        }
-        $this->checkPerDocType($canonical, $mode, $issues);
-        $this->checkHeadPartner($canonical, $mode, $issues);
-        if ($mode->derives()) {
-            PaperChecks::checkTotalsCoherence($canonical, $issues);
-            PaperChecks::checkVatModeSuspect($canonical, $issues);
-            PaperChecks::checkRowsVsRecap($canonical, $issues);
-            PaperChecks::checkVatRecapArithmetic($canonical, $issues);
-        }
+        $this->checkDocTypeFields($canonical, $issues);
+        $this->checkHeadPartner($canonical, $issues);
         $this->checkPartnerDocNumber($canonical, $issues);
-        if (!$mode->derives()) {
-            $this->checkProposalSignals($canonical, $issues);
-        }
-        if ($mode->derives()) {
-            PaperChecks::checkImportRequiresInstruction($canonical, $issues);
-        }
+        $this->checkProposalSignals($canonical, $issues);
+        $this->checkOptionsAndValues($canonical, $issues);
+
+        return $issues;
+    }
+
+    /**
+     * Volby `applyOptions`, klíč `source.ref`, dimenze a tvary hodnot stran
+     * — platí pro pokyn i pro papírovou podobu.
+     *
+     * @param array<string, mixed> $canonical po {@see CanonicalReferences::expand()}
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    public function checkOptionsAndValues(array $canonical, array &$issues): void
+    {
         $this->checkParkingStateRequiresImport($canonical, $issues);
         $this->checkReplaceConceptOptions($canonical, $issues);
         $this->checkSourceRef($canonical, $issues);
@@ -87,33 +88,27 @@ final class DocumentValidator
         foreach (CanonicalValueValidator::validate($canonical) as $issue) {
             $issues[] = $issue;
         }
-
-        return $issues;
     }
 
     /**
      * Pole `partner` na hlavičce (#166 D30) nesou jen účetní doklad a typy
      * vázané na pokladnu ({@see CanonicalReferences::HEAD_PARTNER_DOC_TYPES}).
      * U faktur je partnerem strana: pokyn pole odmítá chybou
-     * `partner_not_supported`; návrh (předloha z papíru, kde pole vyplnil
-     * model) ho s varováním ignoruje.
+     * `partner_not_supported` (návrh ho s varováním ignoruje —
+     * `Interpret\PaperChecks::checkHeadPartner()`).
      *
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function checkHeadPartner(array $canonical, ApplyMode $mode, array &$issues): void
+    private function checkHeadPartner(array $canonical, array &$issues): void
     {
-        if (!CanonicalReferences::partnerIsSet($canonical[CanonicalReferences::PARTNER] ?? null)
-            || CanonicalReferences::carriesHeadPartner($canonical)
-        ) {
+        if (!CanonicalReferences::headPartnerMisplaced($canonical)) {
             return;
         }
         $issues[] = [
-            'severity' => $mode->derives() ? 'warning' : 'error',
+            'severity' => 'error',
             'path'     => CanonicalReferences::PARTNER,
             'code'     => 'partner_not_supported',
-            'message'  => $mode->derives()
-                ? 'Pole partner platí jen u účetního a pokladního dokladu — ignorováno, partnerem je strana dokladu.'
-                : 'Pole partner platí jen u účetního a pokladního dokladu — u tohoto typu urči partnera stranou (supplier / customer).',
+            'message'  => 'Pole partner platí jen u účetního a pokladního dokladu — u tohoto typu urči partnera stranou (supplier / customer).',
         ];
     }
 
@@ -287,20 +282,18 @@ final class DocumentValidator
     }
 
     /**
+     * Co výchozí hodnotu mít nemůže a platí pro pokyn i papírovou podobu:
+     * pokladna dokladu vázaného na pokladnu (#59 D12 — řada se nikdy
+     * nevybírá potichu, bez ní doklad nemá kam vzniknout) a směr pokladního
+     * dokladu (neplatnou hodnotu by doklad uložil jako „bez směru“). Strany
+     * vyžaduje jen návrh (`Interpret\PaperChecks::checkParties()`) —
+     * v pokynu je hlídá doklad pro cílový stav (U7).
+     *
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function checkPerDocType(array $canonical, ApplyMode $mode, array &$issues): void
+    public function checkDocTypeFields(array $canonical, array &$issues): void
     {
         $docType = (string) ($canonical['docType'] ?? '');
-        // Strany vyžaduje jen návrh ({@see PaperChecks::checkParties()}) —
-        // v pokynu je hlídá doklad pro cílový stav (U7).
-        if ($mode->derives()) {
-            PaperChecks::checkParties($canonical, $issues);
-        }
-        // Co výchozí hodnotu mít nemůže, platí v obou režimech: pokladna
-        // dokladu vázaného na pokladnu (#59 D12 — řada se nikdy nevybírá
-        // potichu, bez ní doklad nemá kam vzniknout) a směr pokladního
-        // dokladu (neplatnou hodnotu by doklad uložil jako „bez směru“).
         if (in_array($docType, ['cashDocument', 'cashRegisterDocument'], true)) {
             $this->checkCashDesk($canonical, $issues);
         }
@@ -337,7 +330,7 @@ final class DocumentValidator
     /**
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
-    private function checkPartnerDocNumber(array $canonical, array &$issues): void
+    public function checkPartnerDocNumber(array $canonical, array &$issues): void
     {
         $docType = (string) ($canonical['docType'] ?? '');
         // Přijaté doklady: faktura i zálohová faktura (#106 D1) nesou číslo

@@ -240,9 +240,15 @@ class DocumentProposal
             $this->applier->unlockSource($canonical);
         }
 
+        // Varování uloženého dokladu odpověď použití návrhu nenese (#166 U6)
+        // — ukazuje je review; z pokynu jdou jen nálezy k cílům uložení.
         $final = self::response(
             $interpreted,
-            ProposalReport::forSave($interpreted, self::withInstructionIssues($interpreted, $issues, $saved), $created),
+            ProposalReport::forSave(
+                $interpreted,
+                self::withInstructionIssues($interpreted, $issues, $saved, $this->applier->savedDocumentWarnings()),
+                $created,
+            ),
         );
         $final['savedDocId'] = $saved->savedId;
 
@@ -255,16 +261,22 @@ class DocumentProposal
      * (cíle uložení, validace dokladu), s cestami v původním payloadu.
      *
      * @param list<array<string, mixed>> $issues
+     * @param list<array<string, mixed>> $without nálezy pokynu, které se nepřebírají
      * @return list<array<string, mixed>>
      */
-    private static function withInstructionIssues(InterpretedDocument $interpreted, array $issues, ApplyResult $instruction): array
-    {
+    private static function withInstructionIssues(
+        InterpretedDocument $interpreted,
+        array $issues,
+        ApplyResult $instruction,
+        array $without = [],
+    ): array {
         $issues = [...$issues, ...$interpreted->operationIssues];
         $reported = $instruction->canonical['_resolve']['issues'] ?? [];
-        return [
-            ...$issues,
-            ...ProposalReport::instructionIssues($interpreted, $issues, is_array($reported) ? $reported : []),
-        ];
+        $reported = array_values(array_filter(
+            is_array($reported) ? $reported : [],
+            static fn (mixed $issue): bool => !in_array($issue, $without, true),
+        ));
+        return [...$issues, ...ProposalReport::instructionIssues($interpreted, $issues, $reported)];
     }
 
     /**

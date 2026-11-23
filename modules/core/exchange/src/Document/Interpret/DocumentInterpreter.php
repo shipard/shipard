@@ -9,7 +9,6 @@ use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\TableDefinition;
-use Shipard\Module\Core\Exchange\Document\ApplyMode;
 use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
@@ -150,7 +149,7 @@ final class DocumentInterpreter
     public function check(array $canonical): array
     {
         $canonical = CanonicalValueNormalizer::normalize(CanonicalReferences::expand($canonical));
-        $issues = $this->validator->validate($canonical, ApplyMode::Proposal);
+        $issues = PaperChecks::validate($canonical, $this->validator);
         $this->payload->appendAuthorIssue($canonical, $issues);
         return ['paper' => $canonical, 'issues' => $issues];
     }
@@ -174,7 +173,7 @@ final class DocumentInterpreter
         $rowSkips = $this->matching->skippedRowIndices($canonical, $clientResolve);
 
         // 2. Nálezy — ve stejném pořadí jako náhled návrhu.
-        $issues = $this->validator->validate($canonical, ApplyMode::Proposal);
+        $issues = PaperChecks::validate($canonical, $this->validator);
         $this->payload->appendAuthorIssue($canonical, $issues);
         $this->vat->appendVatModeIssue($canonical, $issues);
         $this->vat->appendVatHeaderIssues($canonical, $issues);

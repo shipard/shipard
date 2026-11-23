@@ -42,6 +42,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierPreviewComputedTest extends TestCase
 {
+    use InterpreterFixture;
+    use ReferenceFixture;
     private const ROOT = __DIR__ . '/../../../../../..';
 
     private string $tmpDir;
@@ -198,7 +200,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
         $item = $this->createMock(ItemResolver::class);
         $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
-        $bank = $this->createMock(BankAccountResolver::class);
+        $bank = $this->bankAccountResolverMock();
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
         $account = $this->createMock(AccountResolver::class);
         $account->method('resolve')->willReturn(null);
@@ -219,6 +221,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             accountResolver: $account,
             vatCodeDerivation: new VatCodeDerivation($this->vatCzRateResolver()),
             vatPlaceDerivation: new VatPlaceDerivation($this->tradeUnionResolver()),
+            references: $this->anyIdReferenceResolver(),
         );
     }
 
@@ -302,7 +305,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
 
     public function testDomesticConsistentRecapIsDeclaredAndMatchesSupplier(): void
     {
-        $result = $this->buildApplier()->preview($this->happyPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->happyPayload());
 
         $this->assertTrue($result->success);
         $computed = $result->canonical['_resolve']['computed'];
@@ -325,7 +328,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
 
     public function testEuServicesReverseChargeIsComputedWithPairAndTotalEqualsBase(): void
     {
-        $result = $this->buildApplier()->preview($this->euServicesPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->euServicesPayload());
 
         $resolve = $result->canonical['_resolve'];
         $computed = $resolve['computed'];
@@ -354,7 +357,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
     /** Samovyměření není chyba předlohy — info issue vysvětlí, proč je rekapitulace jiná než na faktuře. */
     public function testReverseChargeFallbackIssueExplainsSelfAssessment(): void
     {
-        $result = $this->buildApplier()->preview($this->euServicesPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->euServicesPayload());
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame('computed', $computed['recapSource']);
@@ -376,7 +379,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload = $this->happyPayload();
         $payload['vatRecap'][0]['tax'] = 12.00;
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($payload);
         $issue = $this->issue($result->canonical, 'recap_source_computed_fallback');
         $this->assertNotNull($issue);
         $this->assertStringContainsString('nešlo převzít', $issue['message'], 'ostatní důvody šablonou beze změny');
@@ -387,7 +390,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload = $this->happyPayload();
         $payload['vatRecap'][0]['tax'] = 12.00;
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($payload);
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame('computed', $computed['recapSource']);
@@ -404,7 +407,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
 
     public function testTotalMismatchWarningReplacesValidatorHeuristic(): void
     {
-        $result = $this->buildApplier()->preview($this->incompleteRowsPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->incompleteRowsPayload());
 
         $codes = $this->issueCodes($result->canonical);
         $this->assertContains('computed_total_mismatch', $codes);
@@ -423,7 +426,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload = $this->incompleteRowsPayload();
         unset($payload['totals']);
 
-        $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($payload);
 
         $this->assertNotNull($result->canonical['_resolve']['computed']);
         $this->assertNotContains('computed_total_mismatch', $this->issueCodes($result->canonical));
@@ -433,7 +436,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
     {
         $applier = $this->buildApplier(new \RuntimeException('registry broken'));
 
-        $result = $applier->preview($this->incompleteRowsPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->preview($this->incompleteRowsPayload());
 
         $this->assertTrue($result->success, 'náhled přežije i selhání výpočtu (D6)');
         $resolve = $result->canonical['_resolve'];
@@ -452,7 +455,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
     {
         $applier = $this->buildApplier(plainDocument: true);
 
-        $result = $applier->preview($this->happyPayload(), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->preview($this->happyPayload());
 
         $this->assertNull($result->canonical['_resolve']['computed']);
         $this->assertContains('computed_unavailable', $this->issueCodes($result->canonical));
@@ -461,7 +464,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
 
     public function testAccountingDocumentSumsDebitRowsWithoutRecap(): void
     {
-        $result = $this->buildApplier()->preview([
+        $result = self::proposalOf($this->buildApplier())->preview([
             'format'        => 'shpd.docs.document',
             'formatVersion' => '1.0',
             'docType'       => 'accountingDocument',
@@ -470,7 +473,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
                 ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'debit', 'account' => '568001', 'totalPrice' => 120.0, 'description' => 'Poplatek'],
                 ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'credit', 'account' => '221001', 'totalPrice' => 120.0],
             ],
-        ], ApplyMode::Proposal);
+        ]);
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertNotNull($computed);
@@ -489,9 +492,9 @@ class DocumentApplierPreviewComputedTest extends TestCase
     {
         foreach (['happy' => $this->happyPayload(), 'euServices' => $this->euServicesPayload()] as $label => $payload) {
             $applier = $this->buildApplier();
-            $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
+            $computed = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['computed'];
 
-            $applied = $applier->apply($payload, ApplyMode::Proposal);
+            $applied = self::proposalOf($applier)->apply($payload);
             $this->assertTrue($applied->success, "{$label}: {$applied->errorCode} {$applied->errorMessage}");
             $saved = $this->savedHeadsData;
             $this->assertIsArray($saved, $label);
@@ -533,7 +536,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
 
         $applier = $this->buildApplier();
-        $resolve = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve'];
+        $resolve = self::proposalOf($applier)->preview($payload)->canonical['_resolve'];
 
         $this->assertSame(
             ['value' => '14', 'source' => 'document', 'status' => 'matched'],
@@ -547,7 +550,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
             ),
         );
 
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($payload);
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
         $this->assertIsArray($saved);
@@ -579,7 +582,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
     /** `computed.rows`: ceny spočítané dokladem, klíčované indexem canonicalu; textový řádek cenu nemá. */
     public function testComputedRowsCarryDocumentPricesByCanonicalIndex(): void
     {
-        $result = $this->buildApplier()->preview($this->payloadWithLeadingTextRow(), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->payloadWithLeadingTextRow());
 
         // Plátce: 10 × 1033,06 z ceny za jednotku, bez daně.
         $this->assertSame(
@@ -597,7 +600,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
     {
         $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
 
-        $result = $applier->preview($this->payloadWithLeadingTextRow(), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->preview($this->payloadWithLeadingTextRow());
 
         $resolve = $result->canonical['_resolve'];
         $this->assertSame(['value' => 'none', 'source' => 'nonPayer', 'auto' => 'none'], $resolve['vat']['mode']);
@@ -627,7 +630,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload = $this->happyPayload();
         unset($payload['rows'][0]['computed']);
 
-        $result = $this->buildApplier(db: $this->dbWithoutVatRegistration())->preview($payload, ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier(db: $this->dbWithoutVatRegistration()))->preview($payload);
 
         $computed = $result->canonical['_resolve']['computed'];
         // 10 330,58 × 1,21 = 12 500,00 (12 500,0018 po zaokrouhlení).
@@ -641,9 +644,9 @@ class DocumentApplierPreviewComputedTest extends TestCase
     {
         $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
         $payload = $this->happyPayload();
-        $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
+        $computed = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['computed'];
 
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($payload);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
@@ -671,14 +674,14 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
         $payload = $this->creditNotePayload();
 
-        $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
+        $computed = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['computed'];
         $this->assertSame(
             [['index' => 0, 'unitPrice' => 1250.0, 'totalPrice' => -12500.00]],
             $computed['rows'],
         );
         $this->assertSame(-12500.00, $computed['totals']['totalAmount']);
 
-        $applied = $applier->apply($payload, ApplyMode::Proposal);
+        $applied = self::proposalOf($applier)->apply($payload);
 
         $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
         $saved = $this->savedHeadsData;
@@ -778,7 +781,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         foreach (['položková volba' => true, 'řádková volba' => false] as $label => $itemLevel) {
             $payload = $this->withSkip($this->threeRowsPayload(recap: false), 1, $itemLevel);
 
-            $result = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+            $result = self::proposalOf($this->buildApplier())->preview($payload);
 
             $this->assertTrue($result->success, $label);
             $computed = $result->canonical['_resolve']['computed'];
@@ -809,7 +812,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
 
     public function testWithoutSkipThreeRowsStayComplete(): void
     {
-        $result = $this->buildApplier()->preview($this->threeRowsPayload(recap: false), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->threeRowsPayload(recap: false));
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame([0, 1, 2], array_column($computed['rows'], 'index'));
@@ -823,9 +826,9 @@ class DocumentApplierPreviewComputedTest extends TestCase
         foreach (['převzatá' => true, 'bez rekapitulace' => false] as $label => $recap) {
             $payload = $this->withSkip($this->threeRowsPayload($recap), 1, itemLevel: true);
             $applier = $this->buildApplier();
-            $computed = $applier->preview($payload, ApplyMode::Proposal)->canonical['_resolve']['computed'];
+            $computed = self::proposalOf($applier)->preview($payload)->canonical['_resolve']['computed'];
 
-            $applied = $applier->apply($payload, ApplyMode::Proposal);
+            $applied = self::proposalOf($applier)->apply($payload);
 
             $this->assertTrue($applied->success, "{$label}: {$applied->errorCode} {$applied->errorMessage}");
             $saved = $this->savedHeadsData;
@@ -846,11 +849,11 @@ class DocumentApplierPreviewComputedTest extends TestCase
     public function testSkippedRowForcesRecapRecomputeEvenWhenDeclared(): void
     {
         $payload = $this->threeRowsPayload();
-        $full = $this->buildApplier()->preview($payload, ApplyMode::Proposal);
+        $full = self::proposalOf($this->buildApplier())->preview($payload);
         $this->assertSame('declared', $full->canonical['_resolve']['computed']['recapSource']);
         $this->assertNotContains('recap_source_computed_fallback', $this->issueCodes($full->canonical));
 
-        $result = $this->buildApplier()->preview($this->withSkip($payload, 1, itemLevel: true), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->withSkip($payload, 1, itemLevel: true));
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame('computed', $computed['recapSource']);
@@ -869,7 +872,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $payload = $this->threeRowsPayload();
         $payload['vat']['recapSource'] = 'declared';
 
-        $result = $this->buildApplier()->preview($this->withSkip($payload, 1, itemLevel: false), ApplyMode::Proposal);
+        $result = self::proposalOf($this->buildApplier())->preview($this->withSkip($payload, 1, itemLevel: false));
 
         $computed = $result->canonical['_resolve']['computed'];
         $this->assertSame('computed', $computed['recapSource']);

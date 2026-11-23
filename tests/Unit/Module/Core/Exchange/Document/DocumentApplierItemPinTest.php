@@ -35,6 +35,7 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocumentApplierItemPinTest extends TestCase
 {
+    use InterpreterFixture;
     use ReferenceFixture;
 
     private ?array $savedHeadsData = null;
@@ -102,10 +103,11 @@ class DocumentApplierItemPinTest extends TestCase
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($this->createMock(ConfigRuntime::class))),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($this->createMock(ConfigRuntime::class))),
             // Tvar, jaký píše obohacení (#166 D33): položka KONZ (18), účet 518100 (55).
-            references: $this->referenceResolver([
-                'economy_items'               => ['code=KONZ' => 18],
+            // Hotový doklad nese reference číslem — i zvolenou položku 77.
+            references: $this->referenceResolver(array_replace_recursive(self::REFERENCE_RECORDS, [
+                'economy_items'               => ['code=KONZ' => 18, 'code=ZVOLENA' => 77],
                 'economy_accounting_accounts' => ['number=518100' => 55],
-            ]),
+            ])),
         );
     }
 
@@ -172,7 +174,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '518100', 'useExisting:77'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload('518100', '518100', 'useExisting:77'));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $row = $this->savedHeadsData['rows'][0] ?? null;
@@ -196,13 +198,13 @@ class DocumentApplierItemPinTest extends TestCase
         };
         $applier = $this->buildApplier(ResolveResult::notFound(), null);
 
-        $result = $applier->apply($enriched(null), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($enriched(null));
         $this->assertTrue($result->success, "{$result->errorCode}: {$result->errorMessage}");
         $this->assertSame(18, $this->savedHeadsData['rows'][0]['item'], 'položka z reference obohacení');
         $this->assertSame(55, $this->savedHeadsData['rows'][0]['account']);
         $this->assertSame('ref', $result->canonical['_resolve']['rows'][0]['item']['matchedBy']);
 
-        $result = $applier->apply($enriched('useExisting:77'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($enriched('useExisting:77'));
         $this->assertTrue($result->success, "{$result->errorCode}: {$result->errorMessage}");
         $this->assertSame(77, $this->savedHeadsData['rows'][0]['item'], 'volba uživatele přebíjí položku z obohacení');
         $this->assertArrayNotHasKey('account', $this->savedHeadsData['rows'][0], 'účet navržený s položkou se nezapíše (D7b)');
@@ -213,7 +215,7 @@ class DocumentApplierItemPinTest extends TestCase
         // Účet řádku 518100 od AI / uživatele; historie navrhovala 501300.
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '501300', 'useExisting:77'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload('518100', '501300', 'useExisting:77'));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame(55, $this->savedHeadsData['rows'][0]['account']);
@@ -223,7 +225,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
 
-        $result = $applier->apply($this->payload('518100', '518100', null), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload('518100', '518100', null));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame(18, $this->savedHeadsData['rows'][0]['item']);
@@ -234,7 +236,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, 'useExisting:77'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload(null, null, 'useExisting:77'));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $sql = $this->supplierCodeSql($applier);
@@ -248,7 +250,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, null), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload(null, null, null));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $sql = $this->supplierCodeSql($applier);
@@ -259,7 +261,7 @@ class DocumentApplierItemPinTest extends TestCase
     public function testSkipWritesNoMapping(): void
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'supplierCode'), 55);
-        $result = $applier->apply($this->payload('518100', null, 'skip'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload('518100', null, 'skip'));
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $this->assertSame([], $this->supplierCodeSql($applier));
     }
@@ -268,7 +270,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, 'skip', rowCount: 2), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload(null, null, 'skip', rowCount: 2));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $rows = $this->savedHeadsData['rows'] ?? [];
@@ -282,7 +284,7 @@ class DocumentApplierItemPinTest extends TestCase
     {
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
 
-        $result = $applier->apply($this->payload(null, null, null, rowCount: 2, rowAction: 'skip'), ApplyMode::Proposal);
+        $result = self::proposalOf($applier)->apply($this->payload(null, null, null, rowCount: 2, rowAction: 'skip'));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $rows = $this->savedHeadsData['rows'] ?? [];

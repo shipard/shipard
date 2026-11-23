@@ -140,6 +140,17 @@ final class CanonicalReferences
     }
 
     /**
+     * Pole `partner` vyplněné u typu dokladu, který ho na hlavičce nenese
+     * (faktury — partnerem je strana).
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function headPartnerMisplaced(array $canonical): bool
+    {
+        return self::partnerIsSet($canonical[self::PARTNER] ?? null) && !self::carriesHeadPartner($canonical);
+    }
+
+    /**
      * Nese strana vedle `ref` i data (dobový snapshot importního módu)?
      *
      * @param array<string, mixed> $party
