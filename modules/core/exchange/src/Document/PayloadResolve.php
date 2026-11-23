@@ -486,6 +486,132 @@ final class PayloadResolve
 
     // ── Bloky odpovědi společné pokynu i návrhu ─────────────────────────────
 
+    // ── Plán uložení z bloků `_resolve` (#166 D62) ──────────────────────────
+
+    /**
+     * Základ plánu uložení: co plyne z bloků `_resolve` bez rozhodování —
+     * jednotky, kódy DPH, předmět plnění, účty, dimenze a partneři z pole
+     * `partner`. Strany, účet partnera a položky řádků jsou `null`; doplní je
+     * {@see plan()} (pokyn: jen nalezené reference), nebo rozhodnutí nad
+     * volbami uživatele (`Interpret\RecordMatching::reconcile()`).
+     * Vynechané řádky (`$rowSkips`) v plánu nejsou.
+     *
+     * @param array<string, mixed> $resolved bloky `_resolve`
+     * @param list<int> $rowSkips
+     * @return array<string, mixed>
+     */
+    public static function basePlan(array $resolved, array $rowSkips): array
+    {
+        $plan = [
+            'errorCode'            => null,
+            'errorMessage'         => null,
+            'partyCreates'         => [],
+            'bankCreate'           => null,
+            'rowItemCreates'       => [],
+            'rowSkips'             => $rowSkips,
+            // Řádky s výslovnou volbou položky useExisting:<id> (#111 D7b, D8).
+            'rowItemPins'          => [],
+            'resolvedSupplier'     => null,
+            'resolvedCustomer'     => null,
+            'resolvedBalanceParty' => null,
+            'resolvedSupplierBank' => null,
+            'resolvedRowItems'     => [],
+            'resolvedRowUnits'     => [],
+            'resolvedRowVatCodes'  => [],
+            'resolvedRowReverseChargeCodes' => [],
+            'resolvedRowAccounts'  => [],
+            'resolvedRowPartners'  => [],
+            // Partner hlavičky účetního a pokladního dokladu z pole `partner` (#166 D30).
+            'resolvedHeadPartner'  => self::matchedPersonId($resolved['partner'] ?? null),
+            // Dimenze deníku (#110 T2): id dimenze → id záznamu, jen nalezené.
+            'resolvedHeadDimensions' => self::matchedDimensionIds($resolved['dimensions'] ?? []),
+            'resolvedRowDimensions'  => [],
+        ];
+        foreach ($resolved['rows'] ?? [] as $i => $rowResolve) {
+            if (in_array($i, $rowSkips, true) || !is_array($rowResolve)) {
+                continue;
+            }
+            $plan['resolvedRowItems'][$i] = null;
+            $unit = $rowResolve['unit'] ?? null;
+            $plan['resolvedRowUnits'][$i] = ($unit['status'] ?? null) === ResolveStatus::Matched->value
+                ? ($unit['matchedId'] ?? null)
+                : null;
+            $plan['resolvedRowDimensions'][$i] = self::matchedDimensionIds($rowResolve['dimensions'] ?? []);
+            $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+            $plan['resolvedRowReverseChargeCodes'][$i] = self::matchedReverseChargeCode($rowResolve);
+            $account = $rowResolve['account'] ?? null;
+            $plan['resolvedRowAccounts'][$i] = ($account['status'] ?? null) === ResolveStatus::Matched->value
+                ? ($account['matchedId'] ?? null)
+                : null;
+            $plan['resolvedRowPartners'][$i] = self::matchedPersonId($rowResolve['partner'] ?? null);
+        }
+        return $plan;
+    }
+
+    /**
+     * Plán uložení **pokynu**: projekce nalezených referencí — pokyn
+     * `_resolve` nečte a nic nezakládá (#166 D31, D32). Reference, která se
+     * nenašla, už nese nález; blok bez shody, který referencí není (strana
+     * vlastní firmy na zdroji bez vlastní osoby), je `unresolved_required`.
+     *
+     * @param array<string, mixed> $resolved bloky `_resolve` pokynu
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed>
+     */
+    public static function plan(array $resolved, array &$issues): array
+    {
+        $plan = self::basePlan($resolved, []);
+        foreach (CanonicalReferences::PARTIES as $key) {
+            if (isset($resolved[$key])) {
+                $plan['resolved' . ucfirst($key)] = self::foundId($key, $resolved[$key], $plan, $issues);
+            }
+        }
+        if (isset($resolved['supplierBank'])) {
+            $plan['resolvedSupplierBank'] = self::foundId('supplierBank', $resolved['supplierBank'], $plan, $issues);
+        }
+        foreach ($resolved['rows'] ?? [] as $i => $rowResolve) {
+            if (is_array($rowResolve) && isset($rowResolve['item'])) {
+                $plan['resolvedRowItems'][$i] = self::foundId("rows.{$i}.item", $rowResolve['item'], $plan, $issues);
+            }
+        }
+        return $plan;
+    }
+
+    /**
+     * @param array<string, mixed> $block
+     * @param array<string, mixed> $plan
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private static function foundId(string $path, array $block, array &$plan, array &$issues): ?int
+    {
+        if (!empty($block['referenceError'])) {
+            return null;
+        }
+        if (($block['status'] ?? null) === ResolveStatus::Matched->value) {
+            return isset($block['matchedId']) ? (int) $block['matchedId'] : null;
+        }
+        self::unresolvedRequired($path, $plan, $issues);
+        return null;
+    }
+
+    /**
+     * Blok bez shody a bez rozhodnutí — doklad v této podobě uložit nejde.
+     *
+     * @param array<string, mixed> $plan
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    public static function unresolvedRequired(string $path, array &$plan, array &$issues): void
+    {
+        $plan['errorCode'] = 'unresolved_required';
+        $plan['errorMessage'] = "Reference „{$path}\" vyžaduje rozhodnutí (userAction).";
+        $issues[] = [
+            'severity' => 'error',
+            'path'     => $path,
+            'code'     => 'unresolved_required',
+            'message'  => 'Nelze automaticky propojit; doplňte _resolve.userAction.',
+        ];
+    }
+
     /**
      * Indexy canonicalu řádků, které {@see DocumentApplier::transformRows()} převede, v pořadí
      * výstupu — řádek přeskočený volbou uživatele (`rowSkips`) a ne-pole

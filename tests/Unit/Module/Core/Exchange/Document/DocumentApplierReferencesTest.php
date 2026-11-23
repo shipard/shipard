@@ -370,6 +370,21 @@ final class DocumentApplierReferencesTest extends TestCase
         $this->assertSame(7, $this->savedHeadsData['partner_bank'], 'bez reference účet podle čísla');
     }
 
+    /** D62: `item.display` a `effectiveAccount` jsou zpráva návrhu — náhled pokynu je nenese. */
+    public function testInstructionPreviewCarriesNoProposalReport(): void
+    {
+        $result = $this->buildApplier()->preview(self::asInstruction($this->payload()), ApplyMode::Instruction);
+
+        $row = $result->canonical['_resolve']['rows'][0];
+        $this->assertSame(18, $row['item']['matchedId']);
+        $this->assertArrayNotHasKey('display', $row['item']);
+        $this->assertArrayNotHasKey('matchedDisplay', $row['item']);
+        $this->assertArrayNotHasKey('effectiveAccount', $row);
+
+        $proposal = $this->buildApplier()->preview($this->payload(), ApplyMode::Proposal);
+        $this->assertArrayHasKey('effectiveAccount', $proposal->canonical['_resolve']['rows'][0]);
+    }
+
     // ── Řada, pokladna, vlastní účet ────────────────────────────────────────
 
     /** DB applieru pro cíle uložení: řady podle id / typu / pokladny. */

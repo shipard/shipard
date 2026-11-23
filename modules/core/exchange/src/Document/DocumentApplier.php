@@ -982,7 +982,10 @@ class DocumentApplier
         // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
         //     — čte uložené volby z klientského _resolve, ale nerozhoduje
         //     (reconcile se v náhledu nevolá).
-        $resolved = $this->proposalReport->annotateRowDisplay($canonical, $resolved, $rowSkips);
+        //     Jen návrh: je to zpráva interpretace, pokyn ji nenese (#166 D62).
+        if ($mode->derives()) {
+            $resolved = $this->proposalReport->annotateRowDisplay($canonical, $resolved, $rowSkips);
+        }
         // 3. Rekapitulace a součty, jak skončí na dokladu — stejným kódem
         //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6);
         //    vynechané řádky v nich nejsou (#111 D9).
@@ -1211,11 +1214,10 @@ class DocumentApplier
         array &$issues,
         ApplyMode $mode,
     ): void {
-        // reconcile() čte autoCreateMode; jeho nálezy (reference čekající na
-        // rozhodnutí) náhled nehlásí — stav referencí nesou bloky `_resolve`.
-        $this->applyOptionsCache = is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : [];
+        // Plán pokynu je projekce nalezených referencí; jeho nálezy náhled
+        // nehlásí — stav referencí nesou bloky `_resolve`.
         $discarded = [];
-        $plan = $this->reconcile($resolved, $clientResolve, $discarded, $rowSkips);
+        $plan = PayloadResolve::plan($resolved, $discarded);
 
         $targets = $this->resolveSaveTargets($canonical, $issues, provision: false);
         if ($targets['error'] !== null && !$targets['error']['reported']) {
@@ -1445,8 +1447,11 @@ class DocumentApplier
         // 3. Re-run resolve (fresh DB read; client's _resolve might be stale).
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues, $mode), $mode);
 
-        // 4. Reconcile with client _resolve.*.userAction.
-        $plan = $this->reconcile($resolved, $clientResolve, $validatorIssues, $rowSkips);
+        // 4. Plán uložení: návrh rozhoduje nad volbami uživatele
+        //    (`_resolve.*.userAction`), pokyn jen promítne nalezené reference.
+        $plan = $mode->derives()
+            ? $this->reconcile($resolved, $clientResolve, $validatorIssues, $rowSkips)
+            : PayloadResolve::plan($resolved, $validatorIssues);
 
         $enriched = $this->withResolve($canonical, $resolved, $validatorIssues);
 
@@ -3123,8 +3128,9 @@ class DocumentApplier
         $resolve['summary'] = PayloadResolve::summary($resolved, $issues);
         // Per-row enrichment audit (RowHistoryEnricher) is not part of the
         // fresh resolve — carry it over from the incoming _resolve by index,
-        // otherwise preview/apply responses would drop it.
-        if (is_array($resolve['rows'] ?? null)) {
+        // otherwise preview/apply responses would drop it. Jen návrh: pokyn
+        // `_resolve` nečte, není co přenášet (#166 D62).
+        if ($this->instructionPayload === null && is_array($resolve['rows'] ?? null)) {
             $resolve['rows'] = ProposalReport::carryOverEnrichment(
                 $canonical['_resolve']['rows'] ?? null,
                 $resolve['rows'],

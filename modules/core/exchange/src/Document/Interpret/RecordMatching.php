@@ -396,44 +396,19 @@ final class RecordMatching
         mixed $autoCreateMode = 'strict',
     ): array {
         $this->autoCreateMode = $autoCreateMode;
-        $plan = [
-            'errorCode'           => null,
-            'errorMessage'        => null,
-            'partyCreates'        => [],
-            'bankCreate'          => null,
-            'rowItemCreates'      => [],
-            'rowSkips'            => $rowSkips,
-            // Řádky s výslovnou volbou položky useExisting:<id> (#111 D7b, D8):
-            // účet navržený historií / štítkem se nezapíše, mapování kódu
-            // dodavatele se přepíše.
-            'rowItemPins'         => [],
-            'resolvedSupplier'    => null,
-            'resolvedCustomer'    => null,
-            'resolvedBalanceParty' => null,
-            'resolvedSupplierBank'=> null,
-            'resolvedRowItems'    => [],
-            'resolvedRowUnits'    => [],
-            'resolvedRowVatCodes' => [],
-            'resolvedRowReverseChargeCodes' => [],
-            'resolvedRowAccounts' => [],
-            'resolvedRowPartners' => [],
-            'resolvedHeadPartner' => null,
-            // Dimenze deníku (#110 T2): id dimenze → id záznamu, jen nalezené.
-            // Klíč je autoritativní — žádná userAction, nenalezený dal error.
-            'resolvedHeadDimensions' => PayloadResolve::matchedDimensionIds($resolved['dimensions'] ?? []),
-            'resolvedRowDimensions'  => [],
-        ];
+        // Co plyne z bloků bez rozhodování, dává sdílený základ plánu.
+        $plan = PayloadResolve::basePlan($resolved, $rowSkips);
 
         // Partner hlavičky účetního a pokladního dokladu — nepovinný. Pole
-        // `partner` (#166 D30) má přednost; bez něj v návrhu volba
-        // _resolve.partner (useExisting:<id>). Pokyn `_resolve` nečte.
-        $plan['resolvedHeadPartner'] = isset($resolved['partner'])
-            ? PayloadResolve::matchedPersonId($resolved['partner'])
-            : $this->resolvePin(
+        // `partner` (#166 D30) má přednost; bez něj volba _resolve.partner
+        // (useExisting:<id>).
+        if (!isset($resolved['partner'])) {
+            $plan['resolvedHeadPartner'] = $this->resolvePin(
                 'partner',
                 is_array($clientResolve['partner'] ?? null) ? ($clientResolve['partner']['userAction'] ?? null) : null,
                 $issues,
             );
+        }
 
         foreach (['supplier', 'customer', 'balanceParty'] as $partyKey) {
             $fresh = $resolved[$partyKey] ?? null;
@@ -490,25 +465,9 @@ final class RecordMatching
                 if ($itemRes['id'] !== null && is_string($itemAction) && str_starts_with($itemAction, 'useExisting:')) {
                     $plan['rowItemPins'][] = $i;
                 }
-            } else {
-                $plan['resolvedRowItems'][$i] = null;
             }
 
-            $unitFresh = $rowResolve['unit'] ?? null;
-            $plan['resolvedRowUnits'][$i] = ($unitFresh['status'] ?? null) === 'matched'
-                ? ($unitFresh['matchedId'] ?? null)
-                : null;
-            $plan['resolvedRowDimensions'][$i] = PayloadResolve::matchedDimensionIds($rowResolve['dimensions'] ?? []);
-
-            $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
-            $plan['resolvedRowReverseChargeCodes'][$i] = PayloadResolve::matchedReverseChargeCode($rowResolve);
-
-            // Účet z čísla (kontace) — passthrough, žádná userAction (číslo je
-            // autoritativní; nenalezeno už dalo warning v resolveAll).
             $accountFresh = $rowResolve['account'] ?? null;
-            $plan['resolvedRowAccounts'][$i] = ($accountFresh['status'] ?? null) === 'matched'
-                ? ($accountFresh['matchedId'] ?? null)
-                : null;
 
             // D7b (#111): u ručně zvolené položky jde účet s položkou — účet
             // řádku navržený historií nebo štítkem (shoda čísla se
@@ -524,13 +483,13 @@ final class RecordMatching
 
             // Partner řádku — pole `rows[].partner` (#166 D30), bez něj
             // v návrhu volba _resolve.rows[i].partner.
-            $plan['resolvedRowPartners'][$i] = isset($rowResolve['partner'])
-                ? PayloadResolve::matchedPersonId($rowResolve['partner'])
-                : $this->resolvePin(
+            if (!isset($rowResolve['partner'])) {
+                $plan['resolvedRowPartners'][$i] = $this->resolvePin(
                     "rows.{$i}.partner",
                     is_array($clientRow['partner'] ?? null) ? ($clientRow['partner']['userAction'] ?? null) : null,
                     $issues,
                 );
+            }
         }
 
         return $plan;
@@ -606,14 +565,7 @@ final class RecordMatching
                 return ['id' => null, 'autoCreate' => true];
             }
             if ($status === 'canCreate' || $status === 'ambiguous' || $status === 'notFound') {
-                $plan['errorCode'] = 'unresolved_required';
-                $plan['errorMessage'] = "Reference „{$path}\" vyžaduje rozhodnutí (userAction).";
-                $issues[] = [
-                    'severity' => 'error',
-                    'path'     => $path,
-                    'code'     => 'unresolved_required',
-                    'message'  => 'Nelze automaticky propojit; doplňte _resolve.userAction.',
-                ];
+                PayloadResolve::unresolvedRequired($path, $plan, $issues);
             }
             return ['id' => null, 'autoCreate' => false];
         }
