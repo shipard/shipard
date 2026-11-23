@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" width="960" height="430" role="img" aria-labelledby="t d" font-family="-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <title id="t">Cílový model ukládání dokladů</title>
+  <desc id="d">Formulář ukládá doklad přímo. Skript, import, datové sady a generátory dokladů posílají pokyn. Pošta a ISDOC jdou interpretací, jejímž výstupem je hotový doklad uložený pokynem. Všechny cesty končí v dokladu.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- Vlastní pozadí: obrázek je čitelný ve světlém i tmavém vzhledu GitHubu. -->
+  <rect x="0" y="0" width="960" height="430" rx="10" fill="#ffffff"/>
+
+  <!-- Záhlaví sloupců -->
+  <g font-size="12" fill="#64748b" text-anchor="middle" letter-spacing="0.6">
+    <text x="120" y="28">KDO UKLÁDÁ</text>
+    <text x="365" y="28">INTERPRETACE (NÁVRH)</text>
+    <text x="595" y="28">UKLÁDACÍ API (POKYN)</text>
+    <text x="835" y="28">DOKLAD</text>
+  </g>
+
+  <!-- Zdroje -->
+  <g stroke="#94a3b8" stroke-width="1.2" fill="#f8fafc">
+    <rect x="20" y="50" width="200" height="74" rx="8"/>
+    <rect x="20" y="168" width="200" height="74" rx="8"/>
+    <rect x="20" y="286" width="200" height="74" rx="8"/>
+  </g>
+  <g fill="#0f172a" text-anchor="middle">
+    <text x="120" y="82" font-size="15" font-weight="600">Formulář</text>
+    <text x="120" y="103" font-size="12" fill="#475569">uživatel v aplikaci</text>
+
+    <text x="120" y="192" font-size="15" font-weight="600">Skript, import</text>
+    <text x="120" y="211" font-size="12" fill="#475569">datové sady,</text>
+    <text x="120" y="227" font-size="12" fill="#475569">generátory dokladů</text>
+
+    <text x="120" y="318" font-size="15" font-weight="600">Pošta, ISDOC</text>
+    <text x="120" y="339" font-size="12" fill="#475569">papírová podoba dokladu</text>
+  </g>
+
+  <!-- Interpretace -->
+  <rect x="270" y="270" width="190" height="106" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <g fill="#0f172a" text-anchor="middle">
+    <text x="365" y="296" font-size="15" font-weight="600">Interpretace</text>
+    <text x="365" y="316" font-size="12" fill="#78350f">hledá podle údajů,</text>
+    <text x="365" y="332" font-size="12" fill="#78350f">odvozuje DPH,</text>
+    <text x="365" y="348" font-size="12" fill="#78350f">čte volby uživatele</text>
+    <text x="365" y="366" font-size="11" fill="#92400e" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">DocumentProposal</text>
+  </g>
+
+  <!-- Pokyn -->
+  <rect x="500" y="152" width="190" height="224" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <g fill="#0f172a" text-anchor="middle">
+    <text x="595" y="226" font-size="15" font-weight="600">Pokyn</text>
+    <text x="595" y="248" font-size="12" fill="#1e3a8a">reference na záznamy,</text>
+    <text x="595" y="264" font-size="12" fill="#1e3a8a">výchozí hodnoty</text>
+    <text x="595" y="280" font-size="12" fill="#1e3a8a">jako ve formuláři;</text>
+    <text x="595" y="296" font-size="12" fill="#1e3a8a">nic neodvozuje,</text>
+    <text x="595" y="312" font-size="12" fill="#1e3a8a">nic nezakládá</text>
+    <text x="595" y="334" font-size="11" fill="#1e40af" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">DocumentApplier</text>
+  </g>
+
+  <!-- Doklad -->
+  <rect x="740" y="50" width="190" height="326" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <g fill="#0f172a" text-anchor="middle">
+    <text x="835" y="176" font-size="15" font-weight="600">Doklad</text>
+    <text x="835" y="198" font-size="12" fill="#14532d">validace, výpočet,</text>
+    <text x="835" y="214" font-size="12" fill="#14532d">číslování, snapshoty,</text>
+    <text x="835" y="230" font-size="12" fill="#14532d">zámky</text>
+    <text x="835" y="254" font-size="11" fill="#166534" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">TableGateway</text>
+    <text x="835" y="270" font-size="11" fill="#166534" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">DocDocument</text>
+  </g>
+
+  <!-- Šipky -->
+  <g stroke="#475569" stroke-width="1.6" fill="none" marker-end="url(#arrow)">
+    <path d="M220 87 H738"/>
+    <path d="M220 205 H498"/>
+    <path d="M220 323 H268"/>
+    <path d="M460 323 H498"/>
+    <path d="M690 264 H738"/>
+  </g>
+  <text x="479" y="313" font-size="11" fill="#475569" text-anchor="middle">hotový</text>
+  <text x="479" y="345" font-size="11" fill="#475569" text-anchor="middle">doklad</text>
+
+  <!-- Kam se podívat -->
+  <g font-size="11" fill="#64748b" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="365" y="402">document-interpretation.md</text>
+    <text x="595" y="402">exchange-format.md</text>
+    <text x="835" y="402">document-system.md</text>
+  </g>
+</svg>

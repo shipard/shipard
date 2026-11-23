@@ -727,7 +727,7 @@ Doklady, které nevznikají z ruky uživatele ani z externího zdroje, ale
 Shipard je skládá z vlastních dat — periodická fakturace zakázek
 (#110 Q1), později faktura ze zakázky, faktura ze zálohy apod. — vznikají
 **i se přegenerovávají výhradně přes výměnný formát a `DocumentApplier`**
-(`docs/exchange-format.md` §1, § Apply a doc state → `replaceConcept`).
+(`docs/exchange-format.md` § 1, § 10 „Přegenerovat v místě“).
 Generátor sestaví kanonický `shpd.docs.document.v1` a applier udělá
 zbytek: validaci, resolve, řadu, výchozí hodnoty, dimenze,
 `TableGateway::saveDocument` s Document hooky. Žádné přímé skládání
@@ -756,7 +756,7 @@ DPH `vat.registration`, původní doklad opravného dokladu
 `correction.originalDoc`. Volby v `_resolve` (`useExisting:<id>`) pokyn
 nečte a generátor je neposílá; nic se nezakládá — reference, která se
 nenajde, apply zastaví nálezem. Jednotka jde systémovým kódem
-(`core_units.system_code`); jednotku bez něj formát vyjádřit neumí.
+(`core_units.system_code`), jednotka bez něj číslem — id (#166 D60).
 
 Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
 přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku
@@ -773,7 +773,11 @@ výměnného formátu** (`DocumentApplier` přes adaptér
 doklad jako formulář bez zásahu uživatele (`docs/exchange-format.md` § 3
 „Výchozí hodnoty pokynu“, § 11). Nová výchozí hodnota patří **sem**, ne do
 hooku formuláře ani do applieru; invariant hlídá
-`DocumentFormInstructionInvariantTest`.
+`DocumentFormInstructionInvariantTest`. **Tento oddíl je jediné místo
+pravidel** — `docs/exchange-format.md` nese jen seznam polí formátu,
+kterých se týkají, a význam chybějícího klíče a `null`. Návrh z pošty
+a ISDOC výchozí hodnoty nedostává: interpretace píše hodnoty do hotového
+dokladu výslovně (`docs/document-interpretation.md` § 3).
 
 **Kontrakt:** třídy pracují nad sloupci tabulek, bez znalosti formuláře
 i formátu, a vrací seznam sloupců, které doplnily. Doplňuje se jen sloupec,
@@ -800,13 +804,14 @@ a prázdný text.
 
 | Sloupec | Pravidlo |
 |---|---|
-| `operation` | řádek s položkou: mapa `docs.core.applyRowOperations` podle typu položky (typ mimo mapu její `default`); řádek bez položky a typ dokladu bez záznamu: první pohyb nabídky. Formulář pohyb při výběru položky přenastaví, jen je-li automatický (`isAutomaticOperation()`) |
+| `operation` | řádek s položkou: mapa `docs.core.applyRowOperations` podle typu položky (typ mimo mapu její `default`); řádek bez položky a typ dokladu bez záznamu: první pohyb nabídky typu dokladu (u pokladního dokladu podle směru). Formulář pohyb při výběru položky přenastaví, jen je-li automatický (`isAutomaticOperation()`) |
 | `description`, `unit_price`, `unit` | z karty položky (název, `sales_price_no_vat` je-li vyplněná, jednotka). Formulář jimi při výběru položky přepisuje vždy, pokyn jen doplňuje |
 | `quantity` | 1 |
 | `vat_code` | první kód nabídky `DocHeadVatContext::vatCodeOptions()` k datu sazby řádku, bez „Mimo DPH“; jen u hlavičky s DPH |
 
-Řádek kontace (`acc_side`, pohyb s `rowSide`) dostane jen pohyb; importní
-mód pokynu obsah řádku nedoplňuje (`$content = false`). Kontext hlavičky
+Řádek kontace (`acc_side`, pohyb s `rowSide`) dostane jen pohyb, textový
+řádek nic; importní mód pokynu obsah řádku nedoplňuje (`$content = false`,
+`docs/exchange-format.md` § 10 „Importní mód“). Kontext hlavičky
 pro řádek dává `DocHeadVatContext` — `load()` z uložené hlavičky
 (sub-formulář), `fromHead()` z dat hlavičky, která ještě uložená není
 (pokyn).

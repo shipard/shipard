@@ -475,7 +475,7 @@ DPH nevyžaduje. Chybí tedy jen:
    doklady z pošty (ISDOC, AI) na „Bez DPH“ s cenami s daní převádí
    `DocumentApplier` — podle registrace platné k datu dokladu, ne podle
    příznaku (`tasks/exchange-received-non-vat-payer.md`,
-   `docs/exchange-format.md` § 8.4).
+   `docs/document-interpretation.md` § 6.2).
 4. Provisioning instancí tvrzení **v okamžiku vzniku registrace** (hotové,
    revize #55 D9). Uložení registrace přes `VatRegistrationDocument` vyvolá
    `afterSave` documentEventHandler modulu `economy.vat`

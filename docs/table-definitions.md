@@ -271,7 +271,7 @@ přirozený klíč** (#166 D8):
   jde deklarovat i bez `exchangeKey`.
 
 Hledá přes ně jediný obecný resolver (`ReferenceResolver`, gramatika hodnoty
-v `docs/exchange-format.md` § 8.6). Žádná jiná mapa přirozených klíčů v kódu
+v `docs/exchange-format.md` § 8). Žádná jiná mapa přirozených klíčů v kódu
 není — datové sady i dimenze dokladů čtou tato pole.
 
 Pravidla (`TableDefinition::fromArray()` jinak skončí výjimkou s názvem

@@ -21,8 +21,8 @@ final class SupplierCodeLearning
     }
 
     /**
-     * Per-partner item code learning — see docs/exchange-format.md §"Side-
-     * creates a per-partner item mapping". Idempotent via unique index.
+     * Per-partner item code learning — see docs/document-interpretation.md
+     * § 5.2 a § 8. Idempotent via unique index.
      *
      * Řádek s výslovnou volbou položky (`rowItemPins`, #111 D8) naučené
      * mapování **přepíše** (`ON DUPLICATE KEY UPDATE`) — oprava špatného

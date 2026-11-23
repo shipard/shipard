@@ -189,7 +189,7 @@ Mapuje se jen to, co v ISDOC opravdu je, chybějící pole se vynechávají.
 | `totals` | `LegalMonetaryTotal` + `TaxTotal/TaxAmount` | `totalBase`, `totalVat` (u dokladu bez DPH null), `totalAmount`, `totalRounding` |
 
 Doklad bez DPH (`VATApplicable false`) tak dostane tvar dokladu neplátce
-podle `docs/exchange-format.md` § 8.4 — applier mu dá kód bez daně místo
+podle `docs/document-interpretation.md` § 6.3 — interpretace mu dá kód bez daně místo
 hledání sazby 0 %. Signál tuzemského přenesení dojde přes náhled
 k `cz-115` (`DocumentApplierTest::testReceivedIsdocWithLocalReverseChargeDerivesPdpCode`).
 U dodavatele z jiného členského státu (fixtura `invoice_eu_supplier.isdoc`,

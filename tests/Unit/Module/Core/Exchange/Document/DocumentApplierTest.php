@@ -3583,7 +3583,7 @@ class DocumentApplierTest extends TestCase
     /**
      * Přijatý ISDOC s tuzemským přenesením (kód 4) dojde přes IsdocReader
      * a preview ke kódu DPH s přenesením u plátce — dřív signál přenesení
-     * z ISDOC chyběl (#119 krok 3, docs/exchange-format.md § 8.4).
+     * z ISDOC chyběl (#119 krok 3, docs/document-interpretation.md § 6.6).
      */
     public function testReceivedIsdocWithLocalReverseChargeDerivesPdpCode(): void
     {

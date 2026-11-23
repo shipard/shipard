@@ -22,7 +22,7 @@ final class IsdocFieldCoverage
 {
     /** @var array<string, string> cesta uzlu projekce → důvod */
     public const array NOT_CARRIED = [
-        'vat.place'               => 'ISDOC nemá místo plnění; applier ho odvodí z prefixu DIČ dodavatele (docs/exchange-format.md § 8.4)',
+        'vat.place'               => 'ISDOC nemá místo plnění; interpretace ho odvodí z prefixu DIČ dodavatele (docs/document-interpretation.md § 6.5)',
         'rows[].vat.supplyKind'   => 'ISDOC nemá druh plnění (zboží / služba)',
         'rows[].priceCalcMode'    => 'ISDOC neříká, zda je autoritativní jednotková, nebo celková cena — čtečka dává fromUnitPrice',
         'supplier.contact.web'    => 'Contact má jen Name / Telephone / ElectronicMail',

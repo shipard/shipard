@@ -74,19 +74,19 @@ Klíčové pokyny v promptu:
   tuzemské přenesení daňové povinnosti — kód předmětu plnění z výčtu
   v promptu, `1` … `21` vč. `1a`, `3a`, `4a`; od v4.12.0 se ukládá na
   řádek dokladu, kód DPH nevybírá). Kód z nich odvodí
-  `VatCodeDerivation` v applieru
-  ([`docs/exchange-format.md`](../../../../docs/exchange-format.md) § 8.4).
+  `VatCodeDerivation` v interpretaci návrhu
+  ([`docs/document-interpretation.md`](../../../../docs/document-interpretation.md) § 6.6).
 - **`vat.place` podle DIČ dodavatele, ne podle adresy** (od v4.6.1):
   prefix `CZ` → `domestic`, prefix jiného státu EU (i `EL`) → `intracom`
   i u sídla mimo EU; bez DIČ podle sídla. Server ho u přijatého dokladu
-  stejně přebije prefixem DIČ (`VatPlaceDerivation`, § 8.4) — pravidlo
+  stejně přebije prefixem DIČ (`VatPlaceDerivation`, tamtéž § 6.5) — pravidlo
   jen zmenšuje počet návrhů s warningem `vat_place_derived`.
 - **`supplyKind` u každého řádku dodavatele mimo ČR** (od v4.6.2) — i u
   dokladu, který DPH neřeší (`vat.mode: none`, bez DIČ, bez sazby);
   software, předplatné a cloud jsou služby. `none` u zahraničního
   dodavatele neruší `supplyKind` ani `vat.reverseCharge` (bez zmínky
   `false`, pole se nevynechává). Server chybějící druh plnění stejně
-  doplní ze štítku řádku (`supply_kind_derived`, § 8.4) — pravidlo
+  doplní ze štítku řádku (`supply_kind_derived`, tamtéž § 6.6) — pravidlo
   jen zmenšuje počet návrhů s tímto warningem.
 - **Bankovní spojení dodavatele vždy do `supplier.bankAccount`** (od
   v4.8.0) — i u dokladu bez DPH a od neplátce; nikdy pod `payment`

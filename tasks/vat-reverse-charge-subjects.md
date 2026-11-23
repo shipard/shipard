@@ -21,8 +21,9 @@ Navazuje na #86, #87 a #55. Na tasku A nezávisí; dělá se po něm.
   informativní
 - `docs/document-system.md` — hooky, validace, child tabulky
 - `docs/table-definitions.md` → *Bezpečné změny typu sloupce*
-- `docs/exchange-format.md` — § 8.4 (derivace kódu, volby v náhledu),
-  § 9 (`_resolve`, `userAction`), tabulka issues
+- `docs/document-interpretation.md` — § 6.6 (derivace kódu, volby
+  v náhledu), § 7 (`_resolve`, `userAction`), § 11 (kódy nálezů);
+  předmět plnění `docs/exchange-format.md` § 8 „Kód DPH“
 - `docs/accounting.md` → *Konvence DPH analytik*
 - `docs/edit-forms.md` kap. 15 (sub-tabulky) a `docs/edit-forms-cookbook.md`
 - `tasks/exchange-received-reverse-charge.md`, `tasks/exchange-preview-vat-choices.md`,

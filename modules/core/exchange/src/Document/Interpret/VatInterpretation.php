@@ -32,7 +32,7 @@ use Shipard\Module\Docs\Core\VatRateDates;
  * Staví na kontextu z payloadu ({@see PayloadContext}); výsledkem je
  * {@see context()} — kontext DPH dokladu, který čtou resolve řádků,
  * rekapitulace ({@see RecapInterpretation}), nálezy i skladba dokladu.
- * Popis pravidel: `docs/exchange-format.md` § 8.4.
+ * Popis pravidel: `docs/document-interpretation.md` § 6.
  */
 final class VatInterpretation
 {

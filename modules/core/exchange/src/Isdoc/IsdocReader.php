@@ -130,7 +130,7 @@ final class IsdocReader
         $paymentCode = $this->text($root, 'PaymentMeans', 'Payment', 'PaymentMeansCode');
 
         // Režim DPH: VATApplicable false = doklad neplátce (tvar podle
-        // docs/exchange-format.md § 8.4 — bez sazeb, rekapitulace, základu
+        // docs/document-interpretation.md § 6.3 — bez sazeb, rekapitulace, základu
         // a daně); jinak podle metody výpočtu shodné na všech řádcích.
         $vatApplicable = $this->bool($root, 'VATApplicable');
         $noVat = $vatApplicable === false;

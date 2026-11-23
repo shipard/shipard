@@ -63,8 +63,8 @@ Vlastnost dokladu (`docs.core.vatModes`), určuje, co znamená cena na řádku:
 
 - `0 Bez DPH` — nedaňový doklad; základ = cena, daň 0. U neplátce DPH
   nese cena řádku i daň dodavatele (je součástí ceny pořízení) — přijaté
-  doklady z pošty tak převádí `DocumentApplier`
-  (`docs/exchange-format.md` § 8.4).
+  doklady z pošty tak převádí interpretace návrhu
+  (`docs/document-interpretation.md` § 6.3).
 - `1 Ze základu` — ceny na řádcích jsou bez DPH.
 - `2 Z ceny celkem` — ceny na řádcích jsou s DPH.
 
@@ -337,7 +337,8 @@ na doklad jen předá; mazání podle režimu dělá dokument. Přijatá faktura
 jejíž DPPD a DUZP leží na různých stranách změny sazby, tak projde se sazbou
 dodavatele (dřív `vat_code_unknown`, resp. chyba při potvrzení). Export
 dokladu (datové sady) přepínač a data nese, takže dump → seed je zachová.
-Viz `docs/exchange-format.md` § 5 „Datum sazby DPH“ a § 8.4.
+Viz `docs/exchange-format.md` § 5 „Datum sazby DPH“; odvození kódu DPH
+u dokladů z pošty `docs/document-interpretation.md` § 6.6.
 
 ## 6. Zaokrouhlení celkové částky — `total_rounding_mode`, `total_rounding_auto`
 

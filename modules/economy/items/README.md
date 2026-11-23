@@ -70,8 +70,8 @@ Sloupec `content_tags` (JSON list klíčů taxonomie
 (obsahová eskalace, `tasks/content-tag-enrichment.md`). U přijatého
 dokladu od dodavatele mimo tuzemsko podle něj `core.exchange` rozhoduje
 i o **zvláštním místě plnění** řádku pokrytého položkou (#89 D19–D21,
-`docs/exchange-format.md` § 8.4 → *Zvláštní místo plnění ze štítků
-položky*). Počítají se jen štítky, které mají v taxonomii
+`docs/document-interpretation.md` § 6.4 „Zvláštní místo plnění ze štítků
+položky“). Počítají se jen štítky, které mají v taxonomii
 `crossBorderSupply`:
 
 - položka jen se štítky `special` (ubytování + jízdné; mýto + správní

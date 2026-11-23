@@ -133,7 +133,7 @@ zavedení kódu se páruje jím, a řádek souboru proto `code` nést musí.
 
 **Cizí klíče přes přirozený klíč** (`SetupReferences`, #131 fáze 2b D29)
 — fasáda sad nad obecným `ReferenceResolver` (#166 D8,
-`docs/exchange-format.md` § 8.6). Říká, kam FK sloupec sady ukáže a jak se
+`docs/exchange-format.md` § 8). Říká, kam FK sloupec sady ukáže a jak se
 hodnota překládá tam (dump) a zpět (seed):
 
 - tabulka sekce setup (`SetupExporter::TABLES`) s `exchangeKey` v definici

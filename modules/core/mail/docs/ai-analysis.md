@@ -538,7 +538,7 @@ kategorie), takže `DocumentApplier::reconcile()` účet řádku, jehož číslo
 se shoduje s `enrichment.suggested.account`, na řádek nezapíše. Účet od
 uživatele nebo z AI zůstává; kód DPH se při změně položky nemění (D7a).
 Náhled ukazuje účet, podle kterého se řádek zaúčtuje
-(`_resolve.rows[i].effectiveAccount`, `docs/exchange-format.md` §9).
+(`_resolve.rows[i].effectiveAccount`, `docs/document-interpretation.md` § 7.1).
 
 Audit per řádek v `_resolve.rows[i].enrichment` (žádná změna schématu,
 `_resolve` má `additionalProperties: true`); blok se zapisuje vždy,
@@ -715,7 +715,7 @@ nezávisle z čísel — porovnáním vypočtené částky (Σ `vatRecap[].total
 `totalBase + totalVat` → Σ řádků s DPH) s deklarovanou
 `totals.totalAmount`. Extrahovaný `totals.totalRounding` je jen
 informativní (review modal ho zobrazuje v součtech). Konzervativní
-kritérium a detaily: `docs/exchange-format.md` (sekce vatRecap/totals)
+kritérium a detaily: `docs/document-interpretation.md` § 6.9
 a [tasks/mail-invoice-rounding.md](../../../../tasks/mail-invoice-rounding.md).
 Platí i pro ISDOC větev (`PayableRoundingAmount`) — apply jde přes týž
 applier.
@@ -737,7 +737,7 @@ správně — derivace zůstává pojistka. Integritu řádků a rekapitulace
 hlídají validátorové warningy **`rows_recap_mismatch`** (neúplné řádky)
 a **`vat_recap_inconsistent`** (rekapitulace dopočtená místo opsaná) —
 viz `docs/exchange-format.md` a
-[tasks/ai-extraction-integrity.md](../../../../tasks/ai-extraction-integrity.md). Detaily: `docs/exchange-format.md` (sekce vat)
+[tasks/ai-extraction-integrity.md](../../../../tasks/ai-extraction-integrity.md). Detaily: `docs/document-interpretation.md` § 6.7
 a [tasks/docs-vat-mode-derivation.md](../../../../tasks/docs-vat-mode-derivation.md).
 
 **Zdroj dat neplátce DPH:** přijatý doklad, ke kterému k datu dokladu
@@ -746,7 +746,7 @@ součástí cen řádků (z ISDOC `computed.vatTotal`, jinak ze sazby řádku,
 s dorovnáním na rekapitulaci dodavatele). Derivace režimu pak říká jen,
 v jakých cenách řádky přišly; místo `vat_mode_derived` se hlásí info
 **`vat_non_payer`**. Platí pro AI i ISDOC větev — viz
-`docs/exchange-format.md` § 8.4 „Přijatý doklad neplátce DPH“
+`docs/document-interpretation.md` § 6.2 „Přijatý doklad neplátce DPH“
 a [tasks/exchange-received-non-vat-payer.md](../../../../tasks/exchange-received-non-vat-payer.md).
 
 ## Pohyb řádků při apply (doplnění operation)
@@ -761,8 +761,8 @@ každém item řádku každého apply, takže info hláška by svítila vždy
 a degradovala pozornost pro vzácné hlášky; transparentnost dává sám
 výsledek (sloupec Pohyb konceptu). Do `_resolve.issues` jde jen
 warning `row_operation_config_invalid` při rozbité konfiguraci
-(neexistující/nepovolený kód). Detaily: `docs/exchange-format.md` §10
-„Doplnění pohybu řádků"
+(neexistující/nepovolený kód). Detaily: `docs/document-interpretation.md`
+§ 9
 a [tasks/mail-apply-row-operation.md](../../../../tasks/mail-apply-row-operation.md).
 
 ## Message-centrické akce (apply / reject / unapply / preview)

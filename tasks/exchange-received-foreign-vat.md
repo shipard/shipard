@@ -18,7 +18,8 @@ cen u neplátce). Na tasku B nezávisí.
 
 ## Před implementací přečti
 
-- `docs/exchange-format.md` — § 8.4: *Přijatý doklad neplátce DPH*
+- `docs/document-interpretation.md` — § 6 (dříve oddíl 8.4 výměnného
+  formátu): *Přijatý doklad neplátce DPH*
   (převod cen D4 / D5 z #97), *Místo plnění přijatého dokladu*, *Odvození
   kódu DPH u přijatých dokladů*, *Druh plnění ze štítku řádku*
 - `tasks/exchange-received-non-vat-payer.md` — převod cen, tabulka situací,
@@ -182,8 +183,9 @@ U dokladu mimo české DPH se nehlásí `vat_code_unknown`, `vat_code_derived`,
   `DocumentApplierOutOfScopeTest` (D2 s cenami bez daně i s daní, dorovnání
   na rekapitulaci, D3, tabulka situací včetně `reverseCharge: true` + řádky
   s daní = beze změny, import beze změny), `DocumentApplierPreviewComputedTest`.
-- `docs/exchange-format.md`: nová podsekce *Přijatý doklad mimo české DPH*
-  u § 8.4, nové kódy issues v tabulce issues, úprava textu derivace
+- `docs/document-interpretation.md` § 6.3 (dříve oddíl 8.4 výměnného
+  formátu): nová podsekce *Přijatý doklad mimo české DPH*, nové kódy
+  nálezů v tabulce (§ 11), úprava textu derivace
   (zahraniční DPH a `special` už nejsou „mimo rozsah“).
 
 ### Commit 2 — `feat(mail): ruční Bez DPH u dokladu mimo tuzemsko platí; náhled (#89 D4, 2/3)`
