@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Document\Interpret;
 
+use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Module\Core\Exchange\Document\RoundingModeNames;
 use Shipard\Module\Docs\Core\RoundingModes;
+use Shipard\Module\Docs\Core\TotalRoundingAuto;
 
 /**
  * Zaokrouhlení částky dokladu z papírové podoby (#166 D19, D28): papír
@@ -13,6 +16,46 @@ use Shipard\Module\Docs\Core\RoundingModes;
  */
 final class RoundingInterpretation
 {
+    /**
+     * Příznak automatického zaokrouhlení dokladu z papíru (#73 D8, U9): jen
+     * doklad, kde automatika platí ({@see TotalRoundingAuto::applies()}).
+     * Výslovné `totals.totalRoundingAuto` vyhrává, jinak rozhoduje
+     * {@see totalRoundingAuto()}.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function resolveAuto(?ConfigRuntime $config, array $canonical, string $docType, int $cashDir): bool
+    {
+        if (!TotalRoundingAuto::applies($config, $docType, $cashDir)) {
+            return false;
+        }
+        $totals = $canonical['totals'] ?? null;
+        $explicit = is_array($totals) ? ($totals['totalRoundingAuto'] ?? null) : null;
+        return is_bool($explicit) ? $explicit : self::totalRoundingAuto($canonical);
+    }
+
+    /**
+     * Mód zaokrouhlení dokladu z papíru: při automatice ho určí doklad
+     * (null), jinak výslovný `totals.totalRoundingMode` (#166 D25, D28),
+     * a bez něj odhad z čísel ({@see deriveTotalRoundingMode()}). Null bez
+     * automatiky = platí výchozí mód (na haléře).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, float> $grossTotals ceny řádků s daní dodavatele
+     *        ({@see VatInterpretation::supplierVatGrossTotals()})
+     */
+    public static function resolveMode(array $canonical, bool $auto, array $grossTotals): ?int
+    {
+        if ($auto) {
+            return null;
+        }
+        return RoundingModeNames::totalCode($canonical['totals']['totalRoundingMode'] ?? null)
+            ?? self::deriveTotalRoundingMode(
+                $canonical,
+                $grossTotals !== [] ? round(array_sum($grossTotals), 2) : null,
+            );
+    }
+
     /**
      * Automatické zaokrouhlení (#73 D8) u dokladu z papíru, který ho
      * výslovně neříká: zapnuté právě tehdy, když doklad nemá deklarovanou

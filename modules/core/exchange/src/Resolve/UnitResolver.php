@@ -152,4 +152,27 @@ class UnitResolver
 
         return ResolveResult::notFound();
     }
+
+    /**
+     * Systémový kód jednotky, kterou {@see resolve()} našel **kódem nebo
+     * aliasem** — plyne z textu, bez dotazu. Výměnný formát nese jednotku
+     * kódem, papír zkratkou nebo názvem (#166 D37, D52). Null = shoda jinou
+     * cestou (zkratka, název) — kód dá {@see systemCodeById()}.
+     */
+    public static function systemCodeFromText(string $unit, ?string $matchedBy): ?string
+    {
+        if (!in_array($matchedBy, ['systemCode', 'alias'], true)) {
+            return null;
+        }
+        $lower = rtrim(mb_strtolower(trim($unit)), '.');
+        return self::ALIASES[$lower] ?? $lower;
+    }
+
+    /** Systémový kód jednotky podle id; null = jednotka kód nemá. */
+    public function systemCodeById(int $unitId): ?string
+    {
+        $row = $this->db->fetch('SELECT [system_code] FROM [core_units] WHERE [id] = %i', $unitId);
+        $code = trim((string) ($row['system_code'] ?? ''));
+        return $code !== '' ? $code : null;
+    }
 }

@@ -437,4 +437,126 @@ final class PayloadResolve
             );
         }
     }
+
+    // ── Bloky odpovědi společné pokynu i návrhu ─────────────────────────────
+
+    /**
+     * Indexy canonicalu řádků, které {@see DocumentApplier::transformRows()} převede, v pořadí
+     * výstupu — řádek přeskočený volbou uživatele (`rowSkips`) a ne-pole
+     * v něm chybí. Jediný zdroj pořadí: čte ho i náhled, když ceny spočítané
+     * dokladem přiřazuje zpět řádkům canonicalu ({@see DocumentApplier::computePreviewAmounts()}).
+     *
+     * @param array<int, mixed> $rows
+     * @param list<int> $rowSkips řádky vynechané volbou uživatele (jen návrh)
+     * @return list<int>
+     */
+    public static function keptRowIndices(array $rows, array $rowSkips): array
+    {
+        $out = [];
+        foreach ($rows as $i => $row) {
+            if (in_array($i, $rowSkips, true) || !is_array($row)) {
+                continue;
+            }
+            $out[] = $i;
+        }
+        return $out;
+    }
+
+    /**
+     * Efektivní hlavička DPH a nabídka kódů do `_resolve` (#87 task B,
+     * D13/D14): `vat.place` / `vat.mode` = {value, source, auto} (source ai |
+     * vatId | user | derived | default | nonPayer | outOfScope; u outOfScope
+     * navíc `reason`) — náhled zobrazuje tohle, ne canonical;
+     * `vatCodeOptions` jen ve větvi derive (jinde není z čeho vybírat).
+     * buildSummary() čte pevné klíče, bloky navíc ho nerozhodí.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $resolved  výstup resolve
+     * @param array<string, mixed> $vatCtx kontext DPH dokladu (pokyn {@see PayloadContext::vatContext()},
+     *        návrh `Interpret\VatInterpretation::context()`)
+     * @param array{value: string, source: string, auto: string, reason?: ?string} $mode režim, který skončí na dokladu
+     * @return array<string, mixed>
+     */
+    public function vatBlocks(array $canonical, array $resolved, array $vatCtx, array $mode): array
+    {
+        $place = $vatCtx['place'];
+        $placeKnown = is_string($place) && isset(DocumentApplier::VAT_PLACE_MAP[$place]);
+        $autoPlace = $vatCtx['autoPlace'];
+        // `auto` = hodnota bez volby uživatele — select v náhledu ji ukazuje
+        // jako „Automaticky (…)“ i poté, co uživatel zvolil něco jiného.
+        $resolved['vat'] = [
+            'place' => [
+                'value'  => $placeKnown ? $place : 'domestic',
+                'source' => $placeKnown ? ($vatCtx['placeSource'] ?? 'default') : 'default',
+                'auto'   => is_string($autoPlace) && isset(DocumentApplier::VAT_PLACE_MAP[$autoPlace]) ? $autoPlace : 'domestic',
+            ],
+            'mode' => ['value' => $mode['value'], 'source' => $mode['source'], 'auto' => $mode['auto']]
+                // Důvod jen u dokladu mimo české DPH (#89) — náhled z něj skládá popisek.
+                + ($mode['source'] === 'outOfScope' ? ['reason' => $mode['reason']] : []),
+        ];
+        if ($vatCtx['derive']) {
+            $resolved['vatCodeOptions'] = $vatCtx['codeOptions'];
+        }
+        // Nabídka předmětů plnění (#89 D12) — jednou na doklad k datu sazby
+        // dokladu, jen když má některý řádek kód tuzemského přenesení (blok
+        // `reverseChargeCode`). Volbu validuje resolveRowReverseChargeCode()
+        // týmž číselníkem k datu sazby řádku (#159 U3).
+        foreach ($resolved['rows'] ?? [] as $rowResolve) {
+            if (!is_array($rowResolve) || !isset($rowResolve['reverseChargeCode'])) {
+                continue;
+            }
+            $country = $vatCtx['derive']
+                ? (string) $vatCtx['ownCountry']
+                : $this->payload->vatCountryForCode(
+                    (string) ($rowResolve['vatCode']['createPayload']['code'] ?? ''),
+                    $this->payload->vatCodeCountry($vatCtx, $canonical),
+                    strtolower((string) ($canonical['supplier']['country'] ?? '')),
+                );
+            $resolved['reverseChargeOptions'] = $this->vatCodeDerivation->reverseChargeSubjectOptions(
+                $country,
+                is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null,
+            );
+            break;
+        }
+        return $resolved;
+    }
+
+    /**
+     * @param array<string, mixed> $resolved
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, int|string>
+     */
+    public static function summary(array $resolved, array $issues): array
+    {
+        $matched = 0;
+        $unresolved = 0;
+        $ambiguous = 0;
+        foreach (['supplier', 'customer', 'balanceParty', 'partner', 'supplierBank'] as $key) {
+            $status = $resolved[$key]['status'] ?? null;
+            if ($status === 'matched') $matched++;
+            elseif ($status === 'ambiguous') $ambiguous++;
+            elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
+        }
+        foreach ($resolved['rows'] ?? [] as $rowR) {
+            foreach (['item', 'partner', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
+                $status = $rowR[$k]['status'] ?? null;
+                if ($status === 'matched') $matched++;
+                elseif ($status === 'ambiguous') $ambiguous++;
+                elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
+            }
+        }
+        $errors = count(array_filter($issues, static fn($i) => ($i['severity'] ?? null) === 'error'));
+
+        $status = match (true) {
+            $errors > 0 || $unresolved > 0 || $ambiguous > 0 => 'needsAttention',
+            default => 'ok',
+        };
+        return [
+            'status'          => $status,
+            'matchedCount'    => $matched,
+            'unresolvedCount' => $unresolved,
+            'ambiguousCount'  => $ambiguous,
+            'errorCount'      => $errors,
+        ];
+    }
 }

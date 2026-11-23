@@ -102,13 +102,9 @@ final class PendingRecords
         // item_kind is required by ItemDocument::validate. Pick the first
         // active kind as a generic default — better than failing the save.
         if (empty($payload['item_kind'])) {
-            $row = $this->db->fetch(
-                'SELECT [id] FROM [economy_items_kinds]
-                 WHERE [docState] IN (%i, %i, %i) ORDER BY [id] LIMIT 1',
-                self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
-            );
-            if ($row !== null) {
-                $payload['item_kind'] = (int) $row['id'];
+            $kind = self::defaultItemKind($this->db);
+            if ($kind !== null) {
+                $payload['item_kind'] = $kind;
             }
         }
         // Default unit fallback if not resolved on the row.
@@ -122,5 +118,62 @@ final class PendingRecords
             }
         }
         return $payload;
+    }
+
+    /** Druh položky, kterou payload neurčuje: první aktivní. */
+    private static function defaultItemKind(Connection $db): ?int
+    {
+        $row = $db->fetch(
+            'SELECT [id] FROM [economy_items_kinds]
+             WHERE [docState] IN (%i, %i, %i) ORDER BY [id] LIMIT 1',
+            self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+        );
+        return $row !== null ? (int) $row['id'] : null;
+    }
+
+    /**
+     * Typ položky (`item_type`), který založená položka dostane — plyne
+     * z jejího druhu (`ItemDocument` ho při uložení denormalizuje), a druh
+     * je z payloadu, jinak {@see defaultItemKind()}. Interpretace podle něj
+     * určí pohyb řádku dřív, než položka vznikne. Jen čte.
+     *
+     * @param array<string, mixed> $payload data k založení položky
+     */
+    public static function plannedItemType(Connection $db, array $payload): ?int
+    {
+        $kind = !empty($payload['item_kind']) ? (int) $payload['item_kind'] : self::defaultItemKind($db);
+        if ($kind === null) {
+            return null;
+        }
+        $row = $db->fetch('SELECT [item_type] FROM [economy_items_kinds] WHERE [id] = %i', $kind);
+        return $row !== null && isset($row['item_type']) ? (int) $row['item_type'] : null;
+    }
+
+    /**
+     * Založí záznamy ze seznamu `pending` interpretace
+     * ({@see InterpretedDocument::$pending}) — tatáž cesta jako {@see create()}.
+     *
+     * @param list<array<string, mixed>> $pending
+     * @return array{supplier: ?int, customer: ?int, balanceParty: ?int, supplierBank: ?int, rowItems: array<int, int>}
+     */
+    public function createFrom(array $pending): array
+    {
+        $plan = ['partyCreates' => [], 'bankCreate' => null, 'rowItemCreates' => [], 'resolvedRowUnits' => [], 'resolvedSupplier' => null];
+        foreach ($pending as $entry) {
+            switch ($entry['kind']) {
+                case InterpretedDocument::PENDING_PERSON:
+                    $plan['partyCreates'][$entry['key']] = $entry['payload'];
+                    break;
+                case InterpretedDocument::PENDING_BANK_ACCOUNT:
+                    $plan['bankCreate'] = $entry['payload'];
+                    $plan['resolvedSupplier'] = $entry['person'] ?? null;
+                    break;
+                case InterpretedDocument::PENDING_ITEM:
+                    $plan['rowItemCreates'][$entry['row']] = $entry['payload'];
+                    $plan['resolvedRowUnits'][$entry['row']] = $entry['unit'] ?? null;
+                    break;
+            }
+        }
+        return $this->create($plan);
     }
 }

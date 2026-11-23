@@ -1856,8 +1856,9 @@ class DocumentApplier
         // chybí, je záměrně prázdný a platí výchozí hodnota sloupce. Návrh
         // se ptá téhož pravidla jako formulář: doklad pokladny Hotově,
         // ostatní Převodem.
-        $paymentMethod = self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')]
-            ?? ($mode->derives() ? $this->proposalDefaults->paymentMethod($docType) : null);
+        $paymentMethod = $mode->derives()
+            ? $this->proposalDefaults->paymentMethodFor($canonical, $docType)
+            : (self::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')] ?? null);
 
         // AI extractors sometimes omit accountingDate even when issueDate
         // is present. DocDocument::beforeSave (applyDateDefaults) would
@@ -1954,13 +1955,10 @@ class DocumentApplier
             // array_filter níže a platí default 0.
             'total_rounding_auto'  => $totalRoundingAuto ? 1 : 0,
             'total_rounding_mode'  => match (true) {
+                $mode->derives()            => RoundingInterpretation::resolveMode($canonical, $totalRoundingAuto, $supplierVatGross),
                 $totalRoundingAuto          => null,
                 $totalRoundingMode !== null => $totalRoundingMode,
-                !$mode->derives()           => RoundingModes::ON_CENT,
-                default                     => RoundingInterpretation::deriveTotalRoundingMode(
-                    $canonical,
-                    $supplierVatGross !== [] ? round(array_sum($supplierVatGross), 2) : null,
-                ),
+                default                     => RoundingModes::ON_CENT,
             },
             // Zaokrouhlení DPH (#166 D25): záměr z payloadu v obou režimech,
             // odhad neexistuje; null → klíč vypadne a platí default 0.
@@ -2402,6 +2400,9 @@ class DocumentApplier
      */
     private function resolveTotalRoundingAuto(array $canonical, string $docType, int $cashDir, ApplyMode $mode): bool
     {
+        if ($mode->derives()) {
+            return RoundingInterpretation::resolveAuto($this->config, $canonical, $docType, $cashDir);
+        }
         if (!TotalRoundingAuto::applies($this->config, $docType, $cashDir)) {
             return false;
         }
@@ -2410,15 +2411,12 @@ class DocumentApplier
         if (is_bool($explicit)) {
             return $explicit;
         }
-        if (!$mode->derives()) {
-            // Pokyn (#166 U4, D26, D50): automatika nezávisí na `totals`.
-            // Chybějící klíč = výchozí hodnota jako ve formuláři (zapnutá
-            // u typu s automatikou, `DocHeadDefaults`); výslovné `null` =
-            // záměrně bez automatiky.
-            return !(is_array($totals) && array_key_exists('totalRoundingAuto', $totals))
-                && $this->payload->headDefaults()->totalRoundingAuto($docType);
-        }
-        return RoundingInterpretation::totalRoundingAuto($canonical);
+        // Pokyn (#166 U4, D26, D50): automatika nezávisí na `totals`.
+        // Chybějící klíč = výchozí hodnota jako ve formuláři (zapnutá
+        // u typu s automatikou, `DocHeadDefaults`); výslovné `null` =
+        // záměrně bez automatiky.
+        return !(is_array($totals) && array_key_exists('totalRoundingAuto', $totals))
+            && $this->payload->headDefaults()->totalRoundingAuto($docType);
     }
 
     /**
@@ -2543,28 +2541,6 @@ class DocumentApplier
             if ($column !== null) {
                 $out[$column] = $recordId;
             }
-        }
-        return $out;
-    }
-
-    /**
-     * Indexy canonicalu řádků, které {@see transformRows()} převede, v pořadí
-     * výstupu — řádek přeskočený volbou uživatele (`rowSkips`) a ne-pole
-     * v něm chybí. Jediný zdroj pořadí: čte ho i náhled, když ceny spočítané
-     * dokladem přiřazuje zpět řádkům canonicalu ({@see computePreviewAmounts()}).
-     *
-     * @param array<int, mixed> $rows
-     * @param array<string, mixed> $plan
-     * @return list<int>
-     */
-    private function transformedRowIndices(array $rows, array $plan): array
-    {
-        $out = [];
-        foreach ($rows as $i => $row) {
-            if (in_array($i, $plan['rowSkips'] ?? [], true) || !is_array($row)) {
-                continue;
-            }
-            $out[] = $i;
         }
         return $out;
     }
@@ -3065,6 +3041,33 @@ class DocumentApplier
     // ── Output enrichment helpers ──────────────────────────────────────────
 
     /**
+     * Efektivní hlavička DPH a nabídka kódů do `_resolve`
+     * ({@see PayloadResolve::vatBlocks()}).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @return array<string, mixed>
+     */
+    private function withVatBlocks(array $canonical, array $resolved, ApplyMode $mode): array
+    {
+        $vatCtx = $this->vatContext($canonical, $mode);
+        return $this->payloadResolve->vatBlocks($canonical, $resolved, $vatCtx, $this->effectiveVatMode($canonical, $vatCtx));
+    }
+
+    /**
+     * Indexy canonicalu řádků, které {@see transformRows()} převede, v pořadí
+     * výstupu ({@see PayloadResolve::keptRowIndices()}).
+     *
+     * @param array<int, mixed> $rows
+     * @param array<string, mixed> $plan
+     * @return list<int>
+     */
+    private function transformedRowIndices(array $rows, array $plan): array
+    {
+        return PayloadResolve::keptRowIndices($rows, $plan['rowSkips'] ?? []);
+    }
+
+    /**
      * @param array<string, mixed> $canonical
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      * @return array<string, mixed>
@@ -3081,67 +3084,9 @@ class DocumentApplier
             is_array($resolve['issues'] ?? null) ? $resolve['issues'] : [],
             $issues,
         );
-        $resolve['summary'] = $this->buildSummary([], $resolve['issues']);
+        $resolve['summary'] = PayloadResolve::summary([], $resolve['issues']);
         $canonical['_resolve'] = $resolve;
         return $canonical;
-    }
-
-    /**
-     * Efektivní hlavička DPH a nabídka kódů do `_resolve` (#87 task B,
-     * D13/D14): `vat.place` / `vat.mode` = {value, source, auto} (source ai |
-     * vatId | user | derived | default | nonPayer | outOfScope; u outOfScope
-     * navíc `reason`) — náhled zobrazuje tohle, ne canonical;
-     * `vatCodeOptions` jen ve větvi derive (jinde není z čeho vybírat).
-     * buildSummary() čte pevné klíče, bloky navíc ho nerozhodí.
-     *
-     * @param array<string, mixed> $canonical
-     * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
-     * @return array<string, mixed>
-     */
-    private function withVatBlocks(array $canonical, array $resolved, ApplyMode $mode): array
-    {
-        $vatCtx = $this->vatContext($canonical, $mode);
-        $place = $vatCtx['place'];
-        $placeKnown = is_string($place) && isset(self::VAT_PLACE_MAP[$place]);
-        $autoPlace = $vatCtx['autoPlace'];
-        $mode = $this->effectiveVatMode($canonical, $vatCtx);
-        // `auto` = hodnota bez volby uživatele — select v náhledu ji ukazuje
-        // jako „Automaticky (…)“ i poté, co uživatel zvolil něco jiného.
-        $resolved['vat'] = [
-            'place' => [
-                'value'  => $placeKnown ? $place : 'domestic',
-                'source' => $placeKnown ? ($vatCtx['placeSource'] ?? 'default') : 'default',
-                'auto'   => is_string($autoPlace) && isset(self::VAT_PLACE_MAP[$autoPlace]) ? $autoPlace : 'domestic',
-            ],
-            'mode' => ['value' => $mode['value'], 'source' => $mode['source'], 'auto' => $mode['auto']]
-                // Důvod jen u dokladu mimo české DPH (#89) — náhled z něj skládá popisek.
-                + ($mode['source'] === 'outOfScope' ? ['reason' => $mode['reason']] : []),
-        ];
-        if ($vatCtx['derive']) {
-            $resolved['vatCodeOptions'] = $vatCtx['codeOptions'];
-        }
-        // Nabídka předmětů plnění (#89 D12) — jednou na doklad k datu sazby
-        // dokladu, jen když má některý řádek kód tuzemského přenesení (blok
-        // `reverseChargeCode`). Volbu validuje resolveRowReverseChargeCode()
-        // týmž číselníkem k datu sazby řádku (#159 U3).
-        foreach ($resolved['rows'] ?? [] as $rowResolve) {
-            if (!is_array($rowResolve) || !isset($rowResolve['reverseChargeCode'])) {
-                continue;
-            }
-            $country = $vatCtx['derive']
-                ? (string) $vatCtx['ownCountry']
-                : $this->payload->vatCountryForCode(
-                    (string) ($rowResolve['vatCode']['createPayload']['code'] ?? ''),
-                    $this->payload->vatCodeCountry($vatCtx, $canonical),
-                    strtolower((string) ($canonical['supplier']['country'] ?? '')),
-                );
-            $resolved['reverseChargeOptions'] = $this->vatCodeDerivation->reverseChargeSubjectOptions(
-                $country,
-                is_string($vatCtx['rateDate'] ?? null) ? $vatCtx['rateDate'] : null,
-            );
-            break;
-        }
-        return $resolved;
     }
 
     /**
@@ -3160,7 +3105,7 @@ class DocumentApplier
         if ($this->appliedDefaults !== null) {
             $resolve['defaults'] = $this->appliedDefaults;
         }
-        $resolve['summary'] = $this->buildSummary($resolved, $issues);
+        $resolve['summary'] = PayloadResolve::summary($resolved, $issues);
         // Per-row enrichment audit (RowHistoryEnricher) is not part of the
         // fresh resolve — carry it over from the incoming _resolve by index,
         // otherwise preview/apply responses would drop it.
@@ -3181,45 +3126,6 @@ class DocumentApplier
     }
 
     // ── Náhled: efektivní položka a účet řádku (#111) ──────────────────────
-
-    /**
-     * @param array<string, mixed> $resolved
-     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
-     * @return array<string, int|string>
-     */
-    private function buildSummary(array $resolved, array $issues): array
-    {
-        $matched = 0;
-        $unresolved = 0;
-        $ambiguous = 0;
-        foreach (['supplier', 'customer', 'balanceParty', 'partner', 'supplierBank'] as $key) {
-            $status = $resolved[$key]['status'] ?? null;
-            if ($status === 'matched') $matched++;
-            elseif ($status === 'ambiguous') $ambiguous++;
-            elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
-        }
-        foreach ($resolved['rows'] ?? [] as $rowR) {
-            foreach (['item', 'partner', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
-                $status = $rowR[$k]['status'] ?? null;
-                if ($status === 'matched') $matched++;
-                elseif ($status === 'ambiguous') $ambiguous++;
-                elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
-            }
-        }
-        $errors = count(array_filter($issues, static fn($i) => ($i['severity'] ?? null) === 'error'));
-
-        $status = match (true) {
-            $errors > 0 || $unresolved > 0 || $ambiguous > 0 => 'needsAttention',
-            default => 'ok',
-        };
-        return [
-            'status'          => $status,
-            'matchedCount'    => $matched,
-            'unresolvedCount' => $unresolved,
-            'ambiguousCount'  => $ambiguous,
-            'errorCount'      => $errors,
-        ];
-    }
 
     /**
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues

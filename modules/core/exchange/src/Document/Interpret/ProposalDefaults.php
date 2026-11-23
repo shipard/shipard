@@ -34,6 +34,18 @@ final class ProposalDefaults
     }
 
     /**
+     * Způsob úhrady, se kterým doklad z papíru vznikne: uvedený
+     * `payment.method`, jinak {@see paymentMethod()}.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public function paymentMethodFor(array $canonical, string $docType): int
+    {
+        return DocumentApplier::PAYMENT_METHOD_MAP[(string) ($canonical['payment']['method'] ?? '')]
+            ?? $this->paymentMethod($docType);
+    }
+
+    /**
      * Item řádek, kterému se při apply doplňuje pohyb: rowKind item,
      * bez explicitní operation (AI ji správně nevrací — interní účetní
      * koncept, na předloze není) a bez kontace accSide. Textové/sekční
@@ -62,9 +74,12 @@ final class ProposalDefaults
      * @param array<string, mixed> $plan
      * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @param array<int, ?int> $pendingItemTypes index řádku → typ položky, která se
+     *        teprve založí ({@see PendingRecords::plannedItemType()}) — interpretace
+     *        určuje pohyb před založením; při uložení jsou id v `$sideIds`
      * @return array<int, string> index řádku → doplněný kód operace
      */
-    public function rowOperations(array $canonical, array $plan, array $sideIds, array &$issues): array
+    public function rowOperations(array $canonical, array $plan, array $sideIds, array &$issues, array $pendingItemTypes = []): array
     {
         $docType = $this->payload->mapDocType($canonical);
         $cfgApply = $this->config->cfgItem('docs.core.applyRowOperations');
@@ -85,10 +100,10 @@ final class ProposalDefaults
         }
 
         $types = $this->fetchItemTypes(array_filter($rowItemIds, static fn($id) => $id !== null));
-        $rowItemTypes = array_map(
-            static fn(?int $id) => $id !== null ? ($types[$id] ?? null) : null,
-            $rowItemIds,
-        );
+        $rowItemTypes = [];
+        foreach ($rowItemIds as $i => $id) {
+            $rowItemTypes[$i] = $id !== null ? ($types[$id] ?? null) : ($pendingItemTypes[$i] ?? null);
+        }
         return $this->resolveRowOperationDefaults($docType, $rowItemTypes, $issues);
     }
 

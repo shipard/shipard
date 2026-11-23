@@ -100,6 +100,19 @@ final class CanonicalReferences
         return self::hasAny($party, self::PARTY_IDENTITY);
     }
 
+    /**
+     * Strana bez údajů, podle kterých by se hledala osoba — strana, u které
+     * uživatel v návrhu zvolil „bez osoby“; ostatní data (adresa, bankovní
+     * spojení) zůstávají.
+     *
+     * @param array<string, mixed> $party
+     * @return array<string, mixed>
+     */
+    public static function withoutPartyIdentity(array $party): array
+    {
+        return array_diff_key($party, array_flip(self::PARTY_IDENTITY));
+    }
+
     /** @param array<string, mixed> $item */
     public static function itemIdentifies(array $item): bool
     {
