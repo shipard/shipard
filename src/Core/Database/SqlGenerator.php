@@ -35,8 +35,10 @@ class SqlGenerator
     {
         $sql = '`' . $col->id . '` ' . self::mapType($col);
 
-        if ($col->collation !== null && $col->type !== 'enumString') {
-            $sql .= ' CHARACTER SET ' . $col->collation;
+        // Collation sloupce: znakovou sadu si MariaDB odvodí z názvu collation
+        // (`utf8mb4_bin` → utf8mb4). Tvar a typ sloupce hlídá ColumnDefinition.
+        if ($col->collation !== null) {
+            $sql .= ' COLLATE ' . $col->collation;
         }
 
         $sql .= $col->nullable ? ' NULL' : ' NOT NULL';

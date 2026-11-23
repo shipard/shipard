@@ -380,7 +380,7 @@ třída tabulky (`validate()` / `beforeDelete()`).
 | `nullable` | bool | Ne | Ne | Povoluje NULL. Výchozí: `false` |
 | `default` | mixed | Ne | Ne | Výchozí hodnota (konstanta) |
 | `group` | string | Ne | Ne | ID skupiny sloupců (`columnGroups`) |
-| `collation` | string | Ne | Ne | Collation pro tento sloupec (přetíží globální nastavení DB) |
+| `collation` | string | Ne | Ne | Collation pro tento sloupec (přetíží globální nastavení DB) — název collation (`utf8mb4_bin`), jen u textových typů `varchar` / `text` / `mediumtext` / `longtext`; viz Znaková sada a collation |
 | `reference` | string | Ne | Ne | ID cílové tabulky pro referenční vazbu (jen pro UI, žádná DB constraint) |
 | `sensitive` | bool | Ne | Ne | Citlivý sloupec — nikdy neopustí server (viz níže). Výchozí: `false` |
 | `schema` | string | Ne | Ne | Jen pro typ `json`: cfgItem se schématem strukturovaného pole (viz § 6 a [structured-fields.md](structured-fields.md)) |
@@ -728,7 +728,16 @@ Extension je JSONC soubor, který přidává sloupce a indexy do tabulky jiného
 ### Znaková sada a collation
 
 - **Globální:** `utf8mb4` s collation nastavenou při vytvoření databáze (viz PRD — `utf8mb4_czech_ci`)
-- **Přetížení na úrovni sloupce:** volitelné pole `collation` v definici sloupce
+- **Přetížení na úrovni sloupce:** volitelné pole `collation` v definici
+  sloupce — název collation (`"collation": "utf8mb4_bin"` pro porovnání
+  přesně na bajty, kde velikost písmen rozhoduje). Do DDL jde jako
+  `COLLATE <název>`, znakovou sadu si MariaDB odvodí z názvu. Jen textové
+  typy (`varchar`, `text`, `mediumtext`, `longtext`); jiný typ nebo hodnota,
+  která není název collation (holá znaková sada `utf8mb4`, velká písmena),
+  je chyba definice. `ds-upgrade` collation použije při založení tabulky
+  a přidání sloupce; **změnu collation existujícího sloupce nepozná**
+  (porovnává jen typ, délku a NULL) — propíše se až s jiným `MODIFY` téhož
+  sloupce, jinak ručně
 - **Výjimka — `enumString`:** automaticky `CHARACTER SET ascii` (1 byte na znak, menší indexy)
 
 #### Vyhledávání

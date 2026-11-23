@@ -114,9 +114,11 @@ běh pak doklady nezdvojí. Druh zdroje pro import určí etapa 6.
   velikost písmen, `INV-1` a `inv-1` by byly tentýž doklad a druhý by
   tiše nevznikl. Index dává kandidáty, shodu rozhoduje `SourceRef::matches()`
   v PHP; schéma zakazuje mezery na krajích. Přetížení collation na sloupci
-  nepoužito — `SqlGenerator` z pole `collation` skládá `CHARACTER SET
-  <hodnota>`, pro název collation tedy neplatné SQL (nikde se nepoužívá;
-  oprava mimo rozsah).
+  nepoužito — `SqlGenerator` z pole `collation` skládal `CHARACTER SET
+  <hodnota>`, pro název collation tedy neplatné SQL. Generátor je týž den
+  opravený (`COLLATE <název>`, kontrola v `ColumnDefinition`), sloupec
+  `source_ref` ale zůstává u shody v PHP: na zdrojích, kde už existuje,
+  by `ds-upgrade` změnu collation nepoznal.
 - **Souběh (U3)**: pojmenovaný zámek MariaDB `GET_LOCK(CONCAT(DATABASE(),
   ':docsrc:<sha1 dvojice>'), 10)` vzatý před `NestedTransaction::run`
   a uvolněný ve `finally` po commitu; první dotaz transakce doklad dohledá

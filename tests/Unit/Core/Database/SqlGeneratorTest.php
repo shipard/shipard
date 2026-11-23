@@ -60,6 +60,30 @@ class SqlGeneratorTest extends TestCase
         $this->assertStringContainsString('CHAR(10) CHARACTER SET ascii', $sql);
     }
 
+    public function testColumnCollationIsEmittedAsCollate(): void
+    {
+        // Znakovou sadu si MariaDB odvodí z názvu collation; `CHARACTER SET
+        // utf8mb4_bin` (dřívější výstup) je neplatné SQL.
+        $col = $this->makeCol(['id' => 'ext_key', 'type' => 'varchar', 'length' => 60, 'nullable' => true, 'collation' => 'utf8mb4_bin']);
+
+        $this->assertSame(
+            'ALTER TABLE `t` ADD COLUMN `ext_key` VARCHAR(60) COLLATE utf8mb4_bin NULL',
+            SqlGenerator::generateAddColumn('t', $col),
+        );
+        // MODIFY (delší varchar) collation nese také — jinak by ji vrátil na výchozí.
+        $this->assertStringContainsString('VARCHAR(60) COLLATE utf8mb4_bin NULL', SqlGenerator::generateModifyColumn('t', $col));
+
+        $text = $this->makeCol(['id' => 'note', 'type' => 'text', 'collation' => 'utf8mb4_uca1400_ai_ci']);
+        $this->assertStringContainsString('`note` TEXT COLLATE utf8mb4_uca1400_ai_ci NOT NULL', SqlGenerator::generateAddColumn('t', $text));
+    }
+
+    public function testColumnWithoutCollationHasNoCollateClause(): void
+    {
+        $col = $this->makeCol(['id' => 'title', 'type' => 'varchar', 'length' => 50]);
+        $this->assertStringNotContainsString('COLLATE', SqlGenerator::generateAddColumn('t', $col));
+        $this->assertStringNotContainsString('CHARACTER SET', SqlGenerator::generateAddColumn('t', $col));
+    }
+
     public function testEnumInt(): void
     {
         $col = $this->makeCol(['id' => 'kind', 'type' => 'enumInt', 'cfgItem' => 'some.item']);

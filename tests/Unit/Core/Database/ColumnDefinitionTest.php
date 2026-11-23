@@ -116,6 +116,47 @@ class ColumnDefinitionTest extends TestCase
         $this->assertNull($col->schema);
     }
 
+    public function testCollationOnTextColumns(): void
+    {
+        foreach ([['varchar', ['length' => 60]], ['text', []], ['mediumtext', []], ['longtext', []]] as [$type, $extra]) {
+            $col = ColumnDefinition::fromArray(['id' => 'c', 'name' => 'C', 'type' => $type, 'collation' => 'utf8mb4_bin'] + $extra);
+            $this->assertSame('utf8mb4_bin', $col->collation, $type);
+        }
+        $this->assertNull(ColumnDefinition::fromArray(['id' => 'c', 'name' => 'C', 'type' => 'text'])->collation);
+    }
+
+    public function testCollationOnNonTextColumnThrows(): void
+    {
+        foreach ([
+            ['type' => 'int'],
+            ['type' => 'json'],
+            ['type' => 'encrypted_text'],
+            // enumString je vždy ascii — collation by s ní byla v rozporu.
+            ['type' => 'enumString', 'length' => 10, 'cfgItem' => 'x.y'],
+        ] as $definition) {
+            try {
+                ColumnDefinition::fromArray(['id' => 'c', 'name' => 'C', 'collation' => 'utf8mb4_bin'] + $definition);
+                $this->fail("Typ {$definition['type']} collation přijal.");
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString("attribute 'collation' is allowed only for types", $e->getMessage());
+            }
+        }
+    }
+
+    public function testCollationMustBeACollationName(): void
+    {
+        // Hodnota jde do DDL beze změny: jen název collation, ne znaková
+        // sada sama ani nic, co by SQL rozšířilo.
+        foreach (['utf8mb4', 'ascii', '', 'utf8mb4_bin; DROP TABLE x', 'UTF8MB4_BIN', 'utf8mb4 bin', 42] as $value) {
+            try {
+                ColumnDefinition::fromArray(['id' => 'c', 'name' => 'C', 'type' => 'varchar', 'length' => 10, 'collation' => $value]);
+                $this->fail('Hodnota ' . json_encode($value) . ' prošla.');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString("attribute 'collation' must be a collation name", $e->getMessage());
+            }
+        }
+    }
+
     public function testSchemaOnNonJsonColumnThrows(): void
     {
         $this->expectException(\InvalidArgumentException::class);

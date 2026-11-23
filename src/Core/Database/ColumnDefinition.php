@@ -16,6 +16,9 @@ class ColumnDefinition
         'encrypted_text',
     ];
 
+    /** Typy, u kterých smí definice přetížit collation databáze. */
+    private const COLLATABLE_TYPES = ['varchar', 'text', 'mediumtext', 'longtext'];
+
     public function __construct(
         public readonly string $id,
         public readonly string $name,
@@ -83,6 +86,24 @@ class ColumnDefinition
             }
         }
 
+        // Collation sloupce přetěžuje collation databáze — jen u textových
+        // typů (enumString je vždy ascii, jinde nemá význam). Hodnota jde
+        // do DDL beze změny, proto jen název collation `<znaková sada>_<…>`.
+        $collation = $data['collation'] ?? null;
+        if ($collation !== null) {
+            if (!in_array($type, self::COLLATABLE_TYPES, true)) {
+                throw new \InvalidArgumentException(
+                    "Column '{$data['id']}': attribute 'collation' is allowed only for types "
+                    . implode(', ', self::COLLATABLE_TYPES) . ", got '{$type}'",
+                );
+            }
+            if (!is_string($collation) || preg_match('/^[a-z0-9]+(_[a-z0-9]+)+$/', $collation) !== 1) {
+                throw new \InvalidArgumentException(
+                    "Column '{$data['id']}': attribute 'collation' must be a collation name like 'utf8mb4_bin'",
+                );
+            }
+        }
+
         // Strukturované pole (#74): `schema` ukazuje na cfgItem s definicí
         // vnořených polí. Jen nad `json` — na jiném typu by slibovalo
         // validaci a formulář, které nikde nevzniknou.
@@ -110,7 +131,7 @@ class ColumnDefinition
             autoIncrement: $data['autoIncrement'] ?? false,
             primaryKey: $data['primaryKey'] ?? false,
             group: $data['group'] ?? null,
-            collation: $data['collation'] ?? null,
+            collation: $collation,
             cfgItem: $data['cfgItem'] ?? null,
             reference: isset($data['reference']) && is_string($data['reference']) && $data['reference'] !== ''
                 ? $data['reference']
