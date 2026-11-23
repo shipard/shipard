@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Module\Core\Mail\Analysis;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Utils\JsoncParser;
@@ -39,7 +40,11 @@ final class OutputParserTest extends TestCase
     /** @return array<string, mixed> */
     private function happyCanonical(): array
     {
-        return json_decode((string) file_get_contents(dirname(__DIR__, 6) . '/tests/Fixtures/Exchange/invoiceReceived_happy.json'), true);
+        $canonical = json_decode((string) file_get_contents(dirname(__DIR__, 6) . '/tests/Fixtures/Exchange/invoiceReceived_happy.json'), true);
+        // Fixtura je doklad po zpracování serverem; vazbu na zprávu doplňuje
+        // server, výstup modelu (papírová podoba, #166 D63) ji nenese.
+        unset($canonical['source']['message']);
+        return $canonical;
     }
 
     /** @return array<string, mixed> */
@@ -189,6 +194,83 @@ final class OutputParserTest extends TestCase
         $message = "output does not match schema: '" . str_repeat('x', 121) . "' is too long at ['message_classification', 'title']";
         $this->expectSchemaError($message, fn() => new OutputParser()->parse((string) json_encode($output), $this->profileSchema()));
         $this->assertSame(AnalysisErrorPresenter::KIND_SCHEMA_TOO_LONG, $this->presenterKind($message));
+    }
+
+    /** @return array<string, array{0: list<int|string>, 1: mixed, 2: string}> cesta v extracted_json, hodnota, hláška */
+    public static function outsidePaperFormProvider(): array
+    {
+        $extra = static fn (string $key, string $at): string
+            => "output does not match schema: Additional properties are not allowed ('{$key}' was unexpected) at ['document', 'extracted_json'{$at}]";
+
+        return [
+            'reference strany' => [['supplier', 'ref'], '@K00042', $extra('ref', ", 'supplier'")],
+            'reference položky' => [['rows', 0, 'item', 'ref'], '@KOD', $extra('ref', ", 'rows', 0, 'item'")],
+            'reference účtu partnera' => [['supplier', 'bankAccount', 'ref'], 7, $extra('ref', ", 'supplier', 'bankAccount'")],
+            'identifikátor zdroje' => [['source', 'ref'], 'FA-2026-001', $extra('ref', ", 'source'")],
+            'číselná řada' => [['numberSeries'], '@invni', $extra('numberSeries', '')],
+            'partner hlavičky' => [['partner'], '@K00042', $extra('partner', '')],
+            'naše registrace DPH' => [['vat', 'registration'], '@cz', $extra('registration', ", 'vat'")],
+            'vlastní účet' => [['payment', 'ownBankAccount'], '@BU1', $extra('ownBankAccount', ", 'payment'")],
+            'původní doklad' => [['correction'], ['originalDoc' => 12], $extra('originalDoc', ", 'correction'")],
+            'mód zaokrouhlení' => [['totals', 'totalRoundingMode'], 'unit', $extra('totalRoundingMode', ", 'totals'")],
+            'dimenze' => [['dimensions'], ['costCenter' => '@STR1'], $extra('dimensions', '')],
+            'volby uložení' => [['applyOptions'], ['targetDocState' => 40], $extra('applyOptions', '')],
+            'volby uživatele' => [['_resolve'], ['partner' => ['userAction' => 'useExisting:1']], $extra('_resolve', '')],
+            'strana referencí' => [
+                ['supplier'], 42,
+                "output does not match schema: 42 is not of type 'object', 'null' at ['document', 'extracted_json', 'supplier']",
+            ],
+            'položka referencí' => [
+                ['rows', 0, 'item'], '@KOD',
+                "output does not match schema: '@KOD' is not of type 'object', 'null' at ['document', 'extracted_json', 'rows', 0, 'item']",
+            ],
+            'účet referencí' => [
+                ['rows', 0, 'account'], '@518100',
+                "output does not match schema: '@518100' does not match '^[0-9]+$' at ['document', 'extracted_json', 'rows', 0, 'account']",
+            ],
+            'jednotka číslem' => [
+                ['rows', 0, 'unit'], 5,
+                "output does not match schema: 5 is not of type 'string', 'null' at ['document', 'extracted_json', 'rows', 0, 'unit']",
+            ],
+        ];
+    }
+
+    /**
+     * #166 D63, U5: výstup modelu se validuje proti papírové podobě schématu
+     * dokladu — pole pokynu (reference na záznam, volby uložení) analýzu
+     * odmítne, nepropustí je tiše do interpretace (kde má reference přednost
+     * před hledáním podle údajů, D33).
+     *
+     * @param list<int|string> $path
+     */
+    #[DataProvider('outsidePaperFormProvider')]
+    public function testFieldOutsidePaperFormRejectsTheOutput(array $path, mixed $value, string $expected): void
+    {
+        $output = $this->docsOutput();
+        $node = &$output['document']['extracted_json'];
+        foreach ($path as $segment) {
+            $node = &$node[$segment];
+        }
+        $node = $value;
+        unset($node);
+
+        $this->expectSchemaError($expected, fn() => new OutputParser()->parse((string) json_encode($output), $this->profileSchema()));
+    }
+
+    public function testTemporarySignalsOfTheProposalPass(): void
+    {
+        // Signály D39 v papírové podobě zůstávají: kód položky, účet holým
+        // číslem, země naší registrace; jednotka textem.
+        $output = $this->docsOutput();
+        $output['document']['extracted_json']['vat']['registrationCountry'] = 'CZ';
+        $output['document']['extracted_json']['rows'][0]['item']['ourCode'] = 'A-001';
+        $output['document']['extracted_json']['rows'][0]['account'] = '518100';
+        $output['document']['extracted_json']['rows'][0]['unit'] = 'ks';
+
+        $out = new OutputParser()->parse((string) json_encode($output), $this->profileSchema());
+
+        $this->assertSame('518100', $out['document']['extracted_json']['rows'][0]['account']);
+        $this->assertSame('A-001', $out['document']['extracted_json']['rows'][0]['item']['ourCode']);
     }
 
     public function testFormatsAreNotValidated(): void

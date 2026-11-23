@@ -14,6 +14,7 @@
             "properties": {
                 "kind":          { "type": "string" },
                 "ref": {
+                    "x-paper": false,
                     "type": ["string", "null"],
                     "minLength": 1,
                     "maxLength": 60,
@@ -22,9 +23,10 @@
                 },
                 "extractedAt":   { "type": ["string", "null"], "format": "date-time" },
                 "confidence":    { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-                "message":       { "type": ["integer", "null"] },
+                "message":       { "type": ["integer", "null"], "x-paper": false },
                 "promptVersion": { "type": ["string", "null"] },
                 "raw": {
+                    "x-paper": false,
                     "type": ["object", "null"],
                     "additionalProperties": true
                 }
@@ -34,14 +36,15 @@
         "docNumber": { "type": ["string", "null"] },
         "docText":   { "type": ["string", "null"] },
         "selfParty": { "enum": ["supplier", "customer", null] },
-        "cashDesk": { "$ref": "#/$defs/Reference" },
-        "numberSeries": { "$ref": "#/$defs/Reference" },
+        "cashDesk": { "$ref": "#/$defs/Reference", "x-paper": false },
+        "numberSeries": { "$ref": "#/$defs/Reference", "x-paper": false },
         "cashDirection": { "enum": [1, 2, null] },
-        "fiscalPeriodType": { "enum": ["opening", "closing", null] },
+        "fiscalPeriodType": { "enum": ["opening", "closing", null], "x-paper": false },
         "supplier": { "$ref": "#/$defs/Party" },
         "customer": { "$ref": "#/$defs/Party" },
-        "balanceParty": { "$ref": "#/$defs/Party" },
+        "balanceParty": { "$ref": "#/$defs/Party", "x-paper": false },
         "partner": {
+            "x-paper": false,
             "$ref": "#/$defs/Party",
             "description": "Head partner of an accounting document or a cash-desk document, given as a reference (see Party). Written by scripts, datasets and Shipard itself. On invoices the partner is the supplier / customer party — never fill this field from a paper document."
         },
@@ -54,7 +57,7 @@
                 "accountingDate":    { "type": ["string", "null"], "format": "date" },
                 "taxPointDate":      { "type": ["string", "null"], "format": "date" },
                 "vatObligationDate": { "type": ["string", "null"], "format": "date" },
-                "vatRateDate":       { "type": ["string", "null"], "format": "date" },
+                "vatRateDate":       { "type": ["string", "null"], "format": "date", "x-paper": false },
                 "periodFrom":        { "type": ["string", "null"], "format": "date" },
                 "periodTo":          { "type": ["string", "null"], "format": "date" }
             }
@@ -70,14 +73,14 @@
             "properties": {
                 "mode":                { "enum": ["fromBase", "fromTotal", "none", null] },
                 "place":               { "enum": ["domestic", "intracom", "thirdCountry", null] },
-                "registration":        { "$ref": "#/$defs/Reference" },
+                "registration":        { "$ref": "#/$defs/Reference", "x-paper": false },
                 "registrationCountry": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
                 "reverseCharge":       { "type": ["boolean", "null"] },
-                "recapSource":         { "enum": ["computed", "declared", null] },
-                "calcSource":          { "enum": ["header", "rows", null] },
-                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] },
-                "rateSource":          { "enum": ["auto", "document", "rows", null] },
-                "roundingMode":        { "enum": ["cent", "unit", null] }
+                "recapSource":         { "enum": ["computed", "declared", null], "x-paper": false },
+                "calcSource":          { "enum": ["header", "rows", null], "x-paper": false },
+                "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null], "x-paper": false },
+                "rateSource":          { "enum": ["auto", "document", "rows", null], "x-paper": false },
+                "roundingMode":        { "enum": ["cent", "unit", null], "x-paper": false }
             }
         },
         "payment": {
@@ -85,7 +88,7 @@
             "additionalProperties": false,
             "properties": {
                 "method":         { "type": ["string", "null"] },
-                "ownBankAccount": { "$ref": "#/$defs/Reference" },
+                "ownBankAccount": { "$ref": "#/$defs/Reference", "x-paper": false },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol": { "type": ["string", "null"] },
                 "constantSymbol": { "type": ["string", "null"] }
@@ -100,6 +103,7 @@
             }
         },
         "dimensions": {
+            "x-paper": false,
             "type": ["object", "null"],
             "additionalProperties": { "$ref": "#/$defs/Reference" }
         },
@@ -107,7 +111,7 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
-                "originalDoc":          { "$ref": "#/$defs/Reference" },
+                "originalDoc":          { "$ref": "#/$defs/Reference", "x-paper": false },
                 "originalDocNumber":    { "type": ["string", "null"], "maxLength": 40 },
                 "originalTaxPointDate": { "type": ["string", "null"], "format": "date" },
                 "reason":               { "type": ["string", "null"] }
@@ -129,8 +133,8 @@
                 "totalVat":      { "type": ["number", "null"] },
                 "totalAmount":   { "type": ["number", "null"] },
                 "totalRounding": { "type": ["number", "null"] },
-                "totalRoundingAuto": { "type": ["boolean", "null"] },
-                "totalRoundingMode": { "enum": ["cent", "unit", "unitUp", "unitDown", "fiveCent", null] }
+                "totalRoundingAuto": { "type": ["boolean", "null"], "x-paper": false },
+                "totalRoundingMode": { "enum": ["cent", "unit", "unitUp", "unitDown", "fiveCent", null], "x-paper": false }
             }
         },
         "attachments": {
@@ -138,10 +142,12 @@
             "items": { "$ref": "#/$defs/Attachment" }
         },
         "_resolve": {
+            "x-paper": false,
             "type": "object",
             "additionalProperties": true
         },
         "applyOptions": {
+            "x-paper": false,
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -181,7 +187,7 @@
                 }
             }
         },
-        "savedDocId": { "type": ["integer", "null"] }
+        "savedDocId": { "type": ["integer", "null"], "x-paper": false }
     },
     "$defs": {
         "Reference": {
@@ -192,7 +198,7 @@
             "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
-                "ref":               { "$ref": "#/$defs/Reference" },
+                "ref":               { "$ref": "#/$defs/Reference", "x-paper": false },
                 "name":              { "type": ["string", "null"] },
                 "country":           { "type": ["string", "null"] },
                 "companyId":         { "type": ["string", "null"] },
@@ -234,7 +240,7 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
-                "ref":           { "$ref": "#/$defs/Reference" },
+                "ref":           { "$ref": "#/$defs/Reference", "x-paper": false },
                 "accountNumber": { "type": ["string", "null"] },
                 "iban":          { "type": ["string", "null"] },
                 "bic":           { "type": ["string", "null"] },
@@ -249,10 +255,10 @@
             "additionalProperties": false,
             "properties": {
                 "rowKind":        { "type": ["string", "null"] },
-                "operation":      { "type": ["string", "null"] },
+                "operation":      { "type": ["string", "null"], "x-paper": false },
                 "orderPos":       { "type": ["integer", "null"] },
                 "item":           { "$ref": "#/$defs/RowItem" },
-                "unit":           { "type": ["string", "integer", "null"], "minimum": 1 },
+                "unit":           { "type": ["string", "integer", "null"], "minimum": 1, "x-paper": { "type": ["string", "null"] } },
                 "quantity":       { "type": ["number", "null"] },
                 "unitPrice":      { "type": ["number", "null"] },
                 "totalPrice":     { "type": ["number", "null"] },
@@ -262,17 +268,19 @@
                 "vat":            { "$ref": "#/$defs/RowVat" },
                 "computed":       { "$ref": "#/$defs/RowComputed" },
                 "description":      { "type": ["string", "null"] },
-                "account":          { "$ref": "#/$defs/Reference" },
+                "account":          { "$ref": "#/$defs/Reference", "x-paper": { "type": ["string", "null"], "pattern": "^[0-9]+$" } },
                 "accSide":          { "enum": ["debit", "credit", null] },
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol":   { "type": ["string", "null"], "maxLength": 20 },
                 "constantSymbol":   { "type": ["string", "null"], "maxLength": 10 },
                 "dueDate":          { "type": ["string", "null"], "format": "date" },
                 "partner": {
+                    "x-paper": false,
                     "$ref": "#/$defs/Party",
                     "description": "Partner of the row (accounting entry, payment of an invoice in cash) as a reference (see Party). Written by scripts, datasets and Shipard itself — never fill this field from a paper document."
                 },
                 "dimensions": {
+                    "x-paper": false,
                     "type": ["object", "null"],
                     "additionalProperties": { "$ref": "#/$defs/Reference" }
                 }
@@ -282,7 +290,7 @@
             "type": ["object", "integer", "string", "null"],
             "additionalProperties": false,
             "properties": {
-                "ref":          { "$ref": "#/$defs/Reference" },
+                "ref":          { "$ref": "#/$defs/Reference", "x-paper": false },
                 "ourCode":      { "type": ["string", "null"] },
                 "supplierCode": { "type": ["string", "null"] },
                 "sku":          { "type": ["string", "null"] },
@@ -299,7 +307,7 @@
                 "pct":  { "type": ["number", "null"] },
                 "supplyKind": { "enum": ["goods", "services", null] },
                 "reverseChargeCode": { "type": ["string", "null"] },
-                "rateDate": { "type": ["string", "null"], "format": "date" }
+                "rateDate": { "type": ["string", "null"], "format": "date", "x-paper": false }
             }
         },
         "RowComputed": {
@@ -322,7 +330,7 @@
                 "total":         { "type": ["number", "null"] },
                 "isReversePair": { "type": ["boolean", "null"] },
                 "reverseChargeCode": { "type": ["string", "null"] },
-                "rateDate": { "type": ["string", "null"], "format": "date" }
+                "rateDate": { "type": ["string", "null"], "format": "date", "x-paper": false }
             }
         },
         "Attachment": {

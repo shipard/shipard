@@ -6,22 +6,40 @@ namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Core\Exchange\Schema\PaperSchema;
+use Shipard\Module\Core\Exchange\Schema\SchemaFingerprint;
 
 /**
  * The AI profile's `output_schema.document.oneOf[1].extracted_json` is a
- * oneOf of two inline schema copies:
- *   [0] `modules/core/exchange/schemas/shpd.docs.document.v1.json`
- *   [1] `modules/base/registry/schemas/shpd.registry.document.v1.json`
- * Analyzers receive `output_schema` over the wire (`/claim` response)
- * and don't resolve `$ref` across files, so we keep both canonical
- * schemas inlined. This test catches drift when one is updated and the
- * other isn't.
+ * oneOf of two inline schemas:
+ *   [0] the **paper form** of `shpd.docs.document.v1` — the projection
+ *       `PaperSchema` derives from
+ *       `modules/core/exchange/schemas/shpd.docs.document.v1.json`
+ *       (#166 D63: no references to records, no fields of the instruction);
+ *   [1] a copy of `modules/base/registry/schemas/shpd.registry.document.v1.json`.
+ * The output validator doesn't resolve `$ref` across files, so both are
+ * inlined. This test catches drift when a schema is updated and the
+ * profile isn't.
  *
- * Repair: copy the canonical file content into the corresponding
- * `extracted_json.oneOf[...]` branch of the profile JSONC.
+ * Repair of [0]: `php scripts/profile-paper-schema.php`; of [1]: copy the
+ * canonical file content into the branch of the profile JSONC.
+ *
+ * The schema the model output is validated against reaches existing data
+ * sources only with a new `prompt_version` (profile sync in `ds-upgrade`
+ * is driven by the version) — {@see testSchemaChangeRequiresNewPromptVersion}
+ * (#166 D65).
  */
 class ProfileSchemaDriftTest extends TestCase
 {
+    /**
+     * Otisk celého `output_schema` profilu (`SchemaFingerprint`) u verze
+     * promptu, se kterou vyšel. Řádky se jen přidávají — otisk u starší
+     * verze se nepřepisuje.
+     */
+    private const SCHEMA_FINGERPRINTS = [
+        'v4.13.0' => '64a1f43d71f4997b8961de669e7beea4e602c4ff289bf93ccf1d5ec51c1f6fa1',
+    ];
+
     /** @return array{0: array<string, mixed>, 1: string} [profile, modulesRoot] */
     private function loadProfile(): array
     {
@@ -45,21 +63,48 @@ class ProfileSchemaDriftTest extends TestCase
         return $extractedJson['oneOf'];
     }
 
-    public function testProfileDocsSchemaMatchesCanonical(): void
+    public function testProfileDocsSchemaMatchesPaperForm(): void
     {
-        [$profile, $modulesRoot] = $this->loadProfile();
-
-        $canonical = json_decode(
-            (string) file_get_contents($modulesRoot . '/core/exchange/schemas/shpd.docs.document.v1.json'),
-            true,
-        );
-        $this->assertIsArray($canonical, 'docs canonical schema must be valid JSON');
+        [$profile] = $this->loadProfile();
 
         $this->assertSame(
-            $canonical,
+            PaperSchema::ofDocument(),
             $this->extractedJsonOneOf($profile)[0] ?? null,
-            "Drift between docs canonical schema and profile's `extracted_json.oneOf[0]`. "
-                . "Copy shpd.docs.document.v1.json content into the profile.",
+            "Drift between the paper form of the docs schema (PaperSchema over shpd.docs.document.v1.json) "
+                . "and profile's `extracted_json.oneOf[0]`. Run `php scripts/profile-paper-schema.php`.",
+        );
+    }
+
+    /**
+     * #166 D65: synchronizaci profilu při `ds-upgrade` řídí verze promptu —
+     * schéma změněné bez nové verze se na existující zdroje dat nedostane
+     * (evaluace 2026-11-23 proto běžela nad starým schématem).
+     */
+    public function testSchemaChangeRequiresNewPromptVersion(): void
+    {
+        [$profile] = $this->loadProfile();
+        $version = (string) $profile['prompt_version'];
+        $fingerprint = SchemaFingerprint::of($profile['output_schema']);
+        $this->assertNotNull($fingerprint, 'profile output_schema must be a JSON object');
+
+        $this->assertArrayHasKey(
+            $version,
+            self::SCHEMA_FINGERPRINTS,
+            "Verze promptu {$version} nemá zapsaný otisk výstupního schématu. "
+                . "Přidej do SCHEMA_FINGERPRINTS řádek '{$version}' => '{$fingerprint}'.",
+        );
+        $this->assertSame(
+            self::SCHEMA_FINGERPRINTS[$version],
+            $fingerprint,
+            "Výstupní schéma profilu (output_schema) se změnilo, ale verze promptu je pořád {$version} — "
+                . "ds-upgrade ho na existující zdroje dat nepřepíše. Zvedni prompt_version v profilu "
+                . "(i oba výskyty verze v prompt_template) a přidej do SCHEMA_FINGERPRINTS nový řádek "
+                . "s otiskem {$fingerprint}; otisk u verze {$version} nepřepisuj.",
+        );
+        $this->assertSame(
+            $version,
+            array_key_last(self::SCHEMA_FINGERPRINTS),
+            'Poslední řádek SCHEMA_FINGERPRINTS patří aktuální verzi promptu.',
         );
     }
 
@@ -86,7 +131,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.12.0', $profile['prompt_version']);
+        $this->assertSame('v4.13.0', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,6 +155,7 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.12.0', $prompt);
         $this->assertStringNotContainsString('v4.11.0', $prompt);
         $this->assertStringNotContainsString('v4.8.0', $prompt);
         $this->assertStringNotContainsString('v4.7.1', $prompt);
@@ -178,6 +224,7 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.12.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.11.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.8.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.7.1', $prompt, 'stale prompt version reference');
