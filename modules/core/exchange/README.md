@@ -422,8 +422,10 @@ formátem.
   status update + auto-transition zprávy běží přes
   `ExtractedDocumentDocument` hooks v separátní controller transakci.
 - ✅ `reanalyze` rozšířen — superseduje i `STATUS_AI_FAILED`.
-- ✅ `ProfileSchemaDriftTest` hlídá inline kopii canonical schema v
-  profile `output_schema.documents.items.properties.fields`.
+- ✅ `ProfileSchemaDriftTest` hlídá schéma dokladu vložené v profilu pošty
+  (`output_schema` → `document.…extracted_json.oneOf[0]`) — od #166 D63 je
+  to **papírová podoba** (`Schema\PaperSchema` nad značkami `x-paper`), ne
+  doslovná kopie; změna schématu profilu vyžaduje novou verzi promptu (D65).
 
 ## Stav (Fáze 3a)
 

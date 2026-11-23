@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.12.0)
+## Default prompt (v4.13.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,7 +64,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.12.0`).
+  shodná s `prompt_version` profilu (`v4.13.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -182,7 +182,7 @@ JSON Schema **draft-2020-12** (od `v2.0.0`; dřív draft-07). Wrapper (v4):
             "confidence": { "type": "number" },
             "extracted_json": {
               "oneOf": [
-                { /* inline shpd.docs.document.v1 schema */ },
+                { /* papírová podoba shpd.docs.document.v1 (PaperSchema) */ },
                 { /* inline shpd.registry.document.v1 schema */ }
               ]
             }
@@ -206,21 +206,42 @@ Pole `documents[]` a `source_attachment_ndxs` z kontraktu **v4 zanikla**
 v `POST /result` server odmítá 422). Názvy polí jsou přesně dle kontraktu
 — model ani runner nic nepřejmenovávají.
 
-**`extracted_json` je oneOf dvou inline kopií** — struktura se volí podle
-**targetu** typu dokumentu (cfgItem `core.mail.primaryTypes`):
+**`extracted_json` je oneOf dvou vložených schémat** — struktura se volí
+podle **targetu** typu dokumentu (cfgItem `core.mail.primaryTypes`):
 
-- target `docs` (faktury, dobropisy) →
-  `modules/core/exchange/schemas/shpd.docs.document.v1.json`,
+- target `docs` (faktury, dobropisy) → **papírová podoba**
+  `modules/core/exchange/schemas/shpd.docs.document.v1.json` (#166 D63),
 - target `registry` (smlouvy, pojistky, nabídky, revize, úřední
-  písemnosti — Spisovna) →
+  písemnosti — Spisovna) → kopie
   `modules/base/registry/schemas/shpd.registry.document.v1.json`.
 
+**Papírová podoba** je projekce schématu dokladu bez polí, která papír
+nenese — reference na záznamy (`ref` strany a položky, `numberSeries`,
+`partner`, `payment.ownBankAccount`, `vat.registration`,
+`correction.originalDoc`, `dimensions` …), pole pro skripty (`source.ref`,
+`applyOptions`, `_resolve`) a volby uložení (módy zaokrouhlení, zdroj
+rekapitulace, datum sazby). Odvozuje ji `Schema\PaperSchema` (core.exchange)
+ze značek `x-paper` ve schématu dokladu
+([`docs/exchange-format.md`](../../../../docs/exchange-format.md) § 5
+„Papírová podoba“). Výstup modelu s takovým polem končí `schema_error` —
+vymyšlená reference se do návrhu nedostane. Model schéma nedostává (šablona
+`output_schema` nevykresluje), řídí se ukázkou v promptu; schéma je brána
+na výstupu.
+
 Runner dostává `output_schema` profilu napřímo (z claimu) — validátor neumí
-`$ref` resolve napříč souborům, takže obě canonical schémata musí být
-doslovně embedded. Drift mezi profilem a canonical soubory hlídá test
+`$ref` resolve napříč souborům, takže obě schémata musí být v profilu
+vložená. Blok dokladu přepíše `php scripts/profile-paper-schema.php`
+(`--check` jen ověří), registrové schéma se kopíruje ručně. Drift hlídá test
 [`tests/Unit/Module/Core/Mail/ProfileSchemaDriftTest.php`](../../../../tests/Unit/Module/Core/Mail/ProfileSchemaDriftTest.php) —
-selže s odkazem na regeneraci, pokud někdo updatuje jedno a zapomene
-druhé. Shodu `kindFields` registry schématu s `base.registry.docKinds`
+selže s návodem na opravu, pokud někdo změní jedno a zapomene druhé.
+
+**Změna `output_schema` = nová `prompt_version`** (#166 D65). Synchronizace
+profilu při `ds-upgrade` se řídí verzí promptu; schéma změněné bez nové
+verze dostane jen nově založený zdroj dat (profil přežije i `ds-reset`).
+Tentýž test má u každé verze zapsaný otisk celého `output_schema`
+(`SchemaFingerprint`) a změnu otisku bez nové verze shodí. Stejný otisk
+nese záznam běhu evaluace (`effective.schemaHash`, D66), takže je z výsledku
+poznat, nad kterým schématem běžela. Shodu `kindFields` registry schématu s `base.registry.docKinds`
 hlídá `tests/Unit/Module/Base/Registry/RegistrySchemaDriftTest.php` —
 názvy polí se **nikdy nesmí lišit** (model plní kindFields přesně dle
 schématu; přejmenované pole = tiché prázdno v metadatech).
@@ -272,7 +293,11 @@ default profil):
 1. Uprav `modules/core/mail/profiles/czech_general.jsonc` —
    `prompt_template`, případně `output_schema`, `confidence_thresholds`,
    `supported_doc_types`, `language`.
-2. Bumpni `prompt_version` (semver, např. `v1.1.0` → `v1.2.0`).
+2. Bumpni `prompt_version` (semver, např. `v1.1.0` → `v1.2.0`) — i když se
+   měnilo **jen `output_schema`** (třeba změnou schématu dokladu), jinak se
+   změna na existující zdroje dat nedostane. Verze je v profilu a dvakrát
+   v textu promptu; otisk schématu k nové verzi připiš do
+   `ProfileSchemaDriftTest::SCHEMA_FINGERPRINTS` (test ho vypíše).
 3. Commit do gitu, deploy.
 4. Z DS adresáře spusť `bin/shpd-ds ds-upgrade` — sync profilu ze šablony
    je součástí provisioning fáze (`[UPDATE] profile 'czech_general':
@@ -307,6 +332,26 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.13.0 (2026-11-23)
+
+Výstupní schéma dokladu je **papírová podoba**
+([tasks/mail-profile-paper-schema.md](../../../../tasks/mail-profile-paper-schema.md),
+#166 D63–D66). Text promptu se nemění, mění se jen verze.
+
+- `output_schema`: větev dokladu už není doslovná kopie schématu dokladu,
+  ale projekce `PaperSchema` — bez referencí na záznamy, polí pro skripty
+  (`source.ref`, `applyOptions`, `_resolve`, `savedDocId`) a voleb uložení
+  (zaokrouhlení, zdroj a výpočet rekapitulace, zařazení do KH, datum
+  sazby). Strana a položka jen objektem, jednotka jen textem, účet řádku
+  holým číslem. Výstup modelu s polem mimo projekci = `schema_error`.
+- Důvod verze: šest změn schématu v #166 proběhlo bez nové verze, takže se
+  na existující zdroje dat nedostaly (stav z 12. 11.) a schéma tam dál
+  propouštělo `applyOptions` a volný `_resolve`. Od této verze změnu
+  schématu bez nové verze nepustí test.
+- Na extrakci to vliv nemá — model schéma nedostává. V 69 uložených
+  výstupech modelu na třech vývojových zdrojích není žádné pole mimo
+  projekci.
 
 ### v4.12.0 (2026-11-12)
 

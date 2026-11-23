@@ -1,6 +1,6 @@
 # Task: Schéma pro model = papírová podoba dokladu; změna schématu se dostane na zdroje dat
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166, nález z evaluace; D63–D66)
+**Stav:** hotovo — 2026-11-23 (#166 D63–D66); zbývá `ds-upgrade` ostatních zdrojů dat a evaluace tří sad člověkem
 
 **Issue:** #166
 
@@ -159,11 +159,137 @@ a je poznat v záznamu evaluace.
 
 ## Hotovo když
 
-- [ ] schéma pro model je projekce bez polí pokynu, odvozená kódem
+- [x] schéma pro model je projekce bez polí pokynu, odvozená kódem
       z jediného schématu
-- [ ] verze promptu `v4.13.0`; změna schématu bez změny verze neprojde
+- [x] verze promptu `v4.13.0`; změna schématu bez změny verze neprojde
       testem
-- [ ] výstup modelu s polem mimo projekci analýza odmítne
-- [ ] záznam evaluace nese otisk schématu
-- [ ] `dataset-verify` beze změny; cílené testy, pak celá unit sada
-- [ ] dokumentace, stav tasku
+- [x] výstup modelu s polem mimo projekci analýza odmítne
+- [x] záznam evaluace nese otisk schématu
+- [x] `dataset-verify` beze změny; cílené testy, pak celá unit sada
+- [x] dokumentace, stav tasku
+
+## Poznámky k implementaci
+
+### Model schéma nedostává — projekce je brána na výstupu
+
+Zadání mluví o schématu, které „model vidí“. Šablona promptu proměnnou
+`output_schema` nevykresluje a volání nemá strukturovaný výstup: model se
+řídí ukázkou JSON v promptu (ta klíče mimo ukázku zakazuje) a `output_schema`
+čte jen `OutputParser`. Rozhodnutí D63–D66 to nemění, mění to očekávání:
+
+- projekce nic „nenapovídá“, jen **odmítá** (U5) — to je její přínos;
+- vstupní tokeny se nemění (bod 4 ověření: rozdíl má být nula);
+- evaluace z 2026-11-23 platí pro kvalitu extrakce beze změny — běžela
+  nad starým schématem jen ve smyslu validace výstupu;
+- popisy „never fill this field from a paper document“ u polí schématu se
+  k modelu nikdy nedostaly.
+
+### Stav uložený ve zdrojích dat (měřítko z U2)
+
+Všech 21 zdrojů dat dev serveru s profilem mělo stejné schéma — stav
+commitu s `v4.12.0` z 2026-11-12. Proti dnešnímu schématu mu chyběla nejen
+pole z #166, ale i pole z #159 (`vat.rateSource`, `dates.vatRateDate`,
+`rateDate` řádku a rekapitulace), která přibyla také bez nové verze.
+A naopak **propouštělo** volný objekt `_resolve` a `applyOptions`
+(`targetDocState`, `numberSeriesId`, `importOwnBankAccount` …). Prompt ani
+jedno nezmiňuje, z projekce podle U2 mizí.
+
+### Značka a projekce (U1)
+
+- `"x-paper": false` vlastnost vynechá, `"x-paper": { … }` ji nahradí
+  uvedeným schématem. Náhradu potřebují dvě pole, kde papír nese jiný tvar
+  než pokyn: `rows[].unit` (jen text) a `rows[].account` (řetězec číslic —
+  signál D39; tvar shodný se schématem před #166).
+- Strana a položka řádku: uzel s typem „objekt, nebo reference“ zůstane
+  jen objektem — pravidlo kódu, bez značky.
+- Po projekci osiří `$defs/Reference` a odstraní se; `$id` a `title`
+  projekce nesou příponu (`….v1.paper.json`, „— paper form“), aby šla
+  v uloženém profilu poznat od plného schématu.
+- Vynechat povinnou vlastnost, značka jinde než u vlastnosti nebo s jinou
+  hodnotou než `false` / objekt je výjimka — chyba ve schématu se ukáže
+  v testech, ne tichým výsledkem.
+- `Attachment.ref` (`att:12`) není reference na záznam a zůstává.
+
+### Co se značí — sporná pole (U2)
+
+Výchozí seznam z U2 beze změny. Navíc, po potvrzení v chatu 2026-11-23
+(D64 „nic, co papír nenese, včetně voleb uložení“ má přednost před
+měřítkem „jen co se změnilo“):
+
+| Pole | Proč není v papírové podobě |
+|------|-----------------------------|
+| `_resolve`, `applyOptions`, `savedDocId` | volby uživatele a uložení, id po uložení — doplňuje server |
+| `source.message`, `source.raw` | vazbu na zprávu a syrový payload doplňuje server |
+| `balanceParty` | ruční plátce pro saldokonto — volba uživatele |
+| `fiscalPeriodType` | jen importní mód |
+| `vat.recapSource`, `vat.calcSource`, `vat.controlStatementMode` | volby uložení (autoritu rekapitulace odvozuje interpretace) |
+| `vat.rateSource`, `dates.vatRateDate`, `rows[].vat.rateDate`, `vatRecap[].rateDate` | přepínač a vlastní data sazby (#159) — nastavení dokladu |
+| `rows[].operation` | pohyb řádku určuje systém |
+
+Ponecháno, protože to papír nést může nebo to ukázka v promptu má:
+`cashDirection`, `exchangeRate`, `dates.accountingDate`, `notes.internal`,
+`rows[].computed`, `rows[].accSide` a symboly / splatnost řádku,
+`vatRecap[].isReversePair`, `vatRecap[].reverseChargeCode`, `attachments[]`.
+
+Riziko odmítnutí dnešních výstupů: žádné pole ze seznamu se nevyskytuje
+v uložených výstupech modelu (viz Ověření).
+
+### Profil a strážce verze (U3, U4)
+
+- Blok dokladu v `czech_general.jsonc` se nepíše ručně:
+  `php scripts/profile-paper-schema.php` (`--check` jen ověří).
+- Otisk celého `output_schema` (`Schema\SchemaFingerprint` — sha256 nad
+  JSON se seřazenými klíči, nezávislý na formátování) je u verze zapsaný
+  v `ProfileSchemaDriftTest::SCHEMA_FINGERPRINTS`; řádky se jen přidávají.
+  Změna otisku bez nové verze test shodí a vypíše, co udělat.
+- Text promptu: změněny jen tři výskyty verze (pole profilu a dva
+  v šabloně). Prompt žádné z mizejících polí nezmiňuje — podmínka
+  „zastav se“ z Mimo rozsah nenastala.
+
+### Výstup modelu (U5)
+
+`OutputParser` se nemění — validuje proti schématu profilu
+s `additionalProperties: false`, takže stačí projekce. Test nad skutečným
+profilem: 17 případů odmítnutí (reference strany, položky, účtu partnera,
+řada, partner, registrace, vlastní účet, původní doklad, dimenze, mód
+zaokrouhlení, `source.ref`, `applyOptions`, `_resolve`, strana a položka
+referencí, účet `"@518100"`, jednotka číslem) a průchod signálů D39.
+Sdílená fixtura dokladu nesla `source.message` (doklad po zpracování
+serverem) — test ji pro výstup modelu odebírá.
+
+### Evaluace (U6)
+
+`effective.schemaHash` v `EvalRun`, `EvalRunSummary` a v porovnání
+(`runs.*.schemaHash`, `sameSchema` a nově i `samePrompt` — `null`, když
+otisk některý záznam nenese). Lidský výpis porovnání hlásí rozdílný prompt
+i schéma, výpis běhu má otisk za verzí promptu. Dashboard: krátký otisk
+v řádku běhu (seznam, detail, porovnání), u staršího běhu pomlčka.
+
+### Ověření
+
+1. `ds-upgrade` čtyř volných zdrojů (`jfpl-7`, `gsbg-b`, `im3v-h`,
+   `blkm-i`): profil `v4.12.0 → v4.13.0`, otisk schématu v databázi shodný
+   s otiskem v testu, žádné pole z U2. Ostatní zdroje dat upgradované
+   nejsou.
+2. Přehrání uložených výstupů modelu novým schématem (zdarma, bez volání
+   AI): 154 výstupů na sedmi volných zdrojích, odmítnutý žádný.
+3. Tři veřejné sady nad zdroji testovacího kola (`test-round
+   --only=datasets`): čerstvý seed, `dataset-verify` a proklikání — 9 kroků
+   `ok`, stejně jako před změnou. Profil po `ds-reset` zůstal `v4.13.0`
+   (`keepOnReset`).
+4. Integrační testy pošty a výměnného formátu nad `blkm-i`: 218 testů,
+   6 přeskočených, bez selhání.
+5. Celá unit sada 12 268 testů zelená; `npm run build`, `npm test`,
+   `check:i18n`. Řádek běhu na dashboardu ověřený v headless prohlížeči
+   (běh bez otisku i s otiskem).
+
+**Zbývá člověku:**
+
+- `ds-upgrade` ostatních zdrojů dat (profil se přepíše na `v4.13.0`);
+  na kopiích reálných dat a na produkci je to jediný způsob, jak se tam
+  nové schéma dostane.
+- Evaluace tří veřejných sad nad novým schématem (bod 4 ověření v zadání).
+  Očekávání: metriky v šumu proti běhům z 2026-11-23, vstupní tokeny beze
+  změny (model schéma nedostává), žádné `schema_error`; záznam ponese
+  `schemaHash` `64a1f43d…`. Zdroj dat evaluace musí být před během
+  upgradovaný — otisk v záznamu to nově prokáže.

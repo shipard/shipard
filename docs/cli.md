@@ -2092,7 +2092,9 @@ Běhy nad různými sadami (hash obsahu `mail/` + `expected/`) odmítne
 noise, withinNoise, better, perRepetition}]` — `perRepetition: true`
 u součtů přepočtených na opakování, `fields{basis: "perRepetition",
 threshold, improved[{node, a, b, delta}], worsened[…]}` s počty na
-opakování, `sameSelection`).
+opakování, `sameSelection`, `samePrompt`, `sameSchema` — shoda otisku promptu
+a výstupního schématu profilu, `null` když ho starší záznam nenese; rozdíl
+je i v lidském výpisu).
 
 #### `ai-profile-reload`
 
@@ -2108,6 +2110,13 @@ příkaz slouží pro `--force` (downgrade / přepis stejné verze), `--dry-run`
 a `--template-path` scénáře. Bez `--force` odmítne stejnou nebo nižší verzi
 šablony; nikdy nepřepisuje admin pole (`name`, `is_default`, `is_active`,
 `backend`).
+
+S profilem se přepisuje i `output_schema` — schéma, proti kterému se
+validuje výstup modelu (větev dokladu je papírová podoba schématu dokladu,
+`docs/exchange-format.md` § 5). Protože se synchronizace řídí verzí,
+**změna schématu profilu vyžaduje novou `prompt_version`** (#166 D65,
+hlídá `ProfileSchemaDriftTest`). Profil přežije i `ds-reset`
+(`keepOnReset`) — mění ho jen `ds-upgrade` a tento příkaz.
 
 | Opce | Význam |
 |------|--------|

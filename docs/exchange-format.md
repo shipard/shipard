@@ -617,9 +617,10 @@ obojí se uloží na hlavičku (`source_kind`, `source_ref`).
   pro jiný doklad je chyba volajícího.
 - **Oba režimy** (pokyn i návrh přes `applyOptions.interpret`) se chovají
   stejně, importní mód také: opakovaný běh importu vrátí existující doklad.
-  **Návrh z pošty klíč nenese** — server `source.ref` ze zdroje zprávy
-  zahazuje (pole je ve schématu, které vidí i model; vyplněné číslem
-  faktury by druhé zprávě vrátilo doklad té první). Opakovaný apply návrhu
+  **Návrh z pošty klíč nenese** — papírová podoba schématu pole nemá
+  (výstup modelu s ním analýza odmítne) a server `source.ref` ze zdroje
+  zprávy pro jistotu zahazuje (vyplněné číslem faktury by druhé zprávě
+  vrátilo doklad té první). Opakovaný apply návrhu
   hlídá vazba zprávy na doklad (§ 12).
 - **`/preview`** existující doklad hlásí nálezem `already_applied` (jiný
   typ chybou `source_ref_conflict`); zbytek náhledu běží jako obvykle.
@@ -677,7 +678,8 @@ nenalezeno i nejednoznačné je chyba — nikdy první nalezený.
   `null`** = účet se k záznamu neváže. Údaje účtu (`accountNumber`, `iban`,
   `bic`) jdou do sloupců hlavičky vždy. Export `ref` nepíše (data stačí);
   interpretace ho do hotového dokladu píše vždy. Návrh z pošty referenci
-  z předlohy zahazuje stejně jako `source.ref` — pole vidí i model.
+  z předlohy zahazuje stejně jako `source.ref` — papírová podoba schématu
+  ji nenese.
 - **Autor** zůstává id v `applyOptions.author` (D38). Strana vlastní firmy
   (`selfParty`) referenci nenese.
 - **Partner účetního a pokladního dokladu** (`partner`, `rows[].partner`,
@@ -712,6 +714,48 @@ ignorování by uložilo jiný doklad, než jaký odesílatel zamýšlel.
 Tvar referencí formátu drží `Document\CanonicalReferences` (strana a položka
 jen referencí se uvnitř applieru rozbalí na objekt s `ref`; odpověď vrací
 rozbalený tvar).
+
+### Papírová podoba — značka `x-paper` (#166 D63–D65)
+
+Schéma dokladu je jedno. Co z něj **papírový doklad nenese** — reference na
+záznamy, pole určená skriptům a generátorům, volby uložení — je v něm
+označené klíčovým slovem `x-paper` u vlastnosti (v `.jsonc` i v `.json`):
+
+| Zápis | Význam v papírové podobě |
+|-------|--------------------------|
+| `"x-paper": false` | vlastnost tam není |
+| `"x-paper": { … }` | vlastnost má uvedené schéma místo svého (`rows[].unit` jen text, `rows[].account` jen řetězec číslic — signál D39) |
+
+Papírovou podobu z toho mechanicky odvodí `Schema\PaperSchema`
+(core.exchange): značené vlastnosti vynechá nebo nahradí, uzel typu „objekt,
+nebo reference“ (strana, položka řádku) nechá jen objektem, definice, na
+které pak nic neodkazuje (`Reference`), odstraní a značky ve výsledku
+nejsou. Vynechat povinnou vlastnost nebo zapsat značku jinam než
+k vlastnosti je chyba.
+
+Označené je dnes: `source.ref`, `source.message`, `source.raw`, `cashDesk`,
+`numberSeries`, `fiscalPeriodType`, `balanceParty`, `partner`, `dimensions`,
+`dates.vatRateDate`, `vat.registration`, `vat.recapSource`, `vat.calcSource`,
+`vat.controlStatementMode`, `vat.rateSource`, `vat.roundingMode`,
+`payment.ownBankAccount`, `correction.originalDoc`,
+`totals.totalRoundingAuto`, `totals.totalRoundingMode`, `_resolve`,
+`applyOptions`, `savedDocId`, `ref` strany, položky a účtu partnera,
+`rows[].operation`, `rows[].partner`, `rows[].dimensions`,
+`rows[].vat.rateDate` a `vatRecap[].rateDate`. Zdroj pravdy je značka ve
+schématu, ne tento výčet.
+
+- **Validace formátu značku ignoruje** — pokyn, náhled, export i uložené
+  návrhy se validují plným schématem beze změny.
+- Papírovou podobou se validuje **jen výstup modelu** při analýze pošty:
+  nese ji `output_schema` profilu (`docs/document-interpretation.md` § 2).
+  Blok v profilu přepíše `php scripts/profile-paper-schema.php`, shodu hlídá
+  `ProfileSchemaDriftTest`.
+- **Nové pole formátu**: nese-li ho papír, značku nedostane a přibude
+  i v profilu pošty; jinak dostane `"x-paper": false`. V obou případech,
+  kdy se tím změní schéma profilu, je potřeba **nová verze promptu** —
+  synchronizace profilu při `ds-upgrade` se řídí verzí a bez ní se schéma
+  na existující zdroje dat nedostane (D65; test otisk schématu u verze
+  hlídá).
 
 ### Pole `vatRecap` a `totals` — vstup vs. autorita
 

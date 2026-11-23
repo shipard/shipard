@@ -63,11 +63,37 @@ tak, jak doklad přečetla AI nebo čtečka ISDOC:
   návrh **stejně jako pokyn** — `docs/exchange-format.md` § 5 „Reference na
   záznamy“.
 
-Co návrh z pošty nenese: `source.ref` a `supplier.bankAccount.ref` server
-z předlohy zahazuje (pole jsou ve schématu, které vidí i model).
 `applyOptions.importNumber` je v návrhu chyba
 `import_requires_instruction` — import přenáší hotový doklad a jde jen
 pokynem (`docs/exchange-format.md` § 10 „Importní mód“).
+
+**Papírová podoba má vlastní schéma (#166 D63–D65).** Výstup modelu při
+analýze pošty se validuje proti **projekci** schématu dokladu, ne proti
+plnému schématu. Projekci odvozuje kód (`Schema\PaperSchema`,
+core.exchange) z jediného `shpd.docs.document.v1`: vynechá všechno, co
+papírový doklad nenese — reference na záznamy, pole určená skriptům
+a generátorům, volby uložení. Co to je, říká značka `x-paper` přímo ve
+schématu (`docs/exchange-format.md` § 5 „Papírová podoba — značka
+`x-paper`“); strana a položka řádku jsou v projekci jen objekt s údaji,
+jednotka jen text a účet řádku holé číslo. Signály D39 (níže) v ní
+zůstávají.
+
+- Projekci nese `output_schema` profilu pošty (větev dokladu). Pole mimo
+  ni ve výstupu modelu — `supplier.ref`, `numberSeries`, `applyOptions`,
+  `_resolve` … — je `schema_error` celé analýzy (`OutputParser`); do
+  interpretace, kde má reference přednost před hledáním (§ 5), se
+  vymyšlená reference nedostane.
+- Model schéma nedostává — řídí se ukázkou v promptu, která klíče mimo
+  ukázku zakazuje. Projekce je brána na jeho výstupu.
+- Projekcí se validuje **jen výstup modelu**. Uložený návrh (reference
+  z obohacení řádků, `_resolve` s volbami uživatele), náhled, hotový doklad
+  i ISDOC z přílohy jdou dál plným schématem.
+- Pojistka zůstává: `source.ref` a `supplier.bankAccount.ref` server
+  z návrhu z pošty zahazuje i tak (náhled zprávy přes REST, návrhy uložené
+  před projekcí).
+- Schéma profilu se na existující zdroje dat dostane jen s novou verzí
+  promptu (`ds-upgrade` synchronizuje profil podle `prompt_version`) —
+  změnu projekce bez nové verze nepustí `ProfileSchemaDriftTest` (D65).
 
 **Dočasné signály návrhu (D39).** Uložené návrhy z pošty nesou tři pole
 starým tvarem: `rows[].item.ourCode`, účet řádku holým číslem

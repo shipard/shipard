@@ -1183,7 +1183,11 @@ a nepřepočítávají se.
 profil, cesta, **hash obsahu** `mail/` včetně příloh, `expected/`
 a `exchangeRates/` (#103 D81), počet
 zpráv a výběr), `git` (commit, neuložené změny), `variant` (deklarace
-a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
+a `effective`: profil, verze a hash promptu, **otisk výstupního schématu
+profilu** `schemaHash` (#166 D66 — proti kterému schématu se výstup modelu
+validoval; `SchemaFingerprint`, tentýž otisk má u verze promptu zapsaný
+`ProfileSchemaDriftTest`; starší běhy klíč nemají), platforma,
+připojení s původem,
 model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
 `repeat`, `plannedCalls` a `stoppedBy` (`maxCost` / `cancelled` / null,
 F6b D61), `metrics`, `range`, `fieldStability`, `formatStability`,
