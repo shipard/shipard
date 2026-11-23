@@ -175,7 +175,7 @@ def party_block(identity: dict, person_id: str, *, with_bank: bool) -> dict:
     return block
 
 
-def _row_block(row: RowRec, position: int) -> dict:
+def _row_block(row: RowRec, position: int, story: Story) -> dict:
     block: dict = {
         "rowKind": "item",
         "operation": row.operation,
@@ -197,6 +197,9 @@ def _row_block(row: RowRec, position: int) -> dict:
         "description": row.description,
         "account": key_ref(row.account),
         "accSide": row.acc_side,
+        # Partner řádku referencí číslem osoby (#166 D30) — za symboly
+        # a splatností úhrady, které příběh nenese, před dimenzemi.
+        "partner": key_ref(story.party(row.partner_key).person_id) if row.partner_key else None,
         # Dimenze řádku (#131 fáze 2b, 2c) — poslední klíč bloku jako v exportéru,
         # v pořadí deklarace dimenzí (zakázka, majetek); prázdné pryč.
         "dimensions": {"workOrder": key_ref(row.work_order), "asset": key_ref(row.asset)},
@@ -247,9 +250,15 @@ def total_rounding_mode(doc: DocRec) -> str | None:
 def doc_record(doc: DocRec, story: Story) -> dict:
     side = partner_side(doc)
     party = None
+    # Partner hlavičky účetního dokladu jde polem `partner` (#166 D30), ne
+    # stranou — objekt s `ref` a daty bez bankovního spojení.
+    head_partner = None
     if doc.partner_key is not None and side is not None:
         partner = story.party(doc.partner_key)
         party = party_block(partner.identity, partner.person_id, with_bank=side == "supplier")
+    elif doc.partner_key is not None and doc.doc_type == "cmnbkp":
+        partner = story.party(doc.partner_key)
+        head_partner = party_block(partner.identity, partner.person_id, with_bank=False)
     apply_options: dict = {"targetDocState": doc.state}
     if doc.number is not None:
         apply_options["importNumber"] = {"docNumber": doc.number, "sequenceNumber": doc.sequence}
@@ -271,6 +280,7 @@ def doc_record(doc: DocRec, story: Story) -> dict:
         "cashDirection": doc.cash_direction,
         "supplier": party if side == "supplier" else None,
         "customer": party if side == "customer" else None,
+        "partner": head_partner,
         "dates": {
             "issueDate": _iso(doc.issue),
             "dueDate": _iso(doc.due),
@@ -297,7 +307,7 @@ def doc_record(doc: DocRec, story: Story) -> dict:
         "notes": {"onDocument": doc.note_on_document},
         # Dimenze hlavičky referencí přirozeným klíčem (zakázka číslem, #131 fáze 2b).
         "dimensions": {"workOrder": key_ref(doc.work_order)} if doc.work_order else None,
-        "rows": [_row_block(row, i) for i, row in enumerate(doc.rows, start=1)],
+        "rows": [_row_block(row, i, story) for i, row in enumerate(doc.rows, start=1)],
         "vatRecap": [{
             "vatCode": line.vat_code,
             "vatPct": php_float(line.vat_pct),

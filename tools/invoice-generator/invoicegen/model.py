@@ -31,6 +31,7 @@ class RowRec:
     supply_kind: str | None = None         # druh plnění na papíru zahraničního dodavatele (services), jen pro zprávu
     work_order: str | None = None          # dimenze zakázky na řádku (číslo zakázky, #131 fáze 2b)
     asset: str | None = None               # dimenze majetku na řádku (inventární číslo karty, #131 fáze 2c)
+    partner_key: str | None = None         # partner řádku (kontace, úhrada na pokladním dokladu) — klíč strany příběhu
     # výsledek výpočtu (doccalc):
     vat_base: Decimal | None = None
     vat_amount: Decimal | None = None

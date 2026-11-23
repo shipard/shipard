@@ -104,7 +104,7 @@ class DocumentExporterTest extends TestCase
             'partner' => null, 'payment_reference' => null, 'specific_symbol' => null, 'constant_symbol' => null,
             'due_date' => null, 'account' => null, 'acc_side' => null,
             'item_code' => 'K-001', 'item_name' => 'Konzultace IT', 'unit_code' => 'hour', 'unit_shortcut' => 'h',
-            'account_number' => null,
+            'account_number' => null, 'partner_person_id' => null,
         ];
     }
 
@@ -597,6 +597,7 @@ class DocumentExporterTest extends TestCase
         $row['acc_side'] = 1;
         $row['price_calc_mode'] = 1;
         $row['partner'] = 5;
+        $row['partner_person_id'] = 'F00005';
 
         $exporter = new DocumentExporter($this->db(rows: [$row], partner: false));
         $c = $exporter->exportDocument($this->headRow([
@@ -605,12 +606,46 @@ class DocumentExporterTest extends TestCase
 
         $this->assertSame('accountingDocument', $c['docType']);
         $this->assertArrayNotHasKey('selfParty', $c);
+        $this->assertArrayNotHasKey('partner', $c, 'doklad bez partnera hlavičky pole nenese');
         $this->assertSame('@518100', $c['rows'][0]['account']);
         $this->assertSame('credit', $c['rows'][0]['accSide']);
         $this->assertSame('fromTotal', $c['rows'][0]['priceCalcMode']);
         $this->assertArrayNotHasKey('item', $c['rows'][0]);
+        // Partner řádku jde polem (#166 D30) — reference číslem osoby, bez varování.
+        $this->assertSame('@F00005', $c['rows'][0]['partner']);
+        $this->assertSame([], $exporter->getWarnings());
+    }
+
+    /** #166 D30: partner hlavičky účetního dokladu jde polem `partner` (objekt s `ref` a daty), ne stranou. */
+    public function testAccountingDocumentHeadPartnerIsExportedAsPartnerField(): void
+    {
+        $exporter = new DocumentExporter($this->db());
+        $c = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'cmnbkp', 'doc_number' => 'UD-2026-0004', 'sequence_number' => 4, 'partner' => 5,
+        ]))->data;
+
+        $this->assertSame('@F00005', $c['partner']['ref']);
+        $this->assertSame('Dodavatel a.s.', $c['partner']['name']);
+        $this->assertArrayNotHasKey('bankAccount', $c['partner'], 'bankovní spojení nese jen strana dodavatele');
+        $this->assertArrayNotHasKey('supplier', $c);
+        $this->assertArrayNotHasKey('customer', $c);
+        $this->assertSame([], $exporter->getWarnings());
+        $this->assertSame($this->keyIndex($c, 'dates') - 1, $this->keyIndex($c, 'partner'), 'partner hned před dates');
+    }
+
+    /** Partner řádku bez čísla osoby nejde odkázat — varování a pole se vynechá; faktura pole `partner` nenese. */
+    public function testRowPartnerWithoutPersonNumberIsSkippedWithWarning(): void
+    {
+        $row = $this->itemRowRow();
+        $row['partner'] = 7;
+
+        $exporter = new DocumentExporter($this->db(rows: [$row]));
+        $c = $exporter->exportDocument($this->headRow())->data;
+
+        $this->assertArrayNotHasKey('partner', $c['rows'][0]);
+        $this->assertArrayNotHasKey('partner', $c, 'u faktury je partnerem strana');
         $this->assertCount(1, $exporter->getWarnings());
-        $this->assertStringContainsString('řádek 1 má partnera', $exporter->getWarnings()[0]);
+        $this->assertStringContainsString('partner #7 nemá číslo osoby', $exporter->getWarnings()[0]);
     }
 
     // ── pokladna na dokladu (#59 D12, #131 krok 0a) ─────────────────────────

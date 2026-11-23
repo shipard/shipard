@@ -39,7 +39,11 @@ use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
  * s nevýchozí hodnotou (`totals.totalRoundingMode` při vypnuté automatice,
  * `vat.roundingMode`; #166 D25) — pokyn mód neodhaduje, bez pole je na
  * haléře. Částky `totals` jsou při seedu kontrolní součet (#166 D4).
- * Řádkový partner (účetní doklad) formát nenese → warning.
+ *
+ * Partner hlavičky účetního dokladu jde polem `partner` (objekt s `ref`
+ * a daty jako strana), partner řádku polem `rows[].partner` (reference
+ * `"@<person_id>"`) — #166 D30. U pokladního dokladu a prodejky nese
+ * partnera hlavičky strana podle směru (s bankovním spojením dodavatele).
  */
 final class DocumentExporter implements RecordExporter
 {
@@ -282,8 +286,8 @@ final class DocumentExporter implements RecordExporter
         // partner dodavatel; vydaná (i zálohová) a prodejka → naopak;
         // pokladní doklad podle směru (`cash_dir` 1 příjem → jako vydaná,
         // 2 výdej → jako přijatá vč. bankovního spojení dodavatele; zrcadlí
-        // `DocDocument::resolveTradeDir`); účetní doklad partnera v hlavičce
-        // nemá povinně.
+        // `DocDocument::resolveTradeDir`); účetní doklad strany nemá — jeho
+        // nepovinný partner hlavičky jde polem `partner` (#166 D30).
         $cashDir = V::int($h['cash_dir'] ?? null);
         [$selfParty, $partnerSide] = match ($docTypeCode) {
             'invno', 'invpo', 'cashreg' => ['supplier', 'customer'],
@@ -299,9 +303,6 @@ final class DocumentExporter implements RecordExporter
                 'iban'          => V::str($h['partner_bank_iban'] ?? null),
                 'bic'           => V::str($h['partner_bank_bic'] ?? null),
             ]) ?: null;
-        }
-        if ($docTypeCode === 'cmnbkp' && $partner !== null) {
-            $this->warnings[] = "docs {$label}: hlavičkový partner účetního dokladu formát nenese (přenáší se jen řádkové údaje)";
         }
 
         $applyOptions = [
@@ -373,6 +374,9 @@ final class DocumentExporter implements RecordExporter
             'balanceParty'  => !empty($h['partner_balance_manual'])
                 ? $this->party(isset($h['partner_balance']) ? (int) $h['partner_balance'] : null)
                 : null,
+            // Partner hlavičky účetního dokladu (#166 D30); ostatní typy ho
+            // nesou stranou.
+            'partner'       => $docTypeCode === 'cmnbkp' ? $partner : null,
             'dates'         => [
                 'issueDate'         => V::date($h['issue_date'] ?? null),
                 'dueDate'           => V::date($h['due_date'] ?? null),
@@ -551,11 +555,13 @@ final class DocumentExporter implements RecordExporter
             : '';
         $rows = $this->db->fetchAll(
             'SELECT [r.*], [i.code] AS [item_code], [i.name] AS [item_name],'
-            . ' [u.system_code] AS [unit_code], [u.shortcut] AS [unit_shortcut]'
+            . ' [u.system_code] AS [unit_code], [u.shortcut] AS [unit_shortcut],'
+            . ' [p.person_id] AS [partner_person_id]'
             . $accountSelect
             . ' FROM [docs_core_rows] AS [r]'
             . ' LEFT JOIN [economy_items] AS [i] ON [i.id] = [r.item]'
             . ' LEFT JOIN [core_units] AS [u] ON [u.id] = [r.unit]'
+            . ' LEFT JOIN [base_persons_persons] AS [p] ON [p.id] = [r.partner]'
             . $accountJoin
             . ' WHERE [r.doc_head] = %i ORDER BY [r.order_pos], [r.id]',
             $headId,
@@ -564,8 +570,10 @@ final class DocumentExporter implements RecordExporter
         $out = [];
         foreach ($rows as $r) {
             $r = is_array($r) ? $r : $r->toArray();
-            if (V::int($r['partner'] ?? null) !== null) {
-                $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} má partnera, formát ho nenese";
+            // Partner řádku (#166 D30) — reference číslem osoby.
+            $partnerRef = self::keyReference($r['partner_person_id'] ?? null);
+            if ($partnerRef === null && V::int($r['partner'] ?? null) !== null) {
+                $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} — partner #{$r['partner']} nemá číslo osoby, nelze přenést";
             }
             $accSide = V::int($r['acc_side'] ?? null);
             $itemRef = self::keyReference($r['item_code'] ?? null);
@@ -613,6 +621,7 @@ final class DocumentExporter implements RecordExporter
                 'specificSymbol'   => V::str($r['specific_symbol'] ?? null),
                 'constantSymbol'   => V::str($r['constant_symbol'] ?? null),
                 'dueDate'          => V::date($r['due_date'] ?? null),
+                'partner'          => $partnerRef,
                 'dimensions'       => $this->dimensionValues($r, false, $label),
             ]);
         }

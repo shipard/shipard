@@ -139,6 +139,33 @@ class DocDimensionsTest(unittest.TestCase):
         self.assertNotIn("numberSeries", cash, "řadu typu vázaného na pokladnu určuje pokladna")
         self.assertNotIn("ownBankAccount", cash["payment"])
 
+    def test_accounting_document_partner_goes_to_partner_fields(self) -> None:
+        # #166 D30: partner hlavičky účetního dokladu je pole `partner` (objekt
+        # s `ref` a daty, bez bankovního spojení), partner řádku reference —
+        # jako `DocumentExporter`; faktura partnera nese dál stranou.
+        story = load_story(REPO_ROOT / "demo" / "datasets" / "stories" / "it-servis", load_catalogs(REPO_ROOT))
+        debit = RowRec(operation="acc.record", description="přeúčtování", total_price=Decimal("500"), account="518100", acc_side="debit")
+        credit = RowRec(operation="acc.record", description="závazek", total_price=Decimal("500"), account="321100", acc_side="credit",
+                        partner_key="cipdeska")
+        record = doc_record(doc("cmnbkp", partner_key="kopretina", number="8260001", sequence=1, vat_mode="none",
+                                vat_registration=False, rows=[debit, credit]), story)
+
+        self.assertEqual("@F00001", record["partner"]["ref"])
+        self.assertEqual("Autodoprava Kopretina s.r.o.", record["partner"]["name"])
+        self.assertNotIn("bankAccount", record["partner"])
+        self.assertNotIn("supplier", record)
+        self.assertNotIn("customer", record)
+        keys = list(record)
+        self.assertEqual(keys.index("dates") - 1, keys.index("partner"), "pořadí klíčů jako v exportéru")
+        self.assertNotIn("partner", record["rows"][0])
+        supplier_ref = "@" + story.party("cipdeska").person_id
+        self.assertEqual(supplier_ref, record["rows"][1]["partner"])
+        row_keys = list(record["rows"][1])
+        self.assertEqual(row_keys.index("accSide") + 1, row_keys.index("partner"))
+
+        invoice = doc_record(doc("invno", partner_key="kopretina", self_party="supplier", number="1260001", sequence=1), story)
+        self.assertNotIn("partner", invoice)
+
     def test_asset_purchase_row_carries_account_and_card(self) -> None:
         # #131 fáze 2c: řádek pořízení bez položky, účet přímo, karta jako dimenze
         # za zakázkou (pořadí deklarace dimenzí); řádek nákladu jen s kartou.
