@@ -17,8 +17,9 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  *
  * Ověřuje Fázi 4a: applier přijme kanonický účetní doklad s kontačními řádky
  * a zapíše cmnbkp s účtem (z čísla), stranou, částkou a per-řádkovou saldo
- * identitou; bez hlavičkového partnera (žádná selfParty chyba); na stavu 40
- * se přes dispatcher zaúčtuje (vyrovnaný deník).
+ * identitou — partner řádku polem `rows[].partner` (#166 D30); bez
+ * hlavičkového partnera (žádná selfParty chyba), s polem `partner` ho
+ * hlavička nese; na stavu 40 se přes dispatcher zaúčtuje (vyrovnaný deník).
  */
 class AccountingDocumentImportTest extends IntegrationTestCase
 {
@@ -116,12 +117,9 @@ class AccountingDocumentImportTest extends IntegrationTestCase
                 ['operation' => 'acc.record', 'account' => '@518100', 'accSide' => 'debit',
                  'totalPrice' => 1000.0],
                 // DAL závazek 321100 / 1000 s partnerem + VS (per-řádková identita)
+                // Partner řádku referencí id (#166 D30).
                 ['operation' => 'acc.record', 'account' => '@321100', 'accSide' => 'credit',
-                 'totalPrice' => 1000.0, 'paymentReference' => 'VS-' . $seq],
-            ],
-            '_resolve' => [
-                // Per-řádkový partner pin na DAL řádek.
-                'rows' => [1 => ['partner' => ['userAction' => 'useExisting:' . $this->partnerId]]],
+                 'totalPrice' => 1000.0, 'paymentReference' => 'VS-' . $seq, 'partner' => $this->partnerId],
             ],
             'applyOptions' => [
                 'targetDocState' => 40,
@@ -234,6 +232,7 @@ class AccountingDocumentImportTest extends IntegrationTestCase
             'operation'        => 'acc.fxLossReceivable',
             'totalPrice'       => 50806.73,
             'paymentReference' => '1300001',
+            'partner'          => $this->partnerId,
         ];
         if ($withAccSide) {
             $fxRow['accSide'] = 'credit';
@@ -245,10 +244,9 @@ class AccountingDocumentImportTest extends IntegrationTestCase
             'docType'       => 'accountingDocument',
             'source'        => ['kind' => 'import'],
             'dates'         => ['issueDate' => '2026-06-10', 'accountingDate' => '2026-06-10'],
+            // Partner hlavičky polem (#166 D30) — reference id.
+            'partner'       => $this->partnerId,
             'rows'          => [$fxRow],
-            '_resolve'      => [
-                'rows' => [0 => ['partner' => ['userAction' => 'useExisting:' . $this->partnerId]]],
-            ],
             'applyOptions'  => [
                 'targetDocState' => 40,
                 'importNumber'   => ['docNumber' => $ourNumber, 'sequenceNumber' => $seq],
@@ -263,6 +261,8 @@ class AccountingDocumentImportTest extends IntegrationTestCase
         );
         $docId = (int) $result->savedId;
         $this->createdDocIds[] = $docId;
+        $head = $this->db->fetchRow('SELECT partner FROM docs_core_heads WHERE id = %i', $docId);
+        $this->assertSame($this->partnerId, (int) $head['partner'], 'partner hlavičky z pole');
         return $docId;
     }
 

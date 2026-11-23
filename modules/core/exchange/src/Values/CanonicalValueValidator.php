@@ -51,6 +51,7 @@ final class CanonicalValueValidator
         'supplier'     => 'dodavatele',
         'customer'     => 'odběratele',
         'balanceParty' => 'plátce',
+        'partner'      => 'partnera',
     ];
 
     /** Cesty polí strany podle druhu hodnoty nálezu. */

@@ -561,6 +561,7 @@ final class DocumentApplierInstructionTest extends TestCase
         $this->assertSame([], $learned($instruction));
     }
 
+    /** D32: pokyn `_resolve` nečte — volby DPH (i neplatné) kryje jeden info nález `resolve_ignored`. */
     public function testVatPinsFromResolveAreIgnoredWithInfo(): void
     {
         $payload = $this->withPins($this->hotelPayload(), [
@@ -575,15 +576,13 @@ final class DocumentApplierInstructionTest extends TestCase
 
         $ignored = array_values(array_filter(
             $canonical['_resolve']['issues'],
-            static fn (array $issue): bool => $issue['code'] === 'vat_pin_ignored',
+            static fn (array $issue): bool => $issue['code'] === 'resolve_ignored',
         ));
-        $this->assertSame(['info'], array_values(array_unique(array_column($ignored, 'severity'))));
-        $paths = array_column($ignored, 'path');
-        sort($paths);
-        $this->assertSame(
-            ['rows.0.vat.code', 'rows.1.vat.code', 'rows.1.vat.reverseChargeCode', 'vat.mode', 'vat.place'],
-            $paths,
-        );
+        $this->assertSame([['severity' => 'info', 'path' => '_resolve']], array_map(
+            static fn (array $issue): array => ['severity' => $issue['severity'], 'path' => $issue['path']],
+            $ignored,
+        ), 'jeden nález za celý blok');
+        $this->assertNotContains('vat_pin_ignored', $this->issueCodes($canonical));
         $this->assertNotContains('vat_pin_invalid', $this->issueCodes($canonical), 'neplatná volba se v pokynu nevaliduje');
         $this->assertSame('intracom', $canonical['_resolve']['vat']['place']['value']);
         $this->assertSame('fromBase', $canonical['_resolve']['vat']['mode']['value']);

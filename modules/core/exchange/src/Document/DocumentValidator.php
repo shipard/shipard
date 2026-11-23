@@ -57,6 +57,7 @@ final class DocumentValidator
 
         $this->checkCommonRequired($canonical, $issues);
         $this->checkPerDocType($canonical, $issues);
+        $this->checkHeadPartner($canonical, $mode, $issues);
         if ($mode->derives()) {
             $this->checkTotalsCoherence($canonical, $issues);
             $this->checkVatModeSuspect($canonical, $issues);
@@ -78,6 +79,32 @@ final class DocumentValidator
         }
 
         return $issues;
+    }
+
+    /**
+     * Pole `partner` na hlavičce (#166 D30) nesou jen účetní doklad a typy
+     * vázané na pokladnu ({@see CanonicalReferences::HEAD_PARTNER_DOC_TYPES}).
+     * U faktur je partnerem strana: pokyn pole odmítá chybou
+     * `partner_not_supported`; návrh (předloha z papíru, kde pole vyplnil
+     * model) ho s varováním ignoruje.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkHeadPartner(array $canonical, ApplyMode $mode, array &$issues): void
+    {
+        if (!CanonicalReferences::partnerIsSet($canonical[CanonicalReferences::PARTNER] ?? null)
+            || CanonicalReferences::carriesHeadPartner($canonical)
+        ) {
+            return;
+        }
+        $issues[] = [
+            'severity' => $mode->derives() ? 'warning' : 'error',
+            'path'     => CanonicalReferences::PARTNER,
+            'code'     => 'partner_not_supported',
+            'message'  => $mode->derives()
+                ? 'Pole partner platí jen u účetního a pokladního dokladu — ignorováno, partnerem je strana dokladu.'
+                : 'Pole partner platí jen u účetního a pokladního dokladu — u tohoto typu urči partnera stranou (supplier / customer).',
+        ];
     }
 
     /**

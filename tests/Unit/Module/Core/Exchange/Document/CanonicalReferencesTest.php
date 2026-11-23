@@ -9,8 +9,8 @@ use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 
 /**
  * Tvar referencí v kanonickém dokladu (#166 D30–D33, D39): strana a položka
- * jen referencí, identifikující údaje, signál účtu, volby `_resolve`,
- * které pokyn nečte.
+ * jen referencí, partner hlavičky a řádku, identifikující údaje, signál
+ * účtu, blok `_resolve`, který pokyn nečte.
  */
 final class CanonicalReferencesTest extends TestCase
 {
@@ -105,29 +105,55 @@ final class CanonicalReferencesTest extends TestCase
         $this->assertSame($changed, CanonicalReferences::revertSuggestedAccount(CanonicalReferences::revertSuggestedItem($changed, 'NET500'), '518001'));
     }
 
-    /** D32: pokyn nečte volby, které určují referenci; ostatní bloky `_resolve` zůstávají. */
-    public function testReferencePinsAreRemovedAndOtherBlocksKept(): void
+    /** D30: partner hlavičky i řádku jen referencí se rozbalí stejně jako strana. */
+    public function testExpandTurnsScalarPartnerIntoObjectWithRef(): void
     {
-        $canonical = CanonicalReferences::withoutReferencePins(['_resolve' => [
-            'supplier'     => ['userAction' => 'useExisting:42'],
-            'supplierBank' => ['userAction' => 'create'],
-            'correction'   => ['userAction' => 'useExisting:77'],
-            'partner'      => ['userAction' => 'useExisting:5'],
-            'vat'          => ['mode' => ['userAction' => 'none']],
-            'contentTag'   => ['tag' => 'it.software'],
-            'rows'         => [
-                ['index' => 0, 'item' => ['userAction' => 'useExisting:18'], 'partner' => ['userAction' => 'useExisting:5'], 'enrichment' => ['source' => 'history']],
+        $canonical = CanonicalReferences::expand([
+            'partner' => '@F00042',
+            'rows'    => [
+                ['partner' => 42, 'item' => '@K-001'],
+                ['partner' => ['ref' => '@F00042', 'name' => 'Partner']],
+                ['description' => 'bez partnera'],
             ],
-        ]]);
+        ]);
 
-        $this->assertSame([
-            'partner'    => ['userAction' => 'useExisting:5'],
-            'vat'        => ['mode' => ['userAction' => 'none']],
-            'contentTag' => ['tag' => 'it.software'],
-            'rows'       => [
-                ['index' => 0, 'partner' => ['userAction' => 'useExisting:5'], 'enrichment' => ['source' => 'history']],
-            ],
-        ], $canonical['_resolve']);
-        $this->assertSame(['docType' => 'x'], CanonicalReferences::withoutReferencePins(['docType' => 'x']));
+        $this->assertSame(['ref' => '@F00042'], $canonical['partner']);
+        $this->assertSame([['ref' => 42], ['ref' => '@F00042', 'name' => 'Partner'], null], array_map(
+            static fn (array $row): ?array => $row['partner'] ?? null,
+            $canonical['rows'],
+        ));
+        $this->assertSame(['ref' => '@K-001'], $canonical['rows'][0]['item']);
+        $this->assertSame($canonical, CanonicalReferences::expand($canonical), 'idempotentní');
+    }
+
+    /** D30: pole `partner` nese hlavička účetního dokladu a typů vázaných na pokladnu, faktura ne. */
+    public function testHeadPartnerIsCarriedOnlyByAccountingAndCashDocuments(): void
+    {
+        $this->assertTrue(CanonicalReferences::partnerIsSet(['ref' => 42]));
+        $this->assertTrue(CanonicalReferences::partnerIsSet(['name' => 'Partner']));
+        $this->assertFalse(CanonicalReferences::partnerIsSet(['ref' => null, 'name' => '']));
+        $this->assertFalse(CanonicalReferences::partnerIsSet(null));
+
+        foreach (['accountingDocument', 'cashDocument', 'cashRegisterDocument'] as $docType) {
+            $this->assertTrue(CanonicalReferences::carriesHeadPartner(['docType' => $docType, 'partner' => ['ref' => 42]]), $docType);
+        }
+        $this->assertFalse(CanonicalReferences::carriesHeadPartner(['docType' => 'invoiceIssued', 'partner' => ['ref' => 42]]));
+        $this->assertFalse(CanonicalReferences::carriesHeadPartner(['docType' => 'accountingDocument', 'partner' => []]));
+    }
+
+    /** D32: pokyn `_resolve` nečte vůbec — blok zmizí celý. */
+    public function testResolveBlockIsRemovedWhole(): void
+    {
+        $canonical = ['docType' => 'x', '_resolve' => [
+            'supplier' => ['userAction' => 'useExisting:42'],
+            'partner'  => ['userAction' => 'useExisting:5'],
+            'vat'      => ['mode' => ['userAction' => 'useValue:none']],
+            'rows'     => [['index' => 0, 'partner' => ['userAction' => 'useExisting:5'], 'enrichment' => ['source' => 'history']]],
+        ]];
+
+        $this->assertTrue(CanonicalReferences::carriesResolve($canonical));
+        $this->assertSame(['docType' => 'x'], CanonicalReferences::withoutResolve($canonical));
+        $this->assertFalse(CanonicalReferences::carriesResolve(['docType' => 'x']));
+        $this->assertFalse(CanonicalReferences::carriesResolve(['docType' => 'x', '_resolve' => []]), 'prázdný blok nic nenese');
     }
 }

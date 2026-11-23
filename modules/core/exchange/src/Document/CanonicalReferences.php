@@ -9,11 +9,12 @@ namespace Shipard\Module\Core\Exchange\Document;
  * bez databáze. Hodnotu reference rozebírá `ReferenceValue` a hledá
  * `ReferenceResolver`; tady je jen to, co je vlastní formátu dokladu:
  *
- *  - strana a položka smí být reference sama, nebo objekt s `ref`
- *    ({@see expand()} sjednotí na objekt, aby zbytek kódu četl jedno);
+ *  - strana, partner (hlavičky i řádku) a položka smí být reference
+ *    sama, nebo objekt s `ref` ({@see expand()} sjednotí na objekt, aby
+ *    zbytek kódu četl jedno);
  *  - které údaje strany a položky „identifikují“ (objekt bez `ref` s nimi
  *    je v pokynu chyba `reference_missing`);
- *  - které volby `_resolve` pokyn nečte ({@see withoutReferencePins()});
+ *  - pokyn `_resolve` nečte vůbec ({@see withoutResolve()}, D32);
  *  - účet řádku holým číslem je signál návrhu, ne reference;
  *  - položka a účet řádku, jak je čte a zapisuje obohacení návrhu
  *    ({@see rowItemIsSet()}, {@see suggestItem()} …): nově reference
@@ -24,33 +25,48 @@ final class CanonicalReferences
 {
     public const PARTIES = ['supplier', 'customer', 'balanceParty'];
 
+    /**
+     * Partner hlavičky účetního dokladu a dokladu vázaného na pokladnu
+     * a partner řádku (#166 D30) — stejný tvar jako strana.
+     */
+    public const PARTNER = 'partner';
+
+    /**
+     * Typy dokladu, jejichž hlavička nese pole `partner`: účetní doklad
+     * a typy vázané na pokladnu. U faktur je partnerem strana.
+     */
+    public const HEAD_PARTNER_DOC_TYPES = ['accountingDocument', 'cashDocument', 'cashRegisterDocument'];
+
     /** Údaje strany, podle kterých hledá návrh — bez `ref` jsou v pokynu chybou. */
     private const PARTY_IDENTITY = ['name', 'companyId', 'vatId', 'taxId'];
 
     /** Údaje položky, podle kterých hledá návrh (`ourCode` hlídá validátor jako signál). */
     private const ITEM_IDENTITY = ['name', 'supplierCode', 'ean', 'sku'];
 
-    /** Volby `_resolve`, které určují referenci — pokyn je nečte (D32). */
-    private const REFERENCE_PINS = ['supplier', 'customer', 'balanceParty', 'supplierBank', 'correction'];
-
     /**
-     * Strana a položka zadané jen referencí (`"supplier": 42`,
-     * `"item": "@KOD"`) → objekt `{"ref": …}`. Idempotentní.
+     * Strana, partner a položka zadané jen referencí (`"supplier": 42`,
+     * `"partner": "@K00042"`, `"item": "@KOD"`) → objekt `{"ref": …}`.
+     * Idempotentní.
      *
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>
      */
     public static function expand(array $canonical): array
     {
-        foreach (self::PARTIES as $key) {
+        foreach ([...self::PARTIES, self::PARTNER] as $key) {
             if (self::isReference($canonical[$key] ?? null)) {
                 $canonical[$key] = ['ref' => $canonical[$key]];
             }
         }
         if (is_array($canonical['rows'] ?? null)) {
             foreach ($canonical['rows'] as $i => $row) {
-                if (is_array($row) && self::isReference($row['item'] ?? null)) {
-                    $canonical['rows'][$i]['item'] = ['ref' => $row['item']];
+                if (!is_array($row)) {
+                    continue;
+                }
+                foreach (['item', self::PARTNER] as $key) {
+                    if (self::isReference($row[$key] ?? null)) {
+                        $canonical['rows'][$i][$key] = ['ref' => $row[$key]];
+                    }
                 }
             }
         }
@@ -88,6 +104,26 @@ final class CanonicalReferences
     public static function itemIdentifies(array $item): bool
     {
         return self::hasAny($item, self::ITEM_IDENTITY);
+    }
+
+    /**
+     * Je pole partnera vyplněné — referencí, nebo údaji osoby? Čte tvar
+     * po {@see expand()}.
+     */
+    public static function partnerIsSet(mixed $partner): bool
+    {
+        return is_array($partner) && (self::isSet($partner['ref'] ?? null) || self::partyHasData($partner));
+    }
+
+    /**
+     * Nese doklad partnera hlavičky v poli `partner` a smí ho jeho typ nést?
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function carriesHeadPartner(array $canonical): bool
+    {
+        return self::partnerIsSet($canonical[self::PARTNER] ?? null)
+            && in_array($canonical['docType'] ?? null, self::HEAD_PARTNER_DOC_TYPES, true);
     }
 
     /**
@@ -209,30 +245,26 @@ final class CanonicalReferences
     }
 
     /**
-     * `_resolve` bez voleb, které určují referenci (strany, účet partnera,
-     * původní doklad, položky řádků) — pokyn je nečte (D32). Dočasně
-     * zůstávají `partner` a `rows[].partner`
-     * (tasks/doc-format-partner-fields.md); ostatní bloky (volby DPH, které
-     * pokyn hlásí jako `vat_pin_ignored`, auditní bloky) se nemění.
+     * Nese payload blok `_resolve`? V pokynu se celý ignoruje s jedním info
+     * nálezem `resolve_ignored` (D32).
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function carriesResolve(array $canonical): bool
+    {
+        return is_array($canonical['_resolve'] ?? null) && $canonical['_resolve'] !== [];
+    }
+
+    /**
+     * Canonical bez bloku `_resolve` — pokyn ho nečte vůbec (D32): volby
+     * uživatele patří návrhu, reference určuje payload.
      *
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>
      */
-    public static function withoutReferencePins(array $canonical): array
+    public static function withoutResolve(array $canonical): array
     {
-        if (!is_array($canonical['_resolve'] ?? null)) {
-            return $canonical;
-        }
-        foreach (self::REFERENCE_PINS as $key) {
-            unset($canonical['_resolve'][$key]);
-        }
-        if (is_array($canonical['_resolve']['rows'] ?? null)) {
-            foreach ($canonical['_resolve']['rows'] as $i => $row) {
-                if (is_array($row)) {
-                    unset($canonical['_resolve']['rows'][$i]['item']);
-                }
-            }
-        }
+        unset($canonical['_resolve']);
         return $canonical;
     }
 

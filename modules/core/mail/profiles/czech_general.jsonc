@@ -285,6 +285,10 @@
                                         "balanceParty": {
                                             "$ref": "#/$defs/Party"
                                         },
+                                        "partner": {
+                                            "$ref": "#/$defs/Party",
+                                            "description": "Head partner of an accounting document or a cash-desk document, given as a reference (see Party). Written by scripts, datasets and Shipard itself. On invoices the partner is the supplier / customer party — never fill this field from a paper document."
+                                        },
                                         "dates": {
                                             "type": "object",
                                             "additionalProperties": false,
@@ -1007,6 +1011,10 @@
                                                         "null"
                                                     ],
                                                     "format": "date"
+                                                },
+                                                "partner": {
+                                                    "$ref": "#/$defs/Party",
+                                                    "description": "Partner of the row (accounting entry, payment of an invoice in cash) as a reference (see Party). Written by scripts, datasets and Shipard itself — never fill this field from a paper document."
                                                 },
                                                 "dimensions": {
                                                     "type": [

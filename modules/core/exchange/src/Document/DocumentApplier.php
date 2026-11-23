@@ -375,12 +375,13 @@ class DocumentApplier
      */
     private static function normalizeValues(array $canonical, ApplyMode $mode): array
     {
-        // Reference (#166 D30, D32): strana a položka zadané jen referencí
-        // → objekt s `ref`, aby zbytek applieru četl jeden tvar; pokyn
-        // nečte volby `_resolve`, které určují referenci.
+        // Reference (#166 D30, D32): strana, partner a položka zadané jen
+        // referencí → objekt s `ref`, aby zbytek applieru četl jeden tvar;
+        // pokyn `_resolve` nečte vůbec — blok se zahodí hned tady a volající
+        // ho ohlásí ({@see appendResolveIgnoredIssue()}).
         $canonical = CanonicalReferences::expand($canonical);
         if (!$mode->derives()) {
-            $canonical = CanonicalReferences::withoutReferencePins($canonical);
+            $canonical = CanonicalReferences::withoutResolve($canonical);
         }
         return $mode->derives()
             ? CanonicalValueNormalizer::normalize($canonical)
@@ -492,6 +493,71 @@ class DocumentApplier
     }
 
     /**
+     * Partner hlavičky účetního a pokladního dokladu a partner řádku (#166
+     * D30): hledá se **jen přes `ref`**, v obou režimech — pole je nové,
+     * žádný uložený návrh ho nenese, takže se podle údajů nehledá ani
+     * v návrhu. Objekt s názvem, IČO nebo DIČ bez `ref` je v pokynu chyba
+     * `reference_missing`; v návrhu varování a pole se nepoužije (dál platí
+     * volba `_resolve…partner`, u pokladního dokladu strana).
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed>|null blok `_resolve`; null = pole partnera neurčuje
+     */
+    private function resolvePartner(string $path, mixed $partner, ApplyMode $mode, array &$issues): ?array
+    {
+        if (!is_array($partner)) {
+            return null;
+        }
+        if (CanonicalReferences::isSet($partner['ref'] ?? null)) {
+            return $this->referenceBlock('base_persons_persons', $partner['ref'], $path, $issues);
+        }
+        if (!CanonicalReferences::partyIdentifies($partner)) {
+            return null;
+        }
+        $issues[] = [
+            'severity' => $mode->derives() ? 'warning' : 'error',
+            'path'     => $path,
+            'code'     => 'reference_missing',
+            'message'  => $mode->derives()
+                ? 'Partner nese údaje osoby, ale ne referenci — pole se nepoužije.'
+                : 'Partner nese údaje osoby, ale ne referenci — v pokynu ho urči polem ref (id, "@kód osoby", "@company_id:IČO").',
+        ];
+        return $mode->derives() ? null : self::REFERENCE_ERROR_BLOCK;
+    }
+
+    /**
+     * Pokyn `_resolve` nečte (#166 D32): payload, který blok nese, projde
+     * a dostane jeden info nález — volby uživatele patří návrhu.
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private static function appendResolveIgnoredIssue(bool $ignored, array &$issues): void
+    {
+        if ($ignored) {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => '_resolve',
+                'code'     => 'resolve_ignored',
+                'message'  => 'Blok _resolve platí jen v režimu návrh — pokyn ho ignoruje; záznamy urči referencí v polích dokladu.',
+            ];
+        }
+    }
+
+    /** Nese pokyn blok `_resolve`, který se bude ignorovat? Volat před {@see normalizeValues()}. */
+    private static function ignoresResolve(array $canonical, ApplyMode $mode): bool
+    {
+        return !$mode->derives() && CanonicalReferences::carriesResolve($canonical);
+    }
+
+    /** Id osoby z bloku `_resolve`, jen když se našla. */
+    private static function matchedPersonId(mixed $block): ?int
+    {
+        return is_array($block) && ($block['status'] ?? null) === ResolveStatus::Matched->value && isset($block['matchedId'])
+            ? (int) $block['matchedId']
+            : null;
+    }
+
+    /**
      * Účet řádku: reference (číslo = id, `"@518100"`) v obou režimech;
      * holé číslo je signál návrhu (D39) — návrh ho hledá jako dřív
      * a nenalezený jen varuje, pokyn ho odmítá ve validátoru.
@@ -556,8 +622,10 @@ class DocumentApplier
         }
 
         // Tvary hodnot (v návrhu i oprava IBAN ↔ číslo účtu, #118 D2) — po schématu, před DocumentValidator.
+        $resolveIgnored = self::ignoresResolve($canonical, $mode);
         $canonical = self::normalizeValues($canonical, $mode);
         $validatorIssues = $this->documentValidator->validate($canonical, $mode);
+        self::appendResolveIgnoredIssue($resolveIgnored, $validatorIssues);
         $this->appendAuthorIssue($canonical, $validatorIssues);
         $enriched = $this->withResolveIssues($canonical, $validatorIssues);
 
@@ -592,6 +660,7 @@ class DocumentApplier
 
         // 1b. Tvary hodnot, v návrhu i oprava IBAN ↔ číslo účtu (#118 D2) — náhled
         //     vrací normalizovaný canonical; `_resolve.valueRepairs` přenáší withResolve().
+        $resolveIgnored = self::ignoresResolve($canonical, $mode);
         $canonical = self::normalizeValues($canonical, $mode);
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
@@ -601,6 +670,7 @@ class DocumentApplier
         $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         $rowSkips = $this->skippedRowIndices($canonical, $clientResolve, $mode);
         $issues = $this->documentValidator->validate($canonical, $mode);
+        self::appendResolveIgnoredIssue($resolveIgnored, $issues);
         $this->appendAuthorIssue($canonical, $issues);
         $this->appendVatModeIssue($canonical, $issues, $mode);
         $this->appendVatHeaderIssues($canonical, $issues, $mode);
@@ -940,7 +1010,7 @@ class DocumentApplier
                 'supplier' => isset($resolved['customer']),
                 default    => isset($resolved['supplier']) || isset($resolved['customer']),
             };
-            if ($carried) {
+            if ($carried || isset($resolved['partner'])) {
                 $pending[] = 'partner';
             }
         }
@@ -949,6 +1019,10 @@ class DocumentApplier
             if ($carriesItem && ($plan['resolvedRowItems'][$index] ?? null) === null) {
                 $pending[] = "rows.{$position}.item";
                 $pending[] = "rows.{$position}.operation";
+            }
+            // Partner řádku, jehož reference se nenašla — chybu už nese nález.
+            if (isset($resolved['rows'][$index]['partner']) && ($plan['resolvedRowPartners'][$index] ?? null) === null) {
+                $pending[] = "rows.{$position}.partner";
             }
         }
         return $pending;
@@ -1042,12 +1116,14 @@ class DocumentApplier
         // Tvary hodnot (#118 D2) — i v importním módu; na hlavičku i do
         // založených účtů jdou normalizované hodnoty. Oprava IBAN ↔ číslo
         // účtu je interpretace, běží jen v návrhu (#166 D19).
+        $resolveIgnored = self::ignoresResolve($canonical, $mode);
         $canonical = self::normalizeValues($canonical, $mode);
         $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         // Vynechané řádky (#111 D9, D12) — tentýž seznam pro důvod přepočtu
         // rekapitulace i pro plán.
         $rowSkips = $this->skippedRowIndices($canonical, $clientResolve, $mode);
         $validatorIssues = $this->documentValidator->validate($canonical, $mode);
+        self::appendResolveIgnoredIssue($resolveIgnored, $validatorIssues);
         $this->appendAuthorIssue($canonical, $validatorIssues);
         $this->appendVatModeIssue($canonical, $validatorIssues, $mode);
         $this->appendVatHeaderIssues($canonical, $validatorIssues, $mode);
@@ -1302,6 +1378,16 @@ class DocumentApplier
             if ($accountBlock !== null) {
                 $rowResolve['account'] = $accountBlock;
             }
+            // Partner řádku (kontace, úhrada, záloha) — {@see resolvePartner()}.
+            $partnerBlock = $this->resolvePartner(
+                "rows.{$idx}.partner",
+                is_array($row) ? ($row[CanonicalReferences::PARTNER] ?? null) : null,
+                $mode,
+                $issues,
+            );
+            if ($partnerBlock !== null) {
+                $rowResolve['partner'] = $partnerBlock;
+            }
             if (!empty($row['unit'])) {
                 // Pokyn (#166 D37): jen přesný systémový kód, neznámá
                 // jednotka je chyba; zkratky a aliasy zná jen návrh.
@@ -1378,6 +1464,30 @@ class DocumentApplier
         }
         if ($supplierBankResult !== null) {
             $resolved['supplierBank'] = $supplierBankResult->toArray();
+        }
+        // Partner hlavičky (#166 D30) — jen účetní doklad a typy vázané na
+        // pokladnu; u faktur je partnerem strana (nález dává validátor).
+        $headPartner = CanonicalReferences::carriesHeadPartner($canonical)
+            ? $this->resolvePartner(CanonicalReferences::PARTNER, $canonical[CanonicalReferences::PARTNER] ?? null, $mode, $issues)
+            : null;
+        if ($headPartner !== null) {
+            $resolved['partner'] = $headPartner;
+            // Pokladní doklad: partnera hlavičky nese i strana podle směru —
+            // dvě různé osoby pokyn neuloží (v návrhu má pole přednost).
+            $headPartnerId = self::matchedPersonId($headPartner);
+            $partyPartnerId = match ($canonical['selfParty'] ?? null) {
+                'customer' => self::matchedPersonId($supplierResult),
+                'supplier' => self::matchedPersonId($customerResult),
+                default    => self::matchedPersonId($supplierResult) ?? self::matchedPersonId($customerResult),
+            };
+            if (!$mode->derives() && $headPartnerId !== null && $partyPartnerId !== null && $headPartnerId !== $partyPartnerId) {
+                $issues[] = [
+                    'severity' => 'error',
+                    'path'     => CanonicalReferences::PARTNER,
+                    'code'     => 'partner_conflict',
+                    'message'  => 'Pole partner a strana dokladu určují různé osoby — partnera pokladního dokladu urči jedním z nich.',
+                ];
+            }
         }
         // Opravný doklad (#92 task B U3): výsledek dohledání původního dokladu
         // do náhledu — tvar jako ResolveResult::toArray(); souhrn ho nepočítá,
@@ -1638,13 +1748,16 @@ class DocumentApplier
             'resolvedRowDimensions'  => [],
         ];
 
-        // Hlavičkový partner účetního dokladu — nepovinný, pin přes
-        // _resolve.partner (useExisting:<id>). Bez pinu zůstává null.
-        $plan['resolvedHeadPartner'] = $this->resolvePin(
-            'partner',
-            is_array($clientResolve['partner'] ?? null) ? ($clientResolve['partner']['userAction'] ?? null) : null,
-            $issues,
-        );
+        // Partner hlavičky účetního a pokladního dokladu — nepovinný. Pole
+        // `partner` (#166 D30) má přednost; bez něj v návrhu volba
+        // _resolve.partner (useExisting:<id>). Pokyn `_resolve` nečte.
+        $plan['resolvedHeadPartner'] = isset($resolved['partner'])
+            ? self::matchedPersonId($resolved['partner'])
+            : $this->resolvePin(
+                'partner',
+                is_array($clientResolve['partner'] ?? null) ? ($clientResolve['partner']['userAction'] ?? null) : null,
+                $issues,
+            );
 
         foreach (['supplier', 'customer', 'balanceParty'] as $partyKey) {
             $fresh = $resolved[$partyKey] ?? null;
@@ -1733,12 +1846,15 @@ class DocumentApplier
                 $plan['resolvedRowAccounts'][$i] = null;
             }
 
-            // Per-řádkový partner — pin přes _resolve.rows[i].partner.
-            $plan['resolvedRowPartners'][$i] = $this->resolvePin(
-                "rows.{$i}.partner",
-                is_array($clientRow['partner'] ?? null) ? ($clientRow['partner']['userAction'] ?? null) : null,
-                $issues,
-            );
+            // Partner řádku — pole `rows[].partner` (#166 D30), bez něj
+            // v návrhu volba _resolve.rows[i].partner.
+            $plan['resolvedRowPartners'][$i] = isset($rowResolve['partner'])
+                ? self::matchedPersonId($rowResolve['partner'])
+                : $this->resolvePin(
+                    "rows.{$i}.partner",
+                    is_array($clientRow['partner'] ?? null) ? ($clientRow['partner']['userAction'] ?? null) : null,
+                    $issues,
+                );
         }
 
         return $plan;
@@ -1752,8 +1868,8 @@ class DocumentApplier
      * deleted record emits a warning issue instead of failing silently —
      * the partner is optional, but the caller must be able to see it was
      * dropped. Used for the optional accounting-document partners (head +
-     * per row), which are pin-only in MVP — no fresh resolve, no
-     * side-create.
+     * per row) in proposal mode when the payload does not carry the
+     * `partner` field (#166 D30, U3) — no fresh resolve, no side-create.
      *
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
      */
@@ -2104,9 +2220,10 @@ class DocumentApplier
         $taxDocument = DocTypes::isTaxDocument($this->config, $docType);
 
         // Účetní doklad (cmnbkp): hlavičkový partner je nepovinný a žije per
-        // řádek; bere se z volitelného pinu (resolvedHeadPartner), bez
-        // selfParty resolution. Faktura: partner = ta druhá strana. Pokladní
-        // doklad / prodejka: nepovinný — pin, jinak strana z payloadu.
+        // řádek; bere se z pole `partner` (resolvedHeadPartner, v návrhu
+        // i z volby), bez selfParty resolution. Faktura: partner = ta druhá
+        // strana. Pokladní doklad / prodejka: nepovinný — pole `partner`,
+        // jinak strana z payloadu.
         $partyPartner = match ($selfParty) {
             'customer' => $sideIds['supplier'] ?? $plan['resolvedSupplier'] ?? null,
             'supplier' => $sideIds['customer'] ?? $plan['resolvedCustomer'] ?? null,
@@ -2348,6 +2465,12 @@ class DocumentApplier
                 ? ($customer !== [] ? $customer : $supplier)
                 : ($supplier !== [] ? $supplier : $customer),
         };
+        // Pokladní doklad s polem `partner` (#166 D30): partnerem hlavičky
+        // je osoba z pole — dobová data nese ono.
+        $headPartner = CanonicalReferences::carriesHeadPartner($canonical) ? $canonical[CanonicalReferences::PARTNER] : [];
+        if (is_array($headPartner) && CanonicalReferences::isSet($headPartner['ref'] ?? null)) {
+            $party = $headPartner;
+        }
         if ($party === []) {
             return null;
         }
@@ -2520,7 +2643,7 @@ class DocumentApplier
         $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
         $supplierVatId = self::partyVatId($canonical['supplier'] ?? null);
         $customerVatId = self::partyVatId($canonical['customer'] ?? null);
-        $pins = $this->vatPins($canonical, $mode);
+        $pins = $this->vatPins($canonical);
         $importMode = self::isImportMode($canonical);
         // Klíč cache: strany dokladu (DIČ) rozhodují o místě plnění, štítek
         // dokladu a výjimky řádků o druhu plnění (D2), volby uživatele
@@ -2548,7 +2671,7 @@ class DocumentApplier
             $customerVatId,
             $canonical['_resolve']['contentTag']['tag'] ?? null,
             $canonical['_resolve']['contentTag']['rowExceptions'] ?? null,
-            [$pins['place'], $pins['mode'], $pins['rows'], $pins['subjects'], $pins['ignored']],
+            [$pins['place'], $pins['mode'], $pins['rows'], $pins['subjects']],
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
                     ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null, CanonicalReferences::rowItemCode($row)]
@@ -3089,17 +3212,16 @@ class DocumentApplier
      * jako v {@see reconcile()}.
      *
      *
-     * Pokyn volby DPH nečte (#166 D19): vrací prázdné volby a v `ignored`
-     * cesty těch, které payload nese — {@see appendVatHeaderIssues()} je
-     * ohlásí jako info `vat_pin_ignored`. Neplatná volba se v pokynu
-     * nevaliduje, je ignorovaná stejně.
+     * Pokyn volby DPH nečte (#166 D19, D32): blok `_resolve` se v pokynu
+     * zahodí celý ještě před zpracováním ({@see normalizeValues()}), volby
+     * jsou tu proto vždy prázdné a payload dostane info `resolve_ignored`.
      *
      * @param array<string, mixed> $canonical
-     * @return array{place: ?string, mode: ?string, rows: array<int, string>, subjects: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>, ignored: list<string>}
+     * @return array{place: ?string, mode: ?string, rows: array<int, string>, subjects: array<int, string>, invalid: list<array{severity: string, path: string, code: string, message: string}>}
      */
-    private function vatPins(array $canonical, ApplyMode $mode): array
+    private function vatPins(array $canonical): array
     {
-        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'subjects' => [], 'invalid' => [], 'ignored' => []];
+        $pins = ['place' => null, 'mode' => null, 'rows' => [], 'subjects' => [], 'invalid' => []];
         $resolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
         $invalid = static function (string $path, string $action) use (&$pins): void {
             $pins['invalid'][] = [
@@ -3150,22 +3272,6 @@ class DocumentApplier
             } else {
                 $invalid("rows.{$idx}.vat.reverseChargeCode", $action);
             }
-        }
-        if (!$mode->derives()) {
-            $ignored = array_column($pins['invalid'], 'path');
-            foreach (['place', 'mode'] as $field) {
-                if ($pins[$field] !== null) {
-                    $ignored[] = "vat.{$field}";
-                }
-            }
-            foreach (array_keys($pins['rows']) as $idx) {
-                $ignored[] = "rows.{$idx}.vat.code";
-            }
-            foreach (array_keys($pins['subjects']) as $idx) {
-                $ignored[] = "rows.{$idx}.vat.reverseChargeCode";
-            }
-            sort($ignored);
-            return ['place' => null, 'mode' => null, 'rows' => [], 'subjects' => [], 'invalid' => [], 'ignored' => $ignored];
         }
         return $pins;
     }
@@ -3947,17 +4053,6 @@ class DocumentApplier
         $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
         $vatCtx = $this->vatContext($canonical, $mode);
 
-        // Pokyn (#166 D19): volby DPH z `_resolve` se nečtou — každá, kterou
-        // payload nese, dostane info.
-        foreach ($vatCtx['pins']['ignored'] as $path) {
-            $issues[] = [
-                'severity' => 'info',
-                'path'     => $path,
-                'code'     => 'vat_pin_ignored',
-                'message'  => 'Volby DPH v _resolve platí jen v režimu návrh — pokyn je ignoruje.',
-            ];
-        }
-
         // Volby DPH (#87 B): neplatná hodnota = error (D11, všechny cesty);
         // mimo větev derive se volby ignorují s info issue (D9) — hlavičkové
         // tady, řádkové hlásí resolveRowVatCode().
@@ -4705,7 +4800,7 @@ class DocumentApplier
      * nebo `"@číslo dokladu"`; nenalezená, nejednoznačná nebo na doklad
      * typu bez opravného dokladu je chyba (`issue`). Bez ní v návrhu volba
      * `_resolve.correction.userAction = useExisting:<id>` (pokyn volby
-     * nečte — {@see CanonicalReferences::withoutReferencePins()}); neplatná
+     * nečte — {@see CanonicalReferences::withoutResolve()}); neplatná
      * volba = `pinMissing`. Stav původního dokladu se nehlídá, při potvrzení
      * ho zkontroluje DocDocument::validateCorrective. Podle
      * `originalDocNumber` se nic nedohledává — je to jen text.
@@ -6476,14 +6571,14 @@ class DocumentApplier
         $matched = 0;
         $unresolved = 0;
         $ambiguous = 0;
-        foreach (['supplier', 'customer', 'balanceParty', 'supplierBank'] as $key) {
+        foreach (['supplier', 'customer', 'balanceParty', 'partner', 'supplierBank'] as $key) {
             $status = $resolved[$key]['status'] ?? null;
             if ($status === 'matched') $matched++;
             elseif ($status === 'ambiguous') $ambiguous++;
             elseif ($status === 'notFound' || $status === 'canCreate') $unresolved++;
         }
         foreach ($resolved['rows'] ?? [] as $rowR) {
-            foreach (['item', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
+            foreach (['item', 'partner', 'unit', 'vatCode', 'reverseChargeCode'] as $k) {
                 $status = $rowR[$k]['status'] ?? null;
                 if ($status === 'matched') $matched++;
                 elseif ($status === 'ambiguous') $ambiguous++;

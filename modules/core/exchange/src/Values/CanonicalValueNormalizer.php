@@ -32,7 +32,7 @@ use Shipard\Module\World\Validations\ValueRulesRegistry;
  */
 final class CanonicalValueNormalizer
 {
-    public const PARTIES = ['supplier', 'customer', 'balanceParty'];
+    public const PARTIES = ['supplier', 'customer', 'balanceParty', 'partner'];
     public const REPAIRS_KEY = 'valueRepairs';
     public const BASIS_ACCOUNT_NUMBER = 'accountNumber';
     public const BASIS_IBAN = 'iban';

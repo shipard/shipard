@@ -11,6 +11,7 @@ use Shipard\Core\Document\DocumentResult;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Document\ApplyMode;
+use Shipard\Module\Core\Exchange\Document\CanonicalReferences;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
@@ -39,6 +40,7 @@ final class DocumentApplierReferencesTest extends TestCase
             'invno' => ['trade_dir' => 1],
             'invni' => ['trade_dir' => 2],
             'cash'  => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
+            'cmnbkp' => ['trade_dir' => 0],
         ];
     }
 
@@ -383,6 +385,197 @@ final class DocumentApplierReferencesTest extends TestCase
         $this->assertSame(['numberSeries', 'payment.ownBankAccount'], array_column($issues, 'path'), 'nález za každou referenci');
     }
 
+    // ── Partner účetního a pokladního dokladu (tasks/doc-format-partner-fields.md) ──
+
+    /** Osoby 42 a 77, účty kontace a pokladna pro doklady s polem `partner`. */
+    private const PARTNER_RECORDS = [
+        'base_persons_persons'         => ['person_id=F00042' => 42, 'company_id=12345678' => 42, 'person_id=F00077' => 77],
+        'economy_accounting_accounts'  => ['number=518100' => 195, 'number=321100' => 207],
+        'economy_codebooks_cash_desks' => ['code=POK' => 2],
+    ] + self::REFERENCE_RECORDS;
+
+    /** @return array<string, mixed> */
+    private function accountingPayload(): array
+    {
+        return [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+            'docType' => 'accountingDocument',
+            'dates' => ['issueDate' => '2026-06-10', 'accountingDate' => '2026-06-10'],
+            'rows' => [
+                ['operation' => 'acc.record', 'account' => '@518100', 'accSide' => 'debit', 'totalPrice' => 1000.0],
+                ['operation' => 'acc.record', 'account' => '@321100', 'accSide' => 'credit', 'totalPrice' => 1000.0, 'paymentReference' => 'VS123'],
+            ],
+        ];
+    }
+
+    /** DB harnessu, ve které volba `useExisting:<id>` najde živou osobu. */
+    private function dbWithPersons(): Connection
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (string $sql, mixed ...$args): ?Row {
+            if (str_contains($sql, 'economy_codebooks_vat_registrations')) {
+                return new Row(['id' => 5, 'country' => 'cz']);
+            }
+            return ($args[0] ?? null) === 'base_persons_persons' ? new Row(['id' => $args[1]]) : null;
+        });
+        $db->method('fetchAll')->willReturn([]);
+        $db->method('getInsertId')->willReturn(0);
+        return $db;
+    }
+
+    /** D30: pole `partner` na hlavičce i řádku účetního dokladu — reference sama i objekt s `ref`. */
+    public function testAccountingDocumentPartnerFields(): void
+    {
+        $payload = $this->accountingPayload();
+        $payload['partner'] = ['ref' => '@F00077', 'name' => 'Partner hlavičky s.r.o.'];
+        $payload['rows'][1]['partner'] = 42;
+
+        $result = $this->instruction($payload, $this->buildApplier(records: self::PARTNER_RECORDS));
+
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
+        $this->assertSame(77, $this->savedHeadsData['partner']);
+        $this->assertArrayNotHasKey('partner', $this->savedHeadsData['rows'][0]);
+        $this->assertSame(42, $this->savedHeadsData['rows'][1]['partner']);
+        $this->assertSame('ref', $result->canonical['_resolve']['partner']['matchedBy']);
+        $this->assertSame(42, $result->canonical['_resolve']['rows'][1]['partner']['matchedId']);
+        $this->assertSame(['ref' => 42], $result->canonical['rows'][1]['partner'], 'odpověď vrací rozbalený tvar');
+    }
+
+    /** D31: nenalezená reference partnera je chyba, partner jen údaji `reference_missing`. */
+    public function testUnknownOrDataOnlyPartnerIsAnErrorInInstruction(): void
+    {
+        $payload = $this->accountingPayload();
+        $payload['rows'][1]['partner'] = '@F99999';
+        $this->assertRejected(
+            $this->instruction($payload, $this->buildApplier(records: self::PARTNER_RECORDS)),
+            'reference_not_found',
+            'rows.1.partner',
+        );
+
+        $payload = $this->accountingPayload();
+        $payload['partner'] = ['name' => 'Partner s.r.o.', 'companyId' => '12345678'];
+        $party = $this->createMock(PartyResolver::class);
+        $party->expects($this->never())->method('resolve');
+        $this->assertRejected(
+            $this->instruction($payload, $this->buildApplier(records: self::PARTNER_RECORDS, party: $party)),
+            'reference_missing',
+            'partner',
+        );
+    }
+
+    /** D32: pokyn `_resolve` nečte — volba partnera se neuplatní, payload projde s jedním info nálezem. */
+    public function testResolveBlockIsIgnoredInInstruction(): void
+    {
+        $payload = $this->accountingPayload();
+        $payload['_resolve'] = [
+            'partner' => ['userAction' => 'useExisting:77'],
+            'rows'    => [1 => ['partner' => ['userAction' => 'useExisting:42']]],
+        ];
+
+        $result = $this->instruction($payload, $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS));
+
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
+        $this->assertArrayNotHasKey('partner', $this->savedHeadsData);
+        $this->assertArrayNotHasKey('partner', $this->savedHeadsData['rows'][1]);
+        $this->assertSame(['severity' => 'info', 'path' => '_resolve'], $this->finding($result, 'resolve_ignored'));
+        $this->assertCount(1, $this->issues($result->canonical, 'resolve_ignored'));
+
+        // Bez bloku žádný nález; validate() ho hlásí stejně jako apply.
+        $this->assertNull($this->issue($this->instruction($this->accountingPayload(), $this->buildApplier(records: self::PARTNER_RECORDS))->canonical, 'resolve_ignored'));
+        $validated = $this->buildApplier(records: self::PARTNER_RECORDS)->validate($payload);
+        $this->assertTrue($validated->success);
+        $this->assertSame('info', $this->issue($validated->canonical, 'resolve_ignored')['severity'] ?? null);
+    }
+
+    /** U3: v návrhu volby partnera fungují dál; uvedené pole má přednost. */
+    public function testProposalReadsPartnerPinsAndPrefersTheField(): void
+    {
+        $pins = [
+            'partner' => ['userAction' => 'useExisting:77'],
+            'rows'    => [1 => ['partner' => ['userAction' => 'useExisting:77']]],
+        ];
+
+        $payload = $this->accountingPayload() + ['_resolve' => $pins];
+        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
+        $this->assertSame(77, $this->savedHeadsData['partner'], 'volba hlavičky');
+        $this->assertSame(77, $this->savedHeadsData['rows'][1]['partner'], 'volba řádku');
+        $this->assertNull($this->issue($result->canonical, 'resolve_ignored'));
+
+        $payload['partner'] = '@F00042';
+        $payload['rows'][1]['partner'] = ['ref' => 42];
+        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? [], JSON_UNESCAPED_UNICODE));
+        $this->assertSame(42, $this->savedHeadsData['partner'], 'pole má přednost před volbou');
+        $this->assertSame(42, $this->savedHeadsData['rows'][1]['partner']);
+
+        // Partner jen údaji: návrh podle nich nehledá, pole se s varováním nepoužije a platí volba.
+        $payload['partner'] = ['name' => 'Partner s.r.o.'];
+        $result = $this->buildApplier(db: $this->dbWithPersons(), records: self::PARTNER_RECORDS)->apply($payload, ApplyMode::Proposal);
+        $this->assertTrue($result->success);
+        $this->assertSame(['severity' => 'warning', 'path' => 'partner'], $this->finding($result, 'reference_missing'));
+        $this->assertSame(77, $this->savedHeadsData['partner']);
+    }
+
+    /** R3: `partner` na faktuře je v pokynu chyba; návrh pole s varováním ignoruje a partnerem zůstává strana. */
+    public function testPartnerOnInvoiceIsRejectedInInstructionAndIgnoredInProposal(): void
+    {
+        $payload = self::asInstruction($this->payload());
+        $payload['partner'] = '@F00077';
+        $this->assertRejected(
+            $this->instruction($payload, $this->buildApplier(records: self::PARTNER_RECORDS)),
+            'partner_not_supported',
+            'partner',
+        );
+
+        $proposal = $this->happyPayload();
+        $proposal['partner'] = '@F00077';
+        $result = $this->buildApplier(records: self::PARTNER_RECORDS)->apply($proposal, ApplyMode::Proposal);
+        $this->assertTrue($result->success, json_encode($this->issueCodes($result->canonical)));
+        $this->assertSame('warning', $this->issue($result->canonical, 'partner_not_supported')['severity'] ?? null);
+        $this->assertSame(42, $this->savedHeadsData['partner'], 'partnerem je strana');
+        $this->assertArrayNotHasKey('partner', $result->canonical['_resolve']);
+    }
+
+    /** R1: u pokladního dokladu má pole přednost před stranou; dvě různé osoby pokyn neuloží. */
+    public function testCashDocumentPartnerFieldAndConflictWithParty(): void
+    {
+        $cash = [
+            'format' => 'shpd.docs.document', 'formatVersion' => '1.0',
+            'docType' => 'cashDocument', 'cashDirection' => 1, 'cashDesk' => '@POK',
+            'dates' => ['issueDate' => '2026-06-10', 'accountingDate' => '2026-06-10'],
+            'rows' => [['operation' => 'payment.receivable', 'totalPrice' => 500.0, 'paymentReference' => '2026000011', 'partner' => '@F00042']],
+        ];
+        $resolve = fn (array $canonical, ApplyMode $mode): array => (function () use ($canonical, $mode): array {
+            $applier = $this->buildApplier(records: self::PARTNER_RECORDS);
+            $issues = [];
+            // Reference jen hodnotou rozbaluje applier před resolve ({@see CanonicalReferences::expand()}).
+            $canonical = CanonicalReferences::expand($canonical);
+            $resolved = (new \ReflectionMethod($applier, 'resolveAll'))->invokeArgs($applier, [$canonical, &$issues, $mode]);
+            $discarded = [];
+            $plan = (new \ReflectionMethod($applier, 'reconcile'))->invokeArgs($applier, [$resolved, [], &$discarded, []]);
+            return [$plan, array_column($issues, 'code', 'path')];
+        })();
+
+        [$plan, $issues] = $resolve($cash + ['partner' => '@F00077'], ApplyMode::Instruction);
+        $this->assertSame([], $issues);
+        $this->assertSame(77, $plan['resolvedHeadPartner']);
+        $this->assertSame([0 => 42], $plan['resolvedRowPartners']);
+
+        // Tatáž osoba polem i stranou rozpor není.
+        [$plan, $issues] = $resolve($cash + ['partner' => '@F00042', 'customer' => ['ref' => 42]], ApplyMode::Instruction);
+        $this->assertSame([], $issues);
+        $this->assertSame([42, 42], [$plan['resolvedHeadPartner'], $plan['resolvedCustomer']]);
+
+        [, $issues] = $resolve($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]], ApplyMode::Instruction);
+        $this->assertSame(['partner' => 'partner_conflict'], $issues);
+
+        // Návrh: pole má přednost jako dřív volba, rozpor se nehlásí.
+        [$plan, $issues] = $resolve($cash + ['partner' => '@F00077', 'customer' => ['ref' => 42]], ApplyMode::Proposal);
+        $this->assertSame([], $issues);
+        $this->assertSame(77, $plan['resolvedHeadPartner']);
+    }
+
     // ── Importní mód ────────────────────────────────────────────────────────
 
     /** D34: data vedle `ref` jsou v importním módu dobový snapshot; strana jen referencí ho bere z adresáře. */
@@ -408,5 +601,16 @@ final class DocumentApplierReferencesTest extends TestCase
 
         $fromDirectory = $snapshot(['ref' => 42]);
         $this->assertSame('Dodavatel z adresáře a.s.', $fromDirectory['name'] ?? null, 'bez dat snapshot z adresáře, ne prázdný');
+
+        // Pokladní doklad s polem `partner` (D30): dobová data nese pole; účetní doklad snapshot nemá.
+        $build = new \ReflectionMethod($applier, 'buildImportPartnerSnapshot');
+        $fromPartner = $build->invoke($applier, [
+            'docType' => 'cashDocument', 'cashDirection' => 2,
+            'partner' => ['ref' => 42, 'name' => 'Partner pokladny s.r.o.', 'companyId' => '12345678'],
+        ], 'cash', 2, 42);
+        $this->assertSame('Partner pokladny s.r.o.', $fromPartner['name'] ?? null);
+        $this->assertNull($build->invoke($applier, [
+            'docType' => 'accountingDocument', 'partner' => ['ref' => 42, 'name' => 'Partner s.r.o.'],
+        ], 'cmnbkp', 0, 42));
     }
 }

@@ -1071,6 +1071,35 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByCode($this->v->validate($payload, ApplyMode::Proposal), 'signal_not_allowed'));
     }
 
+    /** D30: `partner` na hlavičce faktury je v pokynu chyba, v návrhu varování; účetní a pokladní doklad ho nese. */
+    public function testHeadPartnerIsRejectedOnInvoices(): void
+    {
+        $invoice = [
+            'docType' => 'invoiceIssued', 'selfParty' => 'supplier', 'customer' => ['ref' => 42],
+            'partner' => '@F00042',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item', 'item' => '@K-001', 'quantity' => 1, 'unitPrice' => 100]],
+        ];
+
+        $issue = $this->findByCode($this->v->validate($invoice), 'partner_not_supported');
+        $this->assertSame(['error', 'partner'], [$issue['severity'] ?? null, $issue['path'] ?? null]);
+        $issue = $this->findByCode($this->v->validate($invoice, ApplyMode::Proposal), 'partner_not_supported');
+        $this->assertSame('warning', $issue['severity'] ?? null, 'návrh pole ignoruje');
+
+        foreach (['accountingDocument', 'cashDocument', 'cashRegisterDocument'] as $docType) {
+            $issues = $this->v->validate([
+                'docType' => $docType, 'cashDirection' => 1, 'cashDesk' => '@POK', 'partner' => ['ref' => 42],
+                'dates' => ['issueDate' => '2026-04-15'],
+                'rows' => [['operation' => 'acc.record', 'account' => '@518100', 'accSide' => 'debit', 'totalPrice' => 100.0, 'partner' => 42]],
+            ]);
+            $this->assertNull($this->findByCode($issues, 'partner_not_supported'), $docType);
+        }
+        // Partner řádku faktuře nevadí (úhrada, záloha) — hlídá ho validace dokladu.
+        unset($invoice['partner']);
+        $invoice['rows'][0]['partner'] = 42;
+        $this->assertNull($this->findByCode($this->v->validate($invoice), 'partner_not_supported'));
+    }
+
     /** Strana i pokladna jen referencí projdou povinnými poli stejně jako objekt. */
     public function testScalarReferencesSatisfyRequiredFields(): void
     {

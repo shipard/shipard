@@ -16,8 +16,8 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * Import pokladních dokladů a prodejek přes exchange applier (#59 D12):
  * řada se dohledá podle (typ, pokladna dle kódu), cash_desk se denormalizuje
  * z řady, cash_dir z cashDirection, číslo z importNumber se zachová,
- * doklad ve stavu 40 se zaúčtuje. Úhrada payment.* nese partnera přes pin
- * `_resolve.rows[i].partner` a paymentReference. Pokladna je reference
+ * doklad ve stavu 40 se zaúčtuje. Úhrada payment.* nese partnera polem
+ * `rows[].partner` (#166 D30) a paymentReference. Pokladna je reference
  * (`"@kód"`, #166 D30); neznámá pokladna = čistá
  * 422 (cash_desk_not_found), žádný doklad. Faktura placená hotově s kódem
  * pokladny dostane cash_desk.
@@ -150,7 +150,7 @@ class CashDocumentImportTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(1210.0, (float) $this->lineByPrefix($journal, '211')['money_dr'], 0.001);
     }
 
-    public function testCashDisbursementWithPaymentOfPayableUsesRowPartnerPin(): void
+    public function testCashDisbursementWithPaymentOfPayableUsesRowPartner(): void
     {
         $seq = random_int(900_000_000, 999_999_999);
         $ourNumber = self::FIXTURE_PREFIX . '-' . $seq;
@@ -164,8 +164,8 @@ class CashDocumentImportTest extends IntegrationTestCase
                 'totalPrice'       => 605.0,
                 'description'      => 'Úhrada FP hotově',
                 'paymentReference' => '2026000011',
+                'partner'          => $this->partnerId,
             ]],
-            '_resolve' => ['rows' => [0 => ['partner' => ['userAction' => 'useExisting:' . $this->partnerId]]]],
         ], $ourNumber, $seq);
 
         $result = $this->applier->apply($canonical);
@@ -180,7 +180,7 @@ class CashDocumentImportTest extends IntegrationTestCase
         $rows = $this->db->fetchAll('SELECT * FROM docs_core_rows WHERE doc_head = %i', $docId);
         $this->assertCount(1, $rows);
         $this->assertSame('payment.payable', (string) $rows[0]['operation']);
-        $this->assertSame($this->partnerId, (int) $rows[0]['partner'], 'partner řádku z pinu');
+        $this->assertSame($this->partnerId, (int) $rows[0]['partner'], 'partner řádku z pole');
         $this->assertSame('2026000011', (string) $rows[0]['payment_reference']);
         $this->assertEqualsWithDelta(605.0, (float) $rows[0]['total_price'], 0.001, 'kontační řádek nesmí přijít o částku');
         $this->assertNull($rows[0]['vat_code']);

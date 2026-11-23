@@ -97,6 +97,15 @@
         // (odvození z terminálu / dopravce ji nepřepíše). Null / vynecháno =
         // plátce se odvodí při uložení. Exportér ji vydává jen u ručního plátce.
         "balanceParty": { "$ref": "#/$defs/Party" },
+        // Partner hlavičky účetního dokladu a dokladu vázaného na pokladnu
+        // (#166 D30) — reference na osobu, stejný tvar jako strana. U faktur
+        // je partnerem strana: `partner` je tam v pokynu chyba
+        // partner_not_supported. U pokladních typů má přednost před stranou;
+        // jiná osoba než strana je v pokynu chyba partner_conflict.
+        "partner": {
+            "$ref": "#/$defs/Party",
+            "description": "Head partner of an accounting document or a cash-desk document, given as a reference (see Party). Written by scripts, datasets and Shipard itself. On invoices the partner is the supplier / customer party — never fill this field from a paper document."
+        },
 
         // ── Dates ───────────────────────────────────────────────────────
         "dates": {
@@ -462,9 +471,8 @@
         // Kontační řádek účetního dokladu (docType accountingDocument):
         // operation `acc.record` (účet z `account`) / `acc.item` (účet z
         // položky), `accSide` + `totalPrice` nesou stranu a částku; item /
-        // quantity / unitPrice / vat zůstávají prázdné. Per-řádkový partner se
-        // zatím určuje volbou `_resolve.rows[i].partner` (useExisting:<id>) —
-        // jediná volba, kterou čte i pokyn (do tasks/doc-format-partner-fields.md).
+        // quantity / unitPrice / vat zůstávají prázdné. Partner řádku je pole
+        // `partner` (reference na osobu, #166 D30).
         "Row": {
             "type": "object",
             "additionalProperties": false,
@@ -501,6 +509,14 @@
                 "specificSymbol":   { "type": ["string", "null"], "maxLength": 20 },
                 "constantSymbol":   { "type": ["string", "null"], "maxLength": 10 },
                 "dueDate":          { "type": ["string", "null"], "format": "date" },
+
+                // Partner řádku (#166 D30) — kontační řádek účetního dokladu,
+                // úhrada a záloha na pokladním dokladu. Reference na osobu,
+                // stejný tvar jako strana; data vedle `ref` se nepoužijí.
+                "partner": {
+                    "$ref": "#/$defs/Party",
+                    "description": "Partner of the row (accounting entry, payment of an invoice in cash) as a reference (see Party). Written by scripts, datasets and Shipard itself — never fill this field from a paper document."
+                },
 
                 // Dimenze deníku řádku (#110 T2) — stejný tvar jako na
                 // hlavičce; řádek bez hodnoty dědí hlavičku.
