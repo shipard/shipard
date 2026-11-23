@@ -13,6 +13,14 @@ do DB, importovat z cizích zdrojů a exportovat.
 Modul je čistě servisní vrstva — žádné vlastní tabulky, žádné viewers
 ani formy. Vystavuje 9 REST endpointů (po třech pro každý formát).
 
+**Ukládání dokladů — kam se podívat podle vrstvy** (#166 D56):
+
+| Vrstva | Dokument |
+|---|---|
+| doklad — pole, výchozí hodnoty, validace, výpočet, číslování | [docs/document-system.md](../../../docs/document-system.md) (§ 12c), [docs/vat-calculation.md](../../../docs/vat-calculation.md) |
+| formát a ukládací API (pokyn) — reference, chybějící × `null`, importní mód, idempotence, REST, „Doklad skriptem“ | [docs/exchange-format.md](../../../docs/exchange-format.md) |
+| interpretace (návrh z pošty a ISDOC) — hledání podle údajů, DPH přijatých dokladů, volby uživatele, zakládání, učení, `/interpret` | [docs/document-interpretation.md](../../../docs/document-interpretation.md) |
+
 ## Architektura
 
 ```
@@ -132,7 +140,7 @@ Odpověď: `{"success":true,"data":{"canonical": {...enriched...}, "savedDocId":
 > a nic nezakládá; minimální payload je v `docs/exchange-format.md` § 11
 > „Doklad skriptem“. Příklady níže s hledáním podle údajů, `_resolve`
 > a zakládáním partnera jsou režim **návrh** — vyžádá si ho
-> `applyOptions.interpret: true`.
+> `applyOptions.interpret: true` (`docs/document-interpretation.md`).
 
 ### `/preview` — vrátí `_resolve` s navrženými matches
 
@@ -510,7 +518,8 @@ formátem.
 - **PersonExporter** (DB → canonical) — Persons Fáze 3, potřeba pro
   registry sync a export mezi Shipard DS.
 - **Batch apply** (víc osob v jednom requestu, CSV import) — Persons Fáze 3.
-- **Country filter v `PartyResolver` name probe** — krok 4 spec §8.1
+- **Country filter v `PartyResolver` name probe** — krok 4
+  (`docs/document-interpretation.md` § 5.1)
   je follow-up (Phase 1 jen LIKE %name%).
 - **Batch `divisionCode → world_divisions.id` lookup** — Phase 1
   per-adresa round-trip; pro CSV bulk import bude bottleneck.
@@ -580,7 +589,8 @@ formátem.
 
 ## Související
 
-- [docs/exchange-format.md](../../../docs/exchange-format.md) — kanonická specifikace dokladů
+- [docs/exchange-format.md](../../../docs/exchange-format.md) — kanonická specifikace dokladů a ukládací API (pokyn)
+- [docs/document-interpretation.md](../../../docs/document-interpretation.md) — interpretace papírové podoby dokladu (návrh z pošty a ISDOC)
 - [docs/exchange-format-persons.md](../../../docs/exchange-format-persons.md) — kanonická specifikace osob
 - [docs/exchange-format-items.md](../../../docs/exchange-format-items.md) — kanonická specifikace položek
 - [tests/Fixtures/Exchange/](../../../tests/Fixtures/Exchange/) — fixture JSON soubory (doc + `persons/` + `items/`)

@@ -186,8 +186,8 @@ http://{ip-adresa}/{ds-id}/api/v1/{tabulka}
 | `POST` | `/api/v1/_setup/bank-accounts` | Překlop vybraných spojení do číselníku bankovních účtů (auth) |
 | `GET` | `/api/v1/_setup/accounting-items-offer` | Nabídka účetních položek dle varianty osnovy (auth) |
 | `POST` | `/api/v1/_setup/accounting-items` | Jednorázové vygenerování vybraných účetních položek (auth) |
-| `POST` | `/api/v1/_exchange/docs/document/{validate\|preview\|apply}` | Doklad výměnného formátu `shpd.docs.document.v1` jako **pokyn**; s `applyOptions.interpret: true` jako návrh — interpretace papírové podoby (auth; `docs/exchange-format.md` § 11) |
-| `POST` | `/api/v1/_exchange/docs/document/interpret` | Interpretace papírové podoby dokladu **bez uložení** — `{document, report}`: hotový doklad platný jako pokyn a zpráva včetně záznamů k založení (auth, #166 D55) |
+| `POST` | `/api/v1/_exchange/docs/document/{validate\|preview\|apply}` | Doklad výměnného formátu `shpd.docs.document.v1` jako **pokyn**; s `applyOptions.interpret: true` jako návrh — interpretace papírové podoby (auth; `docs/exchange-format.md` § 11, `docs/document-interpretation.md` § 12) |
+| `POST` | `/api/v1/_exchange/docs/document/interpret` | Interpretace papírové podoby dokladu **bez uložení** — `{document, report}`: hotový doklad platný jako pokyn a zpráva včetně záznamů k založení (auth, #166 D55; `docs/document-interpretation.md` § 12) |
 | `POST` | `/api/v1/_exchange/content-tags/materialize` | Založení účetní položky pro obsahový štítek (auth) |
 | `GET` | `/api/v1/_exchange/content-tags/overview` | Stav mapování taxonomie štítků + reverzní návrhy (auth) |
 | `POST` | `/api/v1/_exchange/content-tags/tag-items` | Hromadné otagování položek obsahovými štítky (auth) |
@@ -1102,7 +1102,7 @@ Sloupce typu `password_hash` by neměly být ve výstupu GET. V budoucnu přidá
 
 Tyto funkce se implementují později, ale architektura by je měla umožnit:
 
-- **Dokumentové API** — práce s hlavičkou + řádky jako jedním celkem (`POST /api/v1/economy_docs_heads` s vnořeným `rows`)
+- **Dokumentové API** pro ostatní tabulky s řádky — práce s hlavičkou + řádky jako jedním celkem. Doklady ho už mají: `POST /api/v1/_exchange/docs/document/apply` (§ 17 krok 3, `docs/exchange-format.md` § 11)
 - **Related data** — `?include=rows` pro dotažení souvisejících záznamů
 - **Webhooks** — notifikace o změnách v datech
 - **Bulk operace** — `POST /api/v1/{table}/_bulk` pro hromadné vytvoření/aktualizaci
@@ -1132,49 +1132,59 @@ Content-Type: application/json
 ### 2. Výpis faktur
 
 ```
-GET https://demo.shipard.cz/api/v1/economy_docs_heads?filter[doc_state]=eq:1&sort=issue_date:desc&limit=10
+GET https://demo.shipard.cz/api/v1/docs_core_heads?filter[doc_type]=eq:invno&filter[docState]=eq:40&sort=issue_date:desc&limit=10
 Authorization: Bearer shpd_st_eyJ...
 ```
 
-→ `200 OK` s polem faktur
+→ `200 OK` s polem vydaných faktur ve stavu V pořádku
 
 ### 3. Vytvoření faktury
 
+Doklad se zakládá **ukládacím API dokladů** (pokyn výměnného formátu), ne
+generickým CRUD — to hlavičku a řádky neumí uložit jako celek a nejde přes
+validaci, výpočet a číslování dokladu. Stačí typ dokladu, odběratel
+a položka referencí; zbytek se doplní jako ve formuláři
+(`docs/exchange-format.md` § 11 „Doklad skriptem“).
+
 ```
-POST https://demo.shipard.cz/api/v1/economy_docs_heads
+POST https://demo.shipard.cz/api/v1/_exchange/docs/document/apply
 Authorization: Bearer shpd_st_eyJ...
 Content-Type: application/json
 
 {
-    "doc_number": "FV-2026-001",
-    "doc_type": "INV",
-    "doc_state": 1,
-    "customer_id": 42,
-    "issue_date": "2026-03-16",
-    "due_date": "2026-04-15",
-    "total_amount": 12500.00,
-    "currency": "CZK"
+    "format": "shpd.docs.document",
+    "formatVersion": "1.0",
+    "source": {"kind": "api", "ref": "ORD-2026-0042"},
+    "docType": "invoiceIssued",
+    "customer": "@F00001",
+    "dates": {"issueDate": "2026-03-16"},
+    "rows": [
+        {"item": "@SPRAVA-IT", "quantity": 2, "unitPrice": 5000}
+    ],
+    "applyOptions": {"targetDocState": 40}
 }
 ```
 
-→ `201 Created` s vytvořeným záznamem
+→ `200 OK`; odpověď nese `savedDocId` (id dokladu), přidělené číslo
+v `docNumber` a blok `_resolve` — co pokyn doplnil sám (`defaults`)
+a případné nálezy (`issues`). Bez `applyOptions.targetDocState` vznikne
+koncept. `source.ref` dělá opakování bezpečné: tentýž pokyn podruhé vrátí
+existující doklad. Chyba v pokynu (nenalezená reference, doklad neprojde
+validací) je `422 validation_failed` s nálezy v `_resolve.issues`.
 
-### 4. Aktualizace stavu
+### 4. Načtení vytvořeného dokladu
 
 ```
-PATCH https://demo.shipard.cz/api/v1/economy_docs_heads/1
+GET https://demo.shipard.cz/api/v1/docs_core_heads/1234
 Authorization: Bearer shpd_st_eyJ...
-Content-Type: application/json
-
-{"doc_state": 2}
 ```
 
-→ `200 OK` s aktualizovaným záznamem
+→ `200 OK` s hlavičkou dokladu (číslo, částky, stav)
 
 ### 5. Metadata tabulky
 
 ```
-GET https://demo.shipard.cz/api/v1/_meta/tables/economy_docs_heads
+GET https://demo.shipard.cz/api/v1/_meta/tables/docs_core_heads
 Authorization: Bearer shpd_st_eyJ...
 Accept-Language: cs
 ```

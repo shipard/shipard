@@ -1,6 +1,6 @@
 # Task: Dokumentace ukládání dokladů po vrstvách — doklad, ukládací API, interpretace
 
-**Stav:** naplánováno — zadání 2026-11-23 (#166 etapa 5, část 3; D56); až po `tasks/doc-interpretation-switch.md`
+**Stav:** hotovo — 2026-11-23 (#166 etapa 5, část 3; D56); zbývá `ds-upgrade` zdrojů dat kvůli kopii schématu v profilu pošty
 
 **Issue:** #166 (etapa 5)
 
@@ -89,8 +89,92 @@ interpretace pohromadě.
 
 ## Hotovo když
 
-- [ ] tři soubory podle D56, každé pravidlo na jednom místě
-- [ ] importní mód popsaný úplným seznamem na jednom místě
-- [ ] obrázek cílového modelu v dokumentaci
-- [ ] úklid podle U5, rozcestník podle U6
-- [ ] odkazy na oddíly platné; stav tasku
+- [x] tři soubory podle D56, každé pravidlo na jednom místě
+- [x] importní mód popsaný úplným seznamem na jednom místě
+- [x] obrázek cílového modelu v dokumentaci
+- [x] úklid podle U5, rozcestník podle U6
+- [x] odkazy na oddíly platné; stav tasku
+
+## Poznámky k implementaci
+
+### Co kde je
+
+- **`docs/document-interpretation.md`** (nový, 12 oddílů): místo v modelu
+  a volající, vstup, hotový doklad, kroky `DocumentProposal`, hledání podle
+  údajů (§ 5), DPH přijatých dokladů (§ 6 — dřívější oddíl 8.4 výměnného
+  formátu doslova), `_resolve` návrhu a slovník `userAction` (§ 7),
+  zakládání a učení, pohyb řádku, kontroly předlohy, kódy nálezů návrhu,
+  REST `interpret: true` a `/interpret`. Přesouvané texty šly skriptem
+  podle čísel řádků původního souboru, ne opisem; autorský text je úvod
+  a spojovací věty.
+- **`docs/exchange-format.md`** (3 653 → 2 609 řádků) popisuje jen pokyn.
+  **Čísla hlavních oddílů zůstala** (§ 3, 5, 9, 10, 11, 12 — odkazuje na ně
+  `CLAUDE.md` a desítky dokumentů). § 8 je „Reference a hledání záznamů“
+  **bez číslovaných pododdílů**: staré číslo 8.4 tak nedostalo jiný obsah
+  a zapomenutý odkaz na něj kontrola chytí. § 9 je odpověď pokynu
+  (příklad `_resolve` z náhledu skutečného pokynu) a kódy nálezů pokynu.
+- **Kódy nálezů**: 27 kódů, které vznikají jen v návrhu, je v novém
+  dokumentu § 11 (rozdělení ověřené podle místa vzniku v kódu); zbylých
+  48 řádků tabulky zůstalo v `exchange-format.md` § 9. Kód společný oběma cestám má řádek v
+  `exchange-format.md` § 9; kde se v návrhu chová jinak
+  (`vat_code_unknown`, `unit_not_found`, `reference_missing`,
+  `partner_not_supported`), říká to druhá tabulka § 11.
+- **Importní mód**: vlastní oddíl `exchange-format.md` § 10 se dvěma
+  seznamy — co mění (tabulka) a co nemění. Ostatní místa na něj odkazují.
+- **Výchozí hodnoty**: pravidla jen v `docs/document-system.md` § 12c
+  (doplněn směr pokladního dokladu a textový řádek, které měl jen výměnný
+  formát); `exchange-format.md` § 3 nese seznam polí formátu, význam
+  chybějícího klíče × `null` a `_resolve.defaults`.
+- **Obrázek**: `docs/images/document-saving-model.svg`, ručně psané SVG
+  s vlastním pozadím (čitelné ve světlém i tmavém GitHubu).
+
+### Odchylky od plánu
+
+- Kontrakt `POST /interpret` je celý v novém dokumentu (§ 12), jak říká
+  tabulka D56; `exchange-format.md` § 11 má jen odkaz.
+- Srovnávací tabulka „návrh vedle pokynu“ odešla do nového dokumentu
+  (§ 4) celá, včetně sloupce Pokyn — je to přehled, pravidla pokynu má
+  `exchange-format.md`.
+
+### Úklid schématu (U5)
+
+- `rejectOnIssues` a `createMissingEntities` jsou pryč ze tří kopií
+  schématu dokladu. V tomto repozitáři je neposílá žádná sada, fixtura ani
+  generátor; formáty osob a položek `rejectOnIssues` čtou a mají ho dál.
+- Uložené návrhy z pošty klíče nenesou (dev server: 0 z 406 analýz ve 21
+  zdrojích dat) a použití návrhu i náhled si `applyOptions` skládají znovu.
+- **Pro etapu 6:** runner importu ve starém Shipardu oba klíče posílá
+  (dvě místa v `DocsRunner.php`). `applyOptions` má
+  `additionalProperties: false`, takže payload s nimi skončí chybou
+  schématu — runner je musí přestat posílat spolu s přechodem na reference.
+- Verze promptu se nemění (jako u předchozích změn schématu v této etapě);
+  profil pošty je uložený ve zdroji dat a nové schéma model uvidí až po
+  `ds-upgrade`.
+- `docs/rest-api.md` § 17: krok 3 je minimální pokyn přes
+  `/_exchange/docs/document/apply`, krok 4 načtení dokladu (změna stavu
+  generickým CRUD nejde přes životní cyklus dokladu, #113), kroky 2 a 5
+  mají existující tabulku `docs_core_heads`. Ilustrační `economy_docs_heads`
+  v obecných kapitolách téhož dokumentu (stránkování, řazení, filtry) zůstává
+  — je mimo rozsah.
+
+### Kontrola odkazů
+
+Jednorázový skript (není v repozitáři): z nadpisů `exchange-format.md`,
+`document-interpretation.md` a `document-system.md` sestaví čísla a názvy
+oddílů; v souborech `.md`, `.php`, `.js`, `.svelte`, `.jsonc` celého
+repozitáře mimo hotové a zrušené tasky najde každý odkaz
+`<dokument>.md § N[.M] [„název“]` (i řetěz „§ 3, § 10“) a holé `§ N`
+uvnitř těchto tří dokumentů a ověří, že číslo existuje a uvedený název je
+v nadpisu oddílu. Výsledek: 264 odkazů, všechny platné. K tomu přímý grep
+na staré pododdíly (`§ 8.1`–`§ 8.6`) a zaniklé názvy oddílů — mimo hotové
+tasky žádný výskyt. Hotové tasky se neopravují; `exchange-format.md` § 8
+proto říká, kam dřívější oddíly 8.1–8.5 odešly.
+
+### Ověření
+
+- Strážní testy schématu (`SchemaDriftTest`, `ProfileSchemaDriftTest`,
+  `SchemaValidatorTest` s novým testem odmítnutí obou klíčů) a testy
+  profilu pošty: 139 testů bez selhání; celá unit sada bez selhání.
+- Příklad odpovědi pokynu (§ 9) a dotazy z `rest-api.md` § 17 ověřené
+  proti ukázkovému zdroji dat (`/preview` — nic nezapisuje).
+- `check-sensitive.py --all`: žádný nález ve změněných souborech.
