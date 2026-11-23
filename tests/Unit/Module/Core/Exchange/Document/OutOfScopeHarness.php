@@ -50,6 +50,14 @@ trait OutOfScopeHarness
     /** Payload posledního `saveDocument()` po `beforeSave()`. */
     private ?array $savedHeadsData = null;
 
+    /**
+     * Data předaná k uložení, jak je složil `transform()` — před `beforeSave()`,
+     * za každé volání `saveDocument()` jeden záznam.
+     *
+     * @var list<array<string, mixed>>
+     */
+    private array $transformedHeadsData = [];
+
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/shpd_out_of_scope_test_' . uniqid();
@@ -249,6 +257,7 @@ trait OutOfScopeHarness
         };
         $heads->method('createDocument')->willReturnCallback(static fn (array $data): Document => $document());
         $this->savedHeadsData = null;
+        $this->transformedHeadsData = [];
         $heads->method('saveDocument')->willReturnCallback(function (array $data) use ($document, $validateOnSave): DocumentResult {
             $doc = $document();
             $validation = null;
@@ -258,6 +267,8 @@ trait OutOfScopeHarness
                     return DocumentResult::validationFailed($validation);
                 }
             }
+            // Data, jak je applier předal k uložení (výstup transform()) — stínový test.
+            $this->transformedHeadsData[] = $data;
             $doc->beforeSave($data);
             $this->savedHeadsData = $data;
             // Jako `TableGateway::saveDocument()`: výsledek nese data po

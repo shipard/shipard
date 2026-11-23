@@ -41,6 +41,7 @@ use Shipard\Tests\Fixtures\Module\Economy\ExchangeRates\FakeExchangeRateResolver
 class DocumentApplierCorrectionTest extends TestCase
 {
     use ReferenceFixture;
+    use InterpreterFixture;
 
     /** Doklady, které zná resolver referencí: číslo původního dokladu → id. */
     private const KNOWN_DOCS = ['doc_number=FV26-00123' => 77];
@@ -556,6 +557,36 @@ class DocumentApplierCorrectionTest extends TestCase
         foreach (['corrected_doc', 'corrected_doc_number', 'corrected_doc_date', 'correction_reason'] as $column) {
             $this->assertArrayHasKey($column, $reset, $column);
             $this->assertNull($reset[$column]);
+        }
+    }
+
+    // ── Stínový test: návrh × pokyn nad hotovým dokladem (#166 U5) ──────────
+
+    public function testProposalShadowHoldsForCorrectiveDocument(): void
+    {
+        $eur = ['currency' => 'EUR', 'exchangeRate' => null];
+        $cases = [
+            'odkaz referencí'         => [self::issued(['correction' => self::linked()]), self::ORIGINAL],
+            'odkaz volbou uživatele'  => [self::issued([
+                'correction' => self::block('jiné číslo'),
+                '_resolve'   => ['correction' => ['userAction' => 'useExisting:77']],
+            ]), self::ORIGINAL],
+            'blok bez odkazu'         => [self::issued(['correction' => self::block()]), null],
+            'kurz původního dokladu'  => [
+                self::issued(['correction' => self::linked()] + $eur),
+                ['exchange_rate' => 25.5, 'doc_currency' => 'eur'] + self::ORIGINAL,
+            ],
+        ];
+        foreach ($cases as $name => [$payload, $original]) {
+            $shadow = self::shadowOf(
+                $this->applier(original: $original, rates: new FakeExchangeRateResolver([])),
+                fn (): array => $this->saved !== null ? [$this->saved] : [],
+                function (): void {
+                    $this->saved = null;
+                },
+            );
+            $this->assertSame([], $shadow->preview($payload), "{$name}: náhled");
+            $this->assertSame([], $shadow->apply($payload)['differences'], "{$name}: uložení");
         }
     }
 }

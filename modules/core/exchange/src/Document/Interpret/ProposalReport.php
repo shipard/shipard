@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Document\Interpret;
 
 use Dibi\Connection;
+use Shipard\Module\Core\Exchange\Document\PayloadResolve;
 
 /**
  * Zpráva o dokladu z **papírové podoby** pro náhled (#166 D51, U3): bloky
@@ -36,6 +37,59 @@ final class ProposalReport
          */
         private readonly bool $itemsHaveAccountingAccount = false,
     ) {
+    }
+
+    /**
+     * Zpráva návrhu doplněná o blok `computed` — rekapitulaci, součty a ceny
+     * řádků, **které skončí na dokladu**. Počítá je pokyn nad hotovým
+     * dokladem (jeho náhled), interpretace k nim přidá, co ví jen ona:
+     *
+     *  - indexy řádků převede zpět do původního payloadu (`rowMap`);
+     *  - `recapFallback` je důvod, proč se rekapitulace z papíru nepřevzala;
+     *  - skutečný výpočet nahrazuje heuristiku validátoru (`totals_mismatch`
+     *    se vyřadí) a částka z papíru se s ním porovná
+     *    ({@see computedTotalIssue()}).
+     *
+     * @param array<string, mixed> $instructionResolve `_resolve` náhledu pokynu
+     *        nad `InterpretedDocument::$document`
+     * @return array<string, mixed> `_resolve` náhledu návrhu
+     */
+    public static function withComputed(InterpretedDocument $interpreted, array $instructionResolve): array
+    {
+        $report = $interpreted->report;
+        $issues = $report['issues'] ?? [];
+        $computed = $instructionResolve['computed'] ?? null;
+
+        if (!is_array($computed)) {
+            // Výpočet se nepovedl — pokyn to říká sám; náhled ukáže údaje z papíru.
+            foreach ($instructionResolve['issues'] ?? [] as $issue) {
+                if (($issue['code'] ?? null) === 'computed_unavailable') {
+                    $issues[] = $issue;
+                }
+            }
+            $report['computed'] = null;
+        } else {
+            foreach ($computed['rows'] ?? [] as $position => $row) {
+                $computed['rows'][$position]['index'] = $interpreted->rowMap[$row['index']] ?? $row['index'];
+            }
+            $computed['recapFallback'] = $interpreted->recapFallback;
+            $report['computed'] = $computed;
+
+            $issues = array_values(array_filter(
+                $issues,
+                static fn (array $issue): bool => ($issue['code'] ?? null) !== 'totals_mismatch',
+            ));
+            $mismatch = self::computedTotalIssue($interpreted->paper, (float) ($computed['totals']['totalAmount'] ?? 0));
+            if ($mismatch !== null) {
+                $issues[] = $mismatch;
+            }
+        }
+
+        $report['issues'] = $issues;
+        $blocks = $report;
+        unset($blocks['issues'], $blocks['summary'], $blocks['computed']);
+        $report['summary'] = PayloadResolve::summary($blocks, $issues);
+        return $report;
     }
 
     /**

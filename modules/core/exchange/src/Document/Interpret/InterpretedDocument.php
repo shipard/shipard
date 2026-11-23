@@ -54,6 +54,11 @@ final class InterpretedDocument
      * @param list<array{path: string, code: string, message: string}> $limitations
      *        co hotový doklad nevyjádří přesně (jednotka bez systémového kódu,
      *        zvolený účet partnera) — cesty do původního payloadu
+     * @param array<string, mixed> $paper papírová podoba po normalizaci hodnot
+     *        — payload, ke kterému se vztahují cesty zprávy a který návrh
+     *        vrací v odpovědi
+     * @param string|null $recapFallback důvod, proč se rekapitulace z papíru
+     *        nepřevzala a spočítá se z řádků (`computed.recapFallback` náhledu)
      */
     public function __construct(
         public readonly array $document,
@@ -64,6 +69,8 @@ final class InterpretedDocument
         public readonly ?array $decisionError = null,
         public readonly array $decisionIssues = [],
         public readonly array $limitations = [],
+        public readonly array $paper = [],
+        public readonly ?string $recapFallback = null,
     ) {
     }
 

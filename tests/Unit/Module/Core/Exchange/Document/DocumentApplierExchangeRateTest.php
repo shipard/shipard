@@ -38,6 +38,7 @@ use Shipard\Tests\Fixtures\Module\Economy\ExchangeRates\FakeExchangeRateResolver
 class DocumentApplierExchangeRateTest extends TestCase
 {
     use ReferenceFixture;
+    use InterpreterFixture;
 
     private const RATES = ['eur|2026-10-16' => 24.325, 'eur|2026-10-20' => 24.5];
 
@@ -249,5 +250,28 @@ class DocumentApplierExchangeRateTest extends TestCase
         $this->assertSame(24.5, $this->saved['exchange_rate']);
         $this->assertSame('2026-10-20', $this->saved['accounting_date']);
         $this->assertSame([['eur', '2026-10-20']], array_unique($resolver->lookups, SORT_REGULAR));
+    }
+
+    // ── Stínový test: návrh × pokyn nad hotovým dokladem (#166 U5) ──────────
+
+    public function testProposalShadowHoldsForForeignCurrency(): void
+    {
+        $cases = [
+            'kurz z lístku'      => [self::payload(), new FakeExchangeRateResolver(self::RATES)],
+            'kurz na dokladu'    => [self::payload(['exchangeRate' => 25.0]), new FakeExchangeRateResolver(self::RATES)],
+            'kurz v lístku není' => [self::payload(), new FakeExchangeRateResolver([])],
+            'zdroj bez lístků'   => [self::payload(), null],
+        ];
+        foreach ($cases as $name => [$payload, $resolver]) {
+            $shadow = self::shadowOf(
+                $this->applier($resolver),
+                fn (): array => $this->saved !== null ? [$this->saved] : [],
+                function (): void {
+                    $this->saved = null;
+                },
+            );
+            $this->assertSame([], $shadow->preview($payload), "{$name}: náhled");
+            $this->assertSame([], $shadow->apply($payload)['differences'], "{$name}: uložení");
+        }
     }
 }

@@ -252,6 +252,8 @@ final class DocumentInterpreter
                 : null,
             decisionIssues: $decisionIssues,
             limitations: $limitations,
+            paper: $canonical,
+            recapFallback: $recap['fallback'] ?? null,
         );
     }
 
