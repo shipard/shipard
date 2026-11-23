@@ -208,6 +208,31 @@ class CorrectiveDocBuilderTest extends TestCase
     }
 
 
+    /**
+     * Kopie původního dokladu (#166 D50): co původní řádek nemá, jde výslovným
+     * `null` — chybějící klíč by pokyn doplnil výchozí hodnotou z karty
+     * položky (jednotka, text) nebo z nabídky (pohyb, kód DPH).
+     */
+    public function testEmptyRowFieldsAreSentAsExplicitNull(): void
+    {
+        $row = [
+            'id' => 9, 'doc_head' => 77, 'row_kind' => 1, 'order_pos' => 1, 'operation' => null,
+            'item' => 18, 'item_code' => 'KONZ', 'item_name' => 'Konzultace IT',
+            'unit' => null, 'unit_code' => null, 'description' => null, 'quantity' => '1.0000',
+            'unit_price' => '500.0000', 'total_price' => '500.00', 'price_calc_mode' => 0,
+            'discount_pct' => null, 'discount_amount' => null, 'vat_code' => null, 'vat_pct' => null, 'dimensions' => [],
+        ];
+        $canonical = CorrectiveDocBuilder::build(self::head(), [$row], self::CUSTOMER, [], '2026-04-02');
+        $out = $canonical['rows'][0];
+
+        foreach (['operation', 'unit', 'description'] as $key) {
+            $this->assertArrayHasKey($key, $out, $key);
+            $this->assertNull($out[$key], $key);
+        }
+        $this->assertSame(['code' => null], $out['vat']);
+        $this->assertValidCanonical($canonical);
+    }
+
     /** Opravný doklad přebírá předmět plnění původního řádku (#89 D10). */
     public function testReverseChargeSubjectIsTakenOverFromOriginalRow(): void
     {

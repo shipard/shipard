@@ -25,6 +25,9 @@ ASSET_FORMAT = "shpd.dataset.asset.v1"
 
 # Typy s řadou vázanou na pokladnu (`docTypes[].series_binding`).
 CASH_DESK_BOUND_TYPES = ("cash", "cashreg")
+# Typy, které vlastní bankovní účet nenesou (`own_bank_account: false`
+# v `docs.core.docTypes`) — u ostatních znamená doklad bez účtu výslovné `null`.
+TYPES_WITHOUT_OWN_BANK_ACCOUNT = ("cmnbkp", "cash", "cashreg")
 
 DOC_TYPE_NAMES = {
     "invni": "invoiceReceived", "invno": "invoiceIssued", "invpo": "proformaIssued", "invpi": "proformaReceived",
@@ -330,6 +333,16 @@ def doc_record(doc: DocRec, story: Story) -> dict:
     pruned = prune(canonical)
     if "importNumber" in pruned.get("applyOptions", {}) and "sequenceNumber" not in pruned["applyOptions"]["importNumber"]:
         pruned["applyOptions"]["importNumber"]["sequenceNumber"] = None
+    # Výslovné `null` = „záměrně prázdné“ (#166 D50) — stejně jako
+    # `DocumentExporter` po prune: pole s výchozí hodnotou, které doklad
+    # nemá, by pokyn při seedu doplnil (výchozí vlastní účet, výchozí
+    # registrace DPH). Účet jen u typu, který ho nese (`own_bank_account`
+    # v docTypes), registrace jen u dokladu s DPH. Řádky příběhu nesou pohyb,
+    # text, jednotku, množství i kód DPH vždy — `null` na nich nevzniká.
+    if own_bank is None and doc.doc_type not in TYPES_WITHOUT_OWN_BANK_ACCOUNT:
+        pruned["payment"]["ownBankAccount"] = None
+    if not doc.vat_registration and doc.vat_mode != "none":
+        pruned["vat"]["registration"] = None
     return pruned
 
 

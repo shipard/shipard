@@ -50,7 +50,8 @@
     },
     "payment": {
         "method": "bankTransfer",
-        "paymentReference": "2026448209"
+        "paymentReference": "2026448209",
+        "ownBankAccount": null
     },
     "rows": [
         {

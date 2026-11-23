@@ -94,6 +94,38 @@ final class DocRowDefaults
     }
 
     /**
+     * Sloupce, které by řádek dostal výchozí hodnotou, kdyby v něm chyběly —
+     * stejné podmínky jako {@see apply()}: jen položkový řádek bez kontační
+     * strany; obsah z karty jen u řádku s položkou, kód DPH jen u hlavičky
+     * s DPH, řádek s pohybem se stranou (`rowSide`) jen pohyb.
+     *
+     * Čte je export dokladu: prázdný sloupec z tohoto výčtu píše výslovným
+     * `null` („záměrně prázdné“, D50), jinak by ho pokyn při načtení
+     * doplnil a round-trip doklad změnil.
+     *
+     * @param array<string, mixed> $row sloupce řádku
+     * @return list<string>
+     */
+    public function defaultableColumns(array $row, bool $headHasVat): array
+    {
+        if ((int) ($row['row_kind'] ?? 1) !== 1 || ($row['acc_side'] ?? null) !== null) {
+            return [];
+        }
+        $columns = ['operation'];
+        if ($this->hasRowSide((string) ($row['operation'] ?? ''))) {
+            return $columns;
+        }
+        if (!empty($row['item'])) {
+            array_push($columns, 'description', 'unit_price', 'unit');
+        }
+        $columns[] = 'quantity';
+        if ($headHasVat) {
+            $columns[] = 'vat_code';
+        }
+        return $columns;
+    }
+
+    /**
      * Hodnoty, které řádek přebírá z karty položky: název jako text řádku,
      * prodejní cena bez DPH (je-li vyplněná) a jednotka; `item_type` pro
      * výchozí pohyb. Null = položka neexistuje.

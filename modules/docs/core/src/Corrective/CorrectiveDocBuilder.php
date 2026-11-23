@@ -130,11 +130,13 @@ final class CorrectiveDocBuilder
         if ($itemId !== null && $itemId > 0) {
             $out['item'] = V::prune(['ref' => $itemId, 'name' => V::str($r['item_name'] ?? null)]);
         }
+        // Opravný doklad je kopie původního: co původní řádek nemá (pohyb,
+        // jednotka, kód DPH), jde výslovným `null` — „záměrně prázdné“ (#166
+        // D50). Chybějící klíč by pokyn doplnil výchozí hodnotou z karty
+        // položky a z nabídky a kopie by se od původního dokladu lišila.
+        $out['operation'] = $operation;
         // Pokyn bere jen systémový kód jednotky (#166 D37).
-        $unit = V::str($r['unit_code'] ?? null);
-        if ($unit !== null) {
-            $out['unit'] = $unit;
-        }
+        $out['unit'] = V::str($r['unit_code'] ?? null);
 
         $qty = V::float($r['quantity'] ?? null) ?? 0.0;
         $fromTotal = (int) ($r['price_calc_mode'] ?? 0) === 1;
@@ -161,18 +163,19 @@ final class CorrectiveDocBuilder
             $out['discountAmount'] = self::negate($discountAmount);
         }
         $vatCode = V::str($r['vat_code'] ?? null);
+        // Jen kód — sazbu určí applier k datu původního plnění (U4); řádek
+        // bez kódu zůstává bez kódu (výslovné `null`, viz výš).
+        $out['vat'] = ['code' => $vatCode];
         if ($vatCode !== null) {
-            // Jen kód — sazbu určí applier k datu původního plnění (U4).
-            $out['vat'] = ['code' => $vatCode];
             // Opravný doklad přebírá předmět plnění původního řádku (#89 D10).
             $subject = V::str($r['reverse_charge_code'] ?? null);
             if ($subject !== null) {
                 $out['vat']['reverseChargeCode'] = $subject;
             }
         }
-        if ($description !== null) {
-            $out['description'] = $description;
-        }
+        // Text: prázdný popis původního řádku zůstává prázdný; s položkou
+        // v payloadu (`item.name`) dá text řádku její název jako dosud.
+        $out['description'] = $description;
         $dimensions = $r['dimensions'] ?? null;
         if (is_array($dimensions) && $dimensions !== []) {
             $out['dimensions'] = $dimensions;

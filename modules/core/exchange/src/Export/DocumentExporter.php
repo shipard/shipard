@@ -14,6 +14,8 @@ use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 use Shipard\Module\Core\Exchange\Document\RoundingModeNames;
 use Shipard\Module\Core\Exchange\Resolve\ReferenceResolver;
+use Shipard\Module\Docs\Core\Defaults\DocRowDefaults;
+use Shipard\Module\Docs\Core\DocTypes;
 
 /**
  * `docs_core_heads` (+ řádky, rekapitulace DPH) → `shpd.docs.document.v1`.
@@ -76,6 +78,12 @@ final class DocumentExporter implements RecordExporter
     private const PRICE_CALC_MODE_NAMES = [0 => 'fromUnitPrice', 1 => 'fromTotal'];
     private const ROW_KIND_NAMES = [0 => 'text', 1 => 'item', 2 => 'section'];
 
+    /** Sloupec řádku s výchozí hodnotou → klíč řádku ve formátu (kód DPH je v objektu `vat`). */
+    private const ROW_DEFAULT_KEYS = [
+        'operation' => 'operation', 'description' => 'description',
+        'unit_price' => 'unitPrice', 'unit' => 'unit', 'quantity' => 'quantity',
+    ];
+
     private ?bool $hasAccounting = null;
 
     /** @var array<int, ?array<string, mixed>> */
@@ -106,6 +114,12 @@ final class DocumentExporter implements RecordExporter
     /** Přirozený klíč záznamu cílové tabulky dimenze (`keyOf`). */
     private readonly ReferenceResolver $references;
 
+    /** Které sloupce řádku mají výchozí hodnotu — pro výslovné `null` (#166 D50). */
+    private readonly DocRowDefaults $rowDefaults;
+
+    /** @var list<list<string>> prázdné sloupce s výchozí hodnotou řádků právě exportovaného dokladu */
+    private array $rowDefaultColumns = [];
+
     /** @var array<string, array<string, true>> id dimenze → doklady, kde se hodnota zahodila */
     private array $droppedDimensions = [];
 
@@ -124,11 +138,12 @@ final class DocumentExporter implements RecordExporter
      */
     public function __construct(
         private readonly Connection $db,
-        ?ConfigRuntime $config = null,
+        private readonly ?ConfigRuntime $config = null,
         array $sectionTables = [],
         array $tables = [],
     ) {
         $this->references = new ReferenceResolver($db, $tables);
+        $this->rowDefaults = new DocRowDefaults(null, $config);
         $portableTables = [...array_column(SetupExporter::TABLES, 'table'), ...$sectionTables];
         $portable = [];
         $unportable = [];
@@ -437,7 +452,7 @@ final class DocumentExporter implements RecordExporter
                 'originalTaxPointDate' => V::date($h['corrected_doc_date'] ?? null),
                 'reason'               => V::str($h['correction_reason'] ?? null),
             ] : null,
-            'rows'          => $this->rows($id, $label),
+            'rows'          => $this->rows($id, $label, (int) ($h['vat_mode'] ?? 1) !== 0),
             'vatRecap'      => $this->vatRecap($id),
             'totals'        => [
                 'totalBase'     => V::float($h['total_base'] ?? null),
@@ -469,6 +484,21 @@ final class DocumentExporter implements RecordExporter
         // prune prázdný objekt odstranil, příznak ale přenést musíme.
         if (!empty($h['corrective']) && !isset($pruned['correction'])) {
             $pruned['correction'] = ['originalDocNumber' => null, 'originalTaxPointDate' => null, 'reason' => null];
+        }
+        // Výslovné `null` = „záměrně prázdné“ (#166 D50, U6): pole s výchozí
+        // hodnotou, které je na dokladu prázdné, by pokyn při načtení doplnil
+        // (výchozí vlastní účet, výchozí registrace DPH) a round-trip by
+        // doklad změnil. Podmínky jsou tytéž jako u výchozí hodnoty: účet jen
+        // u typu, který ho nese, registrace jen u dokladu s DPH. Záznam, který
+        // existuje, ale nemá klíč (varování výš), se sem nepočítá.
+        if (V::int($h['bank_account'] ?? null) === null && DocTypes::usesOwnBankAccount($this->config, $docTypeCode)) {
+            $pruned['payment']['ownBankAccount'] = null;
+        }
+        if (V::int($h['vat_registration'] ?? null) === null && (int) ($h['vat_mode'] ?? 1) !== 0) {
+            $pruned['vat']['registration'] = null;
+        }
+        if (is_array($pruned['rows'] ?? null)) {
+            $pruned['rows'] = $this->withRowNulls($pruned['rows']);
         }
 
         return new ExportedRecord($id, $slug, $pruned);
@@ -547,8 +577,9 @@ final class DocumentExporter implements RecordExporter
     /**
      * @return list<array<string, mixed>>
      */
-    private function rows(int $headId, string $label): array
+    private function rows(int $headId, string $label, bool $headHasVat): array
     {
+        $this->rowDefaultColumns = [];
         $accountSelect = $this->hasAccounting() ? ', [a.number] AS [account_number]' : ', NULL AS [account_number]';
         $accountJoin = $this->hasAccounting()
             ? ' LEFT JOIN [economy_accounting_accounts] AS [a] ON [a.id] = [r.account]'
@@ -585,7 +616,7 @@ final class DocumentExporter implements RecordExporter
             if ($unitCode === null && V::int($r['unit'] ?? null) !== null) {
                 $this->warnings[] = "docs {$label}: řádek {$r['order_pos']} — jednotka #{$r['unit']} nemá systémový kód, nelze přenést";
             }
-            $out[] = V::prune([
+            $row = V::prune([
                 'rowKind'        => self::ROW_KIND_NAMES[(int) ($r['row_kind'] ?? 1)] ?? 'item',
                 'operation'      => V::str($r['operation'] ?? null),
                 'orderPos'       => V::int($r['order_pos'] ?? null),
@@ -624,8 +655,44 @@ final class DocumentExporter implements RecordExporter
                 'partner'          => $partnerRef,
                 'dimensions'       => $this->dimensionValues($r, false, $label),
             ]);
+            // Prázdné sloupce s výchozí hodnotou — po závěrečném prune se
+            // doplní výslovným `null` ({@see withRowNulls()}). Rozhoduje
+            // sloupec dokladu: jednotka, která existuje, ale nemá systémový
+            // kód (varování výš), se sem nepočítá.
+            $this->rowDefaultColumns[] = array_values(array_filter(
+                $this->rowDefaults->defaultableColumns($r, $headHasVat),
+                static fn (string $column): bool => ($r[$column] ?? null) === null || $r[$column] === '',
+            ));
+            $out[] = $row;
         }
         return $out;
+    }
+
+    /**
+     * Výslovné `null` u prázdných sloupců řádku s výchozí hodnotou (#166 D50,
+     * U6) — řádek konceptu bez kódu DPH, bez jednotky nebo bez pohybu by
+     * pokyn jinak doplnil z karty položky a z nabídky. Až po závěrečném
+     * prune, který by `null` odstranil; pořadí řádků prune nemění.
+     *
+     * @param array<int, mixed> $rows řádky po prune
+     * @return array<int, mixed>
+     */
+    private function withRowNulls(array $rows): array
+    {
+        foreach ($rows as $i => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            foreach ($this->rowDefaultColumns[$i] ?? [] as $column) {
+                if ($column === 'vat_code') {
+                    $row['vat'] = ['code' => null] + (is_array($row['vat'] ?? null) ? $row['vat'] : []);
+                } else {
+                    $row[self::ROW_DEFAULT_KEYS[$column]] = null;
+                }
+            }
+            $rows[$i] = $row;
+        }
+        return $rows;
     }
 
     /**

@@ -9,10 +9,12 @@ use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 use Shipard\Tests\Fixtures\Core\Database\ModuleTables;
 
 class DocumentExporterTest extends TestCase
@@ -778,6 +780,101 @@ class DocumentExporterTest extends TestCase
         $this->assertArrayNotHasKey('ownBankAccount', $c['payment']);
         $this->assertCount(1, $exporter->getWarnings());
         $this->assertStringContainsString('nemá kód', $exporter->getWarnings()[0]);
+    }
+
+    // ── Výslovné null u polí s výchozí hodnotou (#166 D50, U6) ──────────────
+
+    /** @return ConfigRuntime skutečné typy dokladů a pohyby — z nich plynou podmínky výchozích hodnot */
+    private function defaultsConfig(): ConfigRuntime
+    {
+        $modules = dirname(__DIR__, 6) . '/modules';
+        return ConfigRuntimeFactory::fromItems([
+            'docs.core.docTypes'      => JsoncParser::parseFile($modules . '/docs/core/config/docTypes.jsonc'),
+            'docs.core.rowOperations' => JsoncParser::parseFile($modules . '/docs/core/config/rowOperations.jsonc'),
+        ]);
+    }
+
+    /**
+     * Doklad uložený bez vlastního účtu a bez registrace DPH: pokyn by oba
+     * při načtení doplnil výchozí hodnotou — export je proto píše `null`.
+     */
+    public function testEmptyOwnBankAccountAndRegistrationAreExportedAsExplicitNull(): void
+    {
+        $exporter = new DocumentExporter($this->db(), $this->defaultsConfig());
+        $c = $exporter->exportDocument($this->headRow([
+            'bank_account' => null, 'own_bank_code' => null, 'vat_registration' => null, 'vat_reg_code' => null,
+        ]))->data;
+
+        $this->assertArrayHasKey('ownBankAccount', $c['payment']);
+        $this->assertNull($c['payment']['ownBankAccount']);
+        $this->assertArrayHasKey('registration', $c['vat']);
+        $this->assertNull($c['vat']['registration']);
+        $this->assertSame([], $exporter->getWarnings());
+    }
+
+    /** Kde výchozí hodnota neplatí, `null` nevzniká: doklad Bez DPH, typ bez vlastního účtu. */
+    public function testNoExplicitNullWhereNoDefaultApplies(): void
+    {
+        $exporter = new DocumentExporter($this->db(), $this->defaultsConfig());
+
+        $noVat = $exporter->exportDocument($this->headRow(['vat_mode' => 0, 'vat_registration' => null, 'vat_reg_code' => null]))->data;
+        $this->assertArrayNotHasKey('registration', $noVat['vat']);
+
+        $accounting = $exporter->exportDocument($this->headRow([
+            'doc_type' => 'cmnbkp', 'vat_mode' => 0, 'partner' => null,
+            'bank_account' => null, 'own_bank_code' => null, 'vat_registration' => null, 'vat_reg_code' => null,
+        ]))->data;
+        $this->assertArrayNotHasKey('ownBankAccount', $accounting['payment']);
+    }
+
+    /** Řádek konceptu bez kódu DPH, jednotky a pohybu: `null`, ne chybějící klíč. */
+    public function testEmptyRowColumnsWithDefaultsAreExportedAsExplicitNull(): void
+    {
+        $row = array_merge($this->itemRowRow(), [
+            'operation' => null, 'unit' => null, 'unit_code' => null, 'unit_price' => null,
+            'vat_code' => null, 'vat_pct' => null, 'description' => null,
+        ]);
+        $exporter = new DocumentExporter($this->db(rows: [$row]), $this->defaultsConfig());
+        $exported = $exporter->exportDocument($this->headRow())->data['rows'][0];
+
+        foreach (['operation', 'description', 'unit', 'unitPrice'] as $key) {
+            $this->assertArrayHasKey($key, $exported, $key);
+            $this->assertNull($exported[$key], $key);
+        }
+        $this->assertSame(['code' => null], $exported['vat']);
+        $this->assertSame(1.0, $exported['quantity']);
+    }
+
+    /** Řádek bez položky nemá co převzít z karty; textový řádek a kontace výchozí hodnoty nemají. */
+    public function testRowNullsFollowTheDefaultRules(): void
+    {
+        $empty = ['operation' => 'purchase.goods', 'unit' => null, 'unit_code' => null, 'unit_price' => null, 'description' => null];
+        $withoutItem = array_merge($this->itemRowRow(), $empty, ['item' => null, 'item_code' => null, 'item_name' => null]);
+        $text = array_merge($this->itemRowRow(), $empty, ['row_kind' => 0, 'operation' => null, 'vat_code' => null, 'vat_pct' => null, 'quantity' => null]);
+        $contation = array_merge($this->itemRowRow(), $empty, ['acc_side' => 0, 'operation' => 'acc.record', 'vat_code' => null, 'vat_pct' => null]);
+        $exporter = new DocumentExporter($this->db(rows: [$withoutItem, $text, $contation]), $this->defaultsConfig());
+        $rows = $exporter->exportDocument($this->headRow())->data['rows'];
+
+        foreach (['description', 'unit', 'unitPrice'] as $key) {
+            $this->assertArrayNotHasKey($key, $rows[0], "řádek bez položky: {$key}");
+        }
+        $this->assertSame(['code' => 'highEU', 'pct' => 21.0], $rows[0]['vat']);
+        foreach (['operation', 'quantity', 'vat', 'unit', 'unitPrice', 'description'] as $key) {
+            $this->assertArrayNotHasKey($key, $rows[1], "textový řádek: {$key}");
+        }
+        foreach (['vat', 'unit', 'unitPrice', 'description'] as $key) {
+            $this->assertArrayNotHasKey($key, $rows[2], "kontace: {$key}");
+        }
+    }
+
+    /** Doklad Bez DPH kódy řádků nenese — `vat.code: null` na něm nevzniká. */
+    public function testNoVatDocumentRowsGetNoNullCode(): void
+    {
+        $row = array_merge($this->itemRowRow(), ['vat_code' => null, 'vat_pct' => null]);
+        $exporter = new DocumentExporter($this->db(rows: [$row]), $this->defaultsConfig());
+        $exported = $exporter->exportDocument($this->headRow(['vat_mode' => 0]))->data['rows'][0];
+
+        $this->assertArrayNotHasKey('vat', $exported);
     }
 
     /** U5 (#166): záznam bez hodnoty přirozeného klíče = varování a pole se vynechá. */
