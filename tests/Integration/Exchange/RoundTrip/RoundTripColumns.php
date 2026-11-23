@@ -35,6 +35,7 @@ final class RoundTripColumns
             'sequence_number'      => 'identita v řadě — doklad B jde se sequenceNumber null, aby se čítač řady nepohnul (U2 krok 4)',
             'doc_state_changed_at' => 'audit — čas změny stavu',
             'source_kind'          => 'původ dokladu',
+            'source_ref'           => 'původ dokladu — případy matice ho nenesou (doklad B by se jinak nezaložil, apply by vrátil doklad A)',
             'source_message'       => 'původ dokladu',
             'source_extracted_at'  => 'původ dokladu',
         ],

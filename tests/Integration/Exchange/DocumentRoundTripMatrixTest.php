@@ -80,6 +80,9 @@ class DocumentRoundTripMatrixTest extends IntegrationTestCase
 
         // 3–4. Export; mění se jen číslo, které by kolidovalo.
         $canonical = $this->export($idA);
+        // Případy matice klíč idempotence nenesou (#166 D46, U6) — s ním by
+        // apply vrátil doklad A a porovnání by srovnávalo doklad sám se sebou.
+        $this->assertArrayNotHasKey('ref', $canonical['source'] ?? [], 'případ matice nese source.ref');
         if (isset($canonical['applyOptions']['importNumber'])) {
             $canonical['applyOptions']['importNumber'] = [
                 'docNumber'      => RoundTripFixtures::PREFIX . '-B-' . $idA,

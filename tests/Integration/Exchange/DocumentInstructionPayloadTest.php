@@ -954,7 +954,185 @@ class DocumentInstructionPayloadTest extends IntegrationTestCase
         $this->assertNull($draft->head['partner']);
     }
 
+    // ── Idempotence pokynu — source.ref (#166 D46) ──────────────────────────
+
+    /** Dvakrát týž pokyn = jeden doklad; druhý pokyn s jiným obsahem doklad nezmění. */
+    public function testSameInstructionTwiceGivesOneDocument(): void
+    {
+        $payload = $this->options($this->sourceRefPayload('dvojí pokyn'), 40);
+
+        $first = $this->applier->apply($payload);
+        $saved = $this->saved($first);
+        $this->assertNotSame('alreadyApplied', $first->canonical['_resolve']['summary']['status']);
+        $this->assertSame(['api', $payload['source']['ref']], [$saved->head['source_kind'], $saved->head['source_ref']]);
+        $count = $this->documentCount();
+
+        $second = $this->applier->apply($payload);
+        $this->assertTrue($second->success, (string) $second->errorMessage);
+        $this->assertSame([200, $first->savedId], [$second->statusCode, $second->savedId]);
+        $this->assertSame($first->savedId, $second->canonical['savedDocId']);
+        $this->assertSame('alreadyApplied', $second->canonical['_resolve']['summary']['status']);
+        $issue = self::issue($second, 'already_applied');
+        $this->assertSame([$first->savedId, $saved->head['doc_number']], [$issue['docId'], $issue['docNumber']]);
+        $this->assertSame($count, $this->documentCount());
+
+        // Jiný obsah se stejným klíčem: obsah se neporovnává, doklad zůstává.
+        $changed = $payload;
+        $changed['rows'][0]['quantity'] = 7;
+        $changed['docText'] = F::PREFIX . ' dvojí pokyn — jiný obsah';
+        $third = $this->applier->apply($changed);
+        $this->assertSame([$first->savedId, 'alreadyApplied'], [$third->savedId, $third->canonical['_resolve']['summary']['status']]);
+        $this->assertSame($count, $this->documentCount());
+        $after = SavedDocument::load($this->db, (int) $first->savedId);
+        $this->assertSame($saved->head['doc_text'], $after->head['doc_text']);
+        $this->assertSame((float) $saved->head['total_amount'], (float) $after->head['total_amount']);
+        $this->assertSame((float) $saved->rows[0]['quantity'], (float) $after->rows[0]['quantity']);
+
+        // U6: export nese původ — jeho apply na témže zdroji vrátí původní doklad.
+        $exported = $this->export((int) $first->savedId);
+        $this->assertSame(['api', $payload['source']['ref']], [$exported['source']['kind'], $exported['source']['ref']]);
+        $this->assertSame($first->savedId, $this->applier->apply($exported)->savedId);
+        $this->assertSame($count, $this->documentCount());
+    }
+
+    /** U4: náhled existující doklad hlásí a zbytek běží jako obvykle. */
+    public function testPreviewReportsTheExistingDocument(): void
+    {
+        $payload = $this->options($this->sourceRefPayload('náhled'), 10);
+
+        $before = $this->applier->preview($payload);
+        $this->assertSame([], self::findings($before, 'already_applied'));
+
+        $saved = $this->saved($this->applier->apply($payload));
+        $preview = $this->applier->preview($payload);
+
+        $this->assertTrue($preview->success);
+        $this->assertSame([['info', 'source.ref']], self::findings($preview, 'already_applied'));
+        $issue = self::issue($preview, 'already_applied');
+        $this->assertSame((int) $saved->head['id'], $issue['docId']);
+        $this->assertNull($issue['docNumber'], 'koncept číslo nemá');
+        $this->assertSame(self::defaults($before), self::defaults($preview), 'zbytek náhledu se nemění');
+        $this->assertArrayHasKey('computed', $preview->canonical['_resolve']);
+    }
+
+    /** D46: doklad v koši nový pokyn neblokuje — vznikne nový. */
+    public function testDocumentInTrashDoesNotBlockANewOne(): void
+    {
+        $payload = $this->options($this->sourceRefPayload('koš'), 10);
+        $first = $this->saved($this->applier->apply($payload));
+        $firstId = (int) $first->head['id'];
+
+        $this->db->execute('UPDATE [docs_core_heads] SET [docState] = 90 WHERE [id] = %i', $firstId);
+        $this->assertSame([], self::findings($this->applier->preview($payload), 'already_applied'));
+
+        $second = $this->applier->apply($payload);
+        $secondId = (int) $this->saved($second)->head['id'];
+        $this->assertNotSame($firstId, $secondId);
+        $this->assertNotSame('alreadyApplied', $second->canonical['_resolve']['summary']['status']);
+
+        // Další pokyn vrací živý doklad, ne ten v koši.
+        $this->assertSame($secondId, $this->applier->apply($payload)->savedId);
+        // Po obnově z koše žijí dva — vrací se nejnovější.
+        $this->db->execute('UPDATE [docs_core_heads] SET [docState] = 10 WHERE [id] = %i', $firstId);
+        $this->assertSame($secondId, $this->applier->apply($payload)->savedId);
+    }
+
+    /** U2: stejný identifikátor pro doklad jiného typu je chyba volajícího. */
+    public function testSameRefForAnotherDocTypeIsAConflict(): void
+    {
+        $issued = $this->options($this->sourceRefPayload('jiný typ'), 10);
+        $this->saved($this->applier->apply($issued));
+        $count = $this->documentCount();
+
+        $received = $this->options($this->referencePayload(), 10);
+        $received['source'] = $issued['source'];
+
+        $preview = $this->applier->preview($received);
+        $this->assertSame([['error', 'source.ref']], self::findings($preview, 'source_ref_conflict'));
+
+        $result = $this->applier->apply($received);
+        $this->assertFalse($result->success);
+        $this->assertSame(['source_ref_conflict', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame([['error', 'source.ref']], self::findings($result, 'source_ref_conflict'));
+        // referencePayload() si založil vlastní koncept cestou formuláře — ten v počtu je.
+        $this->assertSame($count + 1, $this->documentCount());
+    }
+
+    /** U5: přegenerování se stejným klíčem nahradí cílový koncept; klíč jde z payloadu. */
+    public function testReplaceConceptWithTheSameRef(): void
+    {
+        $payload = $this->options($this->sourceRefPayload('přegenerování'), 10);
+        $targetId = (int) $this->saved($this->applier->apply($payload))->head['id'];
+        $count = $this->documentCount();
+
+        $replace = $payload;
+        $replace['applyOptions']['replaceConcept'] = $targetId;
+        $replace['rows'][0]['quantity'] = 3;
+        $this->assertSame([], self::findings($this->applier->preview($replace), 'already_applied'), 'cílový koncept se z dohledání vylučuje');
+        $result = $this->applier->apply($replace);
+        $saved = $this->saved($result);
+
+        $this->assertSame($targetId, (int) $saved->head['id']);
+        $this->assertNotSame('alreadyApplied', $result->canonical['_resolve']['summary']['status']);
+        $this->assertSame(3.0, (float) $saved->rows[0]['quantity']);
+        $this->assertSame($payload['source']['ref'], $saved->head['source_ref']);
+        $this->assertSame($count, $this->documentCount());
+
+        // Payload bez klíče: sloupce původu se vrátí na hodnotu čerstvého dokladu.
+        unset($replace['source']);
+        $cleared = $this->saved($this->applier->apply($replace));
+        $this->assertSame($targetId, (int) $cleared->head['id']);
+        $this->assertSame([null, null], [$cleared->head['source_kind'], $cleared->head['source_ref']]);
+    }
+
+    /** U5: importní mód beze změny — opakovaný běh importu vrátí existující doklad. */
+    public function testImportTwiceReturnsTheExistingDocument(): void
+    {
+        $payload = $this->sourceRefPayload('import');
+        $payload['dates'] = ['issueDate' => F::DATE];
+        $payload['rows'][0] += ['description' => 'IT-RT služba', 'quantity' => 1, 'unitPrice' => 1000.00, 'vat' => ['code' => $this->fixtures->vatCode('output', 'domestic', 'standard')]];
+        $payload = $this->options($payload, 40, import: true);
+
+        $first = $this->applier->apply($payload);
+        $saved = $this->saved($first);
+        $this->assertSame($payload['applyOptions']['importNumber']['docNumber'], $saved->head['doc_number']);
+        $count = $this->documentCount();
+
+        // Tentýž payload včetně čísla — bez klíče by narazil na existující číslo dokladu.
+        $second = $this->applier->apply($payload);
+        $this->assertTrue($second->success, (string) $second->errorMessage);
+        $this->assertSame([$first->savedId, 'alreadyApplied'], [$second->savedId, $second->canonical['_resolve']['summary']['status']]);
+        $this->assertSame($saved->head['doc_number'], self::issue($second, 'already_applied')['docNumber']);
+        $this->assertSame($count, $this->documentCount());
+    }
+
+    /** U1: identifikátor bez druhu zdroje je chyba validace, nic se neuloží. */
+    public function testRefWithoutKindIsAnError(): void
+    {
+        $payload = $this->options($this->sourceRefPayload('bez druhu'), 10);
+        unset($payload['source']['kind']);
+        $before = $this->documentCount();
+
+        $this->assertSame([['error', 'source.ref']], self::findings($this->applier->preview($payload), 'source_kind_missing'));
+        $result = $this->applier->apply($payload);
+        $this->assertSame(['validation_failed', 422], [$result->errorCode, $result->statusCode]);
+        $this->assertSame([['error', 'source.ref']], self::findings($result, 'source_kind_missing'));
+        $this->assertSame($before, $this->documentCount());
+    }
+
     // ── Payloady ────────────────────────────────────────────────────────────
+
+    /**
+     * Minimální pokyn s klíčem idempotence (`source.kind` + `source.ref`);
+     * text nese prefix fixtur kvůli počítání a úklidu. @return array<string, mixed>
+     */
+    private function sourceRefPayload(string $label): array
+    {
+        return [
+            'source'  => ['kind' => 'api', 'ref' => F::PREFIX . '-' . substr(uniqid(), -8) . '-' . (++$this->numbers)],
+            'docText' => F::PREFIX . ' idempotence — ' . $label,
+        ] + $this->minimalIssuedPayload();
+    }
 
     /**
      * Minimální pokyn vydané faktury: typ dokladu, odběratel a položka —

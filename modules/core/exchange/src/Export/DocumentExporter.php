@@ -368,6 +368,10 @@ final class DocumentExporter implements RecordExporter
             'formatVersion' => '1.0',
             'source'        => V::prune([
                 'kind'        => V::str($h['source_kind'] ?? null),
+                // Identifikátor ve zdroji (#166 D46): sady nesou původ. Apply
+                // sady nad zdrojem dat, kde doklad s touž dvojicí žije, vrátí
+                // ten existující — opakovaný seed bez resetu doklady nezdvojí.
+                'ref'         => V::str($h['source_ref'] ?? null),
                 'extractedAt' => V::dateTime($h['source_extracted_at'] ?? null),
             ]) ?: null,
             'docType'       => $docType,

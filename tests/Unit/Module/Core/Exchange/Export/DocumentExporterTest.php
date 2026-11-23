@@ -400,6 +400,17 @@ class DocumentExporterTest extends TestCase
     }
 
     /** Ruční zařazení do KH musí přežít dump → seed (#77). */
+    public function testSourceRefIsExportedOnlyWhenFilled(): void
+    {
+        // #166 D46, U6: sady nesou původ včetně identifikátoru ve zdroji.
+        $exporter = new DocumentExporter($this->db());
+
+        $source = $exporter->exportDocument($this->headRow(['source_kind' => 'api', 'source_ref' => 'ORD-42']))->data['source'];
+        $this->assertSame('api', $source['kind']);
+        $this->assertSame('ORD-42', $source['ref']);
+        $this->assertArrayNotHasKey('ref', $exporter->exportDocument($this->headRow())->data['source'], 'bez identifikátoru: null se ořeže');
+    }
+
     public function testFiscalPeriodTypeRoundTrips(): void
     {
         // #69 D20: uzávěrkový doklad musí přežít dump → seed, jinak by ho
