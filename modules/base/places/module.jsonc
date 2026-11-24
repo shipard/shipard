@@ -24,8 +24,18 @@
         { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlaceDocument" }
     ],
 
+    "forms": [
+        { "table": "base_places_kinds",  "class": "Shipard\\Module\\Base\\Places\\PlaceKindsForm" },
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlacesForm" }
+    ],
+
+    "lookups": [
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlacesLookup" }
+    ],
+
     "config": [
-        { "id": "base.places.types", "file": "config/types.jsonc" },
-        { "id": "base.places.icons", "file": "config/icons.jsonc" }
+        { "id": "base.places.types",     "file": "config/types.jsonc" },
+        { "id": "base.places.icons",     "file": "config/icons.jsonc" },
+        { "id": "base.places.formTexts", "file": "config/formTexts.jsonc" }
     ]
 }
