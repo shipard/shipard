@@ -16,6 +16,10 @@
 
     "displayPattern": "{name}",
 
+    // Přechody stavu jdou přes PlaceDocument — jinak by tlačítka Smazat
+    // a Ukončit platnost minula kontrolu podřízených míst (D7).
+    "stateTransitionsRunDocumentHooks": true,
+
     "docStates": {
         "stateColumn": "docState",
         "mainColumn": "docStateMain",

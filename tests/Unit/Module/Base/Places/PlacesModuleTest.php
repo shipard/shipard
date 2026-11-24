@@ -88,6 +88,18 @@ class PlacesModuleTest extends TestCase
         $this->assertSame([['column' => 'system_code']], array_values($unique)[0]['columns']);
     }
 
+    public function testStateTransitionsRunThroughTheDocuments(): void
+    {
+        // Bez příznaku jde změna stavu z formuláře přímým UPDATE mimo
+        // dokument — kontroly koše a archivu (D7, D18) by se nespustily.
+        foreach (['base_places_places', 'base_places_kinds'] as $table) {
+            $this->assertTrue(
+                TableDefinition::fromArray(self::table($table))->stateTransitionsRunDocumentHooks,
+                $table,
+            );
+        }
+    }
+
     public function testAddressColumnsMatchPersonAddresses(): void
     {
         $shape = static function (array $table): array {

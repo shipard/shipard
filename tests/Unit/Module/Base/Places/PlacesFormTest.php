@@ -150,7 +150,22 @@ class PlacesFormTest extends TestCase
 
         $this->assertSame('attachments', $def->tabs[1]->type);
         $this->assertSame(467, $def->tabs[1]->tableId);
-        $this->assertSame('Unique within the parent place.', $this->element($def, 'code')->hint);
+        // Nápověda kódu je blok `hint` pod řádkem — u pole ve skupině
+        // `inline` by ji frontend nevykreslil.
+        $hints = [];
+        foreach ($def->tabs[0]->sections[0]->columns[0]->elements as $el) {
+            foreach ($el->blocks ?? [] as $block) {
+                $hints[] = $block['type'] . ': ' . $block['text'];
+            }
+        }
+        $this->assertSame(
+            [
+                'hint: The short name is shown in the path instead of the name. The code is unique within the parent place.',
+                'hint: Order within the parent place. 0 = placed last on save.',
+            ],
+            $hints,
+        );
+        $this->assertNull($this->element($def, 'code')->hint);
         $this->assertSame(['cz', 'sk'], array_column($this->element($def, 'country')->options, 'value'));
         $this->assertSame('Místo', $def->title);
         $this->assertSame('Nové místo', $def->titleNew);

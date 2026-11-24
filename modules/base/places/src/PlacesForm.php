@@ -48,16 +48,16 @@ class PlacesForm extends TableForm
             ->section()
                 ->col()
                     ->input('name', required: true)
+                    // Nápovědy polí ve skupině `inline` frontend nekreslí —
+                    // jdou proto jako blok `hint` pod řádkem.
                     ->inline()
-                        ->input(
-                            'short_name',
-                            hint: $this->formText('base.places.formTexts', 'place.shortNameHint', 'Shown in the path and the tree instead of the name.'),
-                        )
-                        ->input(
-                            'code',
-                            hint: $this->formText('base.places.formTexts', 'place.codeHint', 'Unique within the parent place.'),
-                        )
+                        ->input('short_name')
+                        ->input('code')
                     ->endInline()
+                    ->content([[
+                        'type' => 'hint',
+                        'text' => $this->formText('base.places.formTexts', 'place.namesHint', 'The short name is shown in the path instead of the name. The code is unique within the parent place.'),
+                    ]])
                     ->inline()
                         ->select(
                             'kind',
@@ -65,11 +65,12 @@ class PlacesForm extends TableForm
                             triggers: 'reload',
                             required: true,
                         )
-                        ->number(
-                            'order_pos',
-                            hint: $this->formText('base.places.formTexts', 'place.orderHint', 'Order within the parent place. 0 = placed last on save.'),
-                        )
+                        ->number('order_pos')
                     ->endInline()
+                    ->content([[
+                        'type' => 'hint',
+                        'text' => $this->formText('base.places.formTexts', 'place.orderHint', 'Order within the parent place. 0 = placed last on save.'),
+                    ]])
                     ->lookup(
                         'parent',
                         table: PlaceDocument::TABLE,

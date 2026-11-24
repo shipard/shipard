@@ -11,6 +11,10 @@
 
     "displayPattern": "{name}",
 
+    // Přechody stavu jdou přes PlaceKindDocument — jinak by tlačítko Smazat
+    // minulo kontrolu, že druh nepoužívá žádné místo (D18).
+    "stateTransitionsRunDocumentHooks": true,
+
     "docStates": {
         "stateColumn": "docState",
         "mainColumn": "docStateMain",

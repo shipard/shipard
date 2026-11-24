@@ -6,19 +6,13 @@
     // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů,
     // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
     "texts": {
-        // Místo — nápověda pole Zkrácený název.
-        "place.shortNameHint": {
-            "name": "Shown in the path and the tree instead of the name.",
-            "name:cs": "Ukazuje se v cestě a ve stromu místo názvu.",
-            "name:en": "Shown in the path and the tree instead of the name."
+        // Místo — nápověda pod řádkem Zkrácený název + Kód (#169 D4).
+        "place.namesHint": {
+            "name": "The short name is shown in the path instead of the name. The code is unique within the parent place.",
+            "name:cs": "Zkrácený název se ukazuje v cestě místo názvu. Kód je jedinečný v rámci nadřazeného místa.",
+            "name:en": "The short name is shown in the path instead of the name. The code is unique within the parent place."
         },
-        // Místo — nápověda pole Kód (#169 D4).
-        "place.codeHint": {
-            "name": "Unique within the parent place.",
-            "name:cs": "Jedinečný v rámci nadřazeného místa.",
-            "name:en": "Unique within the parent place."
-        },
-        // Místo — nápověda pole Pořadí.
+        // Místo — nápověda pod řádkem Druh + Pořadí.
         "place.orderHint": {
             "name": "Order within the parent place. 0 = placed last on save.",
             "name:cs": "Pořadí v rámci nadřazeného místa. 0 = při uložení se zařadí na konec.",
