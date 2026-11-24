@@ -1,6 +1,6 @@
 # Místa — model, formuláře a číselníky v Nastavení (task A)
 
-**Stav:** naplánováno — design #169 D1–D18, navazuje task B (layout `tree`)
+**Stav:** hotovo — 2026-11-24; navazuje task B (layout `tree`, #169 D8–D12)
 
 > PRD pro jednu Claude Code session (5 commitů). Design: issue #169
 > (D1–D18). Navazuje task B — generický layout `tree` ve
@@ -342,13 +342,13 @@ místnosti ani jiná podlaží.
 
 ## Hotovo když
 
-- [ ] modul v `install.base`, `ds-upgrade` vytvoří tabulky a seed druhů
-- [ ] validace D3, D7, D13, D15, D18 a kódu mezi sourozenci s testy
-- [ ] formulář s adresou podle typu a lookupem s filtry z `recalculate()`
-- [ ] viewery a detail podle kontraktu, sekce Místa v Nastavení
-- [ ] `docs/places.md`, `CLAUDE.md`, `docs/assets.md` §8, nápověda
-- [ ] celá sada PHPUnit, build a kontroly CSS projdou
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] modul v `install.base`, `ds-upgrade` vytvoří tabulky a seed druhů
+- [x] validace D3, D7, D13, D15, D18 a kódu mezi sourozenci s testy
+- [x] formulář s adresou podle typu a lookupem s filtry z `recalculate()`
+- [x] viewery a detail podle kontraktu, sekce Místa v Nastavení
+- [x] `docs/places.md`, `CLAUDE.md`, `docs/assets.md` §8, nápověda
+- [x] celá sada PHPUnit, build a kontroly CSS projdou
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
 
 ## Pasti
 

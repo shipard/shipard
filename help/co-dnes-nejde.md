@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku, PDF na telefonu, náhled PDF, PDF se nezobrazí, jen první stránka]
+keywords: [neumí, nejde, chybí, omezení, alfa, přehled firmy, stav firmy, přepočet měn, kurz, kurzovní lístek, kurz ČNB, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku, PDF na telefonu, náhled PDF, PDF se nezobrazí, jen první stránka, místa, strom míst, přetáhnout místo myší, umístění majetku, rezervace místností]
 related: [slovnicek.md, uctarna/datum-sazby-dph.md]
 ---
 
@@ -236,6 +236,22 @@ začneš karty zakládat ručně.
 **Soubor a množstevní karta jsou zatím jen popisky.** **Způsob sledování**
 na kartě vybereš, ale Shipard se podle něj ještě nechová — žádné množství,
 žádné části souboru.
+
+## Místa
+
+**Místa se neukazují jako strom.** Seznam v **Nastavení aplikace → Místa**
+je zatím plochý — kam místo patří, říká cesta pod názvem (viz
+[Místa a druhy míst](mista/mista-a-druhy-mist.md)). Rozbalovací strom
+teprve bude.
+
+**Místo nepřetáhneš myší.** Pod jiné nadřazené místo ho přesuneš polem
+**Nadřazené místo**, pořadí změníš polem **Pořadí**.
+
+**Jiné části Shipardu místa zatím nepoužívají.** Kartě majetku, zakázce
+ani dokladu místo nepřiřadíš; rezervace místností, plocha a kapacita
+místa nejsou. Místa ze starého Shipardu se zatím nepřevádějí.
+
+---
 
 ## Kde ještě nemusí souhlasit čísla
 
