@@ -19,6 +19,11 @@
         "base_places_places"
     ],
 
+    "documentClasses": [
+        { "table": "base_places_kinds",  "class": "Shipard\\Module\\Base\\Places\\PlaceKindDocument" },
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlaceDocument" }
+    ],
+
     "config": [
         { "id": "base.places.types", "file": "config/types.jsonc" },
         { "id": "base.places.icons", "file": "config/icons.jsonc" }
