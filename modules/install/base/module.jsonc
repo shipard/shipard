@@ -20,6 +20,7 @@
         "core.prints",
         "base.persons",
         "base.registry",
+        "base.places",
         "economy.codebooks",
         "economy.items",
         "economy.accounting",

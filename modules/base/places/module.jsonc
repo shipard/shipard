@@ -1,0 +1,26 @@
+{
+    // Místa (docs/places.md, #169 D1–D18): obecný číselník míst s hierarchií
+    // (areál → budova → podlaží → místnost → místo). Typ místa je systémový
+    // (cfgItem base.places.types, řídí úrovně a adresu), druh místa je
+    // uživatelský číselník se seedem (jeden druh na typ). Cesta místa se
+    // počítá při čtení (PlaceTree), nic se neukládá navíc (D6).
+    "id": "base.places",
+    "name": "Places",
+    "name:cs": "Místa",
+    "name:en": "Places",
+    "description": "Places: hierarchical register of sites, buildings, floors, rooms and spots with place kinds",
+    "description:cs": "Místa: hierarchický číselník areálů, budov, podlaží, místností a míst s druhy míst",
+    "description:en": "Places: hierarchical register of sites, buildings, floors, rooms and spots with place kinds",
+
+    "dependencies": ["core.system", "core.attachments", "base.persons", "world.validations"],
+
+    "tables": [
+        "base_places_kinds",
+        "base_places_places"
+    ],
+
+    "config": [
+        { "id": "base.places.types", "file": "config/types.jsonc" },
+        { "id": "base.places.icons", "file": "config/icons.jsonc" }
+    ]
+}

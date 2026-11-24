@@ -27,6 +27,8 @@ use Shipard\Core\Settings\LayerCParameters;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Core\Version;
+use Shipard\Module\Base\Places\PlaceKindsProvisioner;
+use Shipard\Module\Base\Places\PlaceTypes;
 use Shipard\Module\Core\Ai\AiFunctionProvisioner;
 use Shipard\Module\Core\Mail\MailAiProvisioner;
 use Shipard\Module\Core\Mail\MailRouterProvisioner;
@@ -425,6 +427,7 @@ class DsUpgradeCommand extends Command
         } else {
             $this->provisionUnits($resolvedModules, $dsConnection, $output);
             $this->provisionItemKinds($resolvedModules, $dsConnection, $output);
+            $this->provisionPlaceKinds($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
             $this->provisionAccountChart($resolvedModules, $settings, $dsConnection, $output);
             $this->provisionAssetAccountingGroups($resolvedModules, $dsConnection, $output);
             $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output);
@@ -841,6 +844,56 @@ class DsUpgradeCommand extends Command
         $result = $provisioner->provision();
 
         $this->logProvisioningResult($output, 'units', $result['units']);
+    }
+
+    /**
+     * Seed druhů míst (#169 D14): jeden druh na typ z cfgItem
+     * `base.places.types`, název v jazyce zdroje dat. Existující druh
+     * (podle `system_code`, v jakémkoli stavu) se nepřepisuje ani nevrací.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function provisionPlaceKinds(
+        array $resolvedModules,
+        string $dsDir,
+        DataSourceConfig $dsConfig,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning place kinds...', OutputInterface::VERBOSITY_VERBOSE);
+
+        if (!$this->isModuleActive($resolvedModules, 'base.places')) {
+            $output->writeln('  <comment>[SKIP] base.places module not active</comment>', OutputInterface::VERBOSITY_VERBOSE);
+            return;
+        }
+
+        $types = $this->loadPlaceTypes($dsDir, $dsConfig);
+        if ($types === []) {
+            $output->writeln('  <comment>[WARN]   place types unavailable (cfgItem ' . PlaceTypes::CFG_ITEM
+                . ') — place kinds not seeded</comment>');
+            return;
+        }
+
+        $result = new PlaceKindsProvisioner($dsConnection, $types)->provision();
+
+        $this->logProvisioningResult($output, 'place kinds', $result['kinds']);
+    }
+
+    /**
+     * Typy míst z právě zkompilovaného configu v jazyce zdroje dat. Bez
+     * compiled configu prázdné — seed se pak nezakládá ([WARN]), nikdy
+     * odhadem. Seam pro testy (fixture moduly typy nemají).
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected function loadPlaceTypes(string $dsDir, DataSourceConfig $dsConfig): array
+    {
+        try {
+            return new PlaceTypes(ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage()))->all();
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     /**

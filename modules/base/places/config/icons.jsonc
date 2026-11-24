@@ -1,0 +1,21 @@
+{
+    // base.places.icons — pevná sada ikon míst (#169 D14). Hodnoty =
+    // enumString `icon` na druhu místa; druh bez ikony bere ikonu typu
+    // (base.places.types → icon). Každý klíč má položku v iconMap
+    // (frontend/src/icons.js) — hlídá PlacesModuleTest.
+    "place-site":      { "name": "Site",             "name:cs": "Areál",              "name:en": "Site" },
+    "place-building":  { "name": "Building",         "name:cs": "Budova",             "name:en": "Building" },
+    "place-section":   { "name": "Building section", "name:cs": "Část budovy",        "name:en": "Building section" },
+    "place-floor":     { "name": "Floor",            "name:cs": "Podlaží",            "name:en": "Floor" },
+    "place-room":      { "name": "Room",             "name:cs": "Místnost",           "name:en": "Room" },
+    "place-outdoor":   { "name": "Outdoor area",     "name:cs": "Venkovní plocha",    "name:en": "Outdoor area" },
+    "place-spot":      { "name": "Spot",             "name:cs": "Místo",              "name:en": "Spot" },
+    "place-other":     { "name": "Other",            "name:cs": "Ostatní",            "name:en": "Other" },
+    "place-office":    { "name": "Office",           "name:cs": "Kancelář",           "name:en": "Office" },
+    "place-meeting":   { "name": "Meeting room",     "name:cs": "Zasedací místnost",  "name:en": "Meeting room" },
+    "place-storage":   { "name": "Storage",          "name:cs": "Sklad",              "name:en": "Storage" },
+    "place-kitchen":   { "name": "Kitchen",          "name:cs": "Kuchyňka",           "name:en": "Kitchen" },
+    "place-tech":      { "name": "Technical room",   "name:cs": "Technická místnost", "name:en": "Technical room" },
+    "place-parking":   { "name": "Parking",          "name:cs": "Parkování",          "name:en": "Parking" },
+    "place-workplace": { "name": "Workplace",        "name:cs": "Pracovní místo",     "name:en": "Workplace" }
+}

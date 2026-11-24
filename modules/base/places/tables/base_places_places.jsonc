@@ -1,0 +1,244 @@
+{
+    // Místo (#169 D3–D7, D13; docs/places.md): záznam hierarchie míst. Typ
+    // dědí z druhu. Nadřazené místo musí mít nižší úroveň typu (D3), cyklus
+    // se hlídá vždy — obojí PlaceDocument.
+    //
+    // Záměrně tu NENÍ:
+    //   - unikátní index na `code` — kód je jedinečný jen mezi sourozenci
+    //     (místnost 101 je v každé budově), hlídá ho dokument
+    //   - sloupec s cestou, úrovní ani plným názvem — cestu počítá PlaceTree
+    //     při čtení (D6)
+    //   - `exchangeKey` — přirozený klíč až s prvním konzumentem (D6)
+    "tableId": 467,
+    "name": "Places",
+    "name:cs": "Místa",
+    "name:en": "Places",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "address",
+            "name": "Address",
+            "name:cs": "Adresa",
+            "name:en": "Address"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 120,
+            "nullable": false
+        },
+        {
+            // Do cesty a stromu; bez něj se použije název.
+            "id": "short_name",
+            "name": "Short name",
+            "name:cs": "Zkrácený název",
+            "name:en": "Short name",
+            "type": "varchar",
+            "length": 40,
+            "nullable": true
+        },
+        {
+            // Jedinečný mezi sourozenci (stejné nadřazené místo, i nejvyšší
+            // úroveň) — hlídá PlaceDocument, ne index.
+            "id": "code",
+            "name": "Code",
+            "name:cs": "Kód",
+            "name:en": "Code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "int",
+            "nullable": false,
+            "reference": "base_places_kinds"
+        },
+        {
+            // NULL = místo nejvyšší úrovně.
+            "id": "parent",
+            "name": "Parent place",
+            "name:cs": "Nadřazené místo",
+            "name:en": "Parent place",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_places_places"
+        },
+        {
+            // Pořadí mezi sourozenci; strom řadí pořadí → kód → název.
+            "id": "order_pos",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "int",
+            "nullable": false,
+            "default": 0
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true
+        },
+
+        // --- adresa (jen typy s hasAddress; typy a délky jako
+        //     base_persons_addresses, D13) ---
+
+        {
+            "id": "street",
+            "name": "Street",
+            "name:cs": "Ulice",
+            "name:en": "Street",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "house_number",
+            "name": "House number",
+            "name:cs": "Číslo popisné",
+            "name:en": "House number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "orientation_number",
+            "name": "Orientation number",
+            "name:cs": "Číslo orientační",
+            "name:en": "Orientation number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "city",
+            "name": "City",
+            "name:cs": "Obec",
+            "name:en": "City",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "zip",
+            "name": "ZIP code",
+            "name:cs": "PSČ",
+            "name:en": "ZIP code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "country",
+            "name": "Country",
+            "name:cs": "Země",
+            "name:en": "Country",
+            "type": "enumString",
+            "length": 2,
+            "cfgItem": "world.base.countries",
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "latitude",
+            "name": "Latitude",
+            "name:cs": "Zeměpisná šířka",
+            "name:en": "Latitude",
+            "type": "numeric",
+            "precision": 9,
+            "scale": 6,
+            "nullable": true,
+            "group": "address"
+        },
+        {
+            "id": "longitude",
+            "name": "Longitude",
+            "name:cs": "Zeměpisná délka",
+            "name:en": "Longitude",
+            "type": "numeric",
+            "precision": 9,
+            "scale": 6,
+            "nullable": true,
+            "group": "address"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_kind",
+            "type": "index",
+            "columns": [
+                {"column": "kind"}
+            ]
+        },
+        {
+            "id": "idx_parent",
+            "type": "index",
+            "columns": [
+                {"column": "parent"},
+                {"column": "order_pos", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        }
+    ]
+}

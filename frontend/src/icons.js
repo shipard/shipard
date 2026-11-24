@@ -123,6 +123,18 @@ import {
   faCodeCommit,
   faClock,
   faCoins,
+  faMapLocationDot,
+  faTableCellsLarge,
+  faLayerGroup,
+  faDoorOpen,
+  faTree,
+  faLocationDot,
+  faMapPin,
+  faPeopleGroup,
+  faWarehouse,
+  faUtensils,
+  faSquareParking,
+  faChair,
 } from '@fortawesome/free-solid-svg-icons';
 
 // ── Akce (toolbary, tlačítka) ──────────────────────────────────
@@ -260,6 +272,25 @@ export const iconFileExcel = faFileExcel;
 export const iconFileZip = faFileZipper;
 export const iconPrint = faPrint; // nastavení tisků
 
+// ── Místa (base.places, #169 D14) ──────────────────────────────
+// Sedm ikon typů + Ostatní a k nim ikony pro druhy. Klíče `place-*`
+// odpovídají cfgItemům base.places.types (icon) a base.places.icons.
+export const iconPlaceSite = faMapLocationDot;
+export const iconPlaceBuilding = faBuilding;
+export const iconPlaceSection = faTableCellsLarge;
+export const iconPlaceFloor = faLayerGroup;
+export const iconPlaceRoom = faDoorOpen;
+export const iconPlaceOutdoor = faTree;
+export const iconPlaceSpot = faLocationDot;
+export const iconPlaceOther = faMapPin;
+export const iconPlaceOffice = faBriefcase;
+export const iconPlaceMeeting = faPeopleGroup;
+export const iconPlaceStorage = faWarehouse;
+export const iconPlaceKitchen = faUtensils;
+export const iconPlaceTech = faServer;
+export const iconPlaceParking = faSquareParking;
+export const iconPlaceWorkplace = faChair;
+
 /**
  * Mapování názvů ikon z API (string) → ikonový objekt.
  * Server může v navigaci poslat "icon": "users" a klient ho přeloží.
@@ -351,6 +382,21 @@ export const iconMap = {
   'upgrade': iconUpgrade,
   'commit': iconCommit,
   'clock': iconClock,
+  'place-site': iconPlaceSite,
+  'place-building': iconPlaceBuilding,
+  'place-section': iconPlaceSection,
+  'place-floor': iconPlaceFloor,
+  'place-room': iconPlaceRoom,
+  'place-outdoor': iconPlaceOutdoor,
+  'place-spot': iconPlaceSpot,
+  'place-other': iconPlaceOther,
+  'place-office': iconPlaceOffice,
+  'place-meeting': iconPlaceMeeting,
+  'place-storage': iconPlaceStorage,
+  'place-kitchen': iconPlaceKitchen,
+  'place-tech': iconPlaceTech,
+  'place-parking': iconPlaceParking,
+  'place-workplace': iconPlaceWorkplace,
 };
 
 /**
