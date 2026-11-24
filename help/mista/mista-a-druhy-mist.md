@@ -90,7 +90,8 @@ Podřízená místa nejdřív přesuň jinam, nebo je vyřaď.
 nadřazené a podřízená místa. Budovu s podlažími na místnost nezměníš.
 Když místu dáš druh bez adresy, adresa se smaže.
 
-**Typ druhu po potvrzení nezměníš.** Pro jiný typ založ nový druh.
+**Typ druhu po potvrzení nezměníš** — a nezměníš ho ani u druhu
+v **Konceptu**, jakmile ho má nějaké místo. Pro jiný typ založ nový druh.
 Druh, který nějaké místo používá, nejde smazat — dej mu **Ukončit
 platnost**; místa si ho ponechají, jen se přestane nabízet novým.
 

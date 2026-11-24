@@ -106,7 +106,10 @@ je také jedna skupina.
 
 Druh — `PlaceKindDocument`: název a známý typ povinné, ikona prázdná nebo
 ze sady. **Typ je po prvním potvrzení jen ke čtení** (D15, `typeLocked`) —
-„potvrzený“ znamená, že uložený řádek už není v Konceptu. **Druh, který
+„potvrzený“ znamená, že uložený řádek už není v Konceptu. Nad rámec D15
+je stejně zamčený **typ druhu v Konceptu, který už používá místo mimo
+koš**: koncept druhu se místům nabízí a změna typu by jim změnila úroveň
+bez kontroly stromu. **Druh, který
 používá místo mimo koš, nejde do koše** (D18, `_form` / `in_use`); do
 archivu jít smí — místa si druh ponechají, formulář místa ho už nenabízí.
 
@@ -156,7 +159,8 @@ nad `PlaceTree` — typ i podstrom jsou vlastnosti stromu. `resolve()`
 filtry nezná: vybrané místo se zobrazí, i když jím neprojde.
 
 **`PlaceKindsForm`** — typ je jen ke čtení, jakmile uložený druh opustí
-Koncept; ikona má prázdnou volbu **Podle typu**.
+Koncept, a u konceptu, který už používá místo; ikona má prázdnou volbu
+**Podle typu**.
 
 Nápovědy jdou z katalogu `base.places.formTexts`. Nápovědy polí ve skupině
 `inline` formulář nekreslí, proto jsou u Kódu a Pořadí jako blok `hint`

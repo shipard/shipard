@@ -111,6 +111,23 @@ class PlaceKindDocumentTest extends TestCase
         );
     }
 
+    public function testTypeOfADraftKindIsLockedOnceAPlaceUsesIt(): void
+    {
+        // Koncept druhu se místům nabízí — změna typu by jim změnila úroveň
+        // bez kontroly stromu.
+        $draft = ['id' => 5, 'type' => 'room', 'docState' => 10];
+        $change = ['id' => 5, 'name' => 'Kancelář', 'type' => 'floor', 'docState' => 10];
+
+        $this->assertSame(['type:typeLocked'], $this->codes($this->doc($draft, placesUsing: 1), $change));
+        $this->assertSame(['type:typeLocked'], $this->codes($this->doc($draft, placesUsing: 1), ['docState' => 40] + $change));
+        $this->assertSame([], $this->codes($this->doc($draft, placesUsing: 0), $change), 'nepoužitý koncept typ měnit smí');
+        // Ostatní pole použitého konceptu měnit jde.
+        $this->assertSame(
+            [],
+            $this->codes($this->doc($draft, placesUsing: 1), ['type' => 'room', 'name' => 'Kancelář malá'] + $change),
+        );
+    }
+
     public function testUsedKindCannotGoToTrashButCanBeArchived(): void
     {
         $stored = ['id' => 5, 'type' => 'room', 'docState' => 40];

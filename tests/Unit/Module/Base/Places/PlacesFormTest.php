@@ -171,9 +171,17 @@ class PlacesFormTest extends TestCase
         $this->assertSame('Nové místo', $def->titleNew);
     }
 
-    private function kindsForm(): PlaceKindsForm
+    private function kindsForm(bool $used = false): PlaceKindsForm
     {
-        $form = new PlaceKindsForm('base_places_kinds');
+        $form = new class('base_places_kinds') extends PlaceKindsForm {
+            public bool $used = false;
+
+            protected function isKindUsed(int $kindId): bool
+            {
+                return $this->used;
+            }
+        };
+        $form->used = $used;
         $form->setConfig($this->config());
         $form->setTableDef(TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/base_places_kinds.jsonc')));
         return $form;
@@ -195,6 +203,24 @@ class PlacesFormTest extends TestCase
             $confirmed = $form->buildFormDefinition(['id' => 3, 'type' => 'room', 'docState' => $state], false);
             $this->assertTrue($this->element($confirmed, 'type')->readOnly, "stav {$state}");
         }
+    }
+
+    public function testTypeOfADraftKindIsReadOnlyOnceAPlaceUsesIt(): void
+    {
+        $draft = ['id' => 3, 'type' => 'room', 'docState' => 10];
+
+        $used = $this->element($this->kindsForm(used: true)->buildFormDefinition($draft, false), 'type');
+        $this->assertTrue($used->readOnly);
+        $this->assertSame('The type cannot be changed while places use this kind.', $used->hint);
+
+        $free = $this->element($this->kindsForm(used: false)->buildFormDefinition($draft, false), 'type');
+        $this->assertFalse($free->readOnly);
+
+        // Nový druh nikdo používat nemůže — typ je volný i tehdy.
+        $this->assertFalse($this->element($this->kindsForm(used: true)->buildFormDefinition([], true), 'type')->readOnly);
+        // Potvrzený druh má nápovědu potvrzeného, ne použitého.
+        $confirmed = $this->element($this->kindsForm(used: true)->buildFormDefinition(['docState' => 40] + $draft, false), 'type');
+        $this->assertSame('The type of a confirmed kind cannot be changed.', $confirmed->hint);
     }
 
     public function testKindIconOffersTheSetWithEmptyChoiceByType(): void

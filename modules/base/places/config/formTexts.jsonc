@@ -44,15 +44,21 @@
         },
         // Druh místa — nápověda pole Typ, dokud jde měnit (#169 D15).
         "kind.typeHint": {
-            "name": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed.",
-            "name:cs": "Typ určuje, kam místa druhu patří v hierarchii a jestli mají adresu. Po potvrzení druhu ho nejde změnit.",
-            "name:en": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed."
+            "name": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed or used by a place.",
+            "name:cs": "Typ určuje, kam místa druhu patří v hierarchii a jestli mají adresu. Po potvrzení druhu, nebo jakmile druh použije nějaké místo, ho nejde změnit.",
+            "name:en": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed or used by a place."
         },
         // Druh místa — nápověda pole Typ po potvrzení druhu.
         "kind.typeLockedHint": {
             "name": "The type of a confirmed kind cannot be changed.",
             "name:cs": "Typ potvrzeného druhu nejde změnit.",
             "name:en": "The type of a confirmed kind cannot be changed."
+        },
+        // Druh místa — nápověda pole Typ u konceptu, který už používají místa.
+        "kind.typeUsedHint": {
+            "name": "The type cannot be changed while places use this kind.",
+            "name:cs": "Typ nejde změnit, dokud druh používají místa.",
+            "name:en": "The type cannot be changed while places use this kind."
         },
         // Druh místa — prázdná volba pole Ikona (#169 D14).
         "kind.iconByType": {

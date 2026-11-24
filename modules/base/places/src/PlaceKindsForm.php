@@ -11,8 +11,8 @@ use Shipard\Core\Form\TableForm;
 /**
  * Formulář druhu místa (#169 D2, D14, D15): název, typ a ikona.
  *
- * Typ je po prvním potvrzení jen ke čtení — stejně jako ho hlídá
- * PlaceKindDocument: dokud je uložený druh v Konceptu, typ měnit jde.
+ * Typ je jen ke čtení stejně, jako ho hlídá PlaceKindDocument: po prvním
+ * potvrzení druhu, a u druhu v Konceptu, jakmile ho používá nějaké místo.
  * Ikona je volitelná; prázdná volba = ikona typu.
  */
 class PlaceKindsForm extends TableForm
@@ -20,7 +20,14 @@ class PlaceKindsForm extends TableForm
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
     {
         $types = new PlaceTypes($this->config);
-        $typeLocked = !$isNew && (int) ($data['docState'] ?? PlaceKindDocument::STATE_DRAFT) !== PlaceKindDocument::STATE_DRAFT;
+        $confirmed = !$isNew && (int) ($data['docState'] ?? PlaceKindDocument::STATE_DRAFT) !== PlaceKindDocument::STATE_DRAFT;
+        $used = !$isNew && !$confirmed && $this->isKindUsed((int) ($data['id'] ?? 0));
+        $typeLocked = $confirmed || $used;
+        $typeHint = match (true) {
+            $confirmed => $this->formText('base.places.formTexts', 'kind.typeLockedHint', 'The type of a confirmed kind cannot be changed.'),
+            $used => $this->formText('base.places.formTexts', 'kind.typeUsedHint', 'The type cannot be changed while places use this kind.'),
+            default => $this->formText('base.places.formTexts', 'kind.typeHint', 'The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed or used by a place.'),
+        };
 
         $tab = $this->tab('basic', $this->defaultGeneralTabLabel())
             ->section()
@@ -31,9 +38,7 @@ class PlaceKindsForm extends TableForm
                         options: $types->options(),
                         required: true,
                         readOnly: $typeLocked,
-                        hint: $typeLocked
-                            ? $this->formText('base.places.formTexts', 'kind.typeLockedHint', 'The type of a confirmed kind cannot be changed.')
-                            : $this->formText('base.places.formTexts', 'kind.typeHint', 'The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed.'),
+                        hint: $typeHint,
                     )
                     ->select(
                         'icon',
@@ -50,6 +55,19 @@ class PlaceKindsForm extends TableForm
             titleNew: 'Nový druh místa',
             tabs: [$tab],
         );
+    }
+
+    /** Používá druh nějaké místo mimo koš? (přepsatelné v testech) */
+    protected function isKindUsed(int $kindId): bool
+    {
+        if ($this->db === null || $kindId <= 0) {
+            return false;
+        }
+        return (int) $this->db->fetchSingle(
+            'SELECT COUNT(*) FROM `' . PlaceDocument::TABLE . '` WHERE `kind` = %i AND `docState` <> %i',
+            $kindId,
+            PlaceDocument::STATE_DELETED,
+        ) > 0;
     }
 
     /** @return list<array{value: string, label: string}> */

@@ -14,6 +14,9 @@ use Shipard\Core\Document\ValidationResult;
  * Typ druhu je po prvním potvrzení jen ke čtení: řídí úrovně a adresu míst,
  * která druh mají, takže by jeho změna rozbila existující strom.
  * „Potvrzený“ = uložený řádek už není v Konceptu (vzor druhů zakázek).
+ * Stejně je zamčený typ druhu v Konceptu, jakmile ho používá místo mimo
+ * koš — koncept druhu se místům nabízí a změna typu by jim změnila úroveň
+ * bez kontroly stromu.
  *
  * Druh, který používá místo mimo koš, nejde do koše (D18). Do archivu jít
  * smí — místa si druh ponechají, jen ho formulář místa nově nenabízí.
@@ -51,16 +54,22 @@ class PlaceKindDocument extends Document
 
         $id = !empty($data['id']) ? (int) $data['id'] : null;
         $original = $id !== null ? $this->loadKindRow($id) : null;
-        if ($original !== null
-            && $type !== ''
-            && (int) ($original['docState'] ?? self::STATE_DRAFT) !== self::STATE_DRAFT
-            && $type !== (string) ($original['type'] ?? '')
-        ) {
-            $result->addError(
-                'type',
-                'Typ potvrzeného druhu nejde změnit — místa druhu by přestala odpovídat úrovním.',
-                'typeLocked',
-            );
+        if ($original !== null && $type !== '' && $type !== (string) ($original['type'] ?? '')) {
+            if ((int) ($original['docState'] ?? self::STATE_DRAFT) !== self::STATE_DRAFT) {
+                $result->addError(
+                    'type',
+                    'Typ potvrzeného druhu nejde změnit — místa druhu by přestala odpovídat úrovním.',
+                    'typeLocked',
+                );
+            } elseif ($this->countPlacesUsingKind((int) $id) > 0) {
+                // Koncept druhu už místa mít smějí — změna typu by jim
+                // změnila úroveň bez kontroly stromu.
+                $result->addError(
+                    'type',
+                    'Typ druhu, který už používají místa, nejde změnit — místa by přestala odpovídat úrovním.',
+                    'typeLocked',
+                );
+            }
         }
 
         $newState = (int) ($data['docState'] ?? $original['docState'] ?? self::STATE_DRAFT);
