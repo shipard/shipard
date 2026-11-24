@@ -19,6 +19,37 @@
         "base_places_places"
     ],
 
+    // Nastavení → Místa (#169 D1): místa a druhy míst. Viewery nemají
+    // `navSection` — do hlavní navigace nepatří, žijí v Nastavení.
+    "settingsItems": [
+        { "viewer": "base.places.places", "section": "places", "order": 10 },
+        { "viewer": "base.places.kinds",  "section": "places", "order": 20 }
+    ],
+
+    "viewers": [
+        {
+            // Dočasně list layout s cestou ve druhém řádku; strom a detail
+            // v draweru přinese task B (#169 D8–D12). Hlavičku detailu
+            // (název, cesta · druh, ikona podle druhu) skládá PlacesViewer.
+            "id": "base.places.places",
+            "name": "Places",
+            "name:cs": "Místa",
+            "name:en": "Places",
+            "icon": "place-building",
+            "table": "base_places_places",
+            "class": "Shipard\\Module\\Base\\Places\\PlacesViewer"
+        },
+        {
+            "id": "base.places.kinds",
+            "name": "Place kinds",
+            "name:cs": "Druhy míst",
+            "name:en": "Place kinds",
+            "icon": "kinds",
+            "table": "base_places_kinds",
+            "class": "Shipard\\Module\\Base\\Places\\PlaceKindsViewer"
+        }
+    ],
+
     "documentClasses": [
         { "table": "base_places_kinds",  "class": "Shipard\\Module\\Base\\Places\\PlaceKindDocument" },
         { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlaceDocument" }
@@ -36,6 +67,7 @@
     "config": [
         { "id": "base.places.types",     "file": "config/types.jsonc" },
         { "id": "base.places.icons",     "file": "config/icons.jsonc" },
-        { "id": "base.places.formTexts", "file": "config/formTexts.jsonc" }
+        { "id": "base.places.formTexts",    "file": "config/formTexts.jsonc" },
+        { "id": "base.places.viewerLabels", "file": "config/viewerLabels.jsonc" }
     ]
 }
