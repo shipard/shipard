@@ -1,6 +1,6 @@
 # Akce záznamu s obsluhou v modulu (#172 D12–D15, D19)
 
-**Stav:** naplánováno — zadání 2026-11-25 (#172 D12–D15, D19)
+**Stav:** hotovo — 2026-11-25 v pěti commitech (#172 D12–D15, D19); frontend ověřen v headless prohlížeči proti podvrženému endpointu, zbývá průchod naostro s přihlášeným uživatelem
 
 > Task pro Claude Code (5 commitů). Design: issue #172 (komentář
 > „Body rozšíření v UI“). Sesterský task C1 `tasks/module-ui-extensions.md`
@@ -249,28 +249,121 @@ Commit 5 (`docs: akce záznamu z modulů (#172 D12–D15, D19)`) včetně
 
 ## Hotovo když
 
-- [ ] `module.jsonc` umí `recordActions`; test stromu hlídá třídu,
+- [x] `module.jsonc` umí `recordActions`; test stromu hlídá třídu,
       rozhraní, namespace, tabulku a unikátní globální id
-- [ ] endpoint: 404 neznámá akce / záznam, 403 bez přístupu k tabulce
+- [x] endpoint: 404 neznámá akce / záznam, 403 bez přístupu k tabulce
       i u `admin` akce pro běžného uživatele, 403 ve stavu `read_only`,
       409 nedostupná akce, 400 nedeklarované pole, 422 validace (povinné,
       typ, select, soubor nad limit, výjimka handleru), 200 se zprávou —
       vše testy
-- [ ] log obsahuje uživatele, akci, tabulku, záznam a výsledek, nikdy
+- [x] log obsahuje uživatele, akci, tabulku, záznam a výsledek, nikdy
       hodnoty polí (test na heslo)
-- [ ] detail ukazuje dostupné akce modulů za akcemi vieweru; `admin` akce
+- [x] detail ukazuje dostupné akce modulů za akcemi vieweru; `admin` akce
       jen správci; výjimka poskytovatele akci vynechá
-- [ ] frontend: akce bez dialogu, s potvrzením a s dialogem fungují
+- [x] frontend: akce bez dialogu, s potvrzením a s dialogem fungují
       v hlavním detailu i v draweru; chyby polí u polí; toast a obnovení
       po úspěchu; dvojklik akci nespustí dvakrát; testy helperu zelené
-- [ ] fixtura s akcí nad tabulkou `test_uihost_records` (moduly
+      (v headless prohlížeči proti podvrženému endpointu — viz poznámky)
+- [x] fixtura s akcí nad tabulkou `test_uihost_records` (moduly
       `test/uiHost` a `test/uiExtensions` z C1) pokrývá dialog se všemi
       typy polí; žádný skutečný modul
       zatím mechanismus nepoužívá
-- [ ] dokumentace podle kroku 5, `**Stav:**` aktualizovaný, index tasků
+- [x] dokumentace podle kroku 5, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
-- [ ] celá sada PHPUnit a `npm test` lokálně zelené, `npm run build` projde
+- [x] celá sada PHPUnit a `npm test` lokálně zelené, `npm run build` projde
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-25 v pěti commitech podle zadání.
+
+**Jak je to udělané.**
+
+- **Čtvrtý druh registru.** `recordActions` jsou druh
+  `ModuleUiExtensions::RECORD_ACTIONS` — stejné načtení z resolvovaných
+  modulů, stejná izolace `call()`, stejná pravidla nad stromem.
+  `ModuleUiExtension` nese navíc `id` a `admin` a umí `globalId()`.
+  Deklaraci čte týž `parseUiExtensions()` s přepínačem (klíče `id`
+  a `admin` jen u akcí).
+- **Třídy** v `src/Core/RecordAction/`: rozhraní `RecordAction`, popis
+  `RecordActionDescriptor` + `RecordActionDialog` + `RecordActionField`
+  (pole jen pojmenovanými továrnami, tvar hlídá konstruktor), vstup
+  `RecordActionInput` + `RecordActionFile`, výsledek `RecordActionResult`,
+  chyba vstupu `RecordActionValidationException`, obecná validace
+  `RecordActionInputValidator` (čistá funkce) a sběr pro detail
+  `RecordActions`.
+- **Endpoint** `Api\Controller\RecordActionController::run()` jde přesně
+  v pořadí kroků zadání; výjimky akce chytá `ModuleUiExtensions::call()`
+  (log „Module UI extension failed“ = detail jen v logu), chybu vstupu
+  z `execute()` controller převádí na hodnotu, aby ji `call()` nevzal za
+  selhání poskytovatele.
+- **Log** „Record action“ `{user, action, table, record, result}` — každý
+  pokus za dohledáním akce, i odmítnutý (`forbidden`, `not_available`,
+  `unknown_field`, `invalid`, `failed`, jinak úroveň výsledku).
+
+**Odchylky od zadání a rozhodnutí.**
+
+- **Tvar 422.** Ne `{"fields": {id: text}}`, ale standardní obálka chyb
+  jako u formulářů: `RECORD_ACTION_INVALID` + `details[] {field, code,
+  message}`. Kódy obecné validace překládá frontend
+  (`recordAction.fieldError.*`), chyba z akce má `code: "invalid"` a text
+  modulu. Na `{id: text}` to pro dialog převádí `recordActionRequest.js`.
+- **Akce dostává holý řádek tabulky**, ne záznam háčků vieweru
+  (`loadDetailRecord()` s JOINy): endpoint viewer nemá a `available()` musí
+  v detailu i při provedení vidět totéž. Stojí to jeden dotaz navíc, jen
+  u tabulky, která akci má.
+- **Kontext** `RecordActionContext` **dědí** `ModuleExtensionContext`
+  (z něj zmizelo `final`) a přidává `userId`, `isAdmin`, `serverConfig`.
+- **Bez uživatele žádné akce modulů.** Viewer dostává uživatele setterem
+  `setRecordActionUser()` z `ViewerController::detail()`; jiné volání
+  `renderDetail()` akce nevypíše. Platí i pro **anonymní požadavek** — na
+  dev serveru bez hlavičky `Authorization` detail akce modulů neukáže
+  a endpoint vrací 401.
+- **`datetime` je místní čas serveru** — zdroj dat vlastní časové pásmo
+  nemá. Akce dostane `\DateTimeImmutable` (i u `date`, o půlnoci).
+- **Upload přes sdílený klient**: `api/client.js` umí `FormData`
+  (`postForm()`), místo kopie `uploadBranding`.
+- **`confirm` a dialog se vylučují** (konstruktor popisu) — dialog se
+  potvrzuje odesláním.
+- **Chyba bez vazby na pole**: `RecordActionValidationException` smí nést
+  klíč `_form`; dialog ji kreslí nad poli, u akce bez dialogu jde do hlášky.
+- **Kontrola v prohlížeči** hlídá kromě velikosti souboru i povinná pole —
+  dialog se souborem tak neposílá upload, o kterém se ví, že neprojde.
+- **413 `PAYLOAD_TOO_LARGE`** pro tělo nad `post_max_size` (PHP ho zahodí
+  celé a vstup by jinak vypadal jako prázdný).
+- `ViewerDetail.svelte` volal `window.confirm` pro každou akci s `confirm`
+  — pro `record_action` ho přeskakuje, potvrzuje `ConfirmDialog`.
+- `Input.svelte` dostal prop `autocomplete`, `noticeStore.show()` volbu
+  `level` a `GlobalToast` značku úrovně.
+
+**Fixtury.** `test.uiExtensions` deklaruje čtyři akce nad
+`test_uihost_records`: `ping` (bez dialogu), `confirmPayment` (potvrzení),
+`uploadCertificate` (dialog se všemi deseti typy polí) a `purge`
+(`admin`). Vadné varianty (`ThrowingAvailableAction`,
+`ThrowingDescribeAction`, `ThrowingExecuteAction`, `UnavailableAction`)
+jsou jen třídy pro syntetické registrace. Žádný skutečný modul mechanismus
+nepoužívá.
+
+**Ověření.**
+
+- Unit sada 12 918 testů zelená (2 varování a 2 přeskočené testy jsou
+  starší a jinde), `npm test` 371, `check:i18n`, `npm run build` a tři
+  kontroly CSS prošly.
+- **Prohlížeč** (headless Chromium, zdroj dat testovacího kola `jfpl-7`,
+  viewer Osoby, dočasná necommitnutá akce v `base.persons`): 50 kontrol —
+  akce bez dialogu, s potvrzením, s dialogem (všechny typy polí, `"now"`,
+  heslo, soubor), 422 u pole, toast s úrovní, obnovení detailu i seznamu,
+  dvojklik, Esc během volání, 409, úzký viewer (drawer) a telefonní šířka.
+  První běh našel chybu, kterou build ani testy nechytí: `bind:value` na
+  hodnotu, která je při prvním vykreslení `undefined` (dialog se
+  neotevřel) — vazby mají getter s výchozí hodnotou.
+- **Co ověřeno není:** průchod naostro s přihlášeným uživatelem. Endpoint
+  i výpis akcí v detailu chtějí přihlášení a založení dočasného účtu
+  z Claude Code neprošlo, takže detail dostal akce a endpoint odpovědi
+  podvržené v prohlížeči podle kontraktu (`route.fulfill`); čtení seznamu
+  a detailu šlo proti skutečnému backendu. Serverovou stranu kryjí testy
+  controlleru (31) a validátoru. Zbývá ručně: přihlásit se, kliknout na
+  akci s dialogem a souborem — tím se ověří i skutečné `multipart` přes
+  nginx a PHP-FPM.
+
+**Na co navazuje.** Doplněk Evidence tržeb (#171): Nahrát certifikát
+(soubor + heslo), Ověřit spojení, Kontaktní platba.

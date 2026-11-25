@@ -198,6 +198,7 @@ http://{ip-adresa}/{ds-id}/api/v1/{tabulka}
 | `DELETE` | `/api/v1/_app/branding/{slot}` | Smazání obrázku slotu — auth |
 | `POST` | `/api/v1/_accounting/reaccount` | Přeúčtování dokladu ve stavu 40 (auth) |
 | `POST` | `/api/v1/_docs/corrective` | Vystavit opravný doklad k potvrzené faktuře vydané — založí koncept (auth) |
+| `POST` | `/api/v1/_ui/record-action/{table}/{id}/{akce}` | Provést akci záznamu z modulu (`recordActions`, #172) — JSON nebo multipart (auth) |
 
 **`GET /_ui/section-badges`** — badge stavů sekcí navigace (UI shells
 Fáze 3). Bearer auth (stejný režim jako `/_ui/dashboard`). Agreguje
@@ -228,6 +229,61 @@ CORRECTIVE_SOURCE_INVALID` (jiný typ dokladu nebo stav jiný než V pořádku),
 = chybové hlášky applieru; read-only režim zdroje dat `403 DS_READ_ONLY`.
 Tlačítko **Vystavit opravný doklad** v detailu faktury (`DocsHeadsViewer`)
 volá tento endpoint a koncept otevře ve formuláři.
+
+**`POST /_ui/record-action/{table}/{recordId}/{globalActionId}`** — akce
+záznamu s obsluhou v modulu (`recordActions` v `module.jsonc`, #172
+D12–D15; `RecordActionController`). Jeden endpoint pro všechny akce všech
+modulů; `globalActionId` je `<id modulu>.<id akce>`
+(`economy.salesRegistration.uploadCertificate`), jak ho nese
+`detail.actions[].id`. Vyžaduje přihlášení (anonym 401).
+
+Vstup — hodnoty polí dialogu z `describe()` akce:
+
+- **JSON** `{"values": {"<id pole>": hodnota, …}}`; akce bez dialogu posílá
+  `{"values": {}}` nebo prázdné tělo;
+- **multipart/form-data** (dialog se souborem): část `values` s týmž
+  objektem jako JSON řetězec a soubory `files[<id pole>]` — jeden soubor na
+  pole.
+
+Hodnoty podle typu pole: text jako řetězec, číslo jako číslo nebo číselný
+řetězec, `date` `YYYY-MM-DD`, `datetime` `YYYY-MM-DDTHH:MM` (místní čas
+serveru), `checkbox` `true` / `false`, `select` hodnota z nabídky;
+nevyplněné `null`, prázdný řetězec nebo chybějící klíč.
+
+Odpověď `200` — `{"message": "…", "level": "success" | "info" | "warning"}`.
+
+| Stav | Kód | Kdy |
+|------|-----|-----|
+| 404 | `RECORD_ACTION_NOT_FOUND` | akci žádný aktivní modul pro tabulku nedeklaruje |
+| 403 | `FORBIDDEN_SYSTEM_TABLE` / `FORBIDDEN_ADMIN_ONLY` / `FORBIDDEN` | bez přístupu k tabulce; akce `admin: true` pro ne-správce |
+| 403 | `DS_READ_ONLY` | zdroj dat jen pro čtení — akce je mutace |
+| 404 | `RECORD_NOT_FOUND` | záznam neexistuje |
+| 409 | `RECORD_ACTION_NOT_AVAILABLE` | `available()` je `false` — záznam se od vykreslení detailu změnil |
+| 400 | `RECORD_ACTION_UNKNOWN_FIELD` | vstup nese pole, které dialog nedeklaruje (i hodnota u akce bez dialogu) — nic se tiše nezahazuje |
+| 400 | `BAD_REQUEST` | `values` není objekt; víc souborů pro jedno pole |
+| 413 | `PAYLOAD_TOO_LARGE` | tělo nad limit PHP (`post_max_size`) |
+| 422 | `RECORD_ACTION_INVALID` | chyby polí |
+| 500 | `RECORD_ACTION_FAILED` | výjimka akce — bez podrobností, detail jen v logu |
+
+Chyby polí (422) mají standardní tvar `details[]` jako validace formuláře:
+
+```json
+{"success": false, "error": {"code": "RECORD_ACTION_INVALID", "message": "Record action input is not valid",
+  "details": [
+    {"field": "password", "code": "required", "message": "This field is required"},
+    {"field": "certificate", "code": "file_too_large", "message": "The file is too large"}
+  ]}}
+```
+
+Kódy obecné validace: `required`, `invalid_value`, `invalid_number`,
+`out_of_range`, `invalid_date`, `not_in_options`, `file_too_large`,
+`file_upload_failed` — překládá je frontend. Chyba vstupu z akce
+(`RecordActionValidationException`) má `code: "invalid"` a text v jazyce
+požadavku od modulu; `field: "_form"` je chyba bez vazby na pole. Hodnoty
+polí se do odpovědi ani do logu nedostávají.
+
+Zámky záznamu endpoint neuplatňuje — o běhu nad zamčeným záznamem rozhoduje
+akce. Deklarace a rozhraní: [modules.md](modules.md) → Pole `recordActions`.
 
 **`GET /_ui/ds-about`** — backend panelu „O zdroji dat"
 (`tasks/ds-about-panel.md`, Issue #41; komponenta `DsAbout.svelte`,

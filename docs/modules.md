@@ -460,6 +460,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `detailExtensions` | object[] | Ne | Ne | Taby a štítky detailu záznamu cizí tabulky (#172 D16, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\DetailExtension` |
 | `formTabs` | object[] | Ne | Ne | Záložka formuláře cizí tabulky (#172 D17, viz níže): `{table, class, order?}`, třída dědí `Shipard\Core\Form\ModuleFormTab` |
 | `rowDecorators` | object[] | Ne | Ne | Štítky řádku seznamu cizí tabulky (#172 D18, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\RowDecorator` |
+| `recordActions` | object[] | Ne | Ne | Akce záznamu s obsluhou v modulu (#172 D12–D15, viz níže): `{id, table, class, admin?, order?}`, třída implementuje `Shipard\Core\RecordAction\RecordAction` |
 
 ### Pole `commands`, `serverCommands` a `cronJobs`
 
@@ -635,6 +636,102 @@ testem nad celým stromem `modules/`:
 - tabulka je vlastní tabulka modulu nebo tabulka modulu, na kterém modul
   tranzitivně závisí;
 - tatáž třída není pro tabulku v jednom druhu registrovaná dvakrát.
+
+### Pole `recordActions`
+
+Akce záznamu s obsluhou v modulu (#172 D12–D15, D19) — tlačítko v detailu
+záznamu tabulky, kterou modul vlastní i nevlastní. Modul řekne, kdy je akce
+dostupná, jak vypadá (popisek, potvrzení, nepovinný dialog) a co udělá;
+jádro má pro všechny akce **jeden endpoint, jednu obsluhu ve frontendu
+a jeden obecný dialog**. Nová akce detailu se už nepřidává do pevného
+seznamu id ve `Viewer.svelte` — jde jen touto cestou.
+
+```jsonc
+"recordActions": [
+    {
+        "id": "uploadCertificate",
+        "table": "economy_salesRegistration_registrations",
+        "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\UploadCertificateAction",
+        "admin": true,      // volitelné, výchozí false — jen pro správce
+        "order": 500        // volitelné, výchozí 500
+    }
+]
+```
+
+- **`id`** — `[a-z][a-zA-Z0-9]*`, jedinečné v modulu. **Globální id akce**
+  je `<id modulu>.<id>` (`economy.salesRegistration.uploadCertificate`) —
+  jde do detailu (`detail.actions[].id`) i do URL endpointu.
+- **`table`**, **`class`**, **`order`** — jako u `detailExtensions`: tabulka
+  vlastní nebo modulu, na kterém modul závisí; třída v namespace modulu bez
+  argumentů konstruktoru; pořadí `order`, id modulu, deklarace.
+- **`admin`** — akci vidí a smí provést jen správce.
+
+Akce jsou čtvrtým druhem registru `ModuleUiExtensions`: platí pro ně totéž
+načtení **jen z aktivních modulů**, tatáž izolace (`call()`) a pravidla
+`ModuleUiExtensionRules` (navíc jedinečné `id` v modulu).
+
+**Rozhraní** `Shipard\Core\RecordAction\RecordAction`:
+
+```php
+public function available(string $table, array $record, RecordActionContext $context): bool;
+public function describe(string $table, array $record, RecordActionContext $context): RecordActionDescriptor;
+public function execute(string $table, array $record, RecordActionInput $input, RecordActionContext $context): RecordActionResult;
+```
+
+- **`available()`** — volá se při každém vykreslení detailu (má být levná)
+  a znovu těsně před provedením. Registrace je per tabulka; jestli se akce
+  záznamu týká (typ dokladu, stav, zámek), rozhoduje tady.
+- **`describe()`** — `RecordActionDescriptor`: popisek, varianta (`primary`
+  / `secondary` / `danger`), volitelně ikona (klíč z `icons.js`), text
+  potvrzení, nebo dialog (`RecordActionDialog`: titulek, úvodní text,
+  popisek tlačítka, pole). Texty z katalogu modulu přes `CatalogText`
+  v jazyce `$context->language`. Akce s dialogem se potvrzuje odesláním
+  dialogu — `confirm` a dialog zároveň nejdou.
+- **`execute()`** — vrací `RecordActionResult` (`message` + `level`
+  `success` / `info` / `warning`). Chybu vstupu, kterou pozná až akce
+  (heslo nesedí k certifikátu), hlásí `RecordActionValidationException`
+  s chybami polí; klíč `_form` je chyba bez vazby na pole. Jiná výjimka je
+  chyba serveru. Transakci si řídí akce sama.
+
+**Záznam je holý řádek tabulky** (`SELECT *` podle id, včetně sloupců
+z rozšíření) — stejný v detailu i při provedení, bez JOINů vieweru:
+endpoint viewer nemá a `available()` musí pokaždé vidět totéž.
+
+**Kontext** `RecordActionContext` rozšiřuje `ModuleExtensionContext`
+o `userId`, `isAdmin` a `serverConfig` — sekci `server.json` modulu čte
+akce přes `ServerConfig::getSection()` a svou třídu `ServerConfigSection`.
+
+**Pole dialogu** (D13) vznikají továrnami `RecordActionField`:
+
+| Továrna | Hodnota v `RecordActionInput` | Volby |
+|---------|-------------------------------|-------|
+| `text()`, `textarea()` | `string`, nevyplněné `null` | `required`, `default`, `hint` |
+| `password()` | `string` bez ořezu | `required`, `hint`; bez výchozí hodnoty |
+| `number()` | `int\|float` | `min`, `max`, `step` |
+| `date()`, `datetime()` | `\DateTimeImmutable` (místní čas serveru) | `default: "now"` = okamžik otevření dialogu (doplní frontend) |
+| `checkbox()` | `bool` | `default` |
+| `select()` | hodnota z nabídky v deklarovaném typu | `options` `[{value, label}]` — pevná nabídka |
+| `file()` | `RecordActionInput::file()` → `RecordActionFile` | `maxBytes` povinné (strop 10 MB), `accept`; jeden soubor |
+| `notice()` | — (jen text) | |
+
+Tvar pole i popisu hlídají konstruktory — pole mimo kontrakt je výjimka
+z `describe()`, tedy vynechaná akce. **Heslo a soubor jdou jen do
+`execute()`**: jádro je neloguje a nevrací. Soubor je dočasná cesta
+(`RecordActionFile::$path`), kterou PHP po požadavku smaže — co chce akce
+zachovat, uloží si sama; `mimeType` je z obsahu, ne z hlavičky prohlížeče.
+
+**Oprávnění a provoz** (D15): přístup k tabulce jako u vieweru
+(`TableAccessGuard`), `admin: true` jen pro správce. Akce je mutace — ve
+zdroji dat jen pro čtení ji `ReadOnlyPolicy` odmítne 403. **Zámky záznamu
+(`documentLockProviders`) endpoint neuplatňuje**: jestli akce smí běžet nad
+zamčeným nebo potvrzeným záznamem, rozhodují `available()` a `execute()`
+(Kontaktní platba nad dokladem V pořádku je záměr). Každý pokus jde do
+logu `ErrorLogger::info('Record action')` — uživatel, akce, tabulka,
+záznam, výsledek; hodnoty polí nikdy.
+
+Endpoint a tvar chyb: [rest-api.md](rest-api.md) → `POST
+/_ui/record-action/…`; detail a frontend: [frontend.md](frontend.md) → Akce
+detailu.
 
 ### Pole `sendPurposes`
 
@@ -1380,7 +1477,7 @@ shpd-ds ds-module disable <id>         # jen přímo zapnutý modul mimo install
 
 Příkaz zapíše `modules` v `config/main.json` a ve stejném procesu spustí `ds-upgrade` — jinak by `main.json` tvrdil aktivní modul bez tabulek a dispatcher periodických úloh, který aktivní moduly čte z `main.json`, by pouštěl jeho úlohy. Vypnutí nechává tabulky modulu v databázi (viz Deaktivace modulu). Stránka Doplňky v Nastavení, kde doplněk zapne admin zdroje dat, je cílový stav — zatím jen CLI.
 
-**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `workOrderInvoiceContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators` (#172) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
+**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `workOrderInvoiceContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators`, akce jejího záznamu přes `recordActions` (#172) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
 
 **Dokumentace doplňku** žije u modulu: `README.md` podle [documentation.md](documentation.md) a specifikace v `modules/{skupina}/{modul}/docs/` (vzor `modules/core/mail/docs/`) — do kořenového `docs/` patří jen obecná pravidla. Uživatelská dokumentace zůstává v `help/`, zadání v `tasks/`. Přehled všech modulů po druzích je v generovaném rozcestníku [`modules/README.md`](../modules/README.md) (`php scripts/modules-index.php`, `--check` běží v pre-commit hooku).
 

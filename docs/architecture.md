@@ -176,6 +176,7 @@ compiled.cs.json → ConfigRuntime::load() → cfgItem('economy.docs.vatRates')
 | `ModuleLoader` | Načítání modulů ze souborového systému. `loadModule(path)` pro jeden modul, `loadAllModules(basePath)` pro všechny. Prochází `modules/{skupina}/{modul}/`. |
 | `ModuleResolver` | Řešení závislostí. Vstup: všechny moduly + aktivované ID. Výstup: topologicky seřazené moduly. Detekuje cykly (DFS), řeší tranzitivní závislosti. |
 | `ModuleUiExtensions` | Rozšíření UI cizích tabulek z aktivních modulů (`detailExtensions`, `formTabs`, `rowDecorators`, #172 D16–D19): registr z resolvovaných modulů, pořadí `order` → id modulu → deklarace, izolace poskytovatele v `call()`. Kontext `ModuleExtensionContext`; sběr a kontrola výsledku v `Viewer\Detail\DetailExtensions`, `Form\ModuleFormTabs`, `Viewer\RowDecorations`; pravidla nad stromem `ModuleUiExtensionRules`. |
+| `RecordAction\RecordAction` | Akce záznamu s obsluhou v modulu (`recordActions`, #172 D12–D15) — čtvrtý druh registru `ModuleUiExtensions`. Rozhraní `available` / `describe` / `execute`, datové třídy `RecordActionDescriptor`, `RecordActionDialog`, `RecordActionField` (typy polí D13), `RecordActionInput` / `RecordActionFile`, `RecordActionResult`, `RecordActionValidationException`; kontext `RecordActionContext` (uživatel, `ServerConfig`). Sběr pro detail `RecordActions::forDetail()`, obecná validace vstupu `RecordActionInputValidator`, endpoint `Api\Controller\RecordActionController`. |
 
 **Tok dat:**
 ```

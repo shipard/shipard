@@ -1232,7 +1232,9 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
 - `kind: "button"` (default) — obsluhu řeší `Viewer.svelte::handleDetailAction`
   podle `action.id` (sdílený slovník id: `snooze`, `dismiss`, `unsnooze`,
   `recheck`, `reaccount`, `depreciation_run`, `accountFiling`,
-  `createCorrectiveDoc`); po úspěchu `refreshAfterAction()`
+  `createCorrectiveDoc`, …). **Seznam pevných id je uzavřený** (#172 D19):
+  stávající akce se nepřevádějí, ale nová akce se sem nepřidává — jde přes
+  `kind: "record_action"` níže. Po úspěchu `refreshAfterAction()`
   (detail i seznam), chyba → `alert(translateError(...))`. `accountFiling`
   (podání DPH, `api/vat.js`) a `createCorrectiveDoc` (Vystavit opravný doklad
   z detailu potvrzené faktury vydané, `api/docs.js` → `POST /_docs/corrective`,
@@ -1265,6 +1267,70 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
   je maže. Používá deník pro odkaz na zdrojový doklad a saldokonto
   (viewer případů → „Pohyby případu" otevře pohyby s chipem saldokonta,
   obdobím případu a filtry partner / VS / SS).
+
+- `kind: "record_action"` — **akce záznamu s obsluhou v modulu** (#172
+  D12–D14; deklarace `recordActions` v `module.jsonc`, viz
+  [modules.md](modules.md) kap. 5). Jedna obecná obsluha pro všechny akce
+  všech modulů, bez komponenty a bez endpointu na míru:
+
+  ```json
+  {"id": "economy.salesRegistration.uploadCertificate", "kind": "record_action",
+   "label": "Nahrát certifikát", "variant": "secondary", "icon": "upload",
+   "confirm": null,
+   "dialog": {"title": "Nahrát certifikát", "intro": "…", "submitLabel": "Nahrát", "fields": [
+       {"id": "certificate", "type": "file", "label": "Certifikát", "required": true, "accept": ".p12", "maxBytes": 1048576},
+       {"id": "password", "type": "password", "label": "Heslo", "required": true},
+       {"id": "paidAt", "type": "datetime", "label": "Čas platby", "required": true, "default": "now"},
+       {"id": "info", "type": "notice", "text": "Certifikát nahradí stávající."}
+   ]},
+   "target": {"table": "economy_salesRegistration_registrations", "recordId": 42}}
+  ```
+
+  `id` je globální id akce (`<id modulu>.<id>`), `variant` `primary` /
+  `secondary` / `danger`, `icon` nepovinná. `confirm` (text) a `dialog`
+  se vylučují; obojí `null` = akce se provede rovnou.
+
+  **Backend.** Builder `renderDetail()` přidá akce modulů **za akce
+  vieweru** (tisk a Odeslat z `ViewerController` až za ně) v pořadí `order`,
+  id modulu, deklarace — sběr `Core\RecordAction\RecordActions`. Akce dostává
+  holý řádek tabulky (`loadRecord()`), ne záznam háčků vieweru. Akci
+  `admin: true` vidí jen správce: uživatele vieweru předává
+  `ViewerController::detail()` přes `setRecordActionUser()`; bez něj (jiné
+  volání `renderDetail()`) se akce modulů nevypisují vůbec. Výjimka
+  z `available()` / `describe()` i popis mimo kontrakt = záznam v logu
+  a vynechaná akce, detail se vykreslí (D19).
+
+  **Frontend.** `Viewer.svelte::handleDetailAction` má pro `record_action`
+  jednu větev — stejnou pro detail v panelu, v draweru i na telefonu
+  (read-only `ViewerDetailModal` akce nemá):
+  - s `dialog` otevře `viewer/RecordActionDialog.svelte` (nad `Modal`
+    a vstupy z `components/ui/`: `password` s `autocomplete="new-password"`,
+    `datetime` jako `Input type="datetime-local"`, `file` jako nativní
+    vstup s `accept`, `notice` přes `Notice`); `default: "now"` u `date` /
+    `datetime` se doplní při otevření; povinná pole a velikost souboru se
+    kontrolují už v prohlížeči (server kontroluje znovu); chyby polí z 422
+    se kreslí u polí, chyby bez vazby na pole (`_form`) nad nimi; po dobu
+    volání je odeslání zablokované a dialog nejde zavřít; hodnoty se při
+    zavření zahazují;
+  - s `confirm` otevře `ui/ConfirmDialog` — `ViewerDetail` pro tento `kind`
+    `window.confirm` přeskakuje;
+  - jinak volá rovnou; po dobu volání je tlačítko zablokované
+    (`busyActionId`), dvojklik akci nespustí dvakrát.
+
+  Volání jde přes `api/recordActions.js` → `POST
+  /_ui/record-action/{table}/{recordId}/{id}` — JSON `{values}`, se
+  souborem `FormData` (`api/client.js` `postForm()`: stejná auth, refresh
+  tokenu a toast `DS_READ_ONLY` jako JSON). Výchozí hodnoty, sestavení těla
+  a převod `details[]` na chyby polí drží čistý helper
+  `viewer/recordActionRequest.js` (testy
+  `tests/Unit/recordActionRequest.test.mjs`). **Výsledek** (D14):
+  `{message, level}` → oznámení `noticeStore.show(message, {level})`
+  (`GlobalToast` se značkou úrovně) a vždy `refreshAfterAction()` — detail
+  i seznam. Chyba mimo 422 → `alert(translateError(...))`; u 409
+  `RECORD_ACTION_NOT_AVAILABLE` a 404 se navíc zavře dialog a obnoví
+  detail. Obecné texty dialogu a kódy chyb polí jsou v `i18n/cs.js` /
+  `en.js` (`recordAction.*`, `error.RECORD_ACTION_*`); texty akce posílá
+  modul.
 
 ### Registrace vieweru
 

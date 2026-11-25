@@ -219,6 +219,12 @@ princip a odchylky:
   (GET bez zápisu) ALLOW.
 - `setup` čtecí akce zůstávají fail-closed 403 (kromě `checklist`) —
   jejich read-only povaha nebyla ověřena; povolit lze kdykoli.
+- `recordAction` (akce záznamu z modulů, `POST /_ui/record-action/…`,
+  #172 D15) v tabulce **záměrně není** → 403: akce je mutace a jádro neví,
+  co která udělá. Nepovolovat ani pro akce, které „jen čtou“ (Ověřit
+  spojení) — výjimka per akce by musela být nový mechanismus, ne řádek
+  tabulky. Detail záznamu (`viewer`) akce dál vypisuje; klient dostane po
+  kliknutí jednotný toast `DS_READ_ONLY`.
 
 ### 6.2 MCP read-tier
 

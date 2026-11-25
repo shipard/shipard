@@ -240,6 +240,25 @@ smí názvy nést — tam jsou potřeba k práci.
   `ModuleUiExtensionRules` nad stromem. Viz `docs/modules.md` kap. 5,
   `docs/frontend.md` → Formát detail panelu / Formát řádku,
   `docs/edit-forms.md` kap. 27
+- **Akce záznamu s obsluhou v modulu** (#172 D12–D15, D19,
+  `tasks/module-record-actions.md`): **nová akce detailu se nepřidává do
+  pevného seznamu id ve `Viewer.svelte`** (ten je uzavřený) — modul ji
+  deklaruje polem `recordActions` (`{id, table, class, admin?, order?}`,
+  globální id `<id modulu>.<id>`) a třídou s rozhraním
+  `Core\RecordAction\RecordAction` (`available` / `describe` / `execute`).
+  Jádro má jeden endpoint `POST /_ui/record-action/{table}/{id}/{akce}`
+  (JSON nebo multipart; chyby polí 422 `RECORD_ACTION_INVALID`
+  s `details[]`), jednu větev `kind: "record_action"` ve `Viewer.svelte`
+  a jeden dialog `RecordActionDialog.svelte`. Pole dialogu jen továrnami
+  `RecordActionField` (text, textarea, password, number, date, datetime,
+  checkbox, select, file, notice); heslo a soubor jdou jen do `execute()`,
+  nelogují se a nevracejí. Akce dostává **holý řádek tabulky** (v detailu
+  i při provedení) a kontext `RecordActionContext` (uživatel,
+  `ServerConfig`). Akce jsou čtvrtý druh `ModuleUiExtensions` — aktivní
+  moduly, izolace `call()`, pravidla `ModuleUiExtensionRules`. Controller
+  **není** v `ReadOnlyPolicy` (read_only = 403) a zámky záznamu endpoint
+  neuplatňuje — rozhoduje akce. Viz `docs/modules.md` kap. 5 → Pole
+  `recordActions`, `docs/rest-api.md`, `docs/frontend.md` → Akce detailu
 - Nastavení v `core_system_settings`, které drží id řádku tabulky zahazované
   resetem (např. id řady dokladů), se deklaruje v `clearSettingsOnReset`
   v `module.jsonc` — `ds-reset` ho smaže spolu s tabulkou a provisioner ho
