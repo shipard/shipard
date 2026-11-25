@@ -77,6 +77,18 @@ další providers (Ollama, ...), odeslaná pošta.
 | `core.mail.attentionKinds` | [config/attentionKinds.jsonc](config/attentionKinds.jsonc) | Pozornost u zprávy bez dokladu (`action` \| `info` \| `promo`) — sekce K vyřízení / Ostatní na dashboardu, `tasks/mail-other-attention.md` |
 | `core.mail.senderRuleOrigins` | [config/senderRuleOrigins.jsonc](config/senderRuleOrigins.jsonc) | Původ pravidla (`user` \| `suggested`) |
 
+### Konfigurace serveru
+
+Modul deklaruje sekci `ai.analysis` v `/etc/shipard/server.json`
+(`serverConfig` v `module.jsonc`, [docs/modules.md](../../../docs/modules.md) kap. 5).
+Čte ji [Analysis/MailAnalysisServerConfig.php](src/Analysis/MailAnalysisServerConfig.php):
+
+| Klíč | Výchozí | Popis |
+|---|---|---|
+| `ai.analysis.maxConcurrent` | `2` | Limit souběhu AI analýz pošty per server; `0` = analýza vypnutá, záporná nebo nečíselná hodnota = chyba v logu a výchozí hodnota ([docs/ai-analysis.md](docs/ai-analysis.md)) |
+
+Sekce `mail.relay` a `mail.safety` čte jádro (`ServerConfig`), ne modul.
+
 ## Default AI profil
 
 [profiles/czech_general.jsonc](profiles/czech_general.jsonc) — šablona, ze které

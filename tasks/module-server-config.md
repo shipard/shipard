@@ -1,6 +1,6 @@
 # Konfigurace serveru z modulů — sekce `server.json` deklaruje modul (#172 D7, D10)
 
-**Stav:** naplánováno — zadání 2026-11-25 (#172 D7, D10)
+**Stav:** hotovo — 2026-11-25 (#172 D7, D10)
 
 > Task pro Claude Code (3 commity). Design: issue #172. Navazuje na
 > `tasks/module-commands-cron.md` (hotový — příkazy a úlohy cronu
@@ -136,21 +136,69 @@ Commit 3 (`docs: sekce server.json z modulů (#172 D7, D10)`) včetně
 
 ## Hotovo když
 
-- [ ] `module.jsonc` umí `serverConfig`; vadný tvar selže při načtení
+- [x] `module.jsonc` umí `serverConfig`; vadný tvar selže při načtení
       modulu; test stromu hlídá třídu, rozhraní, namespace, shodu klíče,
       kolize cest i kolizi s `CORE_KEYS`
-- [ ] `ServerConfig::getSection()` vrací surovou hodnotu na cestě,
+- [x] `ServerConfig::getSection()` vrací surovou hodnotu na cestě,
       `CORE_KEYS` odpovídá getterům, které v jádře zůstaly
-- [ ] tři sekce čtou třídy modulů; gettery a konstanty z `ServerConfig`
+- [x] tři sekce čtou třídy modulů; gettery a konstanty z `ServerConfig`
       zmizely; chování (výchozí hodnoty, vypínače, chybové hlášky) beze
       změny — testy přestěhované se stejnými případy
-- [ ] dnešní `server.json` na dev serveru se načte beze změny a
+- [x] dnešní `server.json` na dev serveru se načte beze změny a
       `exchange-rates-download --dry-run` na volném zdroji dat i limit
       souběhu analýz dávají stejný výsledek jako před změnou
-- [ ] dokumentace podle kroku 3, `**Stav:**` aktualizovaný, index tasků
+- [x] dokumentace podle kroku 3, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
-- [ ] celá sada PHPUnit lokálně zelená
+- [x] celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-25 ve třech commitech podle zadání.
+
+**Jak je to udělané.**
+
+- Rozhraní `Shipard\Core\Config\ServerConfigSection`, pravidla
+  `Shipard\Core\Module\ModuleServerConfigRules` (čistá funkce, vzor
+  `ModuleCommandRules`). Za běhu se pravidla nevolají — hlídá je jen test
+  nad stromem, stejně jako příkazy a úlohy cronu.
+- Třídy sekcí: `ExchangeRatesServerConfig` (kořen namespace modulu),
+  `Registry\PersonsRegistryServerConfig`, `Analysis\MailAnalysisServerConfig`
+  — u kódu, který je čte. Namespace modulu se bere celý
+  (`Shipard\Module\<Skupina>\<Modul>\`), ne jen jeden podadresář.
+  Výchozí adresa registru osob zůstala v `PersonsRegistryClient::DEFAULT_BASE_URL`
+  (byla tam už dřív), třída sekce ji jen používá.
+- `ModuleDefinition` hlídá jen tvar deklarace. **Kolize řeší výhradně
+  pravidla** — i stejnou cestu dvakrát v jednom modulu (jedno místo pro
+  D10, ne dvě).
+- `getSection()` cestu neomezuje: vrátí i hodnotu klíče jádra. Že modul
+  klíč jádra nedeklaruje, hlídají pravidla, ne getter.
+- **Strážce `CORE_KEYS`** (`ServerConfigTest::testCoreKeysMatchTheKeysServerConfigReads`):
+  klíče nejvyšší úrovně, které `ServerConfig` čte ve svém zdrojovém kódu,
+  se musí rovnat `CORE_KEYS`. Nový getter jádra bez klíče v seznamu i klíč
+  bez čtenáře test shodí — zadání chtělo ověření ruční, takhle vydrží.
+- Krajní tvary zůstaly: sekce, která není objekt (`"exchangeRates": "x"`,
+  `"registry": "x"`, `"ai": "x"`), dává výchozí hodnotu jako dřív; každá
+  třída na to má test navíc k přestěhovaným případům.
+- Fixtury: `tests/Fixtures/modules/test/serverConfig` a `serverConfigTwo`
+  (třídy v namespace modulu, načítá je `ModuleClassLoader` nad druhým
+  kořenem).
+
+**Ověřeno na dev serveru.** `server.json` má klíče nejvyšší úrovně `host`,
+`port`, `admin_user`, `admin_password`, `mode`, `render`, `registry` —
+načte se beze změny. Před přesunem a po něm shodně: výpis
+`exchange-rates-download --dry-run` na zdroji dat `4l3j-z` (liší se jen čas
+v hlavičce okna), limit souběhu analýz (`AnalysisSlots::maxConcurrentOf(null)`
+= 2), adresa registru osob a adresa služby kurzů. Hledání v registru osob
+přes HTTP (`GET /persons/registry?q=…`) vrací výsledek.
+
+**Testy.** Jednotková sada 12 500 testů bez selhání. Integrační sada nad
+`blkm-i`: 626 testů bez selhání, 21 přeskočených (stejně jako u
+`module-commands-cron`).
+
+**Dokumentace.** README tří modulů sekci konfigurace serveru neměly —
+doplněna krátká tabulka klíčů. Klíč `registry.persons.baseUrl` dřív
+v `docs/` popsaný nebyl; je teď v README `base.persons`.
+
+**Neověřeno.** Sekce deklarovaná modulem z dalšího kořene
+(`extraModulesPath`) — test nad stromem čte jen `modules/`; modul mimo
+repozitář si pravidla musí pustit sám.

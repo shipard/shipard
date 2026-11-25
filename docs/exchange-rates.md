@@ -268,9 +268,12 @@ Přehled + tab Kurzy (měna, množství, kurz, kurz za jednotku). Ikona
 `GET <serviceUrl>?dateFrom=YYYY-MM-DD&dateTo=YYYY-MM-DD&listType=1|2`,
 vždy HTTP 200 a JSON `{"valid": 1, "data": [lístky §2]}`, bez lístku
 `{"valid": 0}`, chybné parametry `{"valid": 0, "error": "…"}`. Adresa =
-`exchangeRates.serviceUrl` v `server.json`
-(`ServerConfig::getExchangeRatesServiceUrl`, U3): klíč chybí →
-`https://data.shipard.app/feed/money-exchange-rates`, prázdný řetězec →
+`exchangeRates.serviceUrl` v `server.json` (U3). Sekci `exchangeRates`
+deklaruje a čte modul `economy.exchangeRates` — třída
+`ExchangeRatesServerConfig` (`serverConfig` v `module.jsonc`, #172 D10,
+`docs/modules.md` kap. 5), `ServerConfig` pro ni getter nemá: klíč chybí →
+`https://data.shipard.app/feed/money-exchange-rates`
+(`ExchangeRatesServerConfig::DEFAULT_SERVICE_URL`), prázdný řetězec →
 `null` = stahování vypnuté, jiná hodnota musí být http(s). Vývojářské
 servery stahují taky. Každý zdroj dat stahuje sám (žádná sdílená cache).
 

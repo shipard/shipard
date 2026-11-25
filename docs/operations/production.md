@@ -340,8 +340,8 @@ Předpoklady, aby to fungovalo:
   check `core.mail.outbox_health`.
 
 - **AI analýza pošty (`ai.analysis.maxConcurrent`):** limit souběžných
-  běhů `shpd-ds mail-analyze` per server, klíč v `server.json`; výchozí
-  `2`, `0` = analýza pošty na tomto serveru vypnutá (vypínač — žádný runner
+  běhů `shpd-ds mail-analyze` per server, klíč v `server.json` (sekci
+  `ai.analysis` čte modul `core.mail`); výchozí `2`, `0` = analýza pošty na tomto serveru vypnutá (vypínač — žádný runner
   se nespustí), záporná nebo nečíselná hodnota = chyba konfigurace
   (běží se s výchozí hodnotou a chybou v logu). Každý běh drží jedno HTTP
   spojení k modelu až 14 minut; u zdrojů dat přes AI gateway hostingu

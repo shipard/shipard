@@ -274,7 +274,8 @@ s tokeny, cenou a trváním vidíš v tabu *Analýzy*. Bez klíče zpráva
 zůstane „Ve frontě“ — runner zapíše jedno varování do `analysis.log`
 a skončí; u zdroje dat se zapnutým cronem a bez klíče se varování sweepu
 opakuje každou minutu.
-Limit souběhu a vypnutí (`ai.analysis.maxConcurrent`) popisuje
+Limit souběhu a vypnutí (`ai.analysis.maxConcurrent` v `server.json`,
+sekce modulu `core.mail`) popisuje
 [`operations/production.md`](../operations/production.md) §10.
 
 ---

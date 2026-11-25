@@ -40,3 +40,14 @@ banka ho dostává přes `docs.core`.
 - `Download/ExchangeRateServiceClient` + `ExchangeRateServiceTransport` (`Curl…`) — klient služby, odpověď `lists` / `none` / `error`
 - `Download/ExchangeRateDownloader` — okno (`DownloadWindow`, `FiscalYears`), očekávaná data (`DownloadSchedule`, `WorkingDayCalendars`), přítomná data (`ExchangeRateListPresence`), stav pokusů (`DownloadState`), plán a výsledek (`DownloadPlan`, `DownloadReport`)
 - `Checks/ListMissingCheck` — upozornění `economy.exchangerates.list_missing`
+- `ExchangeRatesServerConfig` — sekce `exchangeRates` v `server.json` (níže)
+
+## Konfigurace serveru
+
+Modul deklaruje sekci `exchangeRates` v `/etc/shipard/server.json`
+(`serverConfig` v `module.jsonc`, [docs/modules.md](../../../docs/modules.md) kap. 5).
+Čte ji [ExchangeRatesServerConfig.php](src/ExchangeRatesServerConfig.php):
+
+| Klíč | Výchozí | Popis |
+|---|---|---|
+| `exchangeRates.serviceUrl` | `https://data.shipard.app/feed/money-exchange-rates` | Adresa služby kurzovních lístků. Prázdný řetězec stahování vypne; jiná hodnota musí být http(s), koncové lomítko se odřízne ([docs/exchange-rates.md](../../../docs/exchange-rates.md) §9) |

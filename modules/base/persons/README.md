@@ -33,3 +33,13 @@ kontaktní osoby/místa a bankovní účty.
 | `base.persons.addressTypes` | [config/addressTypes.jsonc](config/addressTypes.jsonc) | Typy adres (sídlo / doručovací / provozovna / zařízení) |
 | `base.persons.placeRegTypes` | [config/placeRegTypes.jsonc](config/placeRegTypes.jsonc) | Typy registrů míst (IČP / IČZ) |
 | `base.persons.sourceKinds` | [config/sourceKinds.jsonc](config/sourceKinds.jsonc) | Klíče pro sloupec `source_kind` v `base_persons_persons` — `manual`, `aiExtraction`, `import.ares`, `import.rpo`, `import.handelsregister`, `import.shipardRegistry`, `import.csv` |
+
+### Konfigurace serveru
+
+Modul deklaruje sekci `registry.persons` v `/etc/shipard/server.json`
+(`serverConfig` v `module.jsonc`, [docs/modules.md](../../../docs/modules.md) kap. 5).
+Čte ji [Registry/PersonsRegistryServerConfig.php](src/Registry/PersonsRegistryServerConfig.php):
+
+| Klíč | Výchozí | Popis |
+|---|---|---|
+| `registry.persons.baseUrl` | `https://data.shipard.org/persons` | Adresa registru osob (ARES + RPO + registr plátců DPH). Musí být http(s); prázdná hodnota je chyba, koncové lomítko se odřízne |

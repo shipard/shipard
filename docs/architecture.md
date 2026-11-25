@@ -149,7 +149,7 @@ JSONC soubor s "name", "name:cs", "name:en"
 
 | Třída | Účel |
 |-------|------|
-| `ServerConfig` | Načtení a validace `/etc/shipard/server.json` (DB credentials, mód nasazení). |
+| `ServerConfig` | Načtení a validace `/etc/shipard/server.json` (DB credentials, mód nasazení). Typované gettery jen pro sekce, které čte jádro (`CORE_KEYS`); sekci, kterou čte jen modul, deklaruje modul (`serverConfig`) a načte třída modulu přes `getSection()` — `ServerConfigSection` (#172 D7, D10). |
 | `DataSourceConfig` | Načtení a validace `config/main.json` zdroje dat (ID, DB credentials, moduly, defaultLanguage). Volitelná pole: `defaultLanguage` (default `en`), `skipProvisioning` (bool, default `false` — dočasně vypne auto-provisioning v `ds-upgrade`; viz `docs/cli.md`), `enableReset` (bool, default `false` — povolí `ds-reset` na produkčním serveru pro testovací DS; viz `docs/cli.md`). |
 | `ConfigCompiler` | Kompilace konfiguračních souborů ze všech aktivních modulů. Generuje `compiled.{lang}.json` pro každý jazyk. Používá `ConfigLocalizer`. |
 | `ConfigRuntime` | Runtime přístup ke zkompilované konfiguraci. Metoda `cfgItem(id)` vrací konfigurační položku. |

@@ -1434,7 +1434,8 @@ lístky a chybějící stáhne po kalendářních měsících od nejnovějšího
 každých 5 minut (slot `five-minutes`, před `alerts-run`). Lístky zapisuje
 přes `ExchangeRateListImporter` se zdrojem *služba*; lístek k datu, které
 typ už má, ignoruje bez porovnání, konflikt (jen při souběhu) nepřepisuje.
-Adresa služby = `exchangeRates.serviceUrl` v `server.json`; prázdný
+Adresa služby = `exchangeRates.serviceUrl` v `server.json` (sekci čte
+modul `economy.exchangeRates`, `ExchangeRatesServerConfig`); prázdný
 řetězec stahování vypne (zpráva, exit 0). Neaktivní modul = zpráva, exit 0.
 Stav pokusů (pauza 1 h na měsíc, hodina po chybě služby) žije v nastavení
 `economy.exchangeRates.downloadState`; ruční okno (`--from` / `--to`) ho
@@ -2355,7 +2356,8 @@ a chyby infrastruktury (kterákoli zpráva `crashed`).
 | `--sweep` | Záchrana: zprávy ve frontě bez aktivního claimu → spawn runneru, nejvýš tolik, kolik je volných slotů; bez použitelného backendu nic (jedno varování). Exit 0 i bez nálezu |
 
 Limit souběhu per server `ai.analysis.maxConcurrent` v `server.json`
-(výchozí 2, `0` = analýza pošty na tomto serveru vypnutá), sloty = `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`;
+(sekci čte modul `core.mail`, `MailAnalysisServerConfig`; výchozí 2,
+`0` = analýza pošty na tomto serveru vypnutá), sloty = `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`;
 viz [operations/production.md](operations/production.md) § 10. Běh zvedne
 `memory_limit` na 512 MB, je-li nižší (přílohy v base64 a v těle požadavku).
 

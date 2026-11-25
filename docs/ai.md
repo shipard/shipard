@@ -99,7 +99,9 @@ strop tokenů, teplotu a ladění; sama už žádný parametr modelu neskládá.
 Analýza pošty resolver volá v claimu (`AnalysisClaimService`) s přepsáním
 z AI profilu, `booking-history` s přepsáním z voleb příkazu. Souběh analýz
 hlídá limit per server `ai.analysis.maxConcurrent` (sloty `flock`), ne AI
-gateway hostingu (#85 D11, D15).
+gateway hostingu (#85 D11, D15). Sekci `ai.analysis` v `server.json`
+deklaruje a čte modul `core.mail` (`MailAnalysisServerConfig`, #172 D10) —
+jiná sekce pod `ai` smí patřit jinému modulu.
 
 **Strop tokenů** (`maxTokens`) deklaruje každá funkce (sloupec v tabulce
 výše); zdroj dat ho smí přepsat na řádku funkce nebo v profilu pošty

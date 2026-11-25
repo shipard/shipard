@@ -284,7 +284,8 @@ vypršelé claimy a stroj po restartu. CLI vypisuje řádek per zpráva
 a souhrn; exit FAILURE jen když kterákoli zpráva skončila `crashed`.
 
 **Sloty souběhu** (D15): `ai.analysis.maxConcurrent` v `server.json`
-(výchozí 2), slot = neblokující `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`
+(výchozí 2; sekci `ai.analysis` deklaruje tento modul polem `serverConfig`
+a čte ji `MailAnalysisServerConfig`, #172 D10), slot = neblokující `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`
 (`AnalysisSlots`). Runner bez slotu končí bez claimu. `0` = analýza
 v procesu vypnutá (spawn i sweep nic nedělají). Do adresáře zapisuje
 i PHP-FPM worker (spawn z requestu) — vlastní ho shipard-user, pod kterým
