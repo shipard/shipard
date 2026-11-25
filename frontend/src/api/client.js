@@ -57,10 +57,15 @@ async function tryRefresh() {
  * @returns {Promise<object|null>}
  */
 async function apiRequest(method, path, body = null, isRetry = false) {
+  // FormData (upload souboru) jde tak, jak je — hlavičku Content-Type
+  // s hranicí multipartu si prohlížeč doplní sám.
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
     'Accept-Language': language.current,
   };
+  if (!isForm) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const token = getToken();
   if (token) {
@@ -72,7 +77,7 @@ async function apiRequest(method, path, body = null, isRetry = false) {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      body: body !== null ? JSON.stringify(body) : null,
+      body: body === null ? null : (isForm ? body : JSON.stringify(body)),
     });
   } catch {
     return { success: false, error: { code: 'NETWORK_ERROR', message: 'Network error' } };
@@ -154,6 +159,16 @@ export function get(path) {
 
 export function post(path, body) {
   return apiRequest('POST', path, body);
+}
+
+/**
+ * POST `multipart/form-data` — stejná auth, refresh tokenu, jazyk a toast
+ * zdroje dat jen pro čtení jako u JSON požadavků.
+ * @param {string} path
+ * @param {FormData} formData
+ */
+export function postForm(path, formData) {
+  return apiRequest('POST', path, formData);
 }
 
 export function put(path, body) {

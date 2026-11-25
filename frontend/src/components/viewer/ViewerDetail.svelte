@@ -45,7 +45,10 @@
     // Confirm se aplikuje jen na single-shot tlačítka (button / open_form /
     // open_viewer). Pro dropdown je výběr položky sám o sobě explicitní akcí,
     // další confirm by byl zbytečný a otravný (viz task §6).
-    if (action.kind !== 'dropdown' && action.confirm && !window.confirm(action.confirm)) return;
+    // Akce záznamu z modulu (`record_action`, #172 D12) potvrzuje Viewer
+    // vlastním ConfirmDialogem — tady by se zeptala dvakrát.
+    const confirmsItself = action.kind === 'dropdown' || action.kind === 'record_action';
+    if (!confirmsItself && action.confirm && !window.confirm(action.confirm)) return;
     onAction?.(action.id, action, value);
   }
 

@@ -6,12 +6,15 @@
 // o zápis na read-only DS dostane jednotný text místo generické chyby.
 // Renderuje GlobalToast v AppShellu.
 
-let current = $state(null); // { message } | null
+// Druhý uživatel: výsledek akce záznamu z modulu (#172 D14) — zpráva nese
+// úroveň `success` / `info` / `warning`, kterou toast ukáže značkou.
+
+let current = $state(null); // { message, level } | null
 let timer = null;
 
-function show(message, { timeoutMs = 6000 } = {}) {
+function show(message, { timeoutMs = 6000, level = null } = {}) {
   clearTimeout(timer);
-  current = { message };
+  current = { message, level };
   timer = setTimeout(dismiss, timeoutMs);
 }
 

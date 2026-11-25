@@ -1,12 +1,20 @@
 <script>
   // Globální toast nad noticeStore — jedna zpráva, tlačítko zavřít.
   // Vizuál shodný s lokálním toastem Dashboardu (tmavý pruh dole).
+  // Zpráva s úrovní (`success` / `info` / `warning` — výsledek akce
+  // záznamu, #172 D14) má před textem značku v barvě tónu.
   import { noticeStore } from '../../stores/notice.svelte.js';
   import { t } from '../../i18n/index.js';
+
+  const LEVELS = ['success', 'info', 'warning'];
+  let level = $derived(LEVELS.includes(noticeStore.current?.level) ? noticeStore.current.level : null);
 </script>
 
 {#if noticeStore.current}
-  <div class="shpd-global-toast" role="status" data-testid="global-toast">
+  <div class="shpd-global-toast" role="status" data-testid="global-toast" data-level={level ?? undefined}>
+    {#if level}
+      <span class="shpd-global-toast__mark shpd-global-toast__mark--{level}" aria-hidden="true"></span>
+    {/if}
     <span class="shpd-global-toast__msg">{noticeStore.current.message}</span>
     <button
       type="button"
@@ -40,6 +48,18 @@
     flex: 1;
     min-width: 0;
   }
+
+  /* Značka tónu bez textu — tečka v barvě `--shpd-color-{tón}-mark` (D74). */
+  .shpd-global-toast__mark {
+    flex-shrink: 0;
+    width: var(--shpd-space-sm);
+    height: var(--shpd-space-sm);
+    border-radius: 50%;
+  }
+
+  .shpd-global-toast__mark--success { background: var(--shpd-color-success-mark); }
+  .shpd-global-toast__mark--info { background: var(--shpd-color-info-mark); }
+  .shpd-global-toast__mark--warning { background: var(--shpd-color-warning-mark); }
 
   .shpd-global-toast__close {
     flex-shrink: 0;

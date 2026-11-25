@@ -13,6 +13,8 @@
     onkeydown?: (event: KeyboardEvent) => void;
     /** Volitelný `data-testid` na inputu (video-runner, smoke E2E). */
     testid?: string;
+    /** Atribut `autocomplete` — u hesla, které se zadává nově, `new-password`. */
+    autocomplete?: AutoFill;
   }
 
   let {
@@ -27,6 +29,7 @@
     oninput,
     onkeydown,
     testid,
+    autocomplete,
   }: Props = $props();
 </script>
 
@@ -42,6 +45,7 @@
   {disabled}
   {oninput}
   {onkeydown}
+  {autocomplete}
   data-testid={testid}
 />
 {#if error}

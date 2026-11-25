@@ -24,6 +24,11 @@
   import ViewerToolbar from './ViewerToolbar.svelte';
   import ViewerFilters from './ViewerFilters.svelte';
   import SetPasswordPrompt from './SetPasswordPrompt.svelte';
+  import RecordActionDialog from './RecordActionDialog.svelte';
+  import ConfirmDialog from '../ui/ConfirmDialog.svelte';
+  import { runRecordAction } from '../../api/recordActions.js';
+  import { isInvalid, requestBody, responseErrors, resultLevel } from './recordActionRequest.js';
+  import { noticeStore } from '../../stores/notice.svelte.js';
   import AssetsDepreciationRunDialog from './AssetsDepreciationRunDialog.svelte';
   import PrintPreviewDialog from './PrintPreviewDialog.svelte';
   import SendDialog from './SendDialog.svelte';
@@ -214,8 +219,13 @@
   let detailLoading = $state(false);
   // Právě běžící akce detailu (id) — ViewerDetail jí zablokuje tlačítko,
   // aby dvojklik nezaložil dva doklady (#92 task B U8). Zatím ji nastavuje
-  // jen Vystavit opravný doklad.
+  // jen Vystavit opravný doklad a akce záznamu z modulů.
   let busyActionId = $state(null);
+  // Akce záznamu z modulu (`kind: "record_action"`, #172 D12): otevřený
+  // obecný dialog, resp. potvrzení akce bez dialogu. Drží popis akce
+  // z detailu, jak byl při kliknutí — obnovení detailu ho nemění.
+  let recordActionDialog = $state(null);
+  let recordActionConfirm = $state(null);
 
   // --- Form dialog state ---
   let formOpen = $state(false);
@@ -1126,7 +1136,69 @@
       return;
     }
 
+    // Akce záznamu s obsluhou v modulu (#172 D12–D14) — jedna obsluha pro
+    // všechny akce z `recordActions`: s dialogem obecný RecordActionDialog,
+    // s potvrzením ConfirmDialog, jinak rovnou volání. Nové akce detailu
+    // jdou už jen touto cestou (D19); pevná id výše jsou uzavřený seznam.
+    if (action.kind === 'record_action') {
+      if (busyActionId !== null) return;
+      if (action.dialog) {
+        recordActionDialog = { action };
+      } else if (action.confirm) {
+        recordActionConfirm = { action };
+      } else {
+        await runPlainRecordAction(action);
+      }
+      return;
+    }
+
     console.warn('Unknown detail action', actionId, action);
+  }
+
+  // Akce záznamu bez dialogu: po dobu volání je tlačítko zablokované
+  // (busyActionId), aby ji dvojklik nespustil dvakrát.
+  async function runPlainRecordAction(action) {
+    if (busyActionId !== null) return;
+    busyActionId = action.id;
+    let result;
+    try {
+      result = await runRecordAction(action.target, action.id, requestBody([], {}));
+    } finally {
+      busyActionId = null;
+    }
+    recordActionConfirm = null;
+    if (result?.success) {
+      handleRecordActionDone(result.data);
+    } else {
+      handleRecordActionFailed(result);
+    }
+  }
+
+  // Úspěch: oznámení se zprávou akce a vždy obnovení detailu i seznamu (D14).
+  function handleRecordActionDone(data) {
+    recordActionDialog = null;
+    if (data?.message) {
+      noticeStore.show(data.message, { level: resultLevel(data) });
+    }
+    refreshAfterAction();
+  }
+
+  // Chyba mimo chyby polí dialogu. Akce bez dialogu může dostat i 422
+  // (chyba vstupu z akce) — texty se ukážou v hlášce. Akce, která pro
+  // záznam už není (409) nebo záznam zmizel (404): dialog se zavře
+  // a detail se obnoví, ať tlačítko odpovídá stavu.
+  function handleRecordActionFailed(result) {
+    if (!result) return; // 401 — klient už odhlásil
+    if (isInvalid(result)) {
+      const messages = responseErrors(result, [], (code) => t(`recordAction.fieldError.${code}`)).form;
+      alert(messages.length > 0 ? messages.join('\n') : translateError(result.error));
+      return;
+    }
+    alert(translateError(result.error));
+    if (['RECORD_ACTION_NOT_AVAILABLE', 'RECORD_ACTION_NOT_FOUND', 'RECORD_NOT_FOUND'].includes(result.error?.code)) {
+      recordActionDialog = null;
+      refreshAfterAction();
+    }
   }
 
   function handleFormClose() {
@@ -1719,6 +1791,26 @@
     />
   {/snippet}
 </Modal>
+
+<!-- Akce záznamu z modulu (kind record_action, #172 D12): obecný dialog
+     a potvrzení akce bez dialogu. -->
+<RecordActionDialog
+  open={recordActionDialog !== null}
+  action={recordActionDialog?.action ?? null}
+  onDone={handleRecordActionDone}
+  onFailed={handleRecordActionFailed}
+  onClose={() => { recordActionDialog = null; }}
+/>
+<ConfirmDialog
+  open={recordActionConfirm !== null}
+  title={recordActionConfirm?.action.label ?? ''}
+  message={recordActionConfirm?.action.confirm ?? ''}
+  variant={recordActionConfirm?.action.variant === 'danger' ? 'danger' : 'primary'}
+  busy={recordActionConfirm !== null && busyActionId === recordActionConfirm.action.id}
+  onConfirm={() => runPlainRecordAction(recordActionConfirm.action)}
+  onCancel={() => { recordActionConfirm = null; }}
+  testid="record-action-confirm"
+/>
 
 <!-- Nastavení hesla SMTP senderu (detail akce setPassword) -->
 <SetPasswordPrompt
