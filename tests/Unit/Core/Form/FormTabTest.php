@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Form;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Form\FormColumn;
+use Shipard\Core\Form\FormElement;
+use Shipard\Core\Form\FormSection;
 use Shipard\Core\Form\FormTab;
 
 /** Validace a serializace tabu typu `subtable` — `orderColumn` (fáze 3). */
@@ -82,5 +85,16 @@ class FormTabTest extends TestCase
             subtable: ['table' => 'docs_core_rows', 'foreignKey' => 'doc_head', 'formId' => null],
             sendFlag: true,
         );
+    }
+
+    public function testWithIdKeepsEverythingButTheId(): void
+    {
+        $tab = new FormTab('sales', 'Sales', [new FormSection([new FormColumn([new FormElement('separator')])])], icon: 'money');
+
+        $renamed = $tab->withId('economy.sales.sales');
+
+        $this->assertSame('economy.sales.sales', $renamed->id);
+        $this->assertSame('sales', $tab->id, 'původní záložka se nemění');
+        $this->assertSame(['id' => 'economy.sales.sales'] + $tab->toArray(), $renamed->toArray());
     }
 }

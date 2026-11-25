@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Form;
 
 use Shipard\Core\Database\ColumnDefinition;
+use Shipard\Core\Database\TableDefinition;
 
 /**
  * Fluent builder for {@see FormTab} of type 'fields'.
@@ -58,6 +59,24 @@ final class TabBuilder
     ) {
         $this->colLabels = $colLabels;
         $this->colDefs   = $colDefs;
+    }
+
+    /**
+     * Builder záložky nad definicí tabulky: popisky sloupců
+     * (`formLabel ?? name`) a jejich definice se berou z tabulky, takže
+     * prvek stačí zadat jménem sloupce. Společná stavba pro formulář
+     * (`TableForm::tab()`) i záložku z modulu (`ModuleFormTab::tab()`,
+     * #172 D17). Bez definice tabulky builder bez popisků.
+     */
+    public static function forTable(string $id, string $label, ?TableDefinition $tableDef, ?string $icon = null): self
+    {
+        $colLabels = [];
+        $colDefs   = [];
+        foreach ($tableDef?->columns ?? [] as $col) {
+            $colLabels[$col->id] = $col->formLabel ?? $col->name;
+            $colDefs[$col->id]   = $col;
+        }
+        return new self($id, $label, $colLabels, $icon, colDefs: $colDefs);
     }
 
     // -------- Section / column management --------

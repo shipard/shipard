@@ -305,4 +305,22 @@ class FormDefinitionTest extends TestCase
 
         $this->assertSame($items, $def->toArray()['live_summary']);
     }
+
+    public function testWithAppendedTabsAddsTabsAtTheEndAndKeepsTheRest(): void
+    {
+        $section = [new FormSection([new FormColumn([new FormElement('separator')])])];
+        $definition = (new FormDefinition('t', 'Title', 'New', [new FormTab('basic', 'Basic', $section)], liveSummary: [['label' => 'A', 'value' => '1']]))
+            ->withDocStates(['currentState' => 10]);
+
+        $this->assertSame($definition, $definition->withAppendedTabs([]), 'bez záložek tatáž instance');
+
+        $extended = $definition->withAppendedTabs([new FormTab('mod.one', 'One', $section), new FormTab('mod.two', 'Two', $section)]);
+
+        $this->assertSame(['basic', 'mod.one', 'mod.two'], array_map(static fn (FormTab $t): string => $t->id, $extended->tabs));
+        $this->assertCount(1, $definition->tabs, 'původní definice se nemění');
+        $this->assertSame('Title', $extended->title);
+        $this->assertSame('New', $extended->titleNew);
+        $this->assertSame(['currentState' => 10], $extended->docStates);
+        $this->assertSame([['label' => 'A', 'value' => '1']], $extended->liveSummary);
+    }
 }

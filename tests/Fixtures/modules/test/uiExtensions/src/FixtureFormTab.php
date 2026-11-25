@@ -6,7 +6,6 @@ namespace Shipard\Module\Test\UiExtensions;
 
 use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\ModuleFormTab;
-use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Module\ModuleExtensionContext;
 
 /**
@@ -20,10 +19,11 @@ class FixtureFormTab extends ModuleFormTab
         if (($data['kind'] ?? null) === 'skip') {
             return null;
         }
-        return (new TabBuilder('sales', 'Fixture sales'))
+        return $this->tab($context, 'sales', 'Fixture sales')
             ->section()
             ->col()
-            ->checkbox('contact_payment', 'Contact payment')
+            ->checkbox('contact_payment')
+            ->separator('Fixture separator')
             ->build();
     }
 }

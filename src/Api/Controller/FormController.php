@@ -19,9 +19,12 @@ use Shipard\Core\Form\FormRegistry;
 use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\JsoncFormLoader;
 use Shipard\Core\Form\Lookup\LookupRegistry;
+use Shipard\Core\Form\ModuleFormTabs;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
+use Shipard\Core\Module\ModuleExtensionContext;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Module\ModuleUiExtensions;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\DocumentResult;
@@ -885,6 +888,15 @@ class FormController
         if ($tableForm !== null) {
             $tableForm->setTableDef($def);
             $result = $tableForm->recalculate($changedColumn, $data);
+            // PHP formulář si definici při přepočtu staví sám — záložky
+            // z modulů (#172 D17) se k ní přidají tady, jinak by po prvním
+            // přepočtu z formuláře zmizely.
+            $result = new RecalculateResult(
+                $this->withModuleTabs(
+                    $result->formDefinition, $table, $def, $result->data, $isNew, $formRegistry, $db, $config, $language,
+                ),
+                $result->data,
+            );
         } else {
             // JSONC or Auto — no custom recalculate logic, just rebuild definition
             $formDefinition = $this->resolveFormDefinition(
@@ -924,7 +936,64 @@ class FormController
 
     // ─── Private helpers ─────────────────────────────────────────────────────────
 
+    /**
+     * Definice formuláře tabulky: PHP třída → JSONC → automatický formulář,
+     * ve všech třech případech se záložkami z modulů na konci (`formTabs`,
+     * #172 D17).
+     */
     private function resolveFormDefinition(
+        string $table,
+        TableDefinition $def,
+        array $data,
+        bool $isNew,
+        FormRegistry $formRegistry,
+        DataSourceConnection $db,
+        ?ConfigRuntime $config,
+        ModulePathResolver $modulePathResolver,
+        string $language = 'en',
+    ): FormDefinition {
+        return $this->withModuleTabs(
+            $this->resolveBaseFormDefinition(
+                $table, $def, $data, $isNew, $formRegistry, $db, $config, $modulePathResolver, $language,
+            ),
+            $table, $def, $data, $isNew, $formRegistry, $db, $config, $language,
+        );
+    }
+
+    /**
+     * Záložky z modulů aktivních ve zdroji dat na konec definice (#172 D17).
+     * Volá se pro všechny cesty definice — `resolveFormDefinition()`
+     * i přepočet PHP formuláře. Poskytovatel, který spadne nebo vrátí
+     * záložku mimo kontrakt, se zaloguje a přeskočí (`ModuleFormTabs`).
+     *
+     * @param array<string, mixed> $data
+     */
+    private function withModuleTabs(
+        FormDefinition $formDefinition,
+        string $table,
+        TableDefinition $def,
+        array $data,
+        bool $isNew,
+        FormRegistry $formRegistry,
+        DataSourceConnection $db,
+        ?ConfigRuntime $config,
+        string $language,
+    ): FormDefinition {
+        $extensions = $formRegistry->uiExtensions();
+        if ($extensions->for(ModuleUiExtensions::FORM_TABS, $table) === []) {
+            return $formDefinition;
+        }
+
+        return $formDefinition->withAppendedTabs(ModuleFormTabs::collect(
+            $extensions,
+            new ModuleExtensionContext($table, $db, $config, $formRegistry->getDsConfig(), $language, $def),
+            $data,
+            $isNew,
+        ));
+    }
+
+    /** Definice formuláře bez záložek z modulů. */
+    private function resolveBaseFormDefinition(
         string $table,
         TableDefinition $def,
         array $data,
@@ -1406,7 +1475,9 @@ class FormController
         if ($record === []) {
             return [];
         }
-        $formDef = $this->resolveFormDefinition(
+        // Bez záložek z modulů — lookup v nich být nesmí (#172 D17), takže
+        // poskytovatele není proč volat podruhé.
+        $formDef = $this->resolveBaseFormDefinition(
             $table, $def, $record, /*$isNew*/ false,
             $formRegistry, $db, $config, $modulePathResolver, $language,
         );

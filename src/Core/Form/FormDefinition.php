@@ -41,6 +41,28 @@ class FormDefinition
         return $clone;
     }
 
+    /**
+     * Tatáž definice s dalšími záložkami na konci (záložky z modulů,
+     * #172 D17). Bez záložek vrací sebe.
+     *
+     * @param list<FormTab> $tabs
+     */
+    public function withAppendedTabs(array $tabs): self
+    {
+        if ($tabs === []) {
+            return $this;
+        }
+        return new self(
+            $this->table,
+            $this->title,
+            $this->titleNew,
+            [...$this->tabs, ...$tabs],
+            $this->docStates,
+            $this->headerInfo,
+            $this->liveSummary,
+        );
+    }
+
     public function toArray(): array
     {
         $result = [

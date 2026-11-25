@@ -29,4 +29,14 @@ abstract class ModuleFormTab
      * @return FormTab|null `null` = záložka se pro tento záznam nezobrazí
      */
     abstract public function build(array $data, bool $isNew, ModuleExtensionContext $context): ?FormTab;
+
+    /**
+     * Builder záložky nad tabulkou z kontextu — popisky sloupců (včetně
+     * sloupců z rozšíření) jako u `TableForm::tab()`. `$id` stačí jedinečné
+     * v rámci modulu; sběr ho prefixuje id modulu.
+     */
+    protected function tab(ModuleExtensionContext $context, string $id, string $label, ?string $icon = null): TabBuilder
+    {
+        return TabBuilder::forTable($id, $label, $context->tableDef, $icon);
+    }
 }

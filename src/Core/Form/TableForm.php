@@ -283,15 +283,7 @@ abstract class TableForm
 
     protected function tab(string $id, string $label, ?string $icon = null): TabBuilder
     {
-        $colLabels = [];
-        $colDefs   = [];
-        if ($this->tableDef !== null) {
-            foreach ($this->tableDef->columns as $col) {
-                $colLabels[$col->id] = $col->formLabel ?? $col->name;
-                $colDefs[$col->id]   = $col;
-            }
-        }
-        return new TabBuilder($id, $label, $colLabels, $icon, colDefs: $colDefs);
+        return TabBuilder::forTable($id, $label, $this->tableDef, $icon);
     }
 
     /**

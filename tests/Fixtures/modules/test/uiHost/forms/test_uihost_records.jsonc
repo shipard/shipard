@@ -1,0 +1,24 @@
+// JSONC formulář fixturové tabulky — cesta „JSONC“ pro test záložky
+// formuláře z modulu (#172 D17).
+{
+    "title": "Record",
+    "titleNew": "New record",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Basic",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "input", "column": "kind"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

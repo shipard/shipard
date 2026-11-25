@@ -580,4 +580,33 @@ class TabBuilderTest extends TestCase
             ->section()->col()->select('mode');
         $this->assertNull($this->firstElement($b)->placeholder);
     }
+
+    public function testForTableTakesLabelsAndDefinitionsFromTheTable(): void
+    {
+        $table = \Shipard\Core\Database\TableDefinition::fromArray([
+            'tableId' => 1,
+            'name' => 't',
+            'columns' => [
+                ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true],
+                ['id' => 'name', 'name' => 'Name', 'type' => 'varchar', 'length' => 50],
+                ['id' => 'paid', 'name' => 'Paid', 'formLabel' => 'Paid in cash', 'type' => 'boolean'],
+                ['id' => 'kind', 'name' => 'Kind', 'type' => 'varchar', 'length' => 5, 'nullable' => false],
+            ],
+        ]);
+
+        $tab = TabBuilder::forTable('main', 'Main', $table, 'box')
+            ->section()->col()->input('name')->checkbox('paid')->select('kind', options: [])
+            ->build()
+            ->toArray();
+
+        $this->assertSame('main', $tab['id']);
+        $this->assertSame('box', $tab['icon']);
+        $elements = $tab['sections'][0]['columns'][0]['elements'];
+        $this->assertSame('Name', $elements[0]['label']);
+        $this->assertSame('Paid in cash', $elements[1]['label'], 'formLabel má přednost před name');
+        $this->assertTrue($elements[2]['required'], 'required selectu z definice sloupce');
+
+        $bare = TabBuilder::forTable('main', 'Main', null)->section()->col()->input('name')->build()->toArray();
+        $this->assertArrayNotHasKey('icon', $bare);
+    }
 }

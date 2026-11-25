@@ -129,6 +129,22 @@ final class FormTab
         }
     }
 
+    /** Táž záložka pod jiným id (záložka z modulu dostává prefix modulu, #172 D17). */
+    public function withId(string $id): self
+    {
+        return new self(
+            $id,
+            $this->label,
+            $this->sections,
+            $this->type,
+            $this->subtable,
+            $this->tableId,
+            $this->icon,
+            $this->changeEndpoint,
+            $this->sendFlag,
+        );
+    }
+
     public function toArray(): array
     {
         $result = [
