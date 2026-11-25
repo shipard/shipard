@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Cli;
 
+use Shipard\Core\Server\DataSourceModules;
 use Shipard\Core\Version;
 use Symfony\Component\Console\Application;
 
@@ -13,7 +14,16 @@ use Symfony\Component\Console\Application;
  */
 final class ServerApplicationFactory
 {
-    public static function create(): Application
+    /**
+     * Příkazy jádra + `serverCommands` všech modulů ve stromu (#172 D2) —
+     * `shpd-server` neběží ve zdroji dat, aktivní moduly tu nic neznamenají.
+     * Definice modulů nejdou načíst (první instalace bez `modules/`) →
+     * jen jádro.
+     *
+     * @param DataSourceModules|null $modules zdroj definic modulů (testy,
+     *     `bin/shpd-server` předává resolver, který už má)
+     */
+    public static function create(?DataSourceModules $modules = null): Application
     {
         $app = new Application('Shipard Server Management', Version::VERSION);
         $app->add(new \Shipard\Command\Server\VersionCommand());
@@ -43,6 +53,11 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\TestRoundRunCommand());
         $app->add(new \Shipard\Command\Server\DoctorCommand());
         $app->add(new \Shipard\Command\Server\FixPermissionsCommand());
+        foreach ((new ModuleCommands($modules ?? new DataSourceModules()))->serverGroups() as $group) {
+            foreach ($group->commands as $command) {
+                $app->add($command);
+            }
+        }
         $app->setDefaultCommand('help');
         return $app;
     }

@@ -9,6 +9,7 @@ use Shipard\Cli\ServerApplicationFactory;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Module\ModuleClassLoader;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\DataSourceModules;
 
 try {
     $sc = new ServerConfig();
@@ -21,4 +22,4 @@ try {
 }
 ModuleClassLoader::register($resolver);
 
-ServerApplicationFactory::create()->run();
+ServerApplicationFactory::create(modules: new DataSourceModules($resolver))->run();

@@ -109,8 +109,14 @@ class DataSourceModules
         return array_values(ModuleLoader::loadAllModules($resolver));
     }
 
-    /** @return list<ModuleDefinition>|null null = načtení selhalo (jednou za instanci) */
-    private function definitions(): ?array
+    /**
+     * Definice všech dostupných modulů — načtené jednou za instanci. Sdílí
+     * je registrace příkazů modulů i registr úloh cronu (#172), aby se
+     * strom modulů nečetl dvakrát.
+     *
+     * @return list<ModuleDefinition>|null null = načtení selhalo (jednou za instanci)
+     */
+    public function definitions(): ?array
     {
         if ($this->definitions !== null || $this->definitionsError !== null) {
             return $this->definitions;

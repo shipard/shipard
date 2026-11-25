@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Cli;
 
+use Shipard\Core\Server\DataSourceModules;
 use Shipard\Core\Version;
 use Symfony\Component\Console\Application;
 
@@ -13,9 +14,28 @@ use Symfony\Component\Console\Application;
  */
 final class DsApplicationFactory
 {
-    public static function create(): Application
+    /** Varování, když moduly zdroje dat nejde určit (#172 D2). */
+    public const string MODULES_UNKNOWN_WARNING = 'modules of the data source cannot be determined — offering commands of all modules; see shipard.log';
+
+    /**
+     * Příkazy jádra + příkazy modulů (`commands` v `module.jsonc`, #172 D2):
+     *
+     *  - aktuální adresář je zdroj dat (`config/main.json`) → příkazy modulů
+     *    aktivních ve zdroji dat; moduly nejde určit → příkazy všech modulů
+     *    a jeden řádek varování na chybový výstup;
+     *  - mimo zdroj dat → jen jádro.
+     *
+     * Jméno příkazu modulu, který registrovaný není, končí chybou D4
+     * ({@see ShipardApplication}).
+     *
+     * @param list<string>|null $activeModules aktivní moduly místo zjišťování
+     *     z aktuálního adresáře (pro testy; `[]` = jen jádro)
+     * @param DataSourceModules|null $modules zdroj definic modulů (testy,
+     *     `bin/shpd-ds` předává resolver, který už má)
+     */
+    public static function create(?array $activeModules = null, ?DataSourceModules $modules = null): Application
     {
-        $app = new Application('Shipard Data Source Tool', Version::VERSION);
+        $app = new ShipardApplication('Shipard Data Source Tool', Version::VERSION);
         $app->add(new \Shipard\Command\DataSource\VersionCommand());
         $app->add(new \Shipard\Command\DataSource\HelpCommand());
         $app->add(new \Shipard\Command\DataSource\DsUpgradeCommand());
@@ -84,7 +104,38 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\HostingAiGwInitCommand());
         $app->add(new \Shipard\Command\DataSource\HostingAiTokenCommand());
         $app->add(new \Shipard\Command\DataSource\HostingStatsCommand());
+        self::addModuleCommands($app, $activeModules, $modules ?? new DataSourceModules());
         $app->setDefaultCommand('help');
         return $app;
+    }
+
+    /** @param list<string>|null $activeModules */
+    private static function addModuleCommands(ShipardApplication $app, ?array $activeModules, DataSourceModules $modules): void
+    {
+        $dsDir = (string) getcwd();
+        $moduleCommands = new ModuleCommands($modules);
+
+        // Mimo zdroj dat jen jádro; definice modulů se nenačtou, dokud
+        // někdo nezadá příkaz, který jádro nezná (D4).
+        if ($activeModules === null && !is_file($dsDir . '/config/main.json')) {
+            $app->setModuleCommands($moduleCommands, false);
+            return;
+        }
+
+        $all = false;
+        if ($activeModules === null) {
+            $activeModules = $modules->activeIds($dsDir);
+            $all = $activeModules === null;
+        }
+
+        foreach ($moduleCommands->dsGroups($all ? null : $activeModules) as $group) {
+            foreach ($group->commands as $command) {
+                $app->add($command);
+            }
+        }
+        if ($all) {
+            $app->setStartupWarning('<comment>' . self::MODULES_UNKNOWN_WARNING . '</comment>');
+        }
+        $app->setModuleCommands($moduleCommands, true);
     }
 }
