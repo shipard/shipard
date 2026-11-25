@@ -48,6 +48,9 @@ class PlaceDocument extends Document
         'street', 'house_number', 'orientation_number', 'city', 'zip', 'country', 'latitude', 'longitude',
     ];
 
+    /** GPS sloupce adresy a jejich povolený rozsah (stupně). */
+    private const GPS_RANGES = ['latitude' => 90.0, 'longitude' => 180.0];
+
     /** Strop průchodu řetězem nadřazených míst — pojistka proti poškozeným datům. */
     private const MAX_PARENT_DEPTH = 100;
 
@@ -146,6 +149,7 @@ class PlaceDocument extends Document
                 PersonValues::checkAddress($data, $storedCountry, $this->dataSourceCountry()),
                 true,
             );
+            $this->validateGps($data, $result);
         }
 
         return $result;
@@ -179,6 +183,13 @@ class PlaceDocument extends Document
                     PersonValues::text($originalData['country'] ?? null),
                     $this->dataSourceCountry(),
                 );
+                // Prázdné pole formuláře posílá '' — do numeric sloupce
+                // nesmí (MariaDB ho odmítne), prázdná souřadnice je NULL.
+                foreach (array_keys(self::GPS_RANGES) as $col) {
+                    if (array_key_exists($col, $data)) {
+                        $data[$col] = self::gpsValue($data[$col]);
+                    }
+                }
             }
         }
 
@@ -213,6 +224,44 @@ class PlaceDocument extends Document
         if ($parent !== $oldParent && !$orderChanged) {
             $data['order_pos'] = $this->maxSiblingOrder($parent, (int) ($originalData['id'] ?? $data['id'] ?? 0)) + 1;
         }
+    }
+
+    /**
+     * GPS souřadnice: prázdná je v pořádku, vyplněná musí být číslo
+     * v rozsahu (šířka ±90, délka ±180). Desetinná čárka se bere jako tečka.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validateGps(array $data, ValidationResult $result): void
+    {
+        foreach (self::GPS_RANGES as $col => $limit) {
+            if (!array_key_exists($col, $data)) {
+                continue;
+            }
+            $value = self::gpsValue($data[$col]);
+            if ($value === null) {
+                continue;
+            }
+            if (!is_numeric($value) || abs((float) $value) > $limit) {
+                $result->addError(
+                    $col,
+                    $col === 'latitude'
+                        ? 'Zeměpisná šířka musí být číslo od -90 do 90.'
+                        : 'Zeměpisná délka musí být číslo od -180 do 180.',
+                    'invalid_value',
+                );
+            }
+        }
+    }
+
+    /** Souřadnice jako text s desetinnou tečkou; prázdná = null. */
+    private static function gpsValue(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $text = str_replace(',', '.', trim((string) $value));
+        return $text === '' ? null : $text;
     }
 
     private function validateParent(int $parentId, ?int $selfId, string $type, ValidationResult $result): void

@@ -368,6 +368,38 @@ class PlaceDocumentTest extends TestCase
         );
     }
 
+    public function testEmptyGpsFromTheFormIsStoredAsNull(): void
+    {
+        // Formulář posílá prázdné pole jako '' — numeric sloupec ho odmítne.
+        $data = ['name' => 'Budova C', 'kind' => self::KIND_BUILDING, 'parent' => 1, 'latitude' => '', 'longitude' => '  '];
+        $doc = $this->doc();
+        $this->assertSame([], $this->codes($doc, $data));
+        $doc->beforeSave($data, null);
+
+        $this->assertNull($data['latitude']);
+        $this->assertNull($data['longitude']);
+    }
+
+    public function testGpsAcceptsDecimalCommaAndChecksTheRange(): void
+    {
+        $doc = $this->doc();
+        $data = ['name' => 'Budova C', 'kind' => self::KIND_BUILDING, 'parent' => 1, 'latitude' => '50,087451', 'longitude' => ' 14.420671 '];
+        $this->assertSame([], $this->codes($doc, $data));
+        $doc->beforeSave($data, null);
+        $this->assertSame('50.087451', $data['latitude']);
+        $this->assertSame('14.420671', $data['longitude']);
+
+        $this->assertSame(
+            ['latitude:invalid_value', 'longitude:invalid_value'],
+            $this->codes($doc, ['name' => 'Budova C', 'kind' => self::KIND_BUILDING, 'parent' => 1, 'latitude' => '91', 'longitude' => 'abc']),
+        );
+        // U podlaží se adresa maže — souřadnice se nehlídají.
+        $this->assertSame(
+            [],
+            $this->codes($doc, ['name' => '2. NP', 'kind' => self::KIND_FLOOR, 'parent' => 2, 'latitude' => 'abc']),
+        );
+    }
+
     // --- pořadí ---
 
     public function testNewPlaceGoesToTheEndOfItsSiblings(): void

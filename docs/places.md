@@ -96,6 +96,7 @@ Místo — `PlaceDocument::validate()`:
 | **kód** jedinečný mezi sourozenci mimo koš, bez ohledu na velikost písmen (D4) | `code`: `code_duplicate` |
 | **koš** s podřízeným mimo koš, **archiv** s podřízeným mimo archiv a koš (D7) | `_form`: `has_children` |
 | adresa: nález `PersonValues::checkAddress()` je chyba (D13) | `zip`: `zip_invalid` |
+| GPS: vyplněná souřadnice je číslo, šířka ±90, délka ±180 (desetinná čárka = tečka) | `latitude` / `longitude`: `invalid_value` |
 
 Úrovně se hlídají **oběma směry**: kontrola jen nadřazeného místa by
 pustila změnu druhu budovy na místnost, pod kterou zůstanou podlaží.
@@ -108,7 +109,9 @@ je také jedna skupina.
 - **adresa podle typu** — typ bez `hasAddress` má sloupce
   `PlaceDocument::ADDRESS_COLUMNS` vždy NULL, i když přišly v payloadu.
   Jinak `PersonValues::normalizeAddress()`; země pro pravidla PSČ je země
-  zdroje dat (`DataSourceConfig::getCountry()`) — místo osobu nemá
+  zdroje dat (`DataSourceConfig::getCountry()`) — místo osobu nemá.
+  Prázdná GPS souřadnice (formulář posílá `''`) se ukládá jako NULL —
+  `numeric` sloupec prázdný řetězec odmítne; čárka se mění na tečku
 - **pořadí** — nové místo bez pořadí a místo přesunuté pod jiné nadřazené
   jdou na konec sourozenců. Ručně změněné pořadí se nepřepisuje. Formulář
   posílá u nového záznamu výchozí hodnotu sloupce 0; ta se bere jako
