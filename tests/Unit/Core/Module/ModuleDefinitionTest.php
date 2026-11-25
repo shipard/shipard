@@ -1445,4 +1445,101 @@ class ModuleDefinitionTest extends TestCase
             'stejné id dvakrát'   => [[$valid, $valid], "settingsSections[0].subsections has duplicate id 'facility.meters'"],
         ];
     }
+
+    // ── commands / serverCommands / cronJobs (#172 D2, D6) ──────────────────
+
+    public function testCommandsAndCronJobsDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT']);
+
+        $this->assertSame([], $def->commands);
+        $this->assertSame([], $def->serverCommands);
+        $this->assertSame([], $def->cronJobs);
+    }
+
+    public function testCommandsAreParsedAsClassNames(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'economy.vat',
+            'name' => 'VAT',
+            'commands' => ['Shipard\\Module\\Economy\\Vat\\Command\\VatPeriodsEnsureCommand', '\\Shipard\\Module\\Economy\\Vat\\Command\\Other'],
+            'serverCommands' => ['Shipard\\Module\\Economy\\Vat\\Command\\ServerThing'],
+        ]);
+
+        $this->assertSame(
+            ['Shipard\\Module\\Economy\\Vat\\Command\\VatPeriodsEnsureCommand', 'Shipard\\Module\\Economy\\Vat\\Command\\Other'],
+            $def->commands,
+            'úvodní zpětné lomítko se odřízne',
+        );
+        $this->assertSame(['Shipard\\Module\\Economy\\Vat\\Command\\ServerThing'], $def->serverCommands);
+    }
+
+    /** @param mixed $value */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidCommandLists')]
+    public function testInvalidCommandListThrows(string $key, mixed $value, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': " . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', $key => $value]);
+    }
+
+    /** @return array<string, array{string, mixed, string}> */
+    public static function invalidCommandLists(): array
+    {
+        return [
+            'řetězec místo pole' => ['commands', 'A\\B', 'commands must be a JSON array of class names'],
+            'objekt místo pole'  => ['serverCommands', ['a' => 'A\\B'], 'serverCommands must be a JSON array of class names'],
+            'prázdné jméno'      => ['commands', [''], 'commands[0] must be a non-empty class name'],
+            'číslo'              => ['commands', ['A\\B', 5], 'commands[1] must be a non-empty class name'],
+            'dvakrát'            => ['serverCommands', ['A\\B', '\\A\\B'], "serverCommands lists 'A\\B' twice"],
+        ];
+    }
+
+    public function testCronJobGetsDefaultOrderAndStates(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'economy.vat',
+            'name' => 'VAT',
+            'cronJobs' => [
+                ['command' => 'vat-periods-ensure', 'slot' => 'daily'],
+                ['command' => ' mail-preprocess --sweep ', 'slot' => 'minute', 'order' => 900, 'states' => ['active', 'read_only', 'active']],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['command' => 'vat-periods-ensure', 'slot' => 'daily', 'order' => 500, 'states' => ['active']],
+            ['command' => 'mail-preprocess --sweep', 'slot' => 'minute', 'order' => 900, 'states' => ['active', 'read_only']],
+        ], $def->cronJobs);
+    }
+
+    /** @param mixed $cronJobs */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidCronJobs')]
+    public function testInvalidCronJobThrows(mixed $cronJobs, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': " . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', 'cronJobs' => $cronJobs]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidCronJobs(): array
+    {
+        $valid = ['command' => 'vat-periods-ensure', 'slot' => 'daily'];
+
+        return [
+            'objekt místo pole'   => [$valid, 'cronJobs must be a JSON array'],
+            'řetězec místo úlohy' => [['vat-periods-ensure'], 'cronJobs[0] must be an object'],
+            'pole místo úlohy'    => [[['vat-periods-ensure', 'daily']], 'cronJobs[0] must be an object'],
+            'neznámý klíč'        => [[$valid + ['stats' => ['active']]], "cronJobs[0] has unknown key 'stats'"],
+            'bez příkazu'         => [[['slot' => 'daily']], 'cronJobs[0].command must be a non-empty string'],
+            'prázdný příkaz'      => [[['command' => '  ', 'slot' => 'daily']], 'cronJobs[0].command must be a non-empty string'],
+            'bez slotu'           => [[['command' => 'vat-periods-ensure']], 'cronJobs[0].slot is missing or unknown'],
+            'neznámý slot'        => [[$valid, ['command' => 'x', 'slot' => 'hourly']], 'cronJobs[1].slot is missing or unknown'],
+            'order řetězcem'      => [[$valid + ['order' => '500']], 'cronJobs[0].order must be an integer'],
+            'order desetinné'     => [[$valid + ['order' => 1.5]], 'cronJobs[0].order must be an integer'],
+            'states řetězcem'     => [[$valid + ['states' => 'active']], 'cronJobs[0].states must be a non-empty JSON array'],
+            'states prázdné'      => [[$valid + ['states' => []]], 'cronJobs[0].states must be a non-empty JSON array'],
+            'neznámý stav'        => [[$valid + ['states' => ['active', 'readonly']]], 'cronJobs[0].states has an unknown state'],
+        ];
+    }
 }

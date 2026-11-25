@@ -1,0 +1,15 @@
+// Fixture pro testy příkazů z modulů (#172): druhý modul — ve zdroji dat
+// bez něj musí jeho příkaz skončit chybou, která modul jmenuje (D4).
+// Třída DuplicateEchoCommand tu deklarovaná není; test jedinečnosti jmen
+// ji přidává syntetickou definicí.
+{
+    "id": "test.commandsTwo",
+    "name": "Test commands two",
+    "description": "Fixture module: a command of a module that is not active in the data source.",
+
+    "dependencies": [],
+
+    "commands": [
+        "Shipard\\Module\\Test\\CommandsTwo\\Command\\FixtureOtherCommand"
+    ]
+}

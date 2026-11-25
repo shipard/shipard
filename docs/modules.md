@@ -447,6 +447,53 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `workOrderInvoiceContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.workOrders.invoiceContributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
 | `overviewBlocks` | object[] | Ne | Ne | Bloky Přehledu firmy (#120): `id`, `section`, `class` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `core.overview.blocks` (seřazeno `[order, id]`); instance staví `OverviewBlockRegistry::fromConfig` (viz níže, `docs/overview.md`) |
 | `aiFunctions` | object[] | Ne | Ano (`name`, `description`) | AI funkce modulu (#85 D36): `id` (`oblast.nazev`), `name`, `tier` (`fast` / `balanced` / `strong`), `defaults.maxTokens` povinné; `defaults.temperature`, `requires` (`tools`, `pdf`), `description` volitelné. `ConfigCompiler` je skládá do cfgItem `core.ai.functions`; čte `AiFunctionRegistry`, volání skládá `AiFunctionResolver` (viz níže, `docs/ai.md` §5.3) |
+| `commands` | string[] | Ne | Ne | Příkazy `shpd-ds`, které patří jen tomuto modulu (#172 D2): FQCN tříd odvozených od `Symfony\Component\Console\Command\Command` v namespace `Shipard\Module\<Skupina>\<Modul>\Command\` (viz níže) |
+| `serverCommands` | string[] | Ne | Ne | Příkazy `shpd-server` modulu — stejný tvar jako `commands` (viz níže) |
+| `cronJobs` | object[] | Ne | Ne | Úlohy cronu modulu (#172 D6, viz níže) |
+| `cronJobs[].command` | string | Ano | Ne | Jméno příkazu z `commands` téhož modulu, případně s volbami oddělenými mezerou (`mail-preprocess --sweep`) |
+| `cronJobs[].slot` | string | Ano | Ne | Slot cronu: `minute`, `two-minutes`, `five-minutes`, `daily`, `weekly` (`CronProvisioner::SLOTS`) |
+| `cronJobs[].order` | int | Ne | Ne | Pořadí ve slotu, výchozí 500; řadí se `order` vzestupně, pak id modulu, pak pořadí deklarace |
+| `cronJobs[].states` | string[] | Ne | Ne | Lifecycle stavy zdroje dat (`active`, `read_only`, `suspended`, `pending_deletion`), ve kterých úloha běží; výchozí `["active"]` |
+
+### Pole `commands`, `serverCommands` a `cronJobs`
+
+Co patří jen modulu, žije v modulu (#172 D1): příkaz CLI i úloha cronu se
+deklarují v `module.jsonc`, třídy leží v `modules/<skupina>/<modul>/src/Command/`.
+Jádro nese mechanismus (registraci, dispatcher) a příkazy společné všem
+zdrojům dat.
+
+```jsonc
+"commands": [
+    "Shipard\\Module\\Economy\\Vat\\Command\\VatPeriodsEnsureCommand"
+],
+"serverCommands": [],
+"cronJobs": [
+    {"command": "vat-periods-ensure", "slot": "daily"}
+    // volitelně: "order": 500 (výchozí), "states": ["active"] (výchozí)
+]
+```
+
+- **`commands`** — příkazy `shpd-ds`. Třída je `Command` z Symfony Console,
+  jde vytvořit bez argumentů a leží v namespace
+  `Shipard\Module\<Skupina>\<Modul>\Command\`.
+- **`serverCommands`** — příkazy `shpd-server`, stejná pravidla.
+- **`cronJobs`** — `command` je jméno příkazu z `commands` **téhož** modulu,
+  volby se oddělují mezerou; `slot` je jeden ze slotů cronu; `order` určuje
+  pořadí ve slotu (úloha, která má běžet až po ostatních, dostane vyšší
+  číslo); `states` říká, ve kterých stavech zdroje dat úloha běží — bez pole
+  jen v `active` (fail-closed, `docs/ds-state.md`).
+
+Tvar deklarace hlídá `ModuleDefinition::fromArray()` — špatný typ, neznámý
+slot, neznámý stav, `order` jiného typu než celé číslo, prázdný `command`
+nebo neznámý klíč úlohy je chyba při načtení modulu. Třídy se při načtení
+nenačítají. Co potřebuje vidět třídy nebo víc modulů najednou, hlídá
+`ModuleCommandRules` testem nad celým stromem `modules/`:
+
+- každá třída existuje, je `Command` a leží v namespace svého modulu;
+- jména příkazů (i aliasy) jsou unikátní v rámci binárky — mezi moduly
+  navzájem i proti příkazům jádra;
+- první slovo `cronJobs[].command` je příkaz z `commands` téhož modulu
+  a tentýž řetězec příkazu není ve slotu dvakrát.
 
 ### Pole `sendPurposes`
 

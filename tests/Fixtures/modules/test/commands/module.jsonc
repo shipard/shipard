@@ -1,0 +1,22 @@
+// Fixture pro testy příkazů a úloh cronu z modulů (#172): modul se dvěma
+// příkazy shpd-ds, jedním příkazem shpd-server a jednou úlohou cronu.
+{
+    "id": "test.commands",
+    "name": "Test commands",
+    "description": "Fixture module: commands and cron jobs declared in module.jsonc.",
+
+    "dependencies": [],
+
+    "commands": [
+        "Shipard\\Module\\Test\\Commands\\Command\\FixtureEchoCommand",
+        "Shipard\\Module\\Test\\Commands\\Command\\FixtureSweepCommand"
+    ],
+
+    "serverCommands": [
+        "Shipard\\Module\\Test\\Commands\\Command\\FixtureServerCommand"
+    ],
+
+    "cronJobs": [
+        {"command": "fixture-sweep --all", "slot": "daily"}
+    ]
+}

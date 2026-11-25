@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Module;
 
+use Shipard\Core\Config\DataSourceState;
+use Shipard\Core\Server\CronProvisioner;
+
 class ModuleDefinition
 {
     /** Úrovně modelu AI funkce (`aiFunctions[].tier`, #85 D36) — mapu na modely nese cfgItem `core.ai.tiers`. */
@@ -11,6 +14,9 @@ class ModuleDefinition
 
     /** Požadavky AI funkce na model (`aiFunctions[].requires`): tool smyčka, PDF přílohy. */
     public const array AI_FUNCTION_REQUIRES = ['tools', 'pdf'];
+
+    /** Výchozí pořadí úlohy cronu ve slotu (`cronJobs[].order`, #172 D6). */
+    public const int CRON_JOB_DEFAULT_ORDER = 500;
 
     public function __construct(
         public readonly string $id,
@@ -53,6 +59,12 @@ class ModuleDefinition
         public readonly array $navSections = [],
         /** @var list<array<string, mixed>> vlastní sekce Nastavení, volitelně s podsekcemi (#170 D13) */
         public readonly array $settingsSections = [],
+        /** @var list<class-string> příkazy `shpd-ds` modulu — FQCN tříd (#172 D2) */
+        public readonly array $commands = [],
+        /** @var list<class-string> příkazy `shpd-server` modulu — FQCN tříd (#172 D2) */
+        public readonly array $serverCommands = [],
+        /** @var list<array{command: string, slot: string, order: int, states: list<string>}> úlohy cronu modulu (#172 D6) */
+        public readonly array $cronJobs = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -815,6 +827,14 @@ class ModuleDefinition
             }
         }
 
+        // commands / serverCommands / cronJobs — příkazy a úlohy cronu, které
+        // patří jen modulu (#172 D2, D6). Tady jen tvar deklarace; existenci
+        // tříd, jejich namespace, jedinečnost jmen a vazbu úlohy na příkaz
+        // modulu hlídá ModuleCommandRules nad celým stromem.
+        $commands = self::parseCommandClasses($data, 'commands');
+        $serverCommands = self::parseCommandClasses($data, 'serverCommands');
+        $cronJobs = self::parseCronJobs($data);
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -852,7 +872,114 @@ class ModuleDefinition
             kind: $kind,
             navSections: $navSections,
             settingsSections: $settingsSections,
+            commands: $commands,
+            serverCommands: $serverCommands,
+            cronJobs: $cronJobs,
         );
+    }
+
+    /**
+     * Seznam tříd příkazů (`commands`, `serverCommands`, #172 D2): pole
+     * neprázdných řetězců bez opakování. Třída se tu nenačítá.
+     *
+     * @param array<string, mixed> $data
+     * @return list<class-string>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseCommandClasses(array $data, string $key): array
+    {
+        if (!array_key_exists($key, $data)) {
+            return [];
+        }
+        if (!is_array($data[$key]) || !array_is_list($data[$key])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': {$key} must be a JSON array of class names");
+        }
+
+        $classes = [];
+        foreach ($data[$key] as $idx => $class) {
+            if (!is_string($class) || $class === '') {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': {$key}[{$idx}] must be a non-empty class name",
+                );
+            }
+            $class = ltrim($class, '\\');
+            if (in_array($class, $classes, true)) {
+                throw new \InvalidArgumentException("Module '{$data['id']}': {$key} lists '{$class}' twice");
+            }
+            $classes[] = $class;
+        }
+        return $classes;
+    }
+
+    /**
+     * Úlohy cronu modulu (`cronJobs`, #172 D6): `command` = jméno příkazu,
+     * případně s volbami oddělenými mezerou; `slot` jeden ze slotů cronu;
+     * `order` celé číslo (výchozí {@see self::CRON_JOB_DEFAULT_ORDER});
+     * `states` lifecycle stavy zdroje dat, ve kterých úloha běží (výchozí
+     * jen `active` — fail-closed). Neznámý klíč je chyba, překlep by jinak
+     * tiše zmizel.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array{command: string, slot: string, order: int, states: list<string>}>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseCronJobs(array $data): array
+    {
+        if (!array_key_exists('cronJobs', $data)) {
+            return [];
+        }
+        if (!is_array($data['cronJobs']) || !array_is_list($data['cronJobs'])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': cronJobs must be a JSON array");
+        }
+
+        $jobs = [];
+        foreach ($data['cronJobs'] as $idx => $raw) {
+            $where = "Module '{$data['id']}': cronJobs[{$idx}]";
+            if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+                throw new \InvalidArgumentException("{$where} must be an object");
+            }
+            $unknown = array_diff(array_keys($raw), ['command', 'slot', 'order', 'states']);
+            if ($unknown !== []) {
+                throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $command = $raw['command'] ?? null;
+            if (!is_string($command) || trim($command) === '') {
+                throw new \InvalidArgumentException("{$where}.command must be a non-empty string");
+            }
+
+            $slot = $raw['slot'] ?? null;
+            if (!is_string($slot) || !in_array($slot, CronProvisioner::SLOTS, true)) {
+                throw new \InvalidArgumentException(
+                    "{$where}.slot is missing or unknown (expected one of: " . implode(', ', CronProvisioner::SLOTS) . ')',
+                );
+            }
+
+            $order = $raw['order'] ?? self::CRON_JOB_DEFAULT_ORDER;
+            if (!is_int($order)) {
+                throw new \InvalidArgumentException("{$where}.order must be an integer");
+            }
+
+            $states = $raw['states'] ?? [DataSourceState::ACTIVE];
+            if (!is_array($states) || !array_is_list($states) || $states === []) {
+                throw new \InvalidArgumentException("{$where}.states must be a non-empty JSON array of data source states");
+            }
+            foreach ($states as $state) {
+                if (!is_string($state) || !in_array($state, DataSourceState::STATES, true)) {
+                    throw new \InvalidArgumentException(
+                        "{$where}.states has an unknown state (expected: " . implode(', ', DataSourceState::STATES) . ')',
+                    );
+                }
+            }
+
+            $jobs[] = [
+                'command' => trim($command),
+                'slot' => $slot,
+                'order' => $order,
+                'states' => array_values(array_unique($states)),
+            ];
+        }
+        return $jobs;
     }
 
     /**
