@@ -96,6 +96,26 @@ class PlaceTreeTest extends TestCase
         $this->assertSame([3, 2, 1], array_column($tree->children(null), 'id'));
     }
 
+    public function testCompareNodesIsTheSiblingOrderAndTakesRawRows(): void
+    {
+        // Raw řádek z databáze nese čísla jako text — viewer jím řadí strom.
+        $row = static fn (int $id, string $order, ?string $code, string $name): array => [
+            'id' => (string) $id, 'order_pos' => $order, 'code' => $code, 'name' => $name,
+        ];
+
+        $this->assertLessThan(0, PlaceTree::compareNodes($row(1, '2', 'Z', 'z'), $row(2, '10', 'A', 'a')), 'pořadí číselně');
+        $this->assertLessThan(0, PlaceTree::compareNodes($row(1, '5', '9', 'z'), $row(2, '5', '10', 'a')), 'pak kód');
+        $this->assertLessThan(0, PlaceTree::compareNodes($row(1, '5', null, 'Čekárna'), $row(2, '5', null, 'Dílna')), 'pak název česky');
+        $this->assertLessThan(0, PlaceTree::compareNodes($row(3, '5', 'A', 'x'), $row(12, '5', 'A', 'x')), 'nakonec id');
+        $this->assertSame(0, PlaceTree::compareNodes($row(3, '5', 'A', 'x'), $row(3, '5', 'A', 'x')));
+
+        // Stejné pravidlo jako children().
+        $ids = array_column(self::ROWS, null, 'id');
+        $children = [$ids[4], $ids[5], $ids[6]];
+        usort($children, PlaceTree::compareNodes(...));
+        $this->assertSame(array_column($this->tree()->children(3), 'id'), array_column($children, 'id'));
+    }
+
     public function testSubtreeContainsThePlaceAndAllDescendants(): void
     {
         $tree = $this->tree();

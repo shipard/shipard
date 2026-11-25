@@ -32,6 +32,21 @@ class PlacesViewersTest extends TestCase
         '70' => ['stateName' => 'V archívu', 'stateStyle' => 'archive', 'mainState' => 4, 'viewGroup' => 'archive', 'goto' => []],
     ];
 
+    /**
+     * Živé druhy v pořadí podle názvu (tak je vrací dotaz): seed má
+     * `system_code` = typ, vlastní druhy ho nemají.
+     */
+    private const KINDS = [
+        ['id' => 11, 'type' => 'site', 'system_code' => 'site'],
+        ['id' => 12, 'type' => 'building', 'system_code' => 'building'],
+        ['id' => 21, 'type' => 'room', 'system_code' => null],      // Kancelář
+        ['id' => 15, 'type' => 'room', 'system_code' => 'room'],    // Místnost
+        ['id' => 14, 'type' => 'floor', 'system_code' => 'floor'],
+        ['id' => 22, 'type' => 'spot', 'system_code' => null],      // Pracovní místo
+        ['id' => 23, 'type' => 'spot', 'system_code' => null],      // Stání
+        ['id' => 18, 'type' => 'other', 'system_code' => 'other'],
+    ];
+
     private const MODULES = __DIR__ . '/../../../../../modules';
     private const MODULE = self::MODULES . '/base/places';
 
@@ -100,6 +115,17 @@ class PlacesViewersTest extends TestCase
             /** @var list<array<string, mixed>> */
             public array $treeRows = [];
 
+            /** @var list<array<string, mixed>> živé druhy podle názvu */
+            public array $kinds = [];
+
+            public int $kindLoads = 0;
+
+            protected function loadLiveKinds(): array
+            {
+                $this->kindLoads++;
+                return $this->kinds;
+            }
+
             protected function tree(): PlaceTree
             {
                 $rows = $this->treeRows;
@@ -118,6 +144,7 @@ class PlacesViewersTest extends TestCase
             }
         };
         $viewer->treeRows = self::treeRows();
+        $viewer->kinds = self::KINDS;
         $viewer->setConfig($this->config());
         $dsConfig = $this->createMock(DataSourceConfig::class);
         $dsConfig->method('getCountry')->willReturn('cz');
@@ -162,6 +189,216 @@ class PlacesViewersTest extends TestCase
 
         $archived = $viewer->renderRow(['id' => 4, 'name' => 'Sklep', 'code' => '0', 'docState' => 70, 'kind_name' => 'Podlaží', 'kind_type' => 'floor', 'kind_icon' => null]);
         $this->assertSame([['text' => 'Areál › A · Podlaží'], ['text' => 'V archívu', 'class' => 'muted']], $archived['t2']);
+    }
+
+    // --- strom míst (docs/viewer-tree.md) ---
+
+    /** @return array<string, mixed> raw řádek stromu */
+    private static function raw(int $id, ?int $parent, string $name, string $type, int $state = 40, ?string $code = null, int $order = 0): array
+    {
+        return [
+            'id' => $id, 'parent' => $parent, 'name' => $name, 'short_name' => null, 'code' => $code, 'order_pos' => $order,
+            'kind' => 1, 'docState' => $state, 'kind_name' => ucfirst($type), 'kind_type' => $type, 'kind_icon' => null,
+        ];
+    }
+
+    public function testTreeIsTheDefaultLayoutWithNameCodeAndKindColumns(): void
+    {
+        $viewer = $this->placesViewer();
+        $options = $viewer->getTreeOptions();
+
+        $this->assertSame('tree', $viewer->getDefaultLayout());
+        $this->assertSame('parent', $options['parentColumn']);
+        $this->assertSame(['name', 'code', 'kind'], array_column($options['columns'], 'id'));
+        $this->assertSame(['Name', 'Code', 'Kind'], array_column($options['columns'], 'label'));
+        $this->assertTrue($options['columns'][0]['grow'], 'stromový sloupec bere zbylou šířku');
+    }
+
+    public function testTreeSelectSharesTheListFilterWithoutPagingOrSorting(): void
+    {
+        $viewer = $this->placesViewer($captured);
+
+        $viewer->selectTreeRows('101', [['id' => 'viewGroup', 'value' => 'archive']]);
+
+        $sql = $captured[0];
+        foreach (['p.`name`', 'p.`short_name`', 'p.`code`'] as $column) {
+            $this->assertStringContainsString($column . ' LIKE', $sql);
+        }
+        $this->assertStringContainsString('p.`docState` IN (%i)', $sql);
+        foreach (['p.`parent`', 'p.`order_pos`', 'p.`kind`', 'k.`type` AS `kind_type`'] as $column) {
+            $this->assertStringContainsString($column, $sql);
+        }
+        $this->assertStringNotContainsString('ORDER BY', $sql, 'sourozence řadí komparátor, ne dotaz');
+        $this->assertStringEndsWith(' LIMIT ' . (TableViewer::TREE_MAX_NODES + 1), $sql, 'řádek nad strop = detekce D25');
+        $this->assertSame([70, '101', '101', '101'], array_slice($captured, 1));
+    }
+
+    public function testTreeAncestorsAreSelectedByIdRegardlessOfFilters(): void
+    {
+        $viewer = $this->placesViewer($captured);
+
+        $viewer->selectTreeRowsByIds([20, '10', 20]);
+
+        $this->assertStringEndsWith(' WHERE p.`id` IN %in', $captured[0]);
+        $this->assertStringNotContainsString('docState` IN', $captured[0], 'předek je kontext v jakémkoli stavu');
+        $this->assertSame([[20, 10]], array_slice($captured, 1));
+
+        $captured = null;
+        $this->assertSame([], $viewer->selectTreeRowsByIds([]));
+        $this->assertNull($captured, 'bez id žádný dotaz');
+    }
+
+    public function testTreeSiblingsUseTheOrderOfPlaceTree(): void
+    {
+        $viewer = $this->placesViewer();
+        $rows = [
+            self::raw(1, null, 'Sklad', 'room', code: '10', order: 5),
+            self::raw(2, null, 'Archiv', 'room', code: '9', order: 5),
+            self::raw(3, null, 'Dílna', 'room', order: 1),
+        ];
+        usort($rows, $viewer->compareTreeRows(...));
+
+        $this->assertSame([3, 2, 1], array_column($rows, 'id'));
+    }
+
+    public function testTreeRowHasCellsStateTagKindIconAndAddChildAction(): void
+    {
+        $viewer = $this->placesViewer();
+
+        $row = $viewer->renderTreeRow(self::raw(3, 2, '1. NP', 'floor', code: '1'));
+        $this->assertSame(3, $row['id']);
+        $this->assertSame(
+            ['name' => [['text' => '1. NP']], 'code' => '1', 'kind' => 'Floor'],
+            $row['cells'],
+        );
+        $this->assertSame('place-floor', $row['icon']);
+        $this->assertSame('done', $row['stateStyle']);
+        $this->assertSame('addChild', $row['rowAction']['id']);
+        $this->assertSame('Add child place', $row['rowAction']['label']);
+        $this->assertSame('add', $row['rowAction']['icon']);
+        $this->assertSame('open_form', $row['rowAction']['kind']);
+        $this->assertSame('base_places_places', $row['rowAction']['target']['table']);
+        $this->assertSame(3, $row['rowAction']['target']['preset']['parent']);
+
+        // Archivované místo: štítek stavu u názvu, prázdný kód, žádné „+“.
+        $archived = $viewer->renderTreeRow(self::raw(4, 2, 'Sklep', 'floor', 70));
+        $this->assertSame([['text' => 'Sklep'], ['text' => 'V archívu', 'class' => 'muted']], $archived['cells']['name']);
+        $this->assertNull($archived['cells']['code']);
+        $this->assertSame('archive', $archived['stateStyle']);
+        $this->assertArrayNotHasKey('rowAction', $archived);
+    }
+
+    // --- Přidat podřízené: navržený druh (D23) ---
+
+    /**
+     * Předvyplnění akce Přidat podřízené pro místo `$id` typu `$type`.
+     *
+     * @param list<array<string, mixed>> $treeRows
+     * @param list<array<string, mixed>>|null $kinds
+     * @return array<string, mixed>|null
+     */
+    private function presetOf(int $id, string $type, array $treeRows, ?array $kinds = null): ?array
+    {
+        $viewer = $this->placesViewer();
+        $viewer->treeRows = $treeRows;
+        if ($kinds !== null) {
+            $viewer->kinds = $kinds;
+        }
+        return $viewer->renderTreeRow(self::raw($id, null, 'x', $type))['rowAction']['target']['preset'] ?? null;
+    }
+
+    /** @return array<string, mixed> uzel stromu s druhem */
+    private static function node(int $id, ?int $parent, int $kind, int $order, int $state = 40): array
+    {
+        return [
+            'id' => $id, 'parent' => $parent, 'name' => 'n' . $id, 'short_name' => null, 'code' => null,
+            'order_pos' => $order, 'docState' => $state, 'kind' => $kind, 'kind_name' => 'k', 'kind_type' => 'room', 'kind_icon' => null,
+        ];
+    }
+
+    public function testChildPresetTakesTheKindOfTheLastChild(): void
+    {
+        // Podlaží 3 má kanceláře; poslední podle pořadí (ne podle id) je druh 21.
+        $tree = [self::node(3, null, 14, 1), self::node(31, 3, 21, 9), self::node(32, 3, 15, 2)];
+
+        $this->assertSame(['parent' => 3, 'kind' => 21], $this->presetOf(3, 'floor', $tree));
+    }
+
+    public function testChildPresetCountsArchivedChildButNeedsALiveKind(): void
+    {
+        // Poslední podřízené je v archivu — pořád platí (mimo koš je).
+        $tree = [self::node(3, null, 14, 1), self::node(31, 3, 21, 1), self::node(32, 3, 15, 2, 70)];
+        $this->assertSame(['parent' => 3, 'kind' => 15], $this->presetOf(3, 'floor', $tree));
+
+        // Druh posledního podřízeného už živý není → výchozí podřízený typ.
+        $tree = [self::node(3, null, 14, 1), self::node(31, 3, 99, 1)];
+        $this->assertSame(['parent' => 3, 'kind' => 15], $this->presetOf(3, 'floor', $tree));
+    }
+
+    public function testChildPresetWithoutChildrenUsesTheSeedKindOfTheDefaultChildType(): void
+    {
+        // Podlaží → místnost: seedový druh (15), i když je Kancelář (21) dřív podle názvu.
+        $this->assertSame(['parent' => 3, 'kind' => 15], $this->presetOf(3, 'floor', [self::node(3, null, 14, 1)]));
+        // Areál → budova.
+        $this->assertSame(['parent' => 1, 'kind' => 12], $this->presetOf(1, 'site', [self::node(1, null, 11, 1)]));
+    }
+
+    public function testChildPresetWithoutSeedKindUsesTheFirstLiveKindOfTheType(): void
+    {
+        // Místnost → místo: seed typu Místo je vyřazený, zbývají dva vlastní druhy.
+        $this->assertSame(['parent' => 5, 'kind' => 22], $this->presetOf(5, 'room', [self::node(5, null, 15, 1)]));
+    }
+
+    public function testChildPresetWithoutSuitableKindFillsOnlyTheParent(): void
+    {
+        $kinds = [['id' => 15, 'type' => 'room', 'system_code' => 'room']];
+
+        $this->assertSame(['parent' => 5], $this->presetOf(5, 'room', [self::node(5, null, 15, 1)], $kinds));
+    }
+
+    public function testSpotHasNoAddChildActionAndOtherAsParentHas(): void
+    {
+        $viewer = $this->placesViewer();
+        $viewer->treeRows = [self::node(7, null, 22, 1), self::node(8, null, 18, 1)];
+
+        $this->assertArrayNotHasKey('rowAction', $viewer->renderTreeRow(self::raw(7, null, 'Stání 1', 'spot')));
+
+        // Ostatní pravidlo úrovní nemá: akce je, druh se nenavrhuje.
+        $other = $viewer->renderTreeRow(self::raw(8, null, 'Sklad', 'other'));
+        $this->assertSame(['parent' => 8], $other['rowAction']['target']['preset']);
+    }
+
+    public function testKindsAreLoadedOncePerRequest(): void
+    {
+        $viewer = $this->placesViewer();
+        foreach ([1, 2, 3] as $id) {
+            $viewer->renderTreeRow(self::raw($id, null, 'x', 'floor'));
+        }
+
+        $this->assertSame(1, $viewer->kindLoads);
+    }
+
+    public function testDetailOffersTheSameAddChildAction(): void
+    {
+        $record = [
+            'id' => 3, 'name' => '1. NP', 'short_name' => null, 'code' => '1', 'order_pos' => 2, 'note' => null,
+            'kind' => 4, 'parent' => 2, 'docState' => 40, 'kind_name' => 'Podlaží', 'kind_type' => 'floor', 'kind_icon' => null,
+        ];
+        $viewer = $this->placesViewer(record: $record);
+        $detail = $viewer->renderDetail(3);
+
+        $this->assertSame(['addChild'], array_column($detail['actions'], 'id'));
+        $this->assertSame(
+            $viewer->renderTreeRow(self::raw(3, 2, '1. NP', 'floor'))['rowAction'],
+            $detail['actions'][0],
+            'řádek stromu a detail nesou tutéž akci',
+        );
+
+        // Místo nejnižší úrovně a archivované místo akci nemají — klíč chybí.
+        $spot = $this->placesViewer(record: ['kind_type' => 'spot'] + $record)->renderDetail(3);
+        $this->assertArrayNotHasKey('actions', $spot);
+        $archived = $this->placesViewer(record: ['docState' => 70] + $record)->renderDetail(3);
+        $this->assertArrayNotHasKey('actions', $archived);
     }
 
     // --- detail místa ---

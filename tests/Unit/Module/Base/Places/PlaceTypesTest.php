@@ -107,6 +107,53 @@ class PlaceTypesTest extends TestCase
         $this->assertSame($expected, $this->types()->canBeParent($parent, $child), "{$parent} > {$child}");
     }
 
+    public function testOnlyTheLowestLevelCannotHaveChildren(): void
+    {
+        $types = $this->types();
+
+        $withoutChildren = array_values(array_filter(
+            array_keys($types->all()),
+            static fn (string $key): bool => !$types->canHaveChildren($key),
+        ));
+        // Místo (úroveň 60) je nejníž; Ostatní úroveň nemá a nadřazené být smí.
+        $this->assertSame(['spot'], $withoutChildren);
+        $this->assertTrue($types->canHaveChildren('nope'), 'neznámý typ nemá úroveň');
+    }
+
+    public function testDefaultChildTypeFollowsTheHierarchy(): void
+    {
+        $types = $this->types();
+
+        $this->assertSame(
+            ['site' => 'building', 'building' => 'floor', 'section' => 'floor', 'floor' => 'room', 'room' => 'spot', 'outdoor' => 'spot', 'spot' => null, 'other' => null],
+            array_map(static fn (string $key): ?string => $types->defaultChildType($key), array_combine(array_keys($types->all()), array_keys($types->all()))),
+        );
+        $this->assertNull($types->defaultChildType('nope'));
+
+        // Výchozí podřízený typ musí pod svůj typ smět (D3).
+        foreach (array_keys($types->all()) as $key) {
+            $child = $types->defaultChildType($key);
+            if ($child !== null) {
+                $this->assertTrue($types->canBeParent($key, $child), "{$key} > {$child}");
+            }
+        }
+    }
+
+    public function testDefaultChildTypeOutsideTheConfigIsIgnored(): void
+    {
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturn([
+            'a' => ['name' => 'A', 'level' => 10, 'defaultChildType' => 'ghost'],
+            'b' => ['name' => 'B', 'level' => 20, 'defaultChildType' => ''],
+        ]);
+        $types = new PlaceTypes($config);
+
+        $this->assertNull($types->defaultChildType('a'));
+        $this->assertNull($types->defaultChildType('b'));
+        $this->assertTrue($types->canHaveChildren('a'));
+        $this->assertFalse($types->canHaveChildren('b'));
+    }
+
     public function testWithoutConfigNothingIsUnknownAndLevelsDoNotApply(): void
     {
         $types = new PlaceTypes(null);
@@ -117,6 +164,8 @@ class PlaceTypesTest extends TestCase
         $this->assertNull($types->icon('room'));
         $this->assertFalse($types->hasAddress('building'));
         $this->assertTrue($types->canBeParent('room', 'building'));
+        $this->assertTrue($types->canHaveChildren('spot'));
+        $this->assertNull($types->defaultChildType('site'));
         $this->assertSame([], $types->options());
     }
 }

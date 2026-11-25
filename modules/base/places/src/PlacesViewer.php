@@ -9,11 +9,17 @@ use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Module\Base\Persons\Values\AddressFormat;
 
 /**
- * Viewer míst (Nastavení → Místa, #169 D11, D16).
+ * Viewer míst (Nastavení → Místa, #169 D8–D12, D20–D25).
  *
- * Seznam je dočasně plochý (strom přinese task B): název, kód a ve druhém
- * řádku cesta · druh, ikona podle druhu. Cestu ani pořadí neukládáme —
- * počítá je {@see PlaceTree} jednou za požadavek.
+ * Výchozí layout je **strom** (docs/viewer-tree.md): sloupce Název, Kód
+ * a Druh, sourozenci v pořadí {@see PlaceTree::compareNodes()}, předci
+ * mimo filtr jako kontext. Řádek i detail nesou akci **Přidat podřízené**
+ * — formulář s předvyplněným nadřazeným místem a navrženým druhem
+ * ({@see childPreset()}, D23).
+ *
+ * Druhý layout je plochý seznam (D24): název, kód a ve druhém řádku cesta
+ * · druh, ikona podle druhu. Cestu ani pořadí neukládáme — počítá je
+ * {@see PlaceTree} jednou za požadavek.
  *
  * Detail: titulek název, podtitul cesta · druh. Přehled hlavičku neopakuje
  * (#140 D26) — druh ani cesta ve vlastnostech nejsou; nese kód, zkrácený
@@ -24,16 +30,231 @@ class PlacesViewer extends PlacesViewerBase
 {
     private const VIEWER_ID = 'base.places.places';
     private const STATE_ARCHIVED = 70;
+    private const ACTION_ADD_CHILD = 'addChild';
 
     private ?PlaceTree $tree = null;
 
+    /** @var list<array<string, mixed>>|null živé druhy, jednou za požadavek */
+    private ?array $liveKinds = null;
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
-        $sql = 'SELECT p.`id`, p.`name`, p.`short_name`, p.`code`, p.`docState`, p.`docStateMain`,'
+        [$where, $params] = $this->filterWhere($search, $filters);
+        $sql = $this->baseSelect() . $where . ' ORDER BY p.`docStateMain` ASC, p.`name` ASC, p.`id` ASC';
+
+        [$offset, $limit] = $this->buildPaginationLimit($pageNumber);
+        $sql .= ' LIMIT ' . $offset . ', ' . $limit;
+
+        return $this->db->fetchAll($sql, ...$params);
+    }
+
+    // --- strom (docs/viewer-tree.md) ---
+
+    public function getDefaultLayout(): string
+    {
+        return 'tree';
+    }
+
+    public function getTreeOptions(): ?array
+    {
+        return [
+            'parentColumn' => 'parent',
+            'columns'      => [
+                ['id' => 'name', 'label' => $this->columnLabel('name', 'Name'), 'grow' => true],
+                ['id' => 'code', 'label' => $this->columnLabel('code', 'Code'), 'width' => 128],
+                ['id' => 'kind', 'label' => $this->columnLabel('kind', 'Kind'), 'width' => 224],
+            ],
+        ];
+    }
+
+    /**
+     * Vybraná místa stromu: stejný filtr stavů a hledání jako seznam, bez
+     * stránkování a bez řazení — sourozence řadí compareTreeRows(). Řádek
+     * nad strop je detekce „příliš mnoho“ (D25).
+     */
+    public function selectTreeRows(?string $search, array $filters): array
+    {
+        [$where, $params] = $this->filterWhere($search, $filters);
+        $maxNodes = (int) ($this->getTreeOptions()['maxNodes'] ?? self::TREE_MAX_NODES);
+
+        return $this->db->fetchAll($this->baseSelect() . $where . ' LIMIT ' . ($maxNodes + 1), ...$params);
+    }
+
+    /** Předci jako kontext (D21) — v jakémkoli stavu, filtr se na ně nevztahuje. */
+    public function selectTreeRowsByIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        if ($ids === []) {
+            return [];
+        }
+        return $this->db->fetchAll($this->baseSelect() . ' WHERE p.`id` IN %in', $ids);
+    }
+
+    public function compareTreeRows(array $a, array $b): int
+    {
+        return PlaceTree::compareNodes($a, $b);
+    }
+
+    public function renderTreeRow(array $rowData): array
+    {
+        $id = (int) $rowData['id'];
+        $docState = (int) ($rowData['docState'] ?? 10);
+        $type = (string) ($rowData['kind_type'] ?? '');
+
+        $name = [['text' => (string) ($rowData['name'] ?? '')]];
+        $badge = $this->rowStateTag($docState);
+        if ($badge !== null) {
+            $name[] = $badge;
+        }
+
+        $row = [
+            'id'    => $id,
+            'cells' => [
+                'name' => $name,
+                'code' => !empty($rowData['code']) ? (string) $rowData['code'] : null,
+                'kind' => !empty($rowData['kind_name']) ? (string) $rowData['kind_name'] : null,
+            ],
+            'stateStyle' => $this->stateStyleOf($docState),
+        ];
+
+        $icon = $this->kindIcon($rowData['kind_icon'] ?? null, $type);
+        if ($icon !== null) {
+            $row['icon'] = $icon;
+        }
+        $action = $this->addChildAction($id, $type, $docState);
+        if ($action !== null) {
+            $row['rowAction'] = $action;
+        }
+
+        return $row;
+    }
+
+    /**
+     * Akce Přidat podřízené (D10) pro řádek stromu i detail; null, když pod
+     * místo nic nesmí (typ nejnižší úrovně) nebo místo není v živém stavu
+     * — pod archivované ani smazané místo se nové založit nedá.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function addChildAction(int $id, string $type, int $docState): ?array
+    {
+        if (!in_array($docState, PlaceDocument::LIVE_STATES, true)) {
+            return null;
+        }
+        $preset = $this->childPreset($id, $type);
+        if ($preset === null) {
+            return null;
+        }
+        return [
+            'id'      => self::ACTION_ADD_CHILD,
+            'label'   => $this->text('action.addChild', 'Add child place'),
+            'icon'    => 'add',
+            'variant' => 'secondary',
+            'kind'    => 'open_form',
+            'target'  => ['table' => $this->table, 'preset' => $preset],
+        ];
+    }
+
+    /**
+     * Předvyplnění formuláře podřízeného místa (D23): nadřazené místo
+     * a navržený druh. Null = pod místo tohoto typu nic nesmí.
+     *
+     * Druh: druh posledního podřízeného místa mimo koš (další kancelář na
+     * patře je nejspíš zase kancelář), pokud je živý. Jinak výchozí
+     * podřízený typ místa a z něj seedový druh, bez něj první živý druh
+     * typu podle názvu. Bez vhodného druhu se předvyplní jen nadřazené
+     * místo.
+     *
+     * @return array{parent: int, kind?: int}|null
+     */
+    protected function childPreset(int $id, string $type): ?array
+    {
+        if (!$this->types()->canHaveChildren($type)) {
+            return null;
+        }
+
+        $preset = ['parent' => $id];
+        $kind = $this->siblingKind($id) ?? $this->defaultChildKind($type);
+        if ($kind !== null) {
+            $preset['kind'] = $kind;
+        }
+        return $preset;
+    }
+
+    /** Druh posledního podřízeného místa (podle pořadí stromu), když je živý. */
+    private function siblingKind(int $id): ?int
+    {
+        $children = $this->tree()->children($id);
+        if ($children === []) {
+            return null;
+        }
+        $kindId = (int) ($children[count($children) - 1]['kind'] ?? 0);
+        foreach ($this->liveKinds() as $kind) {
+            if ((int) $kind['id'] === $kindId) {
+                return $kindId;
+            }
+        }
+        return null;
+    }
+
+    /** Seedový druh výchozího podřízeného typu, bez něj první živý druh typu podle názvu. */
+    private function defaultChildKind(string $type): ?int
+    {
+        $childType = $this->types()->defaultChildType($type);
+        if ($childType === null) {
+            return null;
+        }
+        $first = null;
+        foreach ($this->liveKinds() as $kind) {
+            if ((string) ($kind['type'] ?? '') !== $childType) {
+                continue;
+            }
+            if ((string) ($kind['system_code'] ?? '') === $childType) {
+                return (int) $kind['id'];
+            }
+            $first ??= (int) $kind['id'];
+        }
+        return $first;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function liveKinds(): array
+    {
+        return $this->liveKinds ??= $this->loadLiveKinds();
+    }
+
+    /**
+     * Živé druhy míst podle názvu — jedním dotazem (přepsatelné v testech).
+     *
+     * @return list<array<string, mixed>> `{id, type, system_code}`
+     */
+    protected function loadLiveKinds(): array
+    {
+        return $this->db->fetchAll(
+            'SELECT `id`, `type`, `system_code` FROM `' . PlaceKindDocument::TABLE . '`'
+            . ' WHERE `docState` IN %in ORDER BY `name` ASC, `id` ASC',
+            PlaceKindDocument::LIVE_STATES,
+        );
+    }
+
+    /** Společný SELECT seznamu i stromu: místo s názvem, typem a ikonou druhu. */
+    private function baseSelect(): string
+    {
+        return 'SELECT p.`id`, p.`parent`, p.`name`, p.`short_name`, p.`code`, p.`order_pos`, p.`kind`,'
+            . ' p.`docState`, p.`docStateMain`,'
             . ' k.`name` AS `kind_name`, k.`type` AS `kind_type`, k.`icon` AS `kind_icon`'
             . ' FROM `' . $this->table . '` p'
             . ' LEFT JOIN `' . PlaceKindDocument::TABLE . '` k ON k.`id` = p.`kind`';
+    }
 
+    /**
+     * Filtr stavů a hledání v názvu, zkráceném názvu a kódu.
+     *
+     * @param list<array{id: string, value: mixed}> $filters
+     * @return array{0: string, 1: list<mixed>} [' WHERE …' nebo '', params]
+     */
+    private function filterWhere(?string $search, array $filters): array
+    {
         [$conditions, $params] = $this->viewGroupCondition($filters, 'p');
 
         if ($search !== null && $search !== '') {
@@ -42,15 +263,7 @@ class PlacesViewer extends PlacesViewerBase
             $params = array_merge($params, $searchParams);
         }
 
-        if ($conditions !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $conditions);
-        }
-        $sql .= ' ORDER BY p.`docStateMain` ASC, p.`name` ASC, p.`id` ASC';
-
-        [$offset, $limit] = $this->buildPaginationLimit($pageNumber);
-        $sql .= ' LIMIT ' . $offset . ', ' . $limit;
-
-        return $this->db->fetchAll($sql, ...$params);
+        return [$conditions !== [] ? ' WHERE ' . implode(' AND ', $conditions) : '', $params];
     }
 
     public function renderRow(array $rowData): array
@@ -141,6 +354,19 @@ class PlacesViewer extends PlacesViewerBase
         }
 
         return [$overview];
+    }
+
+    /**
+     * Akce detailu: Přidat podřízené — tatáž akce jako „+“ na řádku stromu.
+     */
+    protected function detailActions(array $record): array
+    {
+        $action = $this->addChildAction(
+            (int) ($record['id'] ?? 0),
+            (string) ($record['kind_type'] ?? ''),
+            (int) ($record['docState'] ?? 0),
+        );
+        return $action !== null ? [$action] : [];
     }
 
     /**

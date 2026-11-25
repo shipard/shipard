@@ -9,7 +9,7 @@ use Shipard\Core\Config\ConfigRuntime;
 /**
  * Jediné čtení cfgItem `base.places.types` (#169 D2, D3; docs/places.md).
  * Kód se nikdy neptá na klíč typu (`=== 'room'`), jen na vlastnosti odsud:
- * úroveň v hierarchii, ikona, příznak adresy.
+ * úroveň v hierarchii, ikona, příznak adresy, výchozí podřízený typ.
  *
  * Bez zkompilované konfigurace (testy, CLI bez configu) vrací lenivé
  * defaulty: typ nemá úroveň ani adresu a nic není neznámé — pravidlo úrovní
@@ -92,6 +92,36 @@ final class PlaceTypes
             return true;
         }
         return $parentLevel < $childLevel;
+    }
+
+    /**
+     * Může mít místo tohoto typu podřízená místa podle úrovní (#169 D23)?
+     * Ne, když žádný typ nemá úroveň vyšší — tedy u nejnižší úrovně. Typ bez
+     * úrovně pravidlo nemá a nadřazený být smí.
+     */
+    public function canHaveChildren(string $key): bool
+    {
+        $level = $this->level($key);
+        if ($level === null) {
+            return true;
+        }
+        foreach (array_keys($this->all()) as $other) {
+            $otherLevel = $this->level((string) $other);
+            if ($otherLevel !== null && $otherLevel > $level) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Typ, který se navrhne pro první podřízené místo (#169 D23); null =
+     * typ žádný výchozí nemá nebo ukazuje na typ, který v konfiguraci není.
+     */
+    public function defaultChildType(string $key): ?string
+    {
+        $child = $this->all()[$key]['defaultChildType'] ?? null;
+        return is_string($child) && $child !== '' && isset($this->all()[$child]) ? $child : null;
     }
 
     /** @return list<array{value: string, label: string}> nabídka pro select */

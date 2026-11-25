@@ -28,9 +28,10 @@
 
     "viewers": [
         {
-            // Dočasně list layout s cestou ve druhém řádku; strom a detail
-            // v draweru přinese task B (#169 D8–D12). Hlavičku detailu
-            // (název, cesta · druh, ikona podle druhu) skládá PlacesViewer.
+            // Výchozí layout je strom (#169 D8–D12, docs/viewer-tree.md),
+            // seznam s cestou ve druhém řádku zůstává přes přepínač (D24).
+            // Hlavičku detailu (název, cesta · druh, ikona podle druhu)
+            // skládá PlacesViewer.
             "id": "base.places.places",
             "name": "Places",
             "name:cs": "Místa",

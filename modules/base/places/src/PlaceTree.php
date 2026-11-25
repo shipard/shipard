@@ -150,6 +150,23 @@ class PlaceTree
     }
 
     /**
+     * Pořadí sourozenců ve stromu (D4): pořadí → kód → název → id. Jediné
+     * místo pravidla — řadí jím `children()` i strom ve vieweru, jinak by
+     * se strom a tabulka Podřízená místa v detailu rozešly. Bere uzel
+     * i raw řádek z databáze (čísla jako text).
+     *
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     */
+    public static function compareNodes(array $a, array $b): int
+    {
+        return (int) ($a['order_pos'] ?? 0) <=> (int) ($b['order_pos'] ?? 0)
+            ?: self::compareText((string) ($a['code'] ?? ''), (string) ($b['code'] ?? ''))
+            ?: self::compareText((string) ($a['name'] ?? ''), (string) ($b['name'] ?? ''))
+            ?: (int) ($a['id'] ?? 0) <=> (int) ($b['id'] ?? 0);
+    }
+
+    /**
      * Porovnání textů pro řazení stromu: česky a s čísly podle hodnoty
      * („2“ před „10“).
      */
@@ -221,12 +238,7 @@ class PlaceTree
             $groups[$parent][] = $id;
         }
         foreach ($groups as &$ids) {
-            usort($ids, static function (int $a, int $b) use ($nodes): int {
-                return $nodes[$a]['order_pos'] <=> $nodes[$b]['order_pos']
-                    ?: self::compareText((string) ($nodes[$a]['code'] ?? ''), (string) ($nodes[$b]['code'] ?? ''))
-                    ?: self::compareText((string) ($nodes[$a]['name'] ?? ''), (string) ($nodes[$b]['name'] ?? ''))
-                    ?: $a <=> $b;
-            });
+            usort($ids, static fn (int $a, int $b): int => self::compareNodes($nodes[$a], $nodes[$b]));
         }
         unset($ids);
         return $this->childIds = $groups;

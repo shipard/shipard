@@ -18,6 +18,8 @@ abstract class PlacesViewerBase extends TableViewer
 
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
 
+    private ?PlaceTypes $types = null;
+
     /**
      * Popisek z cfgItem `base.places.viewerLabels` — viz `TableViewer::labelText()`.
      *
@@ -28,9 +30,10 @@ abstract class PlacesViewerBase extends TableViewer
         return $this->labelText(self::LABELS_CFG_ITEM, $key, $englishFallback, $params);
     }
 
+    /** Typy míst, jednou za požadavek — strom se na ně ptá u každého řádku. */
     protected function types(): PlaceTypes
     {
-        return new PlaceTypes($this->config);
+        return $this->types ??= new PlaceTypes($this->config);
     }
 
     /** Ikona místa nebo druhu: ikona druhu, bez ní ikona typu (D14); null = ikona vieweru. */
