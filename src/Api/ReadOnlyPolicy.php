@@ -161,6 +161,10 @@ final class ReadOnlyPolicy
 		// zapisují doklady a evidenci období → vše 403 (#110 D24).
 		'workOrders' => [],
 
+		// Akce záznamu z modulů (`recordAction` / `run`, #172 D15) tu záměrně
+		// **není**: akce je mutace a fail-closed ji ve stavu read_only
+		// odmítne 403 — nepřidávat ani pro akce, které „jen čtou“.
+
 		// senderRules, registry, bank, accounting, accbal → vše 403 (default)
 	];
 

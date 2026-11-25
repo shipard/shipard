@@ -69,6 +69,55 @@ class RouterTest extends TestCase
 		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
 	}
 
+	// Akce záznamu s obsluhou v modulu (#172 D12)
+	public function testRecordActionPost(): void
+	{
+		$result = $this->router->resolve(
+			'/api/v1/_ui/record-action/docs_core_heads/42/economy.salesRegistration.uploadCertificate',
+			'POST',
+		);
+
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'recordAction', 'run', 'docs_core_heads', 42);
+		$this->assertSame('economy.salesRegistration.uploadCertificate', $result->key);
+	}
+
+	public function testRecordActionOtherMethodsNotAllowed(): void
+	{
+		foreach (['GET', 'PUT', 'DELETE'] as $method) {
+			$result = $this->router->resolve('/api/v1/_ui/record-action/docs_core_heads/42/docs.core.run', $method);
+			$this->assertInstanceOf(Response::class, $result);
+			$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code'], $method);
+		}
+	}
+
+	#[\PHPUnit\Framework\Attributes\DataProvider('malformedRecordActionPaths')]
+	public function testMalformedRecordActionPathIsNotFound(string $path): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/record-action/' . $path, 'POST');
+
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
+	}
+
+	/** @return array<string, array{string}> */
+	public static function malformedRecordActionPaths(): array
+	{
+		return [
+			'bez akce'                => ['docs_core_heads/42'],
+			'segment navíc'           => ['docs_core_heads/42/docs.core.run/extra'],
+			'id není číslo'           => ['docs_core_heads/abc/docs.core.run'],
+			'nulové id'               => ['docs_core_heads/0/docs.core.run'],
+			'tabulka s tečkou'        => ['docs.core/42/docs.core.run'],
+			'tabulka velkým písmenem' => ['Docs_core_heads/42/docs.core.run'],
+			'akce bez modulu'         => ['docs_core_heads/42/run'],
+			'akce jen se skupinou'    => ['docs_core_heads/42/docs.run'],
+			'akce se čtyřmi segmenty' => ['docs_core_heads/42/docs.core.sub.run'],
+			'akce s pomlčkou'         => ['docs_core_heads/42/docs.core.run-now'],
+			'prázdná akce'            => ['docs_core_heads/42/'],
+		];
+	}
+
 	// Panel „O zdroji dat" (Issue #41)
 	public function testDsAboutGet(): void
 	{

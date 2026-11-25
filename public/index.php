@@ -380,6 +380,7 @@ function dispatch(
 		'assets' => dispatchAssets($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
 		'workOrders' => dispatchWorkOrders($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
 		'docs'    => dispatchDocs($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
+		'recordAction' => dispatchRecordAction($route, $request, $auth, $tables, $db, $viewerRegistry, $configRuntime, $resolved->config, $serverConfig, resolveLanguage($request, $resolved->config)),
 		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
@@ -626,6 +627,35 @@ function dispatchDocs(
 	return match ($route->action) {
 		'corrective' => $ctrl->create($request),
 		default      => Response::error('INTERNAL_ERROR', "Unknown docs action: {$route->action}", 500),
+	};
+}
+
+function dispatchRecordAction(
+	Route $route,
+	Request $request,
+	AuthContext $auth,
+	array $tables,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	ViewerRegistry $viewerRegistry,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+	\Shipard\Core\Config\DataSourceConfig $dsConfig,
+	?ServerConfig $serverConfig,
+	string $language,
+): Response {
+	// Akce záznamu s obsluhou v modulu (#172 D12–D15). Registr rozšíření je
+	// týž, ze kterého detail vieweru akce vypisuje — jen aktivní moduly.
+	$ctrl = new \Shipard\Api\Controller\RecordActionController(
+		$viewerRegistry->uiExtensions(),
+		$db,
+		$tables,
+		$configRuntime,
+		$dsConfig,
+		$serverConfig,
+		$language,
+	);
+	return match ($route->action) {
+		'run'   => $ctrl->run((string) $route->table, (int) $route->id, (string) $route->key, $auth, $request),
+		default => Response::error('INTERNAL_ERROR', "Unknown recordAction action: {$route->action}", 500),
 	};
 }
 

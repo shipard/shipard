@@ -99,6 +99,8 @@ class ReadOnlyPolicyTest extends TestCase
 			['vat', 'filingImport', $d403], ['vat', 'filingImportFinish', $d403],
 			// opravný doklad z detailu faktury (#92 task B U8) — zápis, fail-closed
 			['docs', 'corrective', $d403],
+			// akce záznamu z modulů (#172 D15) — mutace, záměrně mimo tabulku
+			['recordAction', 'run', $d403],
 			// majetek — odpisy za období
 			['assets', 'depreciationRunOptions', $allow], ['assets', 'depreciationRunPreview', $allow], ['assets', 'depreciationRun', $d403],
 			['assets', 'postingPreview', $allow], ['assets', 'posting', $d403], ['assets', 'postingCancel', $d403],

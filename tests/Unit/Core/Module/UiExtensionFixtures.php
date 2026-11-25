@@ -109,16 +109,36 @@ trait UiExtensionFixtures
      */
     private function uiExtensionFailures(): array
     {
+        return $this->uiLogEntries('Module UI extension failed');
+    }
+
+    /**
+     * Kontexty (`ctx`) záznamů logu s danou zprávou, v pořadí zápisu.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function uiLogEntries(string $message): array
+    {
+        $entries = [];
+        foreach ($this->uiLogLines() as $line) {
+            $entry = json_decode($line, true);
+            if (is_array($entry) && ($entry['msg'] ?? null) === $message) {
+                $entries[] = $entry['ctx'] ?? [];
+            }
+        }
+        return $entries;
+    }
+
+    /**
+     * Surové řádky logu — pro kontrolu, že se do něj nedostala hodnota.
+     *
+     * @return list<string>
+     */
+    private function uiLogLines(): array
+    {
         if (!is_file($this->uiLogPath)) {
             return [];
         }
-        $failures = [];
-        foreach (file($this->uiLogPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
-            $entry = json_decode($line, true);
-            if (is_array($entry) && ($entry['msg'] ?? null) === 'Module UI extension failed') {
-                $failures[] = $entry['ctx'] ?? [];
-            }
-        }
-        return $failures;
+        return file($this->uiLogPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
     }
 }

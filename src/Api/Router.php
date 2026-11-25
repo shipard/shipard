@@ -177,6 +177,12 @@ class Router
 			return $this->resolveLookupRoute($subpath, $method);
 		}
 
+		// POST /_ui/record-action/{table}/{recordId}/{globalActionId} — akce
+		// záznamu s obsluhou v modulu (#172 D12).
+		if (str_starts_with($subpath, '/_ui/record-action/')) {
+			return $this->resolveRecordActionRoute($subpath, $method);
+		}
+
 		if (str_starts_with($subpath, '/_attachments')) {
 			return $this->resolveAttachmentRoute($subpath, $method);
 		}
@@ -1424,6 +1430,32 @@ class Router
 		}
 
 		return new Route('lookup', $action, $table);
+	}
+
+	/**
+	 * `/_ui/record-action/{table}/{recordId}/{globalActionId}` — globální id
+	 * akce je `<id modulu>.<id akce>` (`economy.salesRegistration.uploadCertificate`)
+	 * a jde do `Route::$key`. Jen POST: akce je mutace.
+	 */
+	private function resolveRecordActionRoute(string $subpath, string $method): Route|Response
+	{
+		$parts = explode('/', substr($subpath, strlen('/_ui/record-action/')));
+		if (count($parts) !== 3) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		[$table, $rawId, $actionId] = $parts;
+
+		if (preg_match('/^[a-z][a-z0-9_]*$/', $table) !== 1
+			|| !ctype_digit($rawId) || (int) $rawId <= 0
+			|| preg_match('/^[a-z][a-z0-9]*\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/', $actionId) !== 1
+		) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		if ($method !== 'POST') {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+
+		return new Route('recordAction', 'run', $table, (int) $rawId, key: $actionId);
 	}
 
 	private function resolveViewerRoute(string $subpath): Route|Response
