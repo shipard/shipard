@@ -53,6 +53,19 @@ class ConfigCompiler
      */
     public const OVERVIEW_BLOCKS_ITEM = 'core.overview.blocks';
 
+    /**
+     * cfgItem se sekcemi hlavního sidebaru — dodává ho instalační modul
+     * (`config/navSections.jsonc`), kompilace k němu připojí `navSections`
+     * aktivních modulů (#170 D13). Čte ho NavigationController.
+     */
+    public const NAV_SECTIONS_ITEM = 'global.navSections';
+
+    /**
+     * cfgItem se sekcemi Nastavení — instalační modul + `settingsSections`
+     * aktivních modulů (#170 D13). Čte ho SettingsController.
+     */
+    public const SETTINGS_SECTIONS_ITEM = 'global.settingsSections';
+
     /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
     public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
 
@@ -99,8 +112,9 @@ class ConfigCompiler
      *        neznámou tabulku je chyba. Null = volající tabulky nezná
      *        (testy) — dimenze zůstanou bez vzoru a bez kontroly.
      * @throws \RuntimeException když schéma chybí nebo neprojde validací,
-     *         dimenze deníku míří na neznámou tabulku, nebo nejde založit
-     *         výstupní adresář
+     *         dimenze deníku míří na neznámou tabulku, sekce modulu koliduje
+     *         s jinou sekcí nebo nemá cfgItem instalačního modulu, nebo
+     *         nejde založit výstupní adresář
      */
     public static function compile(
         array $modules,
@@ -111,6 +125,7 @@ class ConfigCompiler
         ?array $tableDisplayPatterns = null,
     ): void {
         $rawItems = [];
+        $itemOrigins = [];
         $moduleIds = [];
 
         foreach ($modules as $module) {
@@ -122,8 +137,16 @@ class ConfigCompiler
                 $cfgId = $entry['id'];
                 $filePath = $modulePath . '/' . $entry['file'];
                 $rawItems[$cfgId] = JsoncParser::parseFile($filePath);
+                $itemOrigins[$cfgId] = $module->id;
             }
         }
+
+        // Vlastní sekce modulů (`navSections`, `settingsSections`
+        // v module.jsonc, #170 D13) → připojit k sekcím instalačního modulu.
+        // Před lokalizací: sekce nesou `name:cs` jako položky v souboru.
+        // Pořadí v poli se neřeší — oba controllery řadí podle `order`.
+        self::appendModuleSections($rawItems, $itemOrigins, $modules, self::NAV_SECTIONS_ITEM, 'navSections', 'Navigation section');
+        self::appendModuleSections($rawItems, $itemOrigins, $modules, self::SETTINGS_SECTIONS_ITEM, 'settingsSections', 'Settings section');
 
         // Dimenze deníku (`journalDimensions` v module.jsonc) aktivních
         // modulů → jeden cfgItem. Čte ho JournalDimensionSet::fromConfig —
@@ -329,5 +352,63 @@ class ConfigCompiler
                 json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             );
         }
+    }
+
+    /**
+     * Připojí sekce deklarované moduly do `sections` cfgItemu instalačního
+     * modulu. Bez deklarací v modulech zůstává cfgItem beze změny.
+     *
+     * @param array<string, mixed>  $rawItems
+     * @param array<string, string> $itemOrigins cfgItem => modul, který ho dodal
+     * @param ModuleDefinition[]    $modules
+     * @param 'navSections'|'settingsSections' $field
+     * @throws \RuntimeException shodné `id` sekce ve dvou modulech (nebo se
+     *         sekcí instalačního modulu); sekce bez cfgItemu instalačního modulu
+     */
+    private static function appendModuleSections(
+        array &$rawItems,
+        array $itemOrigins,
+        array $modules,
+        string $cfgId,
+        string $field,
+        string $label,
+    ): void {
+        $declaring = array_values(array_filter(
+            $modules,
+            static fn (ModuleDefinition $module): bool => $module->{$field} !== [],
+        ));
+        if ($declaring === []) {
+            return;
+        }
+
+        $item = $rawItems[$cfgId] ?? null;
+        if (!is_array($item) || !is_array($item['sections'] ?? null)) {
+            throw new \RuntimeException(
+                "Module '{$declaring[0]->id}' declares {$field}, but no active install module provides"
+                . " cfgItem '{$cfgId}' — a data source without an install module is not supported",
+            );
+        }
+
+        $owners = [];
+        foreach ($item['sections'] as $section) {
+            if (is_array($section) && isset($section['id'])) {
+                $owners[(string) $section['id']] = $itemOrigins[$cfgId] ?? '?';
+            }
+        }
+
+        foreach ($declaring as $module) {
+            foreach ($module->{$field} as $section) {
+                $sectionId = (string) $section['id'];
+                if (isset($owners[$sectionId])) {
+                    throw new \RuntimeException(
+                        "{$label} '{$sectionId}' is declared by both '{$owners[$sectionId]}' and '{$module->id}'",
+                    );
+                }
+                $owners[$sectionId] = $module->id;
+                $item['sections'][] = $section;
+            }
+        }
+
+        $rawItems[$cfgId] = $item;
     }
 }

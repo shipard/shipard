@@ -42,6 +42,9 @@
         "docs.cashRegister",
         "tasks.core",
         "core.chat",
+        // Nástroje nápovědy pro vestavěného asistenta — registrují se pro
+        // každý zdroj dat (#170 U3).
+        "core.help",
     ],
 
     "config": [

@@ -188,7 +188,13 @@ final class DocumentProposalTest extends TestCase
         $fromInstruction = $this->savedHeadsData;
         $asProposal = self::proposalOf($this->buildApplier($this->proposalDb()))->apply($payload);
         $this->assertTrue($asProposal->success);
-        $this->assertSame($fromInstruction, $this->savedHeadsData);
+        $fromProposal = $this->savedHeadsData;
+        // Čas změny stavu je okamžik uložení, ne obsah dokladu — dvě uložení
+        // mohou padnout do různých sekund. Obě cesty ho ale vyplnit musí.
+        $this->assertNotEmpty($fromInstruction['doc_state_changed_at']);
+        $this->assertNotEmpty($fromProposal['doc_state_changed_at']);
+        unset($fromInstruction['doc_state_changed_at'], $fromProposal['doc_state_changed_at']);
+        $this->assertSame($fromInstruction, $fromProposal);
     }
 
     /** Záznam k založení: v hotovém dokladu bez `ref`, ve zprávě `pending` s cestou, kam reference patří. */

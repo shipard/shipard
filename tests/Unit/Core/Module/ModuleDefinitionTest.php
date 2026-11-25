@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Core\Module;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Module\ModuleDefinition;
+use Shipard\Core\Module\ModuleKind;
 
 class ModuleDefinitionTest extends TestCase
 {
@@ -1269,5 +1270,179 @@ class ModuleDefinitionTest extends TestCase
             'name'   => 'Issued invoices',
             'prints' => [['path' => 'config/prints.jsonc']],
         ]);
+    }
+
+    // ── kind: druh modulu (#170 D4) ─────────────────────────────────────────
+
+    public function testModuleWithoutKindIsCore(): void
+    {
+        $this->assertSame(ModuleKind::Core, ModuleDefinition::fromArray(['id' => 'economy.docs', 'name' => 'Docs'])->kind);
+    }
+
+    public function testKindAddonMakesAnAddon(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'kind' => 'addon']);
+        $this->assertSame(ModuleKind::Addon, $def->kind);
+    }
+
+    public function testInstallGroupMakesAnInstallModule(): void
+    {
+        $this->assertSame(ModuleKind::Install, ModuleDefinition::fromArray(['id' => 'install.base', 'name' => 'Base'])->kind);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidKinds')]
+    public function testOtherKindValueOrTypeThrows(mixed $kind): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('kind must be "addon"');
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'kind' => $kind]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidKinds(): array
+    {
+        return [
+            'core'    => ['core'],
+            'install' => ['install'],
+            'unknown' => ['plugin'],
+            'case'    => ['Addon'],
+            'bool'    => [true],
+            'null'    => [null],
+            'list'    => [['addon']],
+        ];
+    }
+
+    public function testKindOnInstallModuleThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('an install module must not declare kind');
+        ModuleDefinition::fromArray(['id' => 'install.facility', 'name' => 'Facility', 'kind' => 'addon']);
+    }
+
+    // ── navSections / settingsSections: vlastní sekce modulu (#170 D13) ─────
+
+    public function testSectionsDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility']);
+
+        $this->assertSame([], $def->navSections);
+        $this->assertSame([], $def->settingsSections);
+    }
+
+    public function testValidSectionsPassWithNameVariants(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'facility.core', 'name' => 'Facility', 'kind' => 'addon',
+            'navSections' => [
+                ['id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'name:en' => 'Facility', 'icon' => 'company', 'order' => 37],
+                ['id' => 'facilityMeters', 'name' => 'Meters', 'order' => 38],
+            ],
+            'settingsSections' => [
+                [
+                    'id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'icon' => 'company', 'order' => 16,
+                    'subsections' => [
+                        ['id' => 'facility.meters', 'name' => 'Meters', 'name:cs' => 'Měřiče', 'order' => 10],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame(
+            [
+                ['id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'name:en' => 'Facility', 'icon' => 'company', 'order' => 37],
+                ['id' => 'facilityMeters', 'name' => 'Meters', 'order' => 38],
+            ],
+            $def->navSections,
+        );
+        $this->assertSame(
+            [[
+                'id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'icon' => 'company', 'order' => 16,
+                'subsections' => [
+                    ['id' => 'facility.meters', 'name' => 'Meters', 'name:cs' => 'Měřiče', 'order' => 10],
+                ],
+            ]],
+            $def->settingsSections,
+        );
+    }
+
+    /** @param array<int|string, mixed>|string $sections */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSections')]
+    public function testInvalidNavSectionsThrow(mixed $sections, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'navSections' => $sections]);
+    }
+
+    /** @param array<int|string, mixed>|string $sections */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSections')]
+    public function testInvalidSettingsSectionsThrow(mixed $sections, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(str_replace('navSections', 'settingsSections', $message));
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'settingsSections' => $sections]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidSections(): array
+    {
+        $valid = ['id' => 'facility', 'name' => 'Facility', 'order' => 37];
+
+        return [
+            'není pole'          => ['facility', 'navSections must be a JSON array'],
+            'objekt místo pole'  => [$valid, 'navSections must be a JSON array'],
+            'položka není objekt' => [['facility'], 'navSections[0] must be an object'],
+            'chybí id'           => [[['name' => 'Facility', 'order' => 37]], 'navSections[0].id is missing or invalid'],
+            'id s podtržítkem'   => [[['id' => 'facility_core'] + $valid], 'navSections[0].id is missing or invalid'],
+            'id s tečkou'        => [[['id' => 'facility.core'] + $valid], 'navSections[0].id is missing or invalid'],
+            'id velkým písmenem' => [[['id' => 'Facility'] + $valid], 'navSections[0].id is missing or invalid'],
+            'rezervované _top'   => [[['id' => '_top'] + $valid], 'navSections[0].id is missing or invalid'],
+            'id číslo'           => [[['id' => 7] + $valid], 'navSections[0].id is missing or invalid'],
+            'chybí name'         => [[['id' => 'facility', 'order' => 37]], "navSections[0] requires a non-empty 'name'"],
+            'prázdné name'       => [[['name' => ''] + $valid], "navSections[0] requires a non-empty 'name'"],
+            'name:cs není text'  => [[$valid + ['name:cs' => 5]], 'navSections[0].name:cs must be a non-empty string'],
+            'chybí order'        => [[['id' => 'facility', 'name' => 'Facility']], 'navSections[0].order must be an integer'],
+            'order jako text'    => [[['order' => '37'] + $valid], 'navSections[0].order must be an integer'],
+            'icon není text'     => [[$valid + ['icon' => true]], 'navSections[0].icon must be a non-empty string'],
+            'neznámý klíč'       => [[$valid + ['oder' => 1]], "navSections[0] has unknown key 'oder'"],
+            'druhá položka'      => [[$valid, ['id' => 'other']], "navSections[1] requires a non-empty 'name'"],
+            'stejné id dvakrát'  => [[$valid, $valid], "navSections has duplicate id 'facility'"],
+        ];
+    }
+
+    public function testNavSectionsDoNotTakeSubsections(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("navSections[0] has unknown key 'subsections'");
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'navSections' => [
+            ['id' => 'facility', 'name' => 'Facility', 'order' => 37, 'subsections' => []],
+        ]]);
+    }
+
+    /** @param array<int|string, mixed>|string $subsections */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSubsections')]
+    public function testInvalidSettingsSubsectionsThrow(mixed $subsections, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'settingsSections' => [
+            ['id' => 'facility', 'name' => 'Facility', 'order' => 16, 'subsections' => $subsections],
+        ]]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidSubsections(): array
+    {
+        $valid = ['id' => 'facility.meters', 'name' => 'Meters', 'order' => 10];
+
+        return [
+            'není pole'           => ['meters', 'settingsSections[0].subsections must be a JSON array'],
+            'bez prefixu sekce'   => [[['id' => 'meters'] + $valid], 'settingsSections[0].subsections[0].id is missing or invalid'],
+            'prefix cizí sekce'   => [[['id' => 'other.meters'] + $valid], 'settingsSections[0].subsections[0].id is missing or invalid'],
+            'chybí name'          => [[['id' => 'facility.meters', 'order' => 10]], "settingsSections[0].subsections[0] requires a non-empty 'name'"],
+            'chybí order'         => [[['id' => 'facility.meters', 'name' => 'Meters']], 'settingsSections[0].subsections[0].order must be an integer'],
+            'ikona u podsekce'    => [[$valid + ['icon' => 'gauge']], "settingsSections[0].subsections[0] has unknown key 'icon'"],
+            'stejné id dvakrát'   => [[$valid, $valid], "settingsSections[0].subsections has duplicate id 'facility.meters'"],
+        ];
     }
 }

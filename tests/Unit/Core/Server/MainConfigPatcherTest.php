@@ -187,4 +187,51 @@ class MainConfigPatcherTest extends TestCase
             'dlouhý vícebajt' => [str_repeat('ě', MainConfigPatcher::PURPOSE_MAX_LENGTH + 1)],
         ];
     }
+
+    // ── withModules (#170 D5) ───────────────────────────────────────────────
+
+    public function testWithModulesKeepsOrderOtherKeysAndKeyPosition(): void
+    {
+        $config = [
+            'id' => 'abcd-efgh-ijkl-mnop',
+            'modules' => ['install.base'],
+            'defaultLanguage' => 'cs',
+            'auth' => ['providers' => [['id' => 'hosting']]],
+        ];
+
+        $with = MainConfigPatcher::withModules($config, ['install.base', 'facility.core', 'custacme.workOrders']);
+
+        $this->assertSame(['install.base', 'facility.core', 'custacme.workOrders'], $with['modules']);
+        $this->assertSame(['id', 'modules', 'defaultLanguage', 'auth'], array_keys($with), 'klíč modules zůstává na místě');
+        unset($with['modules'], $config['modules']);
+        $this->assertSame($config, $with, 'ostatní klíče beze změny');
+    }
+
+    public function testWithModulesAddsTheKeyAndReindexesTheList(): void
+    {
+        $with = MainConfigPatcher::withModules(['id' => 'x'], [3 => 'install.base', 7 => 'facility.core']);
+
+        $this->assertSame(['install.base', 'facility.core'], $with['modules']);
+        $this->assertSame([], MainConfigPatcher::withModules(['id' => 'x', 'modules' => ['install.base']], [])['modules']);
+    }
+
+    #[DataProvider('invalidModuleLists')]
+    public function testWithModulesRejectsInvalidEntries(array $modules): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        MainConfigPatcher::withModules(['id' => 'x'], $modules);
+    }
+
+    /** @return array<string, array{array<int, mixed>}> */
+    public static function invalidModuleLists(): array
+    {
+        return [
+            'číslo'            => [['install.base', 42]],
+            'objekt'           => [[['id' => 'install.base']]],
+            'bez tečky'        => [['installbase']],
+            'podtržítko'       => [['cust_acme.reporting']],
+            'prázdný řetězec'  => [['']],
+            'dvakrát'          => [['install.base', 'facility.core', 'install.base']],
+        ];
+    }
 }

@@ -203,6 +203,25 @@ a jsou ochotní nám je vysvětlit. Kontakt a anglický přehled projektu:
 
 ---
 
+## Doplňky
+
+Doplňky — moduly mimo `install.base`, které se zapínají ve zdroji dat
+([`docs/modules.md`](modules.md) §9, #170) — jsou **samostatný oddíl mimo
+milníky**. Nečekají na žádný milník a žádný milník nečeká na ně.
+
+Z pravidla prioritizace pro ně platí jen kategorie 1: otevřená položka
+**věcné správnosti** blokuje i práci na doplňku. Kategorie 2 a 3 (blokátor
+použitelnosti, blokátor migrace) doplňky neblokují. Bod rozšíření, který
+doplňku v jádru chybí, se dělá v koleji doplňku — jako obecná změna jádra
+s vlastní issue, ne na míru jednomu doplňku.
+
+| Doplněk | Stav |
+|---|---|
+| Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace | první doplněk (#170); stojí na obecném číselníku míst v jádru (#169) |
+| Správa počítačové sítě | bez návrhu |
+
+---
+
 ## Vědomě odložené
 
 Věci, o kterých se rozhodlo, že se **nedělají teď** — ať se k nim nevracíme

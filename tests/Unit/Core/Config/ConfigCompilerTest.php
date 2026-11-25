@@ -776,4 +776,186 @@ class ConfigCompilerTest extends TestCase
             ConfigCompiler::languages([$module], new ModulePathResolver([$this->tmpDir . '/modules'])),
         );
     }
+
+    // ── navSections / settingsSections z module.jsonc (#170 D13) ────────────
+
+    /** Instalační modul se sekcemi sidebaru a Nastavení v souborech konfigurace. */
+    private function installModuleWithSections(string $id = 'install.base'): ModuleDefinition
+    {
+        $modulePath = $this->tmpDir . '/modules/' . str_replace('.', '/', $id);
+        $this->writeConfigFile($modulePath, 'config/navSections.jsonc', ['sections' => [
+            ['id' => 'basic', 'name' => 'Basic', 'name:cs' => 'Základní', 'icon' => 'folder', 'order' => 10],
+            ['id' => 'system', 'name' => 'System', 'name:cs' => 'Systém', 'order' => 50],
+        ]]);
+        $this->writeConfigFile($modulePath, 'config/settingsSections.jsonc', ['sections' => [
+            ['id' => 'app', 'name' => 'Application', 'name:cs' => 'Aplikace', 'order' => 1],
+            ['id' => 'other', 'name' => 'Other', 'name:cs' => 'Ostatní', 'order' => 100, 'subsections' => [
+                ['id' => 'other.system', 'name' => 'System', 'name:cs' => 'Systém', 'order' => 10],
+            ]],
+        ]]);
+
+        return $this->makeModule($id, [
+            ['id' => ConfigCompiler::SETTINGS_SECTIONS_ITEM, 'file' => 'config/settingsSections.jsonc'],
+            ['id' => ConfigCompiler::NAV_SECTIONS_ITEM, 'file' => 'config/navSections.jsonc'],
+        ]);
+    }
+
+    /** @param array<string, mixed> $fields */
+    private function sectionModule(string $id, array $fields): ModuleDefinition
+    {
+        $this->stubModuleDir($id);
+
+        return ModuleDefinition::fromArray(['id' => $id, 'name' => $id, 'kind' => 'addon'] + $fields);
+    }
+
+    /** @param list<ModuleDefinition> $modules */
+    private function compileSections(array $modules, array $languages = ['cs', 'en']): void
+    {
+        ConfigCompiler::compile(
+            $modules,
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            $languages,
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testModuleSectionsAreAppendedToInstallModuleSectionsAndLocalized(): void
+    {
+        // Pořadí jako z resolveru: závislosti před instalačním modulem.
+        $this->compileSections([
+            $this->sectionModule('facility.core', [
+                'navSections' => [
+                    ['id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'name:en' => 'Facility', 'icon' => 'company', 'order' => 37],
+                ],
+                'settingsSections' => [
+                    ['id' => 'facility', 'name' => 'Facility', 'name:cs' => 'Správa budovy', 'order' => 16, 'subsections' => [
+                        ['id' => 'facility.meters', 'name' => 'Meters', 'name:cs' => 'Měřiče', 'order' => 10],
+                    ]],
+                ],
+            ]),
+            $this->installModuleWithSections(),
+        ]);
+
+        $cs = $this->compiledItems('cs');
+        $this->assertSame(
+            [
+                ['id' => 'basic', 'name' => 'Základní', 'icon' => 'folder', 'order' => 10],
+                ['id' => 'system', 'name' => 'Systém', 'order' => 50],
+                ['id' => 'facility', 'name' => 'Správa budovy', 'icon' => 'company', 'order' => 37],
+            ],
+            $cs[ConfigCompiler::NAV_SECTIONS_ITEM]['sections'],
+        );
+        $this->assertSame(
+            [
+                ['id' => 'app', 'name' => 'Aplikace', 'order' => 1],
+                ['id' => 'other', 'name' => 'Ostatní', 'order' => 100, 'subsections' => [
+                    ['id' => 'other.system', 'name' => 'Systém', 'order' => 10],
+                ]],
+                ['id' => 'facility', 'name' => 'Správa budovy', 'order' => 16, 'subsections' => [
+                    ['id' => 'facility.meters', 'name' => 'Měřiče', 'order' => 10],
+                ]],
+            ],
+            $cs[ConfigCompiler::SETTINGS_SECTIONS_ITEM]['sections'],
+        );
+
+        $en = $this->compiledItems('en');
+        $this->assertSame('Facility', $en[ConfigCompiler::NAV_SECTIONS_ITEM]['sections'][2]['name']);
+        $this->assertSame('Meters', $en[ConfigCompiler::SETTINGS_SECTIONS_ITEM]['sections'][2]['subsections'][0]['name']);
+    }
+
+    public function testSectionsOfSeveralModulesAreAllAppended(): void
+    {
+        $this->compileSections([
+            $this->sectionModule('facility.core', ['navSections' => [['id' => 'facility', 'name' => 'Facility', 'order' => 37]]]),
+            $this->sectionModule('network.core', ['navSections' => [['id' => 'network', 'name' => 'Network', 'order' => 38]]]),
+            $this->installModuleWithSections(),
+        ], ['en']);
+
+        $this->assertSame(
+            ['basic', 'system', 'facility', 'network'],
+            array_column($this->compiledItems('en')[ConfigCompiler::NAV_SECTIONS_ITEM]['sections'], 'id'),
+        );
+    }
+
+    public function testModuleSectionCollidingWithInstallModuleSectionIsAnError(): void
+    {
+        $modules = [
+            $this->sectionModule('facility.core', ['navSections' => [['id' => 'system', 'name' => 'Facility', 'order' => 37]]]),
+            $this->installModuleWithSections(),
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Navigation section 'system' is declared by both 'install.base' and 'facility.core'");
+        $this->compileSections($modules);
+    }
+
+    public function testSettingsSectionCollidingWithInstallModuleSectionIsAnError(): void
+    {
+        $modules = [
+            $this->sectionModule('facility.core', ['settingsSections' => [['id' => 'other', 'name' => 'Facility', 'order' => 16]]]),
+            $this->installModuleWithSections(),
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Settings section 'other' is declared by both 'install.base' and 'facility.core'");
+        $this->compileSections($modules);
+    }
+
+    public function testSameSectionInTwoModulesIsAnError(): void
+    {
+        $modules = [
+            $this->sectionModule('facility.core', ['settingsSections' => [['id' => 'facility', 'name' => 'Facility', 'order' => 16]]]),
+            $this->sectionModule('facility.rooms', ['settingsSections' => [['id' => 'facility', 'name' => 'Rooms', 'order' => 17]]]),
+            $this->installModuleWithSections(),
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Settings section 'facility' is declared by both 'facility.core' and 'facility.rooms'");
+        $this->compileSections($modules);
+    }
+
+    public function testModuleSectionsWithoutInstallModuleCfgItemAreAnError(): void
+    {
+        $modules = [
+            $this->sectionModule('facility.core', ['navSections' => [['id' => 'facility', 'name' => 'Facility', 'order' => 37]]]),
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Module 'facility.core' declares navSections, but no active install module provides cfgItem 'global.navSections'");
+        $this->compileSections($modules);
+    }
+
+    public function testSettingsSectionsWithoutInstallModuleCfgItemAreAnError(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/install/base';
+        $this->writeConfigFile($modulePath, 'config/navSections.jsonc', ['sections' => []]);
+        $modules = [
+            $this->sectionModule('facility.core', ['settingsSections' => [['id' => 'facility', 'name' => 'Facility', 'order' => 16]]]),
+            $this->makeModule('install.base', [['id' => ConfigCompiler::NAV_SECTIONS_ITEM, 'file' => 'config/navSections.jsonc']]),
+        ];
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Module 'facility.core' declares settingsSections, but no active install module provides cfgItem 'global.settingsSections'");
+        $this->compileSections($modules);
+    }
+
+    public function testWithoutModuleSectionsTheCfgItemsStayAsTheInstallModuleWroteThem(): void
+    {
+        $this->stubModuleDir('core.system');
+        $this->compileSections([$this->makeModule('core.system', []), $this->installModuleWithSections()], ['cs']);
+
+        $cs = $this->compiledItems('cs');
+        $this->assertSame(['basic', 'system'], array_column($cs[ConfigCompiler::NAV_SECTIONS_ITEM]['sections'], 'id'));
+        $this->assertSame(['app', 'other'], array_column($cs[ConfigCompiler::SETTINGS_SECTIONS_ITEM]['sections'], 'id'));
+    }
+
+    public function testWithoutModuleSectionsNoSectionCfgItemIsCreated(): void
+    {
+        $this->stubModuleDir('core.system');
+        $this->compileSections([$this->makeModule('core.system', [])], ['en']);
+
+        $items = $this->compiledItems('en');
+        $this->assertArrayNotHasKey(ConfigCompiler::NAV_SECTIONS_ITEM, $items);
+        $this->assertArrayNotHasKey(ConfigCompiler::SETTINGS_SECTIONS_ITEM, $items);
+    }
 }

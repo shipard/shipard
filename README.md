@@ -85,3 +85,6 @@ tento repozitář.
 
 **[Jak začít s vývojem →](DEVELOPERS.md)** — proč a jak Shipard stavíme,
 zprovoznění prostředí na Macu, ve Windows i na Linuxu a rozcestník návodů.
+
+**[Přehled modulů a doplňků →](modules/README.md)** — z čeho se Shipard
+skládá: instalační moduly, jádro a doplňky, které se zapínají per firma.

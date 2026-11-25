@@ -135,6 +135,37 @@ final class MainConfigPatcher
     }
 
     /**
+     * Přímo zapnuté moduly zdroje dat (`modules`, #170 D5): zapíše seznam
+     * přesně v daném pořadí — volající (`shpd-ds ds-module`) nový modul
+     * přidává na konec a odebíraný vynechává. Ostatní klíče i pozice klíče
+     * `modules` zůstávají.
+     *
+     * @param array<string, mixed> $config
+     * @param array<int, mixed> $modules ID modulů; jiný typ, neplatný tvar
+     *        nebo opakované ID je chyba
+     * @return array<string, mixed>
+     * @throws \InvalidArgumentException
+     */
+    public static function withModules(array $config, array $modules): array
+    {
+        $list = [];
+        foreach ($modules as $moduleId) {
+            if (!is_string($moduleId) || !preg_match('/^[a-z][a-z0-9]*\.[a-z][a-zA-Z0-9]*$/', $moduleId)) {
+                throw new \InvalidArgumentException(
+                    'modules must be a list of module ids (<group>.<module>), got '
+                    . json_encode($moduleId, JSON_UNESCAPED_UNICODE),
+                );
+            }
+            if (in_array($moduleId, $list, true)) {
+                throw new \InvalidArgumentException("Module '{$moduleId}' is listed twice in modules");
+            }
+            $list[] = $moduleId;
+        }
+        $config['modules'] = $list;
+        return $config;
+    }
+
+    /**
      * Jediná validace účelu pro `ds-create`, `ds-class` i vývojářský dashboard:
      * trim, jeden řádek bez řídicích znaků, nejvýš PURPOSE_MAX_LENGTH znaků.
      * Prázdný výsledek je dovolený (= bez účelu; volající ho přes

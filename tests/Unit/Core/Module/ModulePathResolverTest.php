@@ -156,34 +156,106 @@ class ModulePathResolverTest extends TestCase
         $this->assertNull($r->getPath('economy.docs'));
     }
 
-    public function testInvalidGroupNameIsIgnored(): void
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidGroupNames')]
+    public function testInvalidGroupNameWithModuleInsideThrows(string $group): void
     {
         $root = $this->makeRoot('main');
-        // Uppercase group — must be skipped silently.
-        $this->makeModule($root, 'Economy', 'docs');
-        // Digit-leading group — must be skipped silently.
-        $this->makeModule($root, '123foo', 'bar');
-        // A valid one so we know construction succeeded.
         $this->makeModule($root, 'core', 'system');
+        $this->makeModule($root, $group, 'reporting');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Invalid module group name '{$group}' in '{$root}/{$group}/reporting'");
+        new ModulePathResolver([$root]);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidGroupNames(): array
+    {
+        return [
+            'underscore'    => ['cust_acme'],
+            'uppercase'     => ['Economy'],
+            'camelCase'     => ['custAcme'],
+            'leading digit' => ['123foo'],
+        ];
+    }
+
+    public function testInvalidGroupNameMessageNamesExpectedFormat(): void
+    {
+        $root = $this->makeRoot('main');
+        $this->makeModule($root, 'cust_acme', 'reporting');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('[a-z][a-z0-9]*');
+        new ModulePathResolver([$root]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidModuleNames')]
+    public function testInvalidModuleNameWithModuleJsoncThrows(string $module): void
+    {
+        $root = $this->makeRoot('main');
+        $this->makeModule($root, 'core', 'system');
+        $this->makeModule($root, 'core', $module);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Invalid module name '{$module}' in '{$root}/core/{$module}'");
+        new ModulePathResolver([$root]);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidModuleNames(): array
+    {
+        return [
+            'uppercase first' => ['System'],
+            'leading digit'   => ['123foo'],
+            'underscore'      => ['work_orders'],
+        ];
+    }
+
+    public function testInvalidModuleNameMessageNamesExpectedFormat(): void
+    {
+        $root = $this->makeRoot('main');
+        $this->makeModule($root, 'core', 'work_orders');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('[a-z][a-zA-Z0-9]*');
+        new ModulePathResolver([$root]);
+    }
+
+    public function testInvalidNamesWithoutModuleJsoncAreIgnored(): void
+    {
+        $root = $this->makeRoot('main');
+        $this->makeModule($root, 'core', 'system');
+
+        // Neplatná skupina bez modulu uvnitř (.git, node_modules, poznámky).
+        mkdir($root . '/.git/hooks', 0755, true);
+        mkdir($root . '/Notes_2026/drafts', 0755, true);
+        file_put_contents($root . '/Notes_2026/drafts/readme.md', '');
+        // Neplatné jméno pod platnou skupinou, ale bez module.jsonc.
+        mkdir($root . '/core/_shared', 0755, true);
+        // Podadresář uvnitř modulu (docs/ se specifikacemi) se neprochází.
+        mkdir($root . '/core/system/docs/Old_Notes', 0755, true);
+        file_put_contents($root . '/core/system/docs/Old_Notes/module.jsonc', '');
 
         $r = new ModulePathResolver([$root]);
 
         $this->assertSame(['core.system'], $r->allModuleIds());
     }
 
-    public function testInvalidModuleNameIsIgnored(): void
+    public function testRootOfAndIsInMainRoot(): void
     {
-        $root = $this->makeRoot('main');
-        // Uppercase first letter on module — must be skipped.
-        $this->makeModule($root, 'core', 'System');
-        // Digit-leading module name — must be skipped.
-        $this->makeModule($root, 'core', '123foo');
-        // Valid module for confirmation.
-        $this->makeModule($root, 'core', 'system');
+        $main = $this->makeRoot('main');
+        $extra = $this->makeRoot('extra');
+        $this->makeModule($main, 'core', 'system');
+        $this->makeModule($extra, 'custacme', 'reporting');
 
-        $r = new ModulePathResolver([$root]);
+        $r = new ModulePathResolver([$main, $extra]);
 
-        $this->assertSame(['core.system'], $r->allModuleIds());
+        $this->assertSame($main, $r->rootOf('core.system'));
+        $this->assertSame($extra, $r->rootOf('custacme.reporting'));
+        $this->assertNull($r->rootOf('nope.missing'));
+        $this->assertTrue($r->isInMainRoot('core.system'));
+        $this->assertFalse($r->isInMainRoot('custacme.reporting'));
+        $this->assertFalse($r->isInMainRoot('nope.missing'));
     }
 
     public function testNestedNonModuleDirectoriesIgnored(): void
