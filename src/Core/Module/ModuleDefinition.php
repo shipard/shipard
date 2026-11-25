@@ -47,6 +47,8 @@ class ModuleDefinition
         public readonly array $workOrderInvoiceContributors = [],
         public readonly array $aiFunctions = [],
         public readonly array $overviewBlocks = [],
+        /** Druh modulu (#170 D4): instalační podle skupiny, doplněk podle pole `kind`, jinak jádro. */
+        public readonly ModuleKind $kind = ModuleKind::Core,
     ) {}
 
     public static function fromArray(array $data): self
@@ -65,6 +67,25 @@ class ModuleDefinition
         //              for multi-word module names like `docs.invoicesOut`.
         if (!preg_match('/^[a-z][a-z0-9]*\.[a-z][a-zA-Z0-9]*$/', $data['id'])) {
             throw new \InvalidArgumentException("Invalid module id format: '{$data['id']}'");
+        }
+
+        // kind — druh modulu (#170 D4). Jediná povolená hodnota je "addon";
+        // bez pole je modul jádro. Instalační modul (skupina `install`) má
+        // druh daný skupinou a pole mít nesmí.
+        $isInstall = str_starts_with($data['id'], 'install.');
+        $kind = $isInstall ? ModuleKind::Install : ModuleKind::Core;
+        if (array_key_exists('kind', $data)) {
+            if ($data['kind'] !== ModuleKind::Addon->value) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': kind must be \"addon\" (omit the field for a core module)",
+                );
+            }
+            if ($isInstall) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': an install module must not declare kind",
+                );
+            }
+            $kind = ModuleKind::Addon;
         }
 
         // settingsItems (Nastavení aplikace) i accountItems (Nastavení účtu)
@@ -816,6 +837,7 @@ class ModuleDefinition
             workOrderInvoiceContributors: $workOrderInvoiceContributors,
             aiFunctions: $aiFunctions,
             overviewBlocks: $overviewBlocks,
+            kind: $kind,
         );
     }
 

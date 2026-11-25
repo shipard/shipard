@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Core\Module;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Module\ModuleDefinition;
+use Shipard\Core\Module\ModuleKind;
 
 class ModuleDefinitionTest extends TestCase
 {
@@ -1269,5 +1270,52 @@ class ModuleDefinitionTest extends TestCase
             'name'   => 'Issued invoices',
             'prints' => [['path' => 'config/prints.jsonc']],
         ]);
+    }
+
+    // ── kind: druh modulu (#170 D4) ─────────────────────────────────────────
+
+    public function testModuleWithoutKindIsCore(): void
+    {
+        $this->assertSame(ModuleKind::Core, ModuleDefinition::fromArray(['id' => 'economy.docs', 'name' => 'Docs'])->kind);
+    }
+
+    public function testKindAddonMakesAnAddon(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'kind' => 'addon']);
+        $this->assertSame(ModuleKind::Addon, $def->kind);
+    }
+
+    public function testInstallGroupMakesAnInstallModule(): void
+    {
+        $this->assertSame(ModuleKind::Install, ModuleDefinition::fromArray(['id' => 'install.base', 'name' => 'Base'])->kind);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidKinds')]
+    public function testOtherKindValueOrTypeThrows(mixed $kind): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('kind must be "addon"');
+        ModuleDefinition::fromArray(['id' => 'facility.core', 'name' => 'Facility', 'kind' => $kind]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidKinds(): array
+    {
+        return [
+            'core'    => ['core'],
+            'install' => ['install'],
+            'unknown' => ['plugin'],
+            'case'    => ['Addon'],
+            'bool'    => [true],
+            'null'    => [null],
+            'list'    => [['addon']],
+        ];
+    }
+
+    public function testKindOnInstallModuleThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('an install module must not declare kind');
+        ModuleDefinition::fromArray(['id' => 'install.facility', 'name' => 'Facility', 'kind' => 'addon']);
     }
 }
