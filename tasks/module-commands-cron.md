@@ -341,10 +341,12 @@ a `mail-outbox-run` končí chybou D4; běžný zdroj dat nemá `hosting-oidc-*`
 slotů na obou zdrojích dává stejný výpis jako před commitem 4 (20 řádků
 úloh, včetně `skipped (module … not active)`).
 
-**Neověřeno.** Celá integrační sada (běžely jen tři testy, kterým se měnil
-import — Accbal, Persons, Vat nad `blkm-i`); strom s dalším kořenem modulů
-(`extraModulesPath`) ručně — pokrývají ho jen jednotkové testy s fixturovým
-kořenem.
+**Integrační sada.** Celá nad `blkm-i`: 626 testů bez selhání, 21
+přeskočených (Gotenberg, PDF tisky, testy závislé na stavu dat — žádný se
+netýká příkazů, cronu ani modulů).
+
+**Neověřeno.** Strom s dalším kořenem modulů (`extraModulesPath`) ručně —
+pokrývají ho jen jednotkové testy s fixturovým kořenem.
 
 **Dokumentace.** Devět přesunutých příkazů nemá v `docs/cli.md` vlastní
 kapitolu (neměly ji ani dřív) — je u nich tabulka příkaz → modul.
