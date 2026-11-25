@@ -20,6 +20,13 @@ use Shipard\Core\Viewer\Detail\RecordAttachments;
 
 abstract class TableViewer
 {
+    /**
+     * Strop stromového layoutu (#169 D25): víc vybraných uzlů se nevykreslí
+     * a viewer vyzve k zúžení. Viewer ho smí snížit přes `maxNodes`
+     * v `getTreeOptions()`. Viz docs/viewer-tree.md.
+     */
+    public const TREE_MAX_NODES = 5000;
+
     /** Default number of rows per page. Subclasses can override. */
     protected int $pageSize = 50;
 
@@ -374,13 +381,86 @@ abstract class TableViewer
     }
 
     /**
-     * Default presentation layout: 'list' | 'grid'. Grid only applies
-     * when the viewer supports it (getGridColumns() !== null) — the
-     * controller validates and falls back to 'list' otherwise.
+     * Default presentation layout: 'list' | 'grid' | 'tree'. Grid and tree
+     * only apply when the viewer supports them (getGridColumns() /
+     * getTreeOptions() !== null) — the controller validates and falls back
+     * to 'list' otherwise.
      */
     public function getDefaultLayout(): string
     {
         return 'list';
+    }
+
+    /**
+     * Deklarace stromového layoutu (#169 D8, D20). Null = viewer strom
+     * nepodporuje. Viz docs/viewer-tree.md.
+     *
+     * - `parentColumn` — sloupec raw řádku s id rodiče (null / 0 = kořen)
+     * - `columns` — sloupce ve tvaru sloupců gridu (`id`, `label`, `width?`,
+     *   `align?`, `grow?`); první je stromový (odsazení, chevron, ikona)
+     * - `maxNodes` — volitelný strop, výchozí {@see TREE_MAX_NODES}
+     *
+     * @return array{parentColumn: string, columns: list<array<string, mixed>>, maxNodes?: int}|null
+     */
+    public function getTreeOptions(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Vybrané uzly stromu: filtr stavů, vlastní filtry a hledání jako
+     * selectRows(), ale BEZ stránkování — nejvýš `maxNodes + 1` řádků
+     * (řádek navíc je detekce stropu, D25). Raw řádky musí nést `id`
+     * a sloupec rodiče. Pořadí neřeší — sourozence řadí compareTreeRows().
+     *
+     * @param array $filters Active filters [{id: string, value: mixed}]
+     * @return list<array<string, mixed>>
+     */
+    public function selectTreeRows(?string $search, array $filters): array
+    {
+        return [];
+    }
+
+    /**
+     * Raw řádky podle id bez ohledu na filtry — předci vybraných uzlů jako
+     * kontext (D21). Stejný tvar jako selectTreeRows().
+     *
+     * @param list<int> $ids
+     * @return list<array<string, mixed>>
+     */
+    public function selectTreeRowsByIds(array $ids): array
+    {
+        return [];
+    }
+
+    /**
+     * Pořadí sourozenců ve stromu (D9). Řadí se tady, ne v SQL — předci
+     * přicházejí zvlášť a řazení dotazem by je postavilo za ostatní.
+     * Výchozí: podle id.
+     *
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     */
+    public function compareTreeRows(array $a, array $b): int
+    {
+        return (int) ($a['id'] ?? 0) <=> (int) ($b['id'] ?? 0);
+    }
+
+    /**
+     * Render jednoho uzlu stromu. Volá se, jen když getTreeOptions() !==
+     * null. `cells` jako u gridu (mapa id sloupce → span formát); `icon`
+     * bez hodnoty doplní controller ikonou vieweru. `rowAction` je nejvýš
+     * jedna akce ve formátu akcí detailu (`id`, `label`, `icon`, `kind`,
+     * `target`) — tlačítko na konci řádku. `parent`, `depth`, `childCount`
+     * a `match` doplní controller z {@see TreeRowsBuilder}.
+     *
+     * @param array<string, mixed> $rowData
+     * @return array{id: int, cells: array<string, mixed>, icon?: ?string,
+     *               stateStyle?: ?string, rowAction?: ?array<string, mixed>}
+     */
+    public function renderTreeRow(array $rowData): array
+    {
+        return [];
     }
 
     /**

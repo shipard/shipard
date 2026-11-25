@@ -17,6 +17,8 @@ use Shipard\Core\Mail\AddressList;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
+use Shipard\Core\Viewer\TableViewer;
+use Shipard\Core\Viewer\TreeRowsBuilder;
 use Shipard\Core\Viewer\ViewerRegistry;
 use Shipard\Module\Core\Mail\Sent\SentMessageStore;
 use Shipard\Module\Core\Mail\Sent\SentMessageTransportInfo;
@@ -42,13 +44,18 @@ class ViewerController
 			return Response::error('VIEWER_CLASS_NOT_FOUND', "Viewer class for '{$viewerId}' not found", 500);
 		}
 
-		// Layouty jsou odvozené: list vždy, grid když viewer deklaruje sloupce.
-		// defaultLayout se validuje proti layouts — nepodporovaná hodnota
-		// (např. 'grid' na list-only vieweru) padá na 'list'.
+		// Layouty jsou odvozené: list vždy, grid když viewer deklaruje sloupce,
+		// tree když deklaruje strom (docs/viewer-tree.md). defaultLayout se
+		// validuje proti layouts — nepodporovaná hodnota (např. 'grid' na
+		// list-only vieweru) padá na 'list'.
 		$gridColumns = $viewer->getGridColumns();
+		$treeOptions = $viewer->getTreeOptions();
 		$layouts     = ['list'];
 		if ($gridColumns !== null) {
 			$layouts[] = 'grid';
+		}
+		if ($treeOptions !== null) {
+			$layouts[] = 'tree';
 		}
 		$defaultLayout = $viewer->getDefaultLayout();
 		if (!in_array($defaultLayout, $layouts, true)) {
@@ -76,6 +83,13 @@ class ViewerController
 			$meta['grid'] = [
 				'columns'   => $gridColumns,
 				'showIndex' => (bool) ($viewer->getGridOptions()['showIndex'] ?? true),
+			];
+		}
+
+		if ($treeOptions !== null) {
+			$meta['tree'] = [
+				'columns'      => $treeOptions['columns'] ?? [],
+				'parentColumn' => (string) ($treeOptions['parentColumn'] ?? ''),
 			];
 		}
 
@@ -111,6 +125,10 @@ class ViewerController
 		if ($layout === 'grid' && $viewer->getGridColumns() === null) {
 			return Response::error('LAYOUT_NOT_SUPPORTED', "Viewer '{$viewerId}' does not support the grid layout", 400);
 		}
+		$treeOptions = $layout === 'tree' ? $viewer->getTreeOptions() : null;
+		if ($layout === 'tree' && $treeOptions === null) {
+			return Response::error('LAYOUT_NOT_SUPPORTED', "Viewer '{$viewerId}' does not support the tree layout", 400);
+		}
 
 		// Sort (jen grid layout): `sort=<colId>:<asc|desc>`, colId musí být
 		// sortable sloupec gridu. Nevalidní hodnota se tiše ignoruje — padá
@@ -134,6 +152,12 @@ class ViewerController
 			foreach ($params['filter'] as $filterId => $value) {
 				$filters[] = ['id' => $filterId, 'value' => $value];
 			}
+		}
+
+		// Strom jde vlastní cestou: celý v jedné odpovědi, bez stránkování
+		// a řazení (parametry `page` a `sort` se nečtou).
+		if ($treeOptions !== null) {
+			return Response::success(self::treeRows($viewer, $treeOptions, $search, $filters, $def->icon));
 		}
 
 		$rawRows  = $viewer->selectRows($search, $filters, $page);
@@ -176,6 +200,48 @@ class ViewerController
 		}
 
 		return Response::success($result);
+	}
+
+	/**
+	 * Řádky stromového layoutu (#169 D20, D21, D25; docs/viewer-tree.md):
+	 * vybrané uzly + jejich předci jako kontext, v pořadí průchodu do
+	 * hloubky. Víc vybraných uzlů než strop → `tooMany` a žádné řádky —
+	 * strom se nikdy neořezává napůl.
+	 *
+	 * @param array<string, mixed> $options getTreeOptions()
+	 * @param list<array{id: string, value: mixed}> $filters
+	 * @return array<string, mixed>
+	 */
+	private static function treeRows(TableViewer $viewer, array $options, ?string $search, array $filters, ?string $defaultIcon): array
+	{
+		$maxNodes = (int) ($options['maxNodes'] ?? TableViewer::TREE_MAX_NODES);
+		$selected = $viewer->selectTreeRows($search, $filters);
+
+		if (count($selected) > $maxNodes) {
+			return ['rows' => [], 'hasMore' => false, 'tooMany' => true];
+		}
+
+		$nodes = TreeRowsBuilder::build(
+			$selected,
+			static fn (array $ids): array => $viewer->selectTreeRowsByIds($ids),
+			(string) ($options['parentColumn'] ?? ''),
+			static fn (array $a, array $b): int => $viewer->compareTreeRows($a, $b),
+		);
+
+		$rows = [];
+		foreach ($nodes as $node) {
+			$rendered = $viewer->renderTreeRow($node['row']);
+			if (!isset($rendered['icon']) && $defaultIcon !== null) {
+				$rendered['icon'] = $defaultIcon;
+			}
+			$rendered['parent']     = $node['parent'];
+			$rendered['depth']      = $node['depth'];
+			$rendered['childCount'] = $node['childCount'];
+			$rendered['match']      = $node['match'];
+			$rows[] = $rendered;
+		}
+
+		return ['rows' => $rows, 'hasMore' => false];
 	}
 
 	public function detail(
