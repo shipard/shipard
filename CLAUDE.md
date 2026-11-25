@@ -224,6 +224,22 @@ smí názvy nést — tam jsou potřeba k práci.
 - Fallback: požadovaný jazyk → `en` → holé pole
 - Závislosti: jednoduché (bez verzí), tranzitivní, cyklické = chyba
 - Extensions: jen přidávání sloupců/indexů do cizích tabulek
+- **Rozšíření UI cizí tabulky** (#172 D16–D19, `tasks/module-ui-extensions.md`):
+  modul přispívá do detailu, formuláře a seznamu tabulky, kterou nevlastní,
+  třemi poli `module.jsonc` s položkou `{table, class, order?}` —
+  `detailExtensions` (`Core\Viewer\DetailExtension`: taby se sdílenými typy
+  obsahu a štítky za taby a štítky vieweru), `formTabs`
+  (`Core\Form\ModuleFormTab`: celá záložka na konci formuláře, jen sloupce
+  tabulky, ukládá běžné uložení, bez přepočtu), `rowDecorators`
+  (`Core\Viewer\RowDecorator`: spany na konec `t2`, jedno volání na stránku).
+  Jen aktivní moduly zdroje dat (`ModuleUiExtensions` z týchž resolvovaných
+  modulů jako viewery a formuláře), třída bez argumentů konstruktoru,
+  kontext `ModuleExtensionContext`. Výjimka i výsledek mimo kontrakt = log
+  a přeskočení poskytovatele (`ModuleUiExtensions::call()` — jediné místo
+  izolace), viewer ani formulář jádra se kvůli modulu nemění. Pravidla hlídá
+  `ModuleUiExtensionRules` nad stromem. Viz `docs/modules.md` kap. 5,
+  `docs/frontend.md` → Formát detail panelu / Formát řádku,
+  `docs/edit-forms.md` kap. 27
 - Nastavení v `core_system_settings`, které drží id řádku tabulky zahazované
   resetem (např. id řady dokladů), se deklaruje v `clearSettingsOnReset`
   v `module.jsonc` — `ds-reset` ho smaže spolu s tabulkou a provisioner ho

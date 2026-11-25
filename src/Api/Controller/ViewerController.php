@@ -14,9 +14,11 @@ use Shipard\Core\Document\DocumentLockRegistry;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Mail\AddressList;
+use Shipard\Core\Module\ModuleExtensionContext;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
+use Shipard\Core\Viewer\RowDecorations;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\TreeRowsBuilder;
 use Shipard\Core\Viewer\ViewerRegistry;
@@ -182,6 +184,20 @@ class ViewerController
 					$rendered['icon'] = $defaultIcon;
 				}
 				$rows[] = $rendered;
+			}
+
+			// Štítky řádku z modulů (rowDecorators, #172 D18): jedno volání
+			// dekorátoru na stránku, spany na konec `t2`. Jen layout list —
+			// grid a strom mají buňky, ne `t2`; viewer bez tabulky nic.
+			if ($def->table !== null) {
+				$rows = RowDecorations::apply(
+					$registry->uiExtensions(),
+					new ModuleExtensionContext(
+						$def->table, $db, $config, $registry->getDsConfig(), $language ?? 'en', $tables[$def->table] ?? null,
+					),
+					$rawRows,
+					$rows,
+				);
 			}
 		}
 

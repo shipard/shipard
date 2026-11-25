@@ -1032,6 +1032,26 @@ select), prefix účtu, partner, jen chyby.
 
 Pole `t1`, `i1`, `t2`, `i2`, `t3` přijímají string, objekt `{text, class?}` nebo pole objektů. `stateStyle` se mapuje na CSS třídu `docState_{stateStyle}` na řádku. Dostupné span třídy: `amount`, `muted`, `bold`, `primary`, `success`, `warning`, `danger`. `success` je klidný tón — kreslí se jako tečka před textem, text má barvu řádku (#153 D99); `muted` je `text-secondary` bez průhlednosti (D100). Řádek se `stateStyle` `archive` / `trash` má tlumený text, nic se nepřeškrtává (D101).
 
+**Štítky řádku z modulů** (`rowDecorators` v `module.jsonc`, #172 D18;
+deklarace v `docs/modules.md` kap. 5). Modul, který tabulku nevlastní,
+přidá do řádku seznamu spany třídou s rozhraním
+`Shipard\Core\Viewer\RowDecorator`:
+
+```php
+/** @return array<int, list<array{text: string, class?: string, badge?: string}>> id řádku → spany */
+public function decorate(string $table, array $rawRows, ModuleExtensionContext $context): array;
+```
+
+`ViewerController::rows()` ho po `renderRow()` zavolá **jednou na stránku
+řádků** (`$rawRows` = řádky stránky ze `selectRows()`) — co dekorátor
+potřebuje z databáze, načte jedním dotazem pro všechna id, ne dotazem na
+řádek. Spany se přidají **na konec `t2`** (`Viewer\RowDecorations`): `t2`
+jako řetězec nebo objekt se nejdřív převede na pole, pořadí původních spanů
+zůstává, řádek bez `t2` dostane jen spany modulu a řádek bez štítku se
+nemění. Jen layout `list` — grid a strom mají buňky, ne `t2`. Výjimka
+i span mimo kontrakt (`text` povinný, `class` a `badge` volitelné řetězce)
+= záznam v logu a přeskočení dekorátoru; seznam se vykreslí bez něj.
+
 **Stav v řádku** skládá jen `TableViewer::rowStateTag(int $docState): ?array` (#153 D98): vrací span `{text, class}`, nebo `null` pro Koncept (`stateStyle` `concept`) a pro stav s `detailBadge: false` („V pořádku“) — viewer ho přidá do `t2` jen když není `null` a vlastní mapu stav → třída nemá. Pravidla: `docs/design-system.md` §4 Stav v řádku seznamu.
 
 Pole `icon` (string, optional) — identifikátor ikony z `iconMap`
@@ -1074,6 +1094,29 @@ deklarace. Háček `detailHeader()` bez ikony dostane ikonu z deklarace
 vieweru; vlastní ikonu dává jen hlavička, u které závisí na záznamu
 (Osoby: firma / osoba). Podtitul shodný s titulkem builder vynechá (token
 AI bez poznámky má v obou `token_prefix`).
+
+**Taby a štítky z modulů** (`detailExtensions` v `module.jsonc`, #172 D16;
+deklarace v `docs/modules.md` kap. 5). Modul, který tabulku nevlastní
+(typicky doplněk), přispívá do jejího detailu třídou s rozhraním
+`Shipard\Core\Viewer\DetailExtension`:
+
+```php
+public function tabs(string $table, array $record, ModuleExtensionContext $context): array;   // jako detailTabs()
+public function badges(string $table, array $record, ModuleExtensionContext $context): array; // jako detailBadges()
+```
+
+Builder je přidá **za** taby a štítky vieweru — taby modulů před tab
+Přílohy, štítky za `detailBadges()` — v pořadí `order`, id modulu,
+deklarace. Záznam je ten, který dostávají háčky vieweru
+(`loadDetailRecord()`). Sběr dělá `Detail\DetailExtensions` a výsledek
+kontroluje: tab je `{id, label, content}` a obsah smí být jen ze sdílených
+typů (`DetailContent::SHARED_TYPES`, i ve vnořených blocích `composite`) —
+žádné HTML ani typy vázané na viewer; štítek je `{label, style}`. Id tabu
+builder prefixuje id modulu (`economy.salesRegistration.sales`), takže
+nekoliduje s taby vieweru. Výjimka i výsledek mimo kontrakt = záznam
+v logu a přeskočení **celého** poskytovatele; detail se vykreslí bez něj.
+Viewer bez tabulky rozšíření nemá. Frontend se nemění — taby kreslí
+`ContentBlock.svelte` jako taby vieweru.
 
 Výsledek — hlavička (`title`, `subtitle`, `badges`, `icon`) a taby s obsahem:
 

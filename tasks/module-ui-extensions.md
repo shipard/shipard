@@ -1,6 +1,6 @@
 # Taby a štítky detailu, záložka formuláře a štítky řádku z modulů (#172 D16–D19)
 
-**Stav:** naplánováno — zadání 2026-11-25 (#172 D16–D19)
+**Stav:** hotovo — 2026-11-25 (#172 D16–D19)
 
 > Task pro Claude Code (4 commity). Design: issue #172 (komentář
 > „Body rozšíření v UI“). Navazuje na `tasks/module-commands-cron.md`
@@ -180,26 +180,90 @@ Commit 4 (`feat(viewer): štítky řádku z modulů; docs (#172 D18, D19)`) vče
 
 ## Hotovo když
 
-- [ ] `module.jsonc` umí `detailExtensions`, `formTabs`, `rowDecorators`
+- [x] `module.jsonc` umí `detailExtensions`, `formTabs`, `rowDecorators`
       (`{table, class, order?}`); vadný tvar selže při načtení; test stromu
       hlídá třídu, rozhraní, namespace a existenci tabulky
-- [ ] načítají se jen aktivní moduly; výjimka poskytovatele se zaloguje
+- [x] načítají se jen aktivní moduly; výjimka poskytovatele se zaloguje
       a detail / formulář / seznam se vykreslí bez něj (test pro každý
       druh); pořadí podle `order` a id modulu
-- [ ] detail cizí tabulky ukazuje taby a štítky z modulu za taby a štítky
+- [x] detail cizí tabulky ukazuje taby a štítky z modulu za taby a štítky
       vieweru; `renderDetail()` zůstává `final`; `DetailContractTest` zelený
-- [ ] formulář cizí tabulky má záložku z modulu na konci pro PHP, JSONC
+- [x] formulář cizí tabulky má záložku z modulu na konci pro PHP, JSONC
       i automatický formulář; sloupec z rozšíření se uloží, v read-only
       stavu se odmítne
-- [ ] seznam cizí tabulky má spany z modulu na konci `t2`; dekorátor se
+- [x] seznam cizí tabulky má spany z modulu na konci `t2`; dekorátor se
       volá jednou na stránku
-- [ ] fixtury v `tests/Fixtures/modules/test/…` (modul s rozšířením
+- [x] fixtury v `tests/Fixtures/modules/test/…` (modul s rozšířením
       testovací tabulky) pokrývají všechny tři druhy; žádný skutečný modul
       zatím mechanismus nepoužívá
-- [ ] dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
+- [x] dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
-- [ ] celá sada PHPUnit lokálně zelená
+- [x] celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-25 ve čtyřech commitech podle zadání. Frontend se neměnil.
+
+**Jak je to udělané.**
+
+- **Registr a izolace.** `Shipard\Core\Module\ModuleUiExtensions` se staví
+  z resolvovaných modulů uvnitř `ViewerLoader::load()` a `FormLoader::load()`
+  (týž `ModuleResolver::resolve`, žádné další načítání stromu) a registry
+  ho předávají dál. Izolace je na jednom místě — `call()`: chybějící třída,
+  špatné rozhraní, výjimka poskytovatele i výsledek mimo kontrakt skončí
+  `ErrorLogger::error` „Module UI extension failed“ (modul, třída, tabulka,
+  druh, výjimka) a `null`. Instance poskytovatele je jedna na registr.
+- **Kontext** `ModuleExtensionContext` nese kromě zadaných čtyř věcí i jméno
+  tabulky a její definici (`tableDef`) — záložka formuláře z ní bere popisky
+  sloupců a sběr proti ní kontroluje, co záložka edituje.
+- **Kontrola výsledku je ve sběru, ne v testu pravidel**:
+  `Viewer\Detail\DetailExtensions` (taby jen se sdílenými typy obsahu,
+  štítky `{label, style}`), `Form\ModuleFormTabs` (typ `fields`, prvky
+  s hodnotou jen nad zapisovatelným sloupcem), `Viewer\RowDecorations`
+  (spany `{text, class?, badge?}`). Porušení je selhání poskytovatele jako
+  výjimka a přeskakuje se **celý** poskytovatel (u detailu taby i štítky).
+- **Prefix id dělá sběr**, ne poskytovatel: tab detailu i záložka formuláře
+  dostanou `<id modulu>.<id>`. Poskytovatel píše krátké id a nemůže prefix
+  zapomenout.
+- **Pravidla nad stromem** (`ModuleUiExtensionRules`) navíc hlídají, že
+  třída jde vytvořit bez argumentů konstruktoru a že tatáž třída není pro
+  tabulku v jednom druhu registrovaná dvakrát.
+
+**Odchylky od zadání.**
+
+- **`recalculate` PHP formuláře nejde přes `resolveFormDefinition()`** —
+  `TableForm::recalculate()` si definici staví sám. Záložky z modulů proto
+  přidává `FormController::withModuleTabs()` na dvou místech: na konci
+  `resolveFormDefinition()` a za PHP větví `recalculate()`. Bez toho by
+  záložka po prvním přepočtu formuláře dokladu zmizela (test
+  `testModuleTabSurvivesRecalculate` pro všechny tři cesty).
+- **Sub-tabulky zůstaly beze změny.** `resolveSubtableContext()` hledá jen
+  taby typu `subtable` a ty jsou v záložce modulu zakázané. Stejně tak
+  dohledání lookupů po uložení jde nad definicí bez záložek modulů
+  (`resolveBaseFormDefinition()`), aby se poskytovatel nevolal dvakrát.
+- **Stromový layout** (`tree`, #169) má buňky jako grid, ne `t2` —
+  dekorátory se ho netýkají.
+- **Citlivé sloupce** (`sensitive`) záložka modulu editovat nesmí:
+  whitelist `getEditableSensitiveColumns()` patří formuláři tabulky
+  a uložení by je odmítlo.
+- Signatury `DetailExtension` a `RowDecorator` nesou `string $table` podle
+  návrhu v zadání; `ModuleFormTab::build()` ji bere z kontextu.
+
+**Fixtury.** `tests/Fixtures/modules/test/uiHost` (tabulka
+`test_uihost_records`, `tableId` 9003, JSONC i PHP formulář — PHP třída
+není v `module.jsonc`, testy ji registrují samy, aby šly testovat všechny
+tři cesty) a `test/uiExtensions` (sloupec `contact_payment` přes
+`extensions`, tři platní poskytovatelé v `module.jsonc` a vadné varianty
+jen jako třídy pro syntetické registrace). Společné zázemí testů:
+`tests/Unit/Core/Module/UiExtensionFixtures.php`.
+
+**Ověření.** Unit sada 12 750 testů zelená. Integrační testy nad zdrojem
+dat `blkm-i` (po `ds-upgrade` kvůli tabulkám Míst): `DocumentRoundTripMatrixTest`,
+`DocumentFormInstructionInvariantTest`, `LedgerViewerTest`,
+`CasesViewerTest` zelené; v `ViewerDetailContractTest` padá jediný test
+`testOverviewDoesNotRepeatHeader` na vieweru `base.places.kinds` (#169,
+položka „Typ místa“ opakuje titulek) — nesouvisí s tímto taskem, žádný
+skutečný modul mechanismus zatím nepoužívá.
+
+**Na co navazuje.** Doplněk Evidence tržeb (#171) a task C2 (akce záznamu
+s obsluhou v modulu, D12–D15).

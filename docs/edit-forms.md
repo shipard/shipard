@@ -1136,6 +1136,8 @@ loader element vynechá (místo pole bez labelu a typu). Používá se pro
 2. JSONC soubor `forms/{table}.jsonc` v adresáři modulu
 3. Automatická generace z `TableDefinition` (AutoFormBuilder)
 
+Ke všem třem se na konec přidají záložky z modulů (`formTabs`, kap. 27).
+
 ---
 
 ## 13. Registrace v `module.jsonc`
@@ -1561,7 +1563,9 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 |-------|-------|
 | `TableForm` | Abstraktní bázová třída; auto-label z TableDefinition; `formText()` — texty z katalogu `*.formTexts` (kap. 11); `setTables()` + default `renderSubtable()` sub-tabulek (kap. 15) |
 | `SubtableCellFormatter` | Sdílené formátování buněk sub-tabulek: `money`, `number`, `trimmedNumber`, `price`, `date`, `dateTime`, `boolean` |
-| `TabBuilder` | Fluent builder; autoHideSeparators |
+| `TabBuilder` | Fluent builder; autoHideSeparators; `forTable()` — builder nad definicí tabulky (popisky a definice sloupců), sdílí ho `TableForm::tab()` a `ModuleFormTab::tab()` |
+| `ModuleFormTab` | Abstraktní báze záložky formuláře z modulu (`formTabs` v `module.jsonc`, kap. 27) |
+| `ModuleFormTabs` | Sběr záložek z modulů pro `FormController`: pořadí, kontrola prvků, prefix id, izolace poskytovatele (kap. 27) |
 | `FormDefinition` | Datová třída; `toArray()` → snake_case JSON |
 | `FormTab` | Datová třída |
 | `FormElement` | Datová třída; `input_type`, `hidden`, `triggers`; `blocks` prvku `content` (validace typů bloků, §4.5) |
@@ -2645,3 +2649,71 @@ rovnou přes `TableGateway`.
 
 První uživatelé: `note` v `FilingsForm` (podání DPH) a `tax_office_person`
 ve `VatRegistrationsForm` (#55 D30).
+
+---
+
+## 27. Záložka formuláře z modulu (`formTabs`)
+
+Formulář jádra sloupce doplňku nejmenuje (`docs/modules.md` kap. 9). Modul,
+který tabulku nevlastní, se do jejího formuláře napojuje **celou vlastní
+záložkou** (#172 D17): sloupce tabulce přidá přes `extensions` a záložku,
+která je edituje, deklaruje polem `formTabs` v `module.jsonc` (tvar
+deklarace, pořadí, kontext a izolace: `docs/modules.md` kap. 5).
+
+```php
+class DocFormTab extends ModuleFormTab
+{
+    public function build(array $data, bool $isNew, ModuleExtensionContext $context): ?FormTab
+    {
+        if (($data['doc_type'] ?? null) !== 'cashreg') {
+            return null;                       // záložka se pro tento záznam nezobrazí
+        }
+        return $this->tab($context, 'sales', 'Evidence tržeb')
+            ->section()
+                ->col()
+                    ->checkbox('contact_payment')   // sloupec z rozšíření tabulky
+            ->build();
+    }
+}
+```
+
+- **Kde se přidá.** Na konec `tabs` — za všechny záložky formuláře včetně
+  Příloh — pro všechny tři cesty definice: PHP třída, JSONC i automatický
+  formulář. Dělá to `FormController` na jednom místě (`withModuleTabs()`),
+  které volá `resolveFormDefinition()` **i `recalculate`**: PHP formulář si
+  definici při přepočtu staví sám (`TableForm::recalculate()`), bez toho by
+  záložka po prvním přepočtu zmizela. Víc záložek jde v pořadí `order`, id
+  modulu, deklarace.
+- **`build()`** dostává data formuláře (uložený záznam, nebo výchozí
+  hodnoty nového; při přepočtu aktuální neuložený stav) a rozhoduje, jestli
+  se záložka záznamu týká — registrace je per tabulka, typ dokladu si
+  hlídá poskytovatel a vrací `null`.
+- **`tab()`** je `TabBuilder` nad definicí tabulky z kontextu — popisky
+  sloupců (včetně sloupců z rozšíření) se doplní samy, stejně jako
+  u `TableForm::tab()` (obě volají `TabBuilder::forTable()`).
+- **Co smí obsahovat.** Prvky s hodnotou — `input` (i `checkbox`, `date`,
+  …), `select`, `multiselect`, i uvnitř `inline` — jen nad sloupcem
+  tabulky, který propustí běžné uložení: ne systémový, ne primární klíč, ne
+  `sensitive`. Prvky bez hodnoty: `separator` a `content`. **Nesmí**
+  `lookup`, `component` ani záložku typu `subtable` / `attachments`
+  (1. fáze). Id záložky sběr prefixuje id modulu
+  (`economy.salesRegistration.sales`).
+- **Ukládání beze změny.** Sloupec z rozšíření je sloupec tabulky jako
+  každý jiný — `filterWritableFields()` ho propustí a uloží ho běžné
+  uložení formuláře přes `TableGateway` a Document třídu tabulky. Modul
+  k tomu nepotřebuje vlastní endpoint ani háček.
+- **Read-only.** Záložka se řídí stavem dokladu jako zbytek formuláře:
+  v read-only stavu jsou její pole neaktivní a `guardReadOnlyUpdate`
+  uložení odmítne (`422 DOCUMENT_READONLY`). Whitelist kap. 26
+  (`getReadOnlyEditableColumns()`) patří formuláři tabulky — záložka
+  modulu do něj nic nepřidává.
+- **Bez přepočtu.** Změna pole v záložce modulu nevolá žádný háček modulu,
+  který by měnil data — `recalculate` formuláře běží jako dřív a hodnoty
+  počítá jen formulář tabulky. `build()` se při přepočtu volá znovu
+  s aktuálními daty, takže záložka smí podle nich změnit svůj tvar (nebo
+  zmizet), ne hodnoty.
+- **Izolace.** Výjimka z `build()` i záložka mimo kontrakt (nepovolený
+  prvek, sloupec mimo tabulku) = záznam v logu „Module UI extension
+  failed“ a formulář se vykreslí bez záložky (`ModuleFormTabs`).
+
+Frontend se nemění — záložka je běžný tab typu `fields`.

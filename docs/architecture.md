@@ -175,6 +175,7 @@ compiled.cs.json → ConfigRuntime::load() → cfgItem('economy.docs.vatRates')
 | `ModuleDefinition` | Datová třída pro `module.jsonc` — id, name, dependencies, tables, extensions, config. Factory `fromArray()`. |
 | `ModuleLoader` | Načítání modulů ze souborového systému. `loadModule(path)` pro jeden modul, `loadAllModules(basePath)` pro všechny. Prochází `modules/{skupina}/{modul}/`. |
 | `ModuleResolver` | Řešení závislostí. Vstup: všechny moduly + aktivované ID. Výstup: topologicky seřazené moduly. Detekuje cykly (DFS), řeší tranzitivní závislosti. |
+| `ModuleUiExtensions` | Rozšíření UI cizích tabulek z aktivních modulů (`detailExtensions`, `formTabs`, `rowDecorators`, #172 D16–D19): registr z resolvovaných modulů, pořadí `order` → id modulu → deklarace, izolace poskytovatele v `call()`. Kontext `ModuleExtensionContext`; sběr a kontrola výsledku v `Viewer\Detail\DetailExtensions`, `Form\ModuleFormTabs`, `Viewer\RowDecorations`; pravidla nad stromem `ModuleUiExtensionRules`. |
 
 **Tok dat:**
 ```

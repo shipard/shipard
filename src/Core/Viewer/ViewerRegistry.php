@@ -30,6 +30,11 @@ class ViewerRegistry
         $this->dsConfig = $dsConfig;
     }
 
+    public function getDsConfig(): ?DataSourceConfig
+    {
+        return $this->dsConfig;
+    }
+
     public function setUiExtensions(ModuleUiExtensions $uiExtensions): void
     {
         $this->uiExtensions = $uiExtensions;
