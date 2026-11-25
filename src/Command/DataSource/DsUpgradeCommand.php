@@ -406,6 +406,12 @@ class DsUpgradeCommand extends Command
         // existovat před importem (#59 D12). Idempotentní, per aktivní entita.
         $this->provisionDocCoreBoundNumberSeries($resolvedModules, $dsDir, $dsConnection, $output);
 
+        // Druhy míst (#169 D19) — BEZPODMÍNEČNĚ, i pod skipProvisioning: místa
+        // se ze starého systému nepřevádějí, takže to nejsou migrovaná data,
+        // a bez druhu nejde založit žádné místo. Idempotentní podle
+        // system_code, existující druhy se nepřepisují ani nevrací z archivu.
+        $this->provisionPlaceKinds($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
+
         // Parametry vrstvy C (docs/ds-setup.md §5.2) — jedna instance kvůli
         // request-level cache; provisionery jen čtou, žádný set se tu neděje.
         $settings = new SettingsStore($dsConnection);
@@ -427,7 +433,6 @@ class DsUpgradeCommand extends Command
         } else {
             $this->provisionUnits($resolvedModules, $dsConnection, $output);
             $this->provisionItemKinds($resolvedModules, $dsConnection, $output);
-            $this->provisionPlaceKinds($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
             $this->provisionAccountChart($resolvedModules, $settings, $dsConnection, $output);
             $this->provisionAssetAccountingGroups($resolvedModules, $dsConnection, $output);
             $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output);
@@ -850,6 +855,7 @@ class DsUpgradeCommand extends Command
      * Seed druhů míst (#169 D14): jeden druh na typ z cfgItem
      * `base.places.types`, název v jazyce zdroje dat. Existující druh
      * (podle `system_code`, v jakémkoli stavu) se nepřepisuje ani nevrací.
+     * Běží mimo skipProvisioning gate (D19), viz komentář u volání v execute().
      *
      * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
      */

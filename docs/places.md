@@ -184,6 +184,9 @@ místa (N)** v pořadí stromu, jejíž řádek otevírá detail podřízeného 
 druh na typ, `system_code` = id typu, název v jazyce zdroje dat
 (`getDefaultLanguage()`), stav V pořádku. Existující řádek se stejným
 `system_code` v jakémkoli stavu se nepřepisuje ani nevrací z archivu.
+Seed běží **bezpodmínečně, i pod `skipProvisioning`** (#169 D19): místa se
+ze starého Shipardu nepřevádějí, takže druhy nejsou migrovaná data, a bez
+druhu by na migrovaném zdroji dat nešlo založit žádné místo.
 
 ## 7. Mimo rozsah
 
