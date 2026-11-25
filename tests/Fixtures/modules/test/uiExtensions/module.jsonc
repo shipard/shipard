@@ -1,0 +1,24 @@
+// Fixture pro testy rozšíření UI z modulů (#172 D16–D19): modul, který
+// cizí tabulce přidá sloupec (`extensions`) a přispívá do jejího detailu
+// (`detailExtensions`), formuláře (`formTabs`) a seznamu (`rowDecorators`).
+{
+    "id": "test.uiExtensions",
+    "name": "Test UI extensions",
+    "description": "Fixture module: detail tabs and badges, a form tab and row tags for a foreign table.",
+
+    "dependencies": ["test.uiHost"],
+
+    "extensions": [
+        "test_uihost_records"
+    ],
+
+    "detailExtensions": [
+        {"table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureDetailExtension"}
+    ],
+    "formTabs": [
+        {"table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureFormTab", "order": 500}
+    ],
+    "rowDecorators": [
+        {"table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureRowDecorator"}
+    ]
+}

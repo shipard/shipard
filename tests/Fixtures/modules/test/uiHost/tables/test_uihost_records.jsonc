@@ -1,0 +1,54 @@
+// Fixture tabulka — existuje jen v testech. Polymorfní přes `kind`
+// (poskytovatel rozšíření se sám rozhoduje, jestli se ho záznam týká)
+// a se stavy dokumentu (read-only stav odmítá uložení).
+{
+    "tableId": 9003,
+    "name": "test_uihost_records",
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "kind",
+            "name": "Kind",
+            "type": "varchar",
+            "length": 10,
+            "nullable": true
+        },
+        {
+            "id": "docState",
+            "name": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "type": "tinyint",
+            "default": 0,
+            "system": true
+        }
+    ]
+}

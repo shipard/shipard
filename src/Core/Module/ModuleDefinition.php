@@ -18,6 +18,9 @@ class ModuleDefinition
     /** Výchozí pořadí úlohy cronu ve slotu (`cronJobs[].order`, #172 D6). */
     public const int CRON_JOB_DEFAULT_ORDER = 500;
 
+    /** Výchozí pořadí rozšíření UI (`detailExtensions` / `formTabs` / `rowDecorators` → `order`, #172 D19). */
+    public const int UI_EXTENSION_DEFAULT_ORDER = 500;
+
     /** Cesta sekce `server.json` (`serverConfig[].key`, #172 D10): segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou. */
     public const string SERVER_CONFIG_KEY_PATTERN = '/^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*$/';
 
@@ -70,6 +73,12 @@ class ModuleDefinition
         public readonly array $cronJobs = [],
         /** @var list<array{key: string, class: class-string}> sekce `server.json` modulu (#172 D7, D10) */
         public readonly array $serverConfig = [],
+        /** @var list<array{table: string, class: class-string, order: int}> taby a štítky detailu cizí tabulky (#172 D16) */
+        public readonly array $detailExtensions = [],
+        /** @var list<array{table: string, class: class-string, order: int}> záložky formuláře cizí tabulky (#172 D17) */
+        public readonly array $formTabs = [],
+        /** @var list<array{table: string, class: class-string, order: int}> štítky řádku seznamu cizí tabulky (#172 D18) */
+        public readonly array $rowDecorators = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -845,6 +854,14 @@ class ModuleDefinition
         // hlídá ModuleServerConfigRules nad celým stromem.
         $serverConfig = self::parseServerConfig($data);
 
+        // detailExtensions / formTabs / rowDecorators — body rozšíření v UI
+        // cizí tabulky (#172 D16–D19). Tady jen tvar; třídu, rozhraní,
+        // namespace a existenci tabulky hlídá ModuleUiExtensionRules nad
+        // celým stromem.
+        $detailExtensions = self::parseUiExtensions($data, 'detailExtensions');
+        $formTabs = self::parseUiExtensions($data, 'formTabs');
+        $rowDecorators = self::parseUiExtensions($data, 'rowDecorators');
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -886,7 +903,62 @@ class ModuleDefinition
             serverCommands: $serverCommands,
             cronJobs: $cronJobs,
             serverConfig: $serverConfig,
+            detailExtensions: $detailExtensions,
+            formTabs: $formTabs,
+            rowDecorators: $rowDecorators,
         );
+    }
+
+    /**
+     * Rozšíření UI cizí tabulky (`detailExtensions`, `formTabs`,
+     * `rowDecorators`, #172 D16–D19): seznam `{table, class, order?}` —
+     * `table` je tabulka, do jejíhož detailu / formuláře / seznamu modul
+     * přispívá (vlastní i cizí), `class` třída poskytovatele, `order` celé
+     * číslo (výchozí {@see self::UI_EXTENSION_DEFAULT_ORDER}). Neznámý klíč
+     * položky je chyba, překlep by jinak tiše zmizel. Třída se tu nenačítá.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array{table: string, class: class-string, order: int}>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseUiExtensions(array $data, string $key): array
+    {
+        if (!array_key_exists($key, $data)) {
+            return [];
+        }
+        if (!is_array($data[$key]) || !array_is_list($data[$key])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': {$key} must be a JSON array");
+        }
+
+        $extensions = [];
+        foreach ($data[$key] as $idx => $raw) {
+            $where = "Module '{$data['id']}': {$key}[{$idx}]";
+            if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+                throw new \InvalidArgumentException("{$where} must be an object");
+            }
+            $unknown = array_diff(array_keys($raw), ['table', 'class', 'order']);
+            if ($unknown !== []) {
+                throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $table = $raw['table'] ?? null;
+            if (!is_string($table) || preg_match('/^[a-z][a-z0-9_]*$/', $table) !== 1) {
+                throw new \InvalidArgumentException("{$where}.table must be a table name");
+            }
+
+            $class = $raw['class'] ?? null;
+            if (!is_string($class) || ltrim($class, '\\') === '') {
+                throw new \InvalidArgumentException("{$where}.class must be a non-empty class name");
+            }
+
+            $order = $raw['order'] ?? self::UI_EXTENSION_DEFAULT_ORDER;
+            if (!is_int($order)) {
+                throw new \InvalidArgumentException("{$where}.order must be an integer");
+            }
+
+            $extensions[] = ['table' => $table, 'class' => ltrim($class, '\\'), 'order' => $order];
+        }
+        return $extensions;
     }
 
     /**

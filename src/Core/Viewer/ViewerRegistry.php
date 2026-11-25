@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
+use Shipard\Core\Module\ModuleUiExtensions;
 
 class ViewerRegistry
 {
@@ -21,9 +22,22 @@ class ViewerRegistry
     /** @var array<string, TableDefinition> */
     private array $tables = [];
 
+    /** Rozšíření UI z aktivních modulů (`detailExtensions`, `rowDecorators`, #172 D16–D19). */
+    private ?ModuleUiExtensions $uiExtensions = null;
+
     public function setDsConfig(DataSourceConfig $dsConfig): void
     {
         $this->dsConfig = $dsConfig;
+    }
+
+    public function setUiExtensions(ModuleUiExtensions $uiExtensions): void
+    {
+        $this->uiExtensions = $uiExtensions;
+    }
+
+    public function uiExtensions(): ModuleUiExtensions
+    {
+        return $this->uiExtensions ??= ModuleUiExtensions::none();
     }
 
     /**

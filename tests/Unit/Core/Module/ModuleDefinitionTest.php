@@ -1507,6 +1507,78 @@ class ModuleDefinitionTest extends TestCase
         ];
     }
 
+    // ── detailExtensions / formTabs / rowDecorators (#172 D16–D19) ──────────
+
+    public function testUiExtensionsDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT']);
+
+        $this->assertSame([], $def->detailExtensions);
+        $this->assertSame([], $def->formTabs);
+        $this->assertSame([], $def->rowDecorators);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('uiExtensionKeys')]
+    public function testUiExtensionsAreParsed(string $key): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'economy.salesRegistration',
+            'name' => 'Sales',
+            $key => [
+                ['table' => 'docs_core_heads', 'class' => '\\Shipard\\Module\\Economy\\SalesRegistration\\First'],
+                ['order' => 100, 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\Second', 'table' => 'docs_core_rows'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['table' => 'docs_core_heads', 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\First', 'order' => 500],
+            ['table' => 'docs_core_rows', 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\Second', 'order' => 100],
+        ], $def->{$key}, 'úvodní zpětné lomítko se odřízne, výchozí order je 500, pořadí klíčů položky je pevné');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function uiExtensionKeys(): array
+    {
+        return [
+            'detailExtensions' => ['detailExtensions'],
+            'formTabs' => ['formTabs'],
+            'rowDecorators' => ['rowDecorators'],
+        ];
+    }
+
+    /** @param mixed $value */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidUiExtensions')]
+    public function testInvalidUiExtensionThrows(string $key, mixed $value, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': " . $key . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', $key => $value]);
+    }
+
+    /** @return array<string, array{string, mixed, string}> */
+    public static function invalidUiExtensions(): array
+    {
+        $valid = ['table' => 'docs_core_heads', 'class' => 'A\\B'];
+
+        $cases = [];
+        foreach (['detailExtensions', 'formTabs', 'rowDecorators'] as $key) {
+            $cases += [
+                "{$key}: objekt místo pole"     => [$key, $valid, ' must be a JSON array'],
+                "{$key}: řetězec místo položky" => [$key, ['A\\B'], '[0] must be an object'],
+                "{$key}: pole místo položky"    => [$key, [['docs_core_heads', 'A\\B']], '[0] must be an object'],
+                "{$key}: neznámý klíč"          => [$key, [$valid + ['clas' => 'A\\B']], "[0] has unknown key 'clas'"],
+                "{$key}: bez tabulky"           => [$key, [['class' => 'A\\B']], '[0].table must be a table name'],
+                "{$key}: tabulka s tečkou"      => [$key, [['table' => 'docs.core', 'class' => 'A\\B']], '[0].table must be a table name'],
+                "{$key}: tabulka číslem"        => [$key, [['table' => 7, 'class' => 'A\\B']], '[0].table must be a table name'],
+                "{$key}: bez třídy"             => [$key, [$valid, ['table' => 'docs_core_heads']], '[1].class must be a non-empty class name'],
+                "{$key}: prázdná třída"         => [$key, [['table' => 'docs_core_heads', 'class' => '\\']], '[0].class must be a non-empty class name'],
+                "{$key}: order řetězcem"        => [$key, [$valid + ['order' => '500']], '[0].order must be an integer'],
+                "{$key}: order desetinné"       => [$key, [$valid + ['order' => 1.5]], '[0].order must be an integer'],
+            ];
+        }
+        return $cases;
+    }
+
     // ── commands / serverCommands / cronJobs (#172 D2, D6) ──────────────────
 
     public function testCommandsAndCronJobsDefaultToEmpty(): void

@@ -457,6 +457,9 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `serverConfig` | object[] | Ne | Ne | Sekce `/etc/shipard/server.json`, které čte jen kód tohoto modulu (#172 D7, D10, viz níže) |
 | `serverConfig[].key` | string | Ano | Ne | Cesta sekce — segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou (`exchangeRates`, `ai.analysis`) |
 | `serverConfig[].class` | string | Ano | Ne | FQCN třídy v namespace modulu, která sekci načte a zkontroluje (implements `ServerConfigSection`) |
+| `detailExtensions` | object[] | Ne | Ne | Taby a štítky detailu záznamu cizí tabulky (#172 D16, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\DetailExtension` |
+| `formTabs` | object[] | Ne | Ne | Záložka formuláře cizí tabulky (#172 D17, viz níže): `{table, class, order?}`, třída dědí `Shipard\Core\Form\ModuleFormTab` |
+| `rowDecorators` | object[] | Ne | Ne | Štítky řádku seznamu cizí tabulky (#172 D18, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\RowDecorator` |
 
 ### Pole `commands`, `serverCommands` a `cronJobs`
 
@@ -558,6 +561,75 @@ modulu. Ostatní hlídá `ModuleServerConfigRules` testem nad celým stromem
 
 Neznámé klíče v `server.json` se tolerují: sekce neaktivního nebo
 odebraného modulu načtení konfigurace nerozbije a nikdo ji nečte.
+
+### Pole `detailExtensions`, `formTabs` a `rowDecorators`
+
+Body rozšíření v UI tabulky, kterou modul nevlastní (#172 D16–D19). Modul
+(typicky doplněk) jimi přispívá do detailu záznamu, do formuláře a do
+seznamu, aniž by viewer nebo formulář jádra o modulu věděl — a bez změny
+frontendu: všechno jde existujícími kontrakty.
+
+```jsonc
+"detailExtensions": [
+    {"table": "docs_core_heads", "class": "Shipard\\Module\\Economy\\SalesRegistration\\DocDetailExtension"}
+],
+"formTabs": [
+    {"table": "docs_core_heads", "class": "Shipard\\Module\\Economy\\SalesRegistration\\DocFormTab", "order": 500}
+],
+"rowDecorators": [
+    {"table": "docs_core_heads", "class": "Shipard\\Module\\Economy\\SalesRegistration\\DocRowDecorator"}
+]
+```
+
+| Pole | Co přidává | Třída |
+|------|------------|-------|
+| `detailExtensions` | taby (sdílené typy obsahu) a štítky hlavičky detailu, za taby a štítky vieweru | implementuje `Shipard\Core\Viewer\DetailExtension` — `tabs()`, `badges()` |
+| `formTabs` | celou záložku se sloupci tabulky na konec formuláře; ukládá se běžným uložením | dědí `Shipard\Core\Form\ModuleFormTab` — `build()`, `null` = bez záložky |
+| `rowDecorators` | spany na konec pole `t2` řádku seznamu (layout `list`) | implementuje `Shipard\Core\Viewer\RowDecorator` — `decorate()`, jedno volání na stránku řádků |
+
+Položka je `{table, class, order?}`:
+
+- **`table`** — tabulka, do které modul přispívá: vlastní, nebo tabulka
+  modulu, na kterém modul (tranzitivně) závisí. Sloupce, které záložka
+  formuláře edituje, tabulce přidá týž modul přes `extensions`.
+- **`class`** — třída v namespace modulu
+  (`Shipard\Module\<Skupina>\<Modul>\`, kdekoli pod ním). Vzniká **bez
+  argumentů konstruktoru**; kontext dostává v parametru metody.
+- **`order`** — celé číslo, výchozí 500. Pořadí poskytovatelů: `order`
+  vzestupně, pak id modulu, pak pořadí deklarace.
+
+**Kontext** je jeden objekt pro všechny tři druhy —
+`Shipard\Core\Module\ModuleExtensionContext`: `table`, `tableDef` (definice
+tabulky včetně sloupců z rozšíření), `db` (`DataSourceConnection`), `config`
+(`ConfigRuntime`), `dsConfig` (`DataSourceConfig`) a `language`.
+
+**Jen aktivní moduly.** Registrace se čtou z modulů zapnutých ve zdroji dat
+— `ModuleUiExtensions::fromModules()` nad týmž `ModuleResolver::resolve`
+jako viewery a formuláře (`ViewerLoader`, `FormLoader`). Rozšíření
+vypnutého doplňku tak ve zdroji dat neexistuje.
+
+**Izolace poskytovatele.** Výjimka z poskytovatele, chybějící třída, třída
+bez správného rozhraní i výsledek mimo kontrakt se zaloguje
+(`ErrorLogger::error` „Module UI extension failed“ s id modulu, třídou,
+tabulkou a druhem rozšíření) a poskytovatel se přeskočí — detail, formulář
+i seznam se vykreslí bez něj. Jediné místo izolace je
+`ModuleUiExtensions::call()`.
+
+**Polymorfní tabulky.** Registrace je per tabulka (`docs_core_heads` pro
+všechny typy dokladů). Jestli se rozšíření záznamu týká — typ dokladu,
+stav —, rozhoduje poskytovatel sám a vrátí prázdný výsledek (`[]`, u
+záložky `null`).
+
+Tvar deklarace hlídá `ModuleDefinition::fromArray()` — špatný typ, neznámý
+klíč položky, chybějící tabulka nebo třída a `order` jiného typu než celé
+číslo je chyba při načtení modulu. Ostatní hlídá `ModuleUiExtensionRules`
+testem nad celým stromem `modules/`:
+
+- třída existuje, implementuje rozhraní svého druhu, jde vytvořit bez
+  argumentů konstruktoru a leží v namespace svého modulu;
+- tabulka je vlastní tabulka modulu nebo tabulka modulu, na kterém modul
+  tranzitivně závisí;
+- tatáž třída není pro tabulku v jednom druhu registrovaná dvakrát.
 
 ### Pole `sendPurposes`
 

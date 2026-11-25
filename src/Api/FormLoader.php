@@ -10,6 +10,7 @@ use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
+use Shipard\Core\Module\ModuleUiExtensions;
 
 class FormLoader
 {
@@ -21,6 +22,9 @@ class FormLoader
 
         $registry = new FormRegistry(self::mergeForms($resolvedModules));
         $registry->setDsConfig($config);
+        // Záložky formuláře z týchž resolvovaných modulů — jen aktivní
+        // moduly zdroje dat, bez druhého načítání stromu (#172 D19).
+        $registry->setUiExtensions(ModuleUiExtensions::fromModules($resolvedModules));
 
         return $registry;
     }

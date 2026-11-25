@@ -1,0 +1,15 @@
+{
+    // Extension z test.uiExtensions: sloupec, který edituje záložka
+    // formuláře z modulu a čte dekorátor řádku.
+    "table": "test_uihost_records",
+    "columns": [
+        {
+            "id": "contact_payment",
+            "name": "Contact payment",
+            "name:cs": "Kontaktní platba",
+            "name:en": "Contact payment",
+            "type": "boolean",
+            "default": 0
+        }
+    ]
+}

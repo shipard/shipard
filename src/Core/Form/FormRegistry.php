@@ -7,6 +7,7 @@ namespace Shipard\Core\Form;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Module\ModuleUiExtensions;
 
 class FormRegistry
 {
@@ -19,6 +20,24 @@ class FormRegistry
     public function setDsConfig(DataSourceConfig $dsConfig): void
     {
         $this->dsConfig = $dsConfig;
+    }
+
+    /** Rozšíření UI z aktivních modulů (`formTabs`, #172 D17, D19). */
+    private ?ModuleUiExtensions $uiExtensions = null;
+
+    public function setUiExtensions(ModuleUiExtensions $uiExtensions): void
+    {
+        $this->uiExtensions = $uiExtensions;
+    }
+
+    public function uiExtensions(): ModuleUiExtensions
+    {
+        return $this->uiExtensions ??= ModuleUiExtensions::none();
+    }
+
+    public function getDsConfig(): ?DataSourceConfig
+    {
+        return $this->dsConfig;
     }
 
     /** Jazyk požadavku — předává se každému vytvořenému formuláři (`setLanguage`). */

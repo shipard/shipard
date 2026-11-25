@@ -1,0 +1,14 @@
+// Fixture pro testy rozšíření UI z modulů (#172 D16–D19): modul, který
+// vlastní tabulku — do jejího detailu, formuláře a seznamu přispívá
+// `test.uiExtensions`.
+{
+    "id": "test.uiHost",
+    "name": "Test UI host",
+    "description": "Fixture module: owns the table that test.uiExtensions extends.",
+
+    "dependencies": [],
+
+    "tables": [
+        "test_uihost_records"
+    ]
+}
