@@ -34,6 +34,15 @@
             "order": 15
         },
         {
+            // Místa a druhy míst (base.places, #169 D1).
+            "id": "places",
+            "name": "Places",
+            "name:cs": "Místa",
+            "name:en": "Places",
+            "icon": "place-building",
+            "order": 16
+        },
+        {
             "id": "warehouses",
             "name": "Warehouses",
             "name:cs": "Sklady",

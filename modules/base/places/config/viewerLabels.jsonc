@@ -1,0 +1,21 @@
+{
+    // base.places.viewerLabels — texty viewerů míst a druhů míst, které
+    // nejsou popiskem sloupce (ty jdou přes TableViewer::columnLabel()).
+    // Viewery je čtou přes PlacesViewerBase::text(klíč, anglický fallback);
+    // holé `name` je anglická varianta a shoduje se s fallbackem v PHP.
+
+    // --- skupiny a nadpisy detailu ---
+    "group.address":    { "name": "Address", "name:cs": "Adresa", "name:en": "Address" },
+    "heading.children": { "name": "Child places ({count})", "name:cs": "Podřízená místa ({count})", "name:en": "Child places ({count})" },
+
+    // --- položky ---
+    "label.address": { "name": "Address", "name:cs": "Adresa", "name:en": "Address" },
+    "label.gps":     { "name": "GPS",     "name:cs": "GPS",    "name:en": "GPS" },
+
+    // --- akce ---
+    // Na řádku stromu („+“) i v detailu místa (#169 D10, D23).
+    "action.addChild": { "name": "Add child place", "name:cs": "Přidat podřízené", "name:en": "Add child place" },
+
+    // --- hodnoty ---
+    "value.iconByType": { "name": "By type", "name:cs": "Podle typu", "name:en": "By type" }
+}

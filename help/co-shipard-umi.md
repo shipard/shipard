@@ -39,6 +39,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 |---|---|---|
 | **Osoby** | Dodavatelé, odběratelé i fyzické osoby v jedné evidenci. Firmu si doplníš z veřejného registru podle IČO. Ke každé osobě vedeš kontakty, adresy a bankovní spojení; u kontaktu určíš, co se na jeho e-mail posílá | [Založení osoby](osoby/zalozeni-osoby.md) · [Kontakty a účely odesílání](osoby/kontakty-a-ucely.md) |
 | **Položky** | Co se na dokladech fakturuje — jeden řádek dokladu je položka. U položky se drží i to, čím se účtuje (druhy položek a měrné jednotky se nastavují v Nastavení) | [Založení položky](polozky/zalozeni-polozky.md) · [Obsahové štítky](polozky/obsahove-stitky.md) |
+| **Místa** | Číselník toho, kde se co nachází — areály, budovy, podlaží, místnosti a jednotlivá místa ve stromu, každé s druhem (*Kancelář*, *Sklad*) a u areálu, budovy a venkovní plochy s adresou. Není v levém menu: najdeš ho v **Nastavení aplikace → Místa**. Shipard hlídá, co smí být pod čím. **Jiné agendy místa zatím nepoužívají** a seznam je zatím plochý, bez rozbalovacího stromu | [Místa a druhy míst](mista/mista-a-druhy-mist.md) |
 
 ---
 

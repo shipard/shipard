@@ -27,7 +27,8 @@ takže read-only vs. editovatelné prohlížeče se rozešly v hierarchii
 a přepínání list ↔ tabulka nebylo kam zavěsit.
 
 Nový design to obrací: **layout je prezentační režim jednoho vieweru,
-nikdy typ vieweru** (D1). Všechno doménové a drahé je sdílené a
+nikdy typ vieweru** (D1). Třetím layoutem je strom —
+[`viewer-tree.md`](viewer-tree.md). Všechno doménové a drahé je sdílené a
 layout-agnostické:
 
 | Sdílené (beze změny)              | Per-layout                       |
@@ -354,17 +355,23 @@ protected function buildSortedOrderBy(array $columnMap, string $default, string 
 
 ### 7.2 Toggle layoutů (D10)
 
-- Ikona vedle searche (desktop only), viditelná když
-  `meta.layouts.length > 1`; přepíná `activeLayout` list ↔ grid —
-  refetch řeší stávající layout-change `$effect`.
+- Ikona vedle searche, viditelná, když jsou na daném zařízení aspoň dva
+  layouty. Přepínač je **cyklus přes `meta.layouts`**: další layout
+  v pořadí, po posledním zase první (`utils/viewerLayoutPick.js` —
+  `nextLayout()`); ikona a popisek ukazují cíl (`list` → seznam, `grid` →
+  tabulka, `tree` → strom). Viewer se dvěma layouty tak přepíná tam
+  a zpět jako dřív. Refetch řeší stávající layout-change `$effect`.
 - **Persistence:** localStorage klíč `shpd_viewer_layout` (per-DS přes
   `storageKey` vzor — `DATA_SOURCE_ID` z `api/config.js`), hodnota JSON
-  mapa `{viewerId: 'list'|'grid'}`. Malý modul
+  mapa `{viewerId: 'list'|'grid'|'tree'}`. Malý modul
   `frontend/src/utils/viewerLayout.js` (get/set, try/catch okolo
   localStorage). Server-side persistence (user settings) až bude potřeba.
 - Inicializace `activeLayout` po fetchMeta: **persisted > `meta.defaultLayout`**
   (persisted hodnota mimo `meta.layouts` se ignoruje).
-- Mobil beze změny — efektivní layout vynucuje list, toggle se nerenderuje.
+- Mobil: grid degraduje na list (`effectiveLayoutOf()`), takže viewer
+  jen s listem a gridem tam přepínač nemá. Strom na telefonu zůstává
+  ([`viewer-tree.md`](viewer-tree.md), #169 D24) — viewer se stromem
+  přepínač strom ↔ seznam má i tam.
 
 ### 7.3 Pilot: `BankTransactionsViewer` (D11)
 

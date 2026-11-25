@@ -1,0 +1,113 @@
+{
+    // Druh místa (#169 D2, D14, D15, D18; docs/places.md): uživatelský
+    // číselník (Kancelář, Zasedací místnost, Sklad…), nese typ místa a
+    // volitelnou ikonu. Typ je po prvním potvrzení druhu jen ke čtení (hlídá
+    // PlaceKindDocument) — řídí úrovně a adresu míst, která druh mají.
+    // `system_code` nese jen seed (= id typu, PlaceKindsProvisioner).
+    "tableId": 466,
+    "name": "Place kinds",
+    "name:cs": "Druhy míst",
+    "name:en": "Place kinds",
+
+    "displayPattern": "{name}",
+
+    // Přechody stavu jdou přes PlaceKindDocument — jinak by tlačítko Smazat
+    // minulo kontrolu, že druh nepoužívá žádné místo (D18).
+    "stateTransitionsRunDocumentHooks": true,
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "type",
+            "name": "Place type",
+            "name:cs": "Typ místa",
+            "name:en": "Place type",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "base.places.types",
+            "nullable": false
+        },
+        {
+            // NULL = ikona typu (base.places.types → icon).
+            "id": "icon",
+            "name": "Icon",
+            "name:cs": "Ikona",
+            "name:en": "Icon",
+            "type": "enumString",
+            "length": 32,
+            "cfgItem": "base.places.icons",
+            "nullable": true
+        },
+        {
+            // Jen seed: id typu, podle kterého provisioner pozná, že druh
+            // už jednou založil (i když ho uživatel přejmenoval nebo vyřadil).
+            "id": "system_code",
+            "name": "System code",
+            "name:cs": "Systémový kód",
+            "name:en": "System code",
+            "type": "varchar",
+            "length": 16,
+            "nullable": true
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_system_code",
+            "type": "unique",
+            "columns": [
+                {"column": "system_code"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        }
+    ]
+}

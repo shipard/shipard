@@ -57,4 +57,29 @@ class TableViewerGridDefaultsTest extends TestCase
     {
         $this->assertNull($this->makeListOnlyViewer()->renderGridFooter(null, []));
     }
+
+    // Stromový layout (docs/viewer-tree.md) — stejné pravidlo: viewer bez
+    // stromu nic neimplementuje.
+
+    public function testViewerWithoutTreeHasNoTreeOptions(): void
+    {
+        $this->assertNull($this->makeListOnlyViewer()->getTreeOptions());
+    }
+
+    public function testTreeMethodsDefaultToEmpty(): void
+    {
+        $viewer = $this->makeListOnlyViewer();
+
+        $this->assertSame([], $viewer->selectTreeRows(null, []));
+        $this->assertSame([], $viewer->selectTreeRowsByIds([1, 2]));
+        $this->assertSame([], $viewer->renderTreeRow(['id' => 1]));
+    }
+
+    public function testTreeSiblingsAreComparedByIdByDefault(): void
+    {
+        $viewer = $this->makeListOnlyViewer();
+
+        $this->assertLessThan(0, $viewer->compareTreeRows(['id' => 2], ['id' => 10]));
+        $this->assertSame(0, $viewer->compareTreeRows(['id' => 5], ['id' => 5]));
+    }
 }

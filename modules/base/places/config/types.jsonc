@@ -1,0 +1,98 @@
+{
+    // base.places.types — typ místa (#169 D2, D3, docs/places.md).
+    // Hodnoty = enumString `type` na druhu místa (base_places_kinds); místo
+    // typ dědí z druhu. Typ je po prvním potvrzení druhu jen ke čtení (D15).
+    //
+    // Kód se NIKDY neptá na klíč typu, jen na vlastnosti (PlaceTypes):
+    //   level      — úroveň v hierarchii; nadřazené místo musí mít nižší
+    //                úroveň, přeskakování je povolené. null = bez pravidla
+    //                (smí být nad čímkoli i pod čímkoli)
+    //   icon       — ikona typu (frontend/src/icons.js); platí, když druh
+    //                nemá vlastní
+    //   hasAddress — místo typu nese adresu (D13); u ostatních typů se
+    //                adresa při uložení maže
+    //   order      — pořadí v nabídce
+    //   defaultChildType — typ, který akce Přidat podřízené navrhne pod
+    //                místem tohoto typu, když místo ještě žádné podřízené
+    //                nemá (#169 D23); null = nenavrhuje se nic
+    "site": {
+        "name": "Site",
+        "name:cs": "Areál",
+        "name:en": "Site",
+        "level": 10,
+        "icon": "place-site",
+        "hasAddress": true,
+        "order": 10,
+        "defaultChildType": "building"
+    },
+    "building": {
+        "name": "Building",
+        "name:cs": "Budova",
+        "name:en": "Building",
+        "level": 20,
+        "icon": "place-building",
+        "hasAddress": true,
+        "order": 20,
+        "defaultChildType": "floor"
+    },
+    "section": {
+        "name": "Building section",
+        "name:cs": "Část budovy",
+        "name:en": "Building section",
+        "level": 30,
+        "icon": "place-section",
+        "hasAddress": false,
+        "order": 30,
+        "defaultChildType": "floor"
+    },
+    "floor": {
+        "name": "Floor",
+        "name:cs": "Podlaží",
+        "name:en": "Floor",
+        "level": 40,
+        "icon": "place-floor",
+        "hasAddress": false,
+        "order": 40,
+        "defaultChildType": "room"
+    },
+    "room": {
+        "name": "Room",
+        "name:cs": "Místnost",
+        "name:en": "Room",
+        "level": 50,
+        "icon": "place-room",
+        "hasAddress": false,
+        "order": 50,
+        "defaultChildType": "spot"
+    },
+    "outdoor": {
+        "name": "Outdoor area",
+        "name:cs": "Venkovní plocha",
+        "name:en": "Outdoor area",
+        "level": 50,
+        "icon": "place-outdoor",
+        "hasAddress": true,
+        "order": 60,
+        "defaultChildType": "spot"
+    },
+    "spot": {
+        "name": "Spot",
+        "name:cs": "Místo",
+        "name:en": "Spot",
+        "level": 60,
+        "icon": "place-spot",
+        "hasAddress": false,
+        "order": 70,
+        "defaultChildType": null
+    },
+    "other": {
+        "name": "Other",
+        "name:cs": "Ostatní",
+        "name:en": "Other",
+        "level": null,
+        "icon": "place-other",
+        "hasAddress": false,
+        "order": 80,
+        "defaultChildType": null
+    }
+}

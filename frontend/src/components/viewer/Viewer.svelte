@@ -17,6 +17,7 @@
   import { fileFromMessage } from '../../api/registry.js';
   import ViewerRow from './ViewerRow.svelte';
   import ViewerGrid from './ViewerGrid.svelte';
+  import ViewerTree from './ViewerTree.svelte';
   import ViewerDetail from './ViewerDetail.svelte';
   import ViewerDetailDrawer from './ViewerDetailDrawer.svelte';
   import ViewerDetailModal from './ViewerDetailModal.svelte';
@@ -35,9 +36,20 @@
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import { layoutStore, VIEWER_SPLIT_MIN } from '../../stores/layout.svelte.js';
   import { getViewerLayout, setViewerLayout } from '../../utils/viewerLayout.js';
+  import { availableLayouts, effectiveLayoutOf, nextLayout } from '../../utils/viewerLayoutPick.js';
+  import { getExpanded, setExpanded } from '../../utils/viewerTreeState.js';
+  import {
+    ancestorIds,
+    defaultExpanded,
+    expandableIds,
+    isTemporaryView,
+    pruneExpanded,
+    toggleExpanded,
+    withExpanded,
+  } from '../../utils/viewerTree.js';
   import { isNarrowViewer } from '../../utils/viewerSplit.js';
   import { supportedFilters, initialFilterValues } from '../../utils/viewerFilters.js';
-  import { iconTable, iconList } from '../../icons.js';
+  import { iconTable, iconList, iconTree, iconExpandAll, iconCollapseAll } from '../../icons.js';
   import { formatAmount } from '../../utils/formatNumber.js';
   import { untrack } from 'svelte';
 
@@ -98,18 +110,19 @@
   let loadingMore = $state(false);
   let pageNumber = $state(0);
 
-  // --- Layout (list | grid) — docs/viewer-grid.md §4.1 ---
-  // activeLayout = zvolený layout (v F1 jen meta.defaultLayout, toggle je F2).
-  // Efektivní layout degraduje na list na mobilu (D2) a když meta grid
-  // nepodporuje. Tvary řádků obou layoutů se liší → změna efektivního
-  // layoutu = reset page + refetch (layout-change $effect níže).
+  // --- Layout (list | grid | tree) — docs/viewer-grid.md §4.1,
+  // docs/viewer-tree.md ---
+  // activeLayout = zvolený layout (uložená volba, jinak meta.defaultLayout).
+  // Efektivní layout z něj dělá effectiveLayoutOf(): grid na mobilu
+  // degraduje na list (D2), strom zůstává (#169 D24), layout mimo
+  // meta.layouts padá na list. Tvary řádků layoutů se liší → změna
+  // efektivního layoutu = reset page + refetch (layout-change $effect níže).
   let activeLayout = $state('list');
   let effectiveLayout = $derived(
-    layoutStore.isMobile || !(meta?.layouts ?? []).includes('grid')
-      ? 'list'
-      : activeLayout
+    effectiveLayoutOf(activeLayout, meta?.layouts, layoutStore.isMobile)
   );
   let isGrid = $derived(effectiveLayout === 'grid');
+  let isTree = $derived(effectiveLayout === 'tree');
 
   // --- Úzký viewer (#133 D58) ---
   // Viewer se seznamem měří SVOU šířku (ne okno): pod VIEWER_SPLIT_MIN
@@ -123,9 +136,10 @@
   // šířky draweru — drawer nesmí přesáhnout přes navigaci vlevo od
   // vieweru; platí pro list i grid.
   let bodyWidth = $state(0);
-  // Kde žije detail: drawer (grid, úzký viewer) × panel vedle seznamu.
-  // Na mobilu nikdy drawer — tam platí přepínání seznam / detail (D42).
-  let detailInDrawer = $derived(!layoutStore.isMobile && (isGrid || isNarrow));
+  // Kde žije detail: drawer (grid, strom, úzký viewer) × panel vedle
+  // seznamu. Na mobilu nikdy drawer — tam platí přepínání seznam / detail
+  // (D42).
+  let detailInDrawer = $derived(!layoutStore.isMobile && (isGrid || isTree || isNarrow));
 
   // Součtový footer gridu — přichází jen s page 0, append ho nemění (D7).
   let footer = $state(null);
@@ -133,11 +147,23 @@
   // null = init po přepnutí tabu ještě neproběhl; layout-change $effect
   // pak nesmí střílet (initial fetch řeší tab-change flow).
   let prevLayout = null;
-  // Toggle list ↔ grid je na desktopu, když viewer podporuje oba layouty
-  // (docs/viewer-grid.md §7.2, D10). Volba se persistuje per-DS/viewer.
+  // Přepínač layoutů: další layout v pořadí meta.layouts, po posledním
+  // zase první (docs/viewer-grid.md §7.2, D10). Ukáže se, když jsou na
+  // daném zařízení aspoň dva — na telefonu grid není, takže tam přepínač
+  // má jen viewer se stromem. Volba se persistuje per-DS/viewer.
   let hasLayoutToggle = $derived(
-    !layoutStore.isMobile && (meta?.layouts ?? []).length > 1
+    availableLayouts(meta?.layouts, layoutStore.isMobile).length > 1
   );
+  // Ikona a popisek přepínače ukazují CÍLOVÝ layout.
+  let layoutToggleTarget = $derived(
+    nextLayout(effectiveLayout, meta?.layouts, layoutStore.isMobile)
+  );
+  const LAYOUT_ICONS = { list: iconList, grid: iconTable, tree: iconTree };
+  const LAYOUT_LABEL_KEYS = {
+    list: 'viewer.layout.showList',
+    grid: 'viewer.layout.showGrid',
+    tree: 'viewer.layout.showTree',
+  };
 
   // --- Řazení gridu (D9) — {column, dir} | null (výchozí řazení vieweru).
   // Cyklus asc → desc → výchozí; přežívá viewGroup/filtry/hledání,
@@ -155,6 +181,31 @@
   // pending filtrů z open_viewer řeší utils/viewerFilters.js.
   let activeFilters = $state({});
   let viewerFilters = $derived(supportedFilters(meta?.filters));
+
+  // --- Strom: rozbalení (#169 D22, docs/viewer-tree.md) ---
+  // treeExpanded = uložená sada rozbalených uzlů (null = nic uloženo →
+  // rozbalené kořeny). Set se nikdy nemění na místě, vždy nová instance.
+  // V dočasném pohledu (hledání, vlastní filtr, jiná záložka stavů) je
+  // strom rozbalený celý a klikání na chevrony žije jen v treeTempExpanded
+  // (null = všechno rozbalené) — nic se neukládá a po návratu platí zase
+  // uložený stav.
+  //
+  // Fetch helpery stav rozbalení nečtou: rozbalení nikdy nespouští refetch.
+  let treeExpanded = $state(null);
+  let treeTempExpanded = $state(null);
+  // Vybraných uzlů je víc než strop (D25) — místo stromu hláška.
+  let treeTooMany = $state(false);
+  let treeTempMode = $derived(isTemporaryView({
+    search: activeSearch,
+    viewGroup: activeViewGroup,
+    defaultViewGroup: tab.fixedViewGroup ?? meta?.defaultViewGroup ?? 'active',
+    filters: activeFilters,
+    defaultFilters: initialFilterValues(meta?.filters, null),
+  }));
+  let treeExpandedView = $derived(
+    treeTempMode ? treeTempExpanded : (treeExpanded ?? defaultExpanded(rows))
+  );
+  let treeExpandAll = $derived(treeTempMode && treeTempExpanded === null);
 
   // --- Detail state ---
   let selectedRowId = $state(null);
@@ -225,13 +276,17 @@
     }
 
     let path = `/_ui/viewer/${viewerId}/rows?page=${page}`;
-    // layout=grid jen explicitně — list query zůstává beze změny.
-    // Sort má smysl jen v gridu (list má vlastní pevné řazení).
+    // layout=grid / tree jen explicitně — list query zůstává beze změny.
+    // Sort má smysl jen v gridu (list má vlastní pevné řazení, strom řadí
+    // server podle pořadí sourozenců). Strom se nestránkuje — server
+    // `page` ignoruje a vrací hasMore: false.
     if (layout === 'grid') {
       path += '&layout=grid';
       if (sort != null) {
         path += `&sort=${encodeURIComponent(`${sort.column}:${sort.dir}`)}`;
       }
+    } else if (layout === 'tree') {
+      path += '&layout=tree';
     }
     if (search) {
       path += `&search=${encodeURIComponent(search)}`;
@@ -264,6 +319,8 @@
         rows = result.data.rows;
         // Footer přichází jen s page 0 (grid); list odpověď klíč nemá → null.
         footer = result.data.footer ?? null;
+        // Strop stromu (D25) — jen odpověď layoutu tree klíč nese.
+        treeTooMany = result.data.tooMany === true;
       }
       hasMore = result.data.hasMore;
     }
@@ -297,6 +354,7 @@
   function handleTabClick(viewGroup) {
     if (viewGroup === activeViewGroup) return;
     activeViewGroup = viewGroup;
+    treeTempExpanded = null;
     selectedRowId = null;
     detail = null;
     pageNumber = 0;
@@ -327,6 +385,7 @@
       }
     }
     activeFilters = next;
+    treeTempExpanded = null;
     pageNumber = 0;
     fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, next, 0, effectiveLayout, activeSort);
   }
@@ -336,6 +395,7 @@
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       activeSearch = value;
+      treeTempExpanded = null;
       selectedRowId = null;
       detail = null;
       pageNumber = 0;
@@ -349,6 +409,7 @@
     }
     clearTimeout(searchTimer);
     activeSearch = '';
+    treeTempExpanded = null;
     selectedRowId = null;
     detail = null;
     pageNumber = 0;
@@ -391,15 +452,112 @@
     fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
   }
 
-  // Toggle list ↔ grid (D10). Jen přepne stav a persistuje volbu — refetch
-  // řeší stávající layout-change $effect (ruční fetch = dvojí fetch).
+  // Přepínač layoutů (D10): další layout v pořadí. Jen přepne stav
+  // a persistuje volbu — refetch řeší stávající layout-change $effect
+  // (ruční fetch = dvojí fetch).
   function handleLayoutToggle() {
-    const target = activeLayout === 'grid' ? 'list' : 'grid';
-    if (target === 'list') {
+    const target = layoutToggleTarget;
+    if (target === effectiveLayout) return;
+    if (target !== 'grid') {
       activeSort = null;
     }
     activeLayout = target;
     setViewerLayout(tab.viewerId, target);
+  }
+
+  // --- Strom: rozbalování (#169 D22) ---
+
+  // Uloží rozbalení do paměti prohlížeče. `prune` zahodí uzly, které ve
+  // stromu nejsou nebo nemají děti — jen tam, kde je vidět celý strom
+  // (mimo dočasný pohled, kam se stejně neukládá).
+  function saveTreeExpanded(next, prune = true) {
+    const value = prune ? pruneExpanded(next, rows) : next;
+    treeExpanded = value;
+    setExpanded(tab.viewerId, value);
+  }
+
+  function handleTreeToggle(row) {
+    if (treeTempMode) {
+      // Dočasná kopie vzniká až prvním kliknutím — ze stavu „vše rozbaleno“.
+      treeTempExpanded = toggleExpanded(treeTempExpanded ?? expandableIds(rows), row.id);
+      return;
+    }
+    saveTreeExpanded(toggleExpanded(treeExpanded ?? defaultExpanded(rows), row.id));
+  }
+
+  function handleTreeExpandAll() {
+    if (treeTempMode) {
+      treeTempExpanded = null;
+      return;
+    }
+    saveTreeExpanded(expandableIds(rows));
+  }
+
+  function handleTreeCollapseAll() {
+    if (treeTempMode) {
+      treeTempExpanded = new Set();
+      return;
+    }
+    saveTreeExpanded(new Set());
+  }
+
+  // Rozbalí zadané uzly (cestu k řádku, řádek akce) a uloží. Bez
+  // pročištění: řádek, pod kterým teprve vznikne první podřízený záznam,
+  // děti ještě nemá.
+  function expandTreeNodes(ids) {
+    if (!isTree || ids.length === 0) return;
+    if (treeTempMode) {
+      if (treeTempExpanded !== null) {
+        treeTempExpanded = withExpanded(treeTempExpanded, ids);
+      }
+      return;
+    }
+    const current = treeExpanded ?? defaultExpanded(rows);
+    const next = withExpanded(current, ids);
+    if (next !== current) {
+      saveTreeExpanded(next, false);
+    }
+  }
+
+  // Výběr řádku, který je schovaný pod sbaleným předkem (otevření záznamu
+  // odjinud), rozbalí cestu k němu.
+  function revealTreeRow(id) {
+    expandTreeNodes(ancestorIds(rows, id));
+  }
+
+  // Akce, která zakládá podřízený záznam (preset nese sloupec rodiče
+  // stromu), rozbalí svůj řádek — nový záznam je po uložení vidět. Platí
+  // pro „+“ na řádku i pro tutéž akci v detailu.
+  function expandTreeRowForAction(action) {
+    const target = action?.target ?? {};
+    const parentColumn = meta?.tree?.parentColumn;
+    if (!isTree || !parentColumn || target.table !== meta?.table) return;
+    const parentId = target.preset?.[parentColumn];
+    if (parentId == null || !rows.some(r => r.id === parentId)) return;
+    expandTreeNodes([...ancestorIds(rows, parentId), parentId]);
+  }
+
+  // Akce řádku stromu („+“) — stejný formát jako akce detailu, ale nezávisí
+  // na výběru: řádek akce vybraný být nemusí a výběr se nemění.
+  function handleRowAction(row) {
+    const action = row?.rowAction;
+    if (!action) return;
+    if (action.kind === 'open_form') {
+      openFormFromAction(action);
+      return;
+    }
+    console.warn('Unknown row action', action);
+  }
+
+  // Formulář podle akce `kind: 'open_form'` (akce detailu i řádku stromu).
+  function openFormFromAction(action) {
+    const target = action.target ?? {};
+    if (!target.table) return;
+    expandTreeRowForAction(action);
+    formTable = target.table;
+    editRecordId = target.mode === 'edit' ? (target.id ?? null) : null;
+    formDefaultData = target.preset ?? {};
+    formOpen = true;
   }
 
   function handleDrawerClose() {
@@ -918,12 +1076,25 @@
 
     // Custom akce — generická obsluha podle kind.
     if (action.kind === 'open_form') {
+      openFormFromAction(action);
+      return;
+    }
+    // Výběr záznamu téhož vieweru (#169 D26 — Podřízená místa v detailu):
+    // je-li v načtených řádcích, vybere se (strom odkryje cestu) a detail
+    // se přepne na něj — žádný modal nad drawerem. Pojistka: záznam mezi
+    // řádky není (jiná záložka stavů, stránkování seznamu) → read-only
+    // náhled jako open_detail se stejným targetem.
+    if (action.kind === 'select_row') {
       const target = action.target ?? {};
-      if (!target.table) return;
-      formTable = target.table;
-      editRecordId = target.mode === 'edit' ? (target.id ?? null) : null;
-      formDefaultData = target.preset ?? {};
-      formOpen = true;
+      if (target.recordId == null) return;
+      if (target.viewerId === tab.viewerId && rows.some(r => r.id === target.recordId)) {
+        revealTreeRow(target.recordId);
+        selectedRowId = target.recordId;
+        fetchDetail(target.recordId);
+        return;
+      }
+      if (!target.viewerId) return;
+      detailModal = { viewerId: target.viewerId, recordId: target.recordId, tabId: target.tabId ?? null };
       return;
     }
     // Read-only náhled jiného záznamu v modalu (odkaz na doklad z tabulky
@@ -1014,6 +1185,9 @@
     activeLayout = 'list';
     activeSort = null;
     footer = null;
+    treeExpanded = null;
+    treeTempExpanded = null;
+    treeTooMany = false;
     // Sentinel: init nového vieweru běží — layout-change $effect nesmí
     // střílet, dokud fetchMeta().then nenastaví prevLayout.
     prevLayout = null;
@@ -1065,9 +1239,11 @@
       const chosenLayout = persisted !== null && layouts.includes(persisted)
         ? persisted
         : (untrack(() => meta)?.defaultLayout ?? 'list');
-      const layout = isMobile || !layouts.includes('grid') ? 'list' : chosenLayout;
+      const layout = effectiveLayoutOf(chosenLayout, layouts, isMobile);
       prevLayout = layout;
       activeLayout = chosenLayout;
+      // Uložené rozbalení stromu (null = nic uloženo → rozbalené kořeny).
+      treeExpanded = getExpanded(viewerId);
 
       // Výchozí viewGroup zná až meta — docState viewery vrací 'active',
       // datové (LedgerViewer) kód první skupiny. Fixní skupina ze sidebar
@@ -1091,6 +1267,8 @@
       fetchRowsExplicit(viewerId, '', viewGroup, activeBottomTab, filters, 0, layout).then(() => {
         if (pendingRecord != null) {
           selectedRowId = pendingRecord;
+          // Ve stromu může být řádek schovaný pod sbaleným předkem.
+          revealTreeRow(pendingRecord);
           fetchDetail(pendingRecord);
         }
       });
@@ -1109,13 +1287,18 @@
     }
     prevLayout = layout;
     untrack(() => {
-      // List má vlastní pevné řazení — sort patří jen gridu (D9).
-      if (layout === 'list') {
+      // List má vlastní pevné řazení a strom pořadí sourozenců — sort
+      // patří jen gridu (D9).
+      if (layout !== 'grid') {
         activeSort = null;
       }
       selectedRowId = null;
       detail = null;
       pageNumber = 0;
+      // Řádky starého layoutu mají jiný tvar — do příchodu nových se
+      // ukáže načítání, ne řádky nakreslené cizí komponentou.
+      rows = [];
+      treeTooMany = false;
       fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, layout, activeSort);
     });
   });
@@ -1301,13 +1484,33 @@
             <button class="shpd-viewer__search-clear" onclick={handleSearchClear} aria-label={t('viewer.search.clear')}>×</button>
           {/if}
         </div>
-        {#if hasLayoutToggle}
-          <!-- Ikona ukazuje CÍLOVÝ layout (v gridu list a naopak). -->
+        {#if isTree}
+          <!-- Rozbalit vše / Sbalit vše (D9) — jen ve stromu, i na telefonu. -->
           <Button
             iconOnly
             variant="ghost"
-            icon={isGrid ? iconList : iconTable}
-            label={t(isGrid ? 'viewer.layout.showList' : 'viewer.layout.showGrid')}
+            icon={iconExpandAll}
+            label={t('viewer.tree.expandAll')}
+            testid="viewer-tree-expand-all"
+            onclick={handleTreeExpandAll}
+          />
+          <Button
+            iconOnly
+            variant="ghost"
+            icon={iconCollapseAll}
+            label={t('viewer.tree.collapseAll')}
+            testid="viewer-tree-collapse-all"
+            onclick={handleTreeCollapseAll}
+          />
+        {/if}
+        {#if hasLayoutToggle}
+          <!-- Ikona ukazuje CÍLOVÝ layout (další v pořadí meta.layouts). -->
+          <Button
+            iconOnly
+            variant="ghost"
+            icon={LAYOUT_ICONS[layoutToggleTarget] ?? iconList}
+            label={t(LAYOUT_LABEL_KEYS[layoutToggleTarget] ?? 'viewer.layout.showList')}
+            testid="viewer-layout-toggle"
             onclick={handleLayoutToggle}
           />
         {/if}
@@ -1339,6 +1542,28 @@
           onRowDblClick={handleRowDblClick}
           onLoadMore={handleGridLoadMore}
         />
+      {:else if isTree}
+        {#if treeTooMany}
+          <!-- Strop stromu (D25): strom se nikdy neořezává napůl. -->
+          <div class="shpd-viewer__rows" data-testid="viewer-tree-too-many">
+            <div class="shpd-viewer__status">
+              {t('viewer.tree.tooMany')}
+            </div>
+          </div>
+        {:else}
+          <ViewerTree
+            columns={meta?.tree?.columns ?? []}
+            {rows}
+            {selectedRowId}
+            expanded={treeExpandedView}
+            expandAll={treeExpandAll}
+            {loadingRows}
+            onSelect={handleRowClick}
+            onRowDblClick={handleRowDblClick}
+            onToggle={handleTreeToggle}
+            onRowAction={handleRowAction}
+          />
+        {/if}
       {:else}
       <div
         class="shpd-viewer__rows"

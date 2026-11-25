@@ -1,0 +1,74 @@
+{
+    // Místa (docs/places.md, #169 D1–D18): obecný číselník míst s hierarchií
+    // (areál → budova → podlaží → místnost → místo). Typ místa je systémový
+    // (cfgItem base.places.types, řídí úrovně a adresu), druh místa je
+    // uživatelský číselník se seedem (jeden druh na typ). Cesta místa se
+    // počítá při čtení (PlaceTree), nic se neukládá navíc (D6).
+    "id": "base.places",
+    "name": "Places",
+    "name:cs": "Místa",
+    "name:en": "Places",
+    "description": "Places: hierarchical register of sites, buildings, floors, rooms and spots with place kinds",
+    "description:cs": "Místa: hierarchický číselník areálů, budov, podlaží, místností a míst s druhy míst",
+    "description:en": "Places: hierarchical register of sites, buildings, floors, rooms and spots with place kinds",
+
+    "dependencies": ["core.system", "core.attachments", "base.persons", "world.validations"],
+
+    "tables": [
+        "base_places_kinds",
+        "base_places_places"
+    ],
+
+    // Nastavení → Místa (#169 D1): místa a druhy míst. Viewery nemají
+    // `navSection` — do hlavní navigace nepatří, žijí v Nastavení.
+    "settingsItems": [
+        { "viewer": "base.places.places", "section": "places", "order": 10 },
+        { "viewer": "base.places.kinds",  "section": "places", "order": 20 }
+    ],
+
+    "viewers": [
+        {
+            // Výchozí layout je strom (#169 D8–D12, docs/viewer-tree.md),
+            // seznam s cestou ve druhém řádku zůstává přes přepínač (D24).
+            // Hlavičku detailu (název, cesta · druh, ikona podle druhu)
+            // skládá PlacesViewer.
+            "id": "base.places.places",
+            "name": "Places",
+            "name:cs": "Místa",
+            "name:en": "Places",
+            "icon": "place-building",
+            "table": "base_places_places",
+            "class": "Shipard\\Module\\Base\\Places\\PlacesViewer"
+        },
+        {
+            "id": "base.places.kinds",
+            "name": "Place kinds",
+            "name:cs": "Druhy míst",
+            "name:en": "Place kinds",
+            "icon": "kinds",
+            "table": "base_places_kinds",
+            "class": "Shipard\\Module\\Base\\Places\\PlaceKindsViewer"
+        }
+    ],
+
+    "documentClasses": [
+        { "table": "base_places_kinds",  "class": "Shipard\\Module\\Base\\Places\\PlaceKindDocument" },
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlaceDocument" }
+    ],
+
+    "forms": [
+        { "table": "base_places_kinds",  "class": "Shipard\\Module\\Base\\Places\\PlaceKindsForm" },
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlacesForm" }
+    ],
+
+    "lookups": [
+        { "table": "base_places_places", "class": "Shipard\\Module\\Base\\Places\\PlacesLookup" }
+    ],
+
+    "config": [
+        { "id": "base.places.types",     "file": "config/types.jsonc" },
+        { "id": "base.places.icons",     "file": "config/icons.jsonc" },
+        { "id": "base.places.formTexts",    "file": "config/formTexts.jsonc" },
+        { "id": "base.places.viewerLabels", "file": "config/viewerLabels.jsonc" }
+    ]
+}

@@ -1,0 +1,76 @@
+{
+    // base.places.formTexts
+    //
+    // Texty prvků formulářů míst a druhů míst (#150 D87) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů,
+    // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
+    "texts": {
+        // Místo — nápověda pod řádkem Zkrácený název + Kód (#169 D4).
+        "place.namesHint": {
+            "name": "The short name is shown in the path instead of the name. The code is unique within the parent place.",
+            "name:cs": "Zkrácený název se ukazuje v cestě místo názvu. Kód je jedinečný v rámci nadřazeného místa.",
+            "name:en": "The short name is shown in the path instead of the name. The code is unique within the parent place."
+        },
+        // Místo — nápověda pod řádkem Druh + Pořadí.
+        "place.orderHint": {
+            "name": "Order within the parent place. 0 = placed last on save.",
+            "name:cs": "Pořadí v rámci nadřazeného místa. 0 = při uložení se zařadí na konec.",
+            "name:en": "Order within the parent place. 0 = placed last on save."
+        },
+        // Místo — zástupný text lookupu Nadřazené místo.
+        "place.parentPlaceholder": {
+            "name": "Search for a place…",
+            "name:cs": "Hledat místo…",
+            "name:en": "Search for a place…"
+        },
+        // Místo — nápověda lookupu Nadřazené místo se zvoleným druhem (#169 D12).
+        "place.parentHint": {
+            "name": "Only places this kind may sit under are offered. Empty = top level.",
+            "name:cs": "Nabízí jen místa, pod která druh smí patřit. Prázdné = nejvyšší úroveň.",
+            "name:en": "Only places this kind may sit under are offered. Empty = top level."
+        },
+        // Místo — nápověda lookupu Nadřazené místo bez zvoleného druhu.
+        "place.parentHintNoKind": {
+            "name": "Choose the kind first — the offer depends on it. Empty = top level.",
+            "name:cs": "Nejdřív vyberte druh — nabídka se řídí jeho typem. Prázdné = nejvyšší úroveň.",
+            "name:en": "Choose the kind first — the offer depends on it. Empty = top level."
+        },
+        // Místo — popisek uloženého druhu, který už není v nabídce (archiv, koš).
+        "place.retiredKind": {
+            "name": "{kind} — retired kind",
+            "name:cs": "{kind} — vyřazený druh",
+            "name:en": "{kind} — retired kind"
+        },
+        // Druh místa — nápověda pole Typ, dokud jde měnit (#169 D15).
+        "kind.typeHint": {
+            "name": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed or used by a place.",
+            "name:cs": "Typ určuje, kam místa druhu patří v hierarchii a jestli mají adresu. Po potvrzení druhu, nebo jakmile druh použije nějaké místo, ho nejde změnit.",
+            "name:en": "The type decides where places of this kind fit in the hierarchy and whether they have an address. It cannot be changed once the kind is confirmed or used by a place."
+        },
+        // Druh místa — nápověda pole Typ po potvrzení druhu.
+        "kind.typeLockedHint": {
+            "name": "The type of a confirmed kind cannot be changed.",
+            "name:cs": "Typ potvrzeného druhu nejde změnit.",
+            "name:en": "The type of a confirmed kind cannot be changed."
+        },
+        // Druh místa — nápověda pole Typ u konceptu, který už používají místa.
+        "kind.typeUsedHint": {
+            "name": "The type cannot be changed while places use this kind.",
+            "name:cs": "Typ nejde změnit, dokud druh používají místa.",
+            "name:en": "The type cannot be changed while places use this kind."
+        },
+        // Druh místa — prázdná volba pole Ikona (#169 D14).
+        "kind.iconByType": {
+            "name": "By type",
+            "name:cs": "Podle typu",
+            "name:en": "By type"
+        },
+        // Druh místa — nápověda pole Ikona.
+        "kind.iconHint": {
+            "name": "Empty = the icon of the type.",
+            "name:cs": "Prázdné = ikona typu.",
+            "name:en": "Empty = the icon of the type."
+        }
+    }
+}

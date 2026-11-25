@@ -1376,8 +1376,10 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 
 ## 8. Otevřené otázky
 
-- Místa: vlastní číselník v modulu, nebo obecný číselník míst (využijí
-  ho i jiné moduly)?
+- ~~Místa: vlastní číselník v modulu, nebo obecný číselník míst?~~
+  Rozhodnuto (#169): obecný číselník míst `base.places` v základu
+  aplikace, viz `docs/places.md`. Vazba karty majetku na místo (umístění,
+  pohyby) zůstává součástí oblasti 7.
 - Čísla karet (inv. č.): číselná řada per druh, nebo volný text s návrhem?
 - **Sazba pro zvýšenou vstupní cenu u majetku zařazeného před 1999**
   (nález importu `689089`): engine bere sazby podle data prvního

@@ -833,6 +833,22 @@ Kompletní kontrakty a rozhodnutí: `docs/viewer-grid.md`. Piloty:
 `BankTransactionsViewer` (první editovatelný grid, badge Zaúčtování,
 bez footeru).
 
+### Stromový layout (tree)
+
+Třetí layout pro tabulky se sloupcem rodiče: odsazené řádky s rozbalováním,
+celý strom v jedné odpovědi bez stránkování, detail vždy v draweru. Viewer
+implementuje `getTreeOptions()` + `selectTreeRows()` +
+`selectTreeRowsByIds()` + `compareTreeRows()` + `renderTreeRow()`; pořadí,
+hloubku a předky nalezených uzlů (kontext při hledání, tlumeně) skládá
+`TreeRowsBuilder`. Meta vrací `layouts` s `tree` a klíč `tree`, endpoint
+`rows` přijímá `layout=tree`. Rozbalení si pamatuje prohlížeč per zdroj
+dat a viewer (`utils/viewerTreeState.js`); při hledání, vlastním filtru
+nebo jiné záložce stavů je strom dočasně rozbalený celý. Řádek smí nést
+akci (`rowAction`, „+“ na konci řádku). Na telefonu strom **nedegraduje**
+na seznam — kreslí se přes celou šířku s dvouřádkovými řádky.
+**Přepínač layoutů** je obecný: další layout v pořadí `meta.layouts`.
+Kompletní kontrakt: `docs/viewer-tree.md`. Pilot: `PlacesViewer`.
+
 ### Mobilní viewer (list/detail)
 
 Na ≤ 48rem se viewer přepne z dvoupanelu na list/detail přepínání:
@@ -877,7 +893,7 @@ PersonsViewer          (PHP — konkrétní viewer pro base.persons)
 
 | Endpoint | Popis |
 |----------|-------|
-| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, bottomTabs, newRecordDefaults |
+| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, bottomTabs, newRecordDefaults, layouts, defaultLayout, grid, tree |
 | `GET /_ui/viewer/{id}/rows` | Záznamy (stránkované, fulltext, viewGroup + bottomTab filter) |
 | `GET /_ui/viewer/{id}/detail/{recordId}` | Detail vybraného záznamu (tabs) |
 
@@ -897,6 +913,10 @@ Parametry pro `rows`:
 - `sort=<colId>:<asc|desc>` — řazení gridu (jen s `layout=grid`); colId
   musí být `sortable` sloupec, nevalidní hodnota se tiše ignoruje.
   Viz `docs/viewer-grid.md` §7.1
+- `layout=tree` — stromový render (`renderTreeRow()`, tvar `cells` +
+  `parent`, `depth`, `childCount`, `match`); celý strom najednou, `page`
+  a `sort` se nečtou, `hasMore` je vždy `false`. Víc vybraných uzlů než
+  strop → `tooMany: true` a žádné řádky. Viz `docs/viewer-tree.md` §3
 
 ### Tab bar (doc state taby)
 
@@ -1108,7 +1128,7 @@ Typy obsahu:
 | Typ | Popis |
 |---|---|
 | `properties` | skupiny popisek–hodnota: `groups[] {title, items[] {label, value}, wide?}`. Kreslí sdílená `PropertyGroups.svelte` (`docs/design-system.md` §12, #137 D29): skupiny ve dvou sloupcích v pořadí od backendu, pod 30 rem kontejneru v jednom; `wide: true` = skupina přes celou šířku — dává ji viewer skupině s volným textem (poznámka, popis, zpráva), ne krátkým údajům; skupina, která by v řádku zůstala sama (lichá poslední, nebo před `wide`), jde přes celou šířku také (D32, počítá frontend); prázdná hodnota (`null`, `''`; `0` prázdná není) a prázdná skupina se nevykreslí; `label: ''` = hodnota přes oba sloupce. `propertiesTab()` skupiny jen filtruje, `wide` propouští beze změny |
-| `table` | tabulka (`columns` + `rows`); `columns[].align: "right"` = číselný sloupec (zarovnání doprava + `tabular-nums`, header i buňky); `rows[]._class` = klasifikace řádku — `error` (červené podbarvení, chybové řádky deníku), `total` (tučný součtový řádek s horní linkou) nebo `muted` (tlumený text — plánované řádky odpisů); `_class` není sloupec, do buněk se nerenderuje. **Buňka-odkaz**: `columns[].link: true` + `rows[]._action` (běžná akce `{id, kind, target}`) = buňka sloupce je odkaz a klik spustí akci řádku přes `onAction` — typicky `kind: "open_detail"` s `target {viewerId, recordId, tabId?}`, který `Viewer.svelte` otevře jako read-only `ViewerDetailModal` (doklady v sekci Pořízení a v tabu Náklady a výnosy karty majetku). Bez `_action` nebo v hostiteli bez `onAction` (samotný `ViewerDetailModal`) zůstává prostý text |
+| `table` | tabulka (`columns` + `rows`); `columns[].align: "right"` = číselný sloupec (zarovnání doprava + `tabular-nums`, header i buňky); `rows[]._class` = klasifikace řádku — `error` (červené podbarvení, chybové řádky deníku), `total` (tučný součtový řádek s horní linkou) nebo `muted` (tlumený text — plánované řádky odpisů); `_class` není sloupec, do buněk se nerenderuje. **Buňka-odkaz**: `columns[].link: true` + `rows[]._action` (běžná akce `{id, kind, target}`) = buňka sloupce je odkaz a klik spustí akci řádku přes `onAction` — typicky `kind: "open_detail"` s `target {viewerId, recordId, tabId?}`, který `Viewer.svelte` otevře jako read-only `ViewerDetailModal` (doklady v sekci Pořízení a v tabu Náklady a výnosy karty majetku). `kind: "select_row"` (stejný target) záznam téhož vieweru vybere a přepne na něj detail, mimo načtené řádky padá na náhled (Podřízená místa, `viewer-tree.md` D26). Bez `_action` nebo v hostiteli bez `onAction` (samotný `ViewerDetailModal`) zůstává prostý text |
 | `notice` | hláška `{tone, title?, text? \| items?}` — `tone` `info` / `success` / `warning` / `danger`, `items` seznam textů; kreslí sdílená `Notice` (`docs/design-system.md` §8 Hlášky a pruhy, #137 D30, D40) — stav zaúčtování s hlášeními enginu (`Core\Accounting\AccountingStatusContent`) |
 | `badges` | řada štítků `{items: [{label, style}]}` — tytéž styly jako `detail.badges`, kreslí `Badge`; stav zaúčtování (warning / success / danger) |
 | `empty` | prázdný stav tabu `{text}` — odstavec body šedě; text z katalogu `*.viewerDetailLabels` sekce `texts` přes `TableViewer::detailText()` (cs + en), ne natvrdo v PHP |

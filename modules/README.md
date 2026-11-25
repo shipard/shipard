@@ -68,6 +68,7 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 | Modul | Název | Popis |
 |-------|-------|-------|
 | [`base.persons`](base/persons/README.md) | Osoby | Dodavatelé, odběratelé, zaměstnanci a další osoby |
+| [`base.places`](base/places/module.jsonc) | Místa | Místa: hierarchický číselník areálů, budov, podlaží, místností a míst s druhy míst |
 | [`base.registry`](base/registry/README.md) | Spisovna | Evidence trvalých dokumentů firmy (smlouvy, pojistky, revize...) |
 
 ### `core`

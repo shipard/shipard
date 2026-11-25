@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 485 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 455.
+Celkem 487 tasků: **naplánováno** 5 · **částečně** 24 · **zrušeno** 1 · **hotovo** 457.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -247,6 +247,8 @@ Základ pro dokladový systém — osoby, měna/země, položky, období.
 | `economy-fiscal-periods.md` | Fiskální období (roky/měsíce) |
 | `economy-vat-periods.md` | Období DPH (registrace + období) |
 | `codebooks-currency-select.md` | Roletky měny/země + sdílený `EnumOptionsHelper` |
+| `places-model.md` | Místa, task A: modul `base.places` — typy (cfgItem) × druhy, místa s hierarchií, pořadím a adresou, validace úrovní, cyklu, kódu mezi sourozenci a koše s podřízenými, formuláře, lookup s cestou, sekce Místa v Nastavení (#169 D1–D18) |
+| `viewer-tree-layout.md` | Místa, task B: generický layout `tree` vieweru — kontrakt v `TableViewer`, `TreeRowsBuilder` s předky jako kontextem, `ViewerTree.svelte` s pamětí rozbalení a drawerem, pilot Místa s akcí Přidat podřízené (#169 D8–D12, D20–D25) |
 
 ## Dokladový systém (doklady, faktury)
 

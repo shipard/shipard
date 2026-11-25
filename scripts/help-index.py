@@ -47,6 +47,7 @@ SECTIONS: list[tuple[str, str]] = [
     ("pokladna", "Pokladna"),
     ("zakazky", "Zakázky"),
     ("majetek", "Majetek"),
+    ("mista", "Místa"),
     ("uctarna", "Účtárna"),
 ]
 
@@ -81,6 +82,9 @@ CATALOG_EXTRA_AGENDAS = {
     "Přiznání k DPH — živě",
     "Kontrolní hlášení — živě",
     "Souhrnné hlášení — živě",
+    # Místa — číselník v Nastavení aplikace (base.places, #169), v levém
+    # menu není; až dostane strom (task B), zůstává v Nastavení.
+    "Místa",
 }
 
 # Řádek tabulky katalogu: `| **Agenda** | …`

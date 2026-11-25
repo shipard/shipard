@@ -65,6 +65,15 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
         ]);
     }
 
+    /** Fixture moduly typy míst nemají — dva typy napevno. */
+    protected function loadPlaceTypes(string $dsDir, DataSourceConfig $dsConfig): array
+    {
+        return [
+            'building' => ['name' => 'Budova', 'level' => 20],
+            'room'     => ['name' => 'Místnost', 'level' => 50],
+        ];
+    }
+
     /** Fixture moduly katalog nemají — bere se skutečný soubor z repozitáře. */
     protected function loadModelCatalog(string $dsDir, DataSourceConfig $dsConfig): ModelCatalog
     {
@@ -633,6 +642,37 @@ class DsUpgradeCommandTest extends TestCase
         // ho nesmí uvádět mezi přeskočenými položkami.
         $this->assertStringNotContainsString('AI analyzer', $display);
         $this->assertStringNotContainsString('mail AI', $display);
+    }
+
+    public function testPlaceKindsProvisionedUnderSkipProvisioning(): void
+    {
+        // #169 D19: druhy míst nejsou migrovaná data — seed běží i na
+        // migrovaném zdroji dat, jinak by na něm nešlo založit žádné místo.
+        $moduleDir = $this->modulesPath . '/base/places';
+        mkdir($moduleDir, 0755, true);
+        file_put_contents($moduleDir . '/module.jsonc', json_encode([
+            'id'           => 'base.places',
+            'name'         => 'base.places',
+            'dependencies' => [],
+            'tables'       => [],
+            'extensions'   => [],
+            'config'       => [],
+        ]));
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'base.places']);
+
+        // fetchRow → null (mock default) = žádný seedový druh neexistuje.
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->dsConnection->expects($this->exactly(2))->method('insertRow');
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Provisioning disabled via config', $display);
+        $this->assertStringContainsString('[CREATE] place kinds — created: 2, existing: 0', $display);
     }
 
     public function testMailAiProvisionedUnderSkipProvisioning(): void

@@ -105,6 +105,12 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Přehledy majetku](majetek/prehledy-majetku.md) | Pět přehledů majetku — sestava odpisů, přírůstky a úbytky, daňové odpisy pro přiznání, soupis majetku a kontrola evidence proti účetnímu deníku — kdy který použít a co dělat, když kontrola hlásí nesoulad. |
 | [Zaúčtování majetku](majetek/zauctovani-majetku.md) | Jak účetní odpisy, zařazení, technické zhodnocení a vyřazení majetku zaúčtovat jedním účetním dokladem za období, co se kam účtuje a jak zaúčtování období zrušit. |
 
+### Místa
+
+| Stránka | Co v ní najdeš |
+|---------|----------------|
+| [Místa a druhy míst](mista/mista-a-druhy-mist.md) | Jak založit strom míst od areálu po pracovní místo, jak se ve stromu pohybovat a přidat podřízené místo, co smí být pod čím, jak místo přesunout a kdy má místo adresu. |
+
 ### Účtárna
 
 | Stránka | Co v ní najdeš |

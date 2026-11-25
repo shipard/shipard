@@ -46,6 +46,7 @@
 | [attachments.md](attachments.md) | Systém příloh dokumentů — upload, download, náhledy, úložiště souborů, API endpointy |
 | [frontend.md](frontend.md) | Frontend architektura — Svelte 5, komponenty, viewer systém, ikony, API komunikace |
 | [viewer-grid.md](viewer-grid.md) | **Designový dokument** — tabulkový layout vieweru (grid): sloupce, sticky hlavička, nekonečné skrolování; pro účetní deník, bankovní transakce a saldokonto |
+| [viewer-tree.md](viewer-tree.md) | Stromový layout vieweru (tree): kontrakt `TableViewer`, `TreeRowsBuilder`, předci jako kontext při hledání, paměť rozbalení, akce řádku; pilot Místa |
 | [edit-forms.md](edit-forms.md) | Editační formuláře — server-driven architektura, generický klient, 4-sloupcový grid, JSONC vs `TableForm`, integrace s doc states |
 | [edit-forms-cookbook.md](edit-forms-cookbook.md) | Edit Forms Cookbook — krátké copy-paste vzory pro psaní formulářů (doplněk k `edit-forms.md`) |
 | [app-settings.md](app-settings.md) | Nastavení aplikace — mechanismus settings pages (server-driven stránky vlastností), key-value `core_system_settings`, branding (název, logo, ikona) |

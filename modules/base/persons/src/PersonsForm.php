@@ -11,6 +11,7 @@ use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
 use Shipard\Module\Base\Persons\Send\SendPurposes;
+use Shipard\Module\Base\Persons\Values\AddressFormat;
 
 class PersonsForm extends TableForm
 {
@@ -273,15 +274,7 @@ class PersonsForm extends TableForm
      */
     private function formatStreet(array $row): ?string
     {
-        $street = trim((string) ($row['street'] ?? ''));
-        $house  = trim((string) ($row['house_number'] ?? ''));
-        $orient = trim((string) ($row['orientation_number'] ?? ''));
-        $number = $house;
-        if ($orient !== '') {
-            $number = $number !== '' ? "{$number}/{$orient}" : $orient;
-        }
-        $text = trim("{$street} {$number}");
-        return $text !== '' ? $text : null;
+        return AddressFormat::street($row);
     }
 
     private function plainCell(mixed $value): ?string
