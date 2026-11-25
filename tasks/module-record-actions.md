@@ -1,6 +1,6 @@
 # Akce záznamu s obsluhou v modulu (#172 D12–D15, D19)
 
-**Stav:** hotovo — 2026-11-25 v pěti commitech (#172 D12–D15, D19); frontend ověřen v headless prohlížeči proti podvrženému endpointu, zbývá průchod naostro s přihlášeným uživatelem
+**Stav:** hotovo — 2026-11-25 v pěti commitech (#172 D12–D15, D19); ověřeno v headless prohlížeči i ručním proklikem naostro s přihlášeným uživatelem
 
 > Task pro Claude Code (5 commitů). Design: issue #172 (komentář
 > „Body rozšíření v UI“). Sesterský task C1 `tasks/module-ui-extensions.md`
@@ -263,7 +263,7 @@ Commit 5 (`docs: akce záznamu z modulů (#172 D12–D15, D19)`) včetně
 - [x] frontend: akce bez dialogu, s potvrzením a s dialogem fungují
       v hlavním detailu i v draweru; chyby polí u polí; toast a obnovení
       po úspěchu; dvojklik akci nespustí dvakrát; testy helperu zelené
-      (v headless prohlížeči proti podvrženému endpointu — viz poznámky)
+      (headless prohlížeč + ruční proklik naostro — viz poznámky)
 - [x] fixtura s akcí nad tabulkou `test_uihost_records` (moduly
       `test/uiHost` a `test/uiExtensions` z C1) pokrývá dialog se všemi
       typy polí; žádný skutečný modul
@@ -356,14 +356,19 @@ nepoužívá.
   První běh našel chybu, kterou build ani testy nechytí: `bind:value` na
   hodnotu, která je při prvním vykreslení `undefined` (dialog se
   neotevřel) — vazby mají getter s výchozí hodnotou.
-- **Co ověřeno není:** průchod naostro s přihlášeným uživatelem. Endpoint
-  i výpis akcí v detailu chtějí přihlášení a založení dočasného účtu
-  z Claude Code neprošlo, takže detail dostal akce a endpoint odpovědi
-  podvržené v prohlížeči podle kontraktu (`route.fulfill`); čtení seznamu
-  a detailu šlo proti skutečnému backendu. Serverovou stranu kryjí testy
-  controlleru (31) a validátoru. Zbývá ručně: přihlásit se, kliknout na
-  akci s dialogem a souborem — tím se ověří i skutečné `multipart` přes
-  nginx a PHP-FPM.
+- **Průchod naostro** (ruční proklik přihlášeným správcem na zdroji dat
+  `4l3j-z`, táž dočasná akce): akce bez dialogu, s potvrzením i s dialogem
+  a souborem proběhly — skutečný `multipart` přes nginx a PHP-FPM tedy
+  funguje. V logu jsou čtyři záznamy „Record action“ (uživatel, akce,
+  tabulka, záznam, výsledek `success` / `warning`) bez hodnot polí a žádné
+  selhání poskytovatele. Headless běh před tím šel bez přihlášení: detail
+  dostal akce a endpoint odpovědi podvržené podle kontraktu
+  (`route.fulfill`), protože založení dočasného účtu z Claude Code
+  neprošlo.
+- **Naostro nezkoušeno** (kryjí jen testy controlleru a validátoru
+  a headless běh): odpověď 422 ze serveru (chyba pole z akce, soubor nad
+  limit), skrytí akce `admin: true` běžnému uživateli a 403 ve zdroji dat
+  jen pro čtení.
 
 **Na co navazuje.** Doplněk Evidence tržeb (#171): Nahrát certifikát
 (soubor + heslo), Ověřit spojení, Kontaktní platba.
