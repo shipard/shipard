@@ -30,6 +30,12 @@
         {"command": "exchange-rates-download", "slot": "five-minutes"}
     ],
 
+    // Sekce server.json, kterou čte jen tento modul (#172 D7, D10): adresa
+    // služby kurzovních lístků `exchangeRates.serviceUrl`.
+    "serverConfig": [
+        {"key": "exchangeRates", "class": "Shipard\\Module\\Economy\\ExchangeRates\\ExchangeRatesServerConfig"}
+    ],
+
     "tables": [
         "economy_exchange_rates_lists",
         "economy_exchange_rates_values"

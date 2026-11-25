@@ -21,6 +21,12 @@
         "Shipard\\Module\\Base\\Persons\\Command\\ValuesNormalizeCommand"
     ],
 
+    // Sekce server.json, kterou čte jen tento modul (#172 D7, D10): adresa
+    // registru osob `registry.persons.baseUrl`.
+    "serverConfig": [
+        {"key": "registry.persons", "class": "Shipard\\Module\\Base\\Persons\\Registry\\PersonsRegistryServerConfig"}
+    ],
+
     "tables": [
         "base_persons_persons",
         "base_persons_contacts",

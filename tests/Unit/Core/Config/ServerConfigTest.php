@@ -110,37 +110,10 @@ class ServerConfigTest extends TestCase
         // povinná pole čte load() smyčkou přes seznam, ne literálem
         $read = array_values(array_unique([...$read, 'host', 'port', 'admin_user', 'admin_password', 'mode']));
 
-        // Sekce, které čte jen kód modulu — stěhují se do modulů (#172 D10).
-        $moduleSections = ['registry', 'exchangeRates', 'ai'];
-
-        $expected = [...ServerConfig::CORE_KEYS, ...$moduleSections];
+        $expected = ServerConfig::CORE_KEYS;
         sort($read);
         sort($expected);
         $this->assertSame($expected, $read);
-        $this->assertSame([], array_intersect(ServerConfig::CORE_KEYS, $moduleSections));
-    }
-
-    public function testGetAiAnalysisMaxConcurrentDefaultsAndValidates(): void
-    {
-        $base = ['host' => 'h', 'port' => 1, 'admin_user' => 'u', 'admin_password' => 'p', 'mode' => 'development'];
-
-        $config = new ServerConfig($this->createConfig($base));
-        $config->load();
-        $this->assertSame(2, $config->getAiAnalysisMaxConcurrent());
-
-        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => 0]]]));
-        $config->load();
-        $this->assertSame(0, $config->getAiAnalysisMaxConcurrent());
-
-        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => 5]]]));
-        $config->load();
-        $this->assertSame(5, $config->getAiAnalysisMaxConcurrent());
-
-        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => -1]]]));
-        $config->load();
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('ai.analysis.maxConcurrent');
-        $config->getAiAnalysisMaxConcurrent();
     }
 
     public function testGetDevAiDefaultsToAnthropicAndReadsTheSection(): void
@@ -369,131 +342,10 @@ class ServerConfigTest extends TestCase
         $config->load();
     }
 
-    public function testGetRegistryPersonsBaseUrlDefault(): void
-    {
-        $path = $this->createConfig([
-            'host'           => '127.0.0.1',
-            'port'           => 3306,
-            'admin_user'     => 'root',
-            'admin_password' => 'secret',
-            'mode'           => 'production',
-        ]);
-
-        $config = new ServerConfig($path);
-        $config->load();
-
-        $this->assertSame('https://data.shipard.org/persons', $config->getRegistryPersonsBaseUrl());
-    }
-
-    public function testGetRegistryPersonsBaseUrlCustom(): void
-    {
-        $path = $this->createConfig([
-            'host'           => '127.0.0.1',
-            'port'           => 3306,
-            'admin_user'     => 'root',
-            'admin_password' => 'secret',
-            'mode'           => 'production',
-            'registry'       => [
-                'persons' => [
-                    'baseUrl' => 'https://dev-example.shpd.dev/abcd-efgh-ijkl-mnop/www/data.shipard.org/persons',
-                ],
-            ],
-        ]);
-
-        $config = new ServerConfig($path);
-        $config->load();
-
-        $this->assertSame(
-            'https://dev-example.shpd.dev/abcd-efgh-ijkl-mnop/www/data.shipard.org/persons',
-            $config->getRegistryPersonsBaseUrl(),
-        );
-    }
-
-    public function testGetRegistryPersonsBaseUrlStripsTrailingSlash(): void
-    {
-        $path = $this->createConfig([
-            'host'           => '127.0.0.1',
-            'port'           => 3306,
-            'admin_user'     => 'root',
-            'admin_password' => 'secret',
-            'mode'           => 'production',
-            'registry'       => ['persons' => ['baseUrl' => 'https://example.org/persons/']],
-        ]);
-
-        $config = new ServerConfig($path);
-        $config->load();
-
-        $this->assertSame('https://example.org/persons', $config->getRegistryPersonsBaseUrl());
-    }
-
-    public function testExchangeRatesServiceUrlDefaultsToPublicService(): void
-    {
-        $config = new ServerConfig($this->createConfig($this->baseConfig()));
-        $config->load();
-
-        $this->assertSame('https://data.shipard.app/feed/money-exchange-rates', $config->getExchangeRatesServiceUrl());
-        $this->assertSame(ServerConfig::DEFAULT_EXCHANGE_RATES_SERVICE_URL, $config->getExchangeRatesServiceUrl());
-    }
-
-    public function testExchangeRatesServiceUrlEmptyStringDisablesDownloading(): void
-    {
-        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => '']]));
-        $config->load();
-
-        $this->assertNull($config->getExchangeRatesServiceUrl());
-    }
-
-    public function testExchangeRatesServiceUrlCustomStripsTrailingSlash(): void
-    {
-        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 'http://127.0.0.1:8099/feed/']]));
-        $config->load();
-
-        $this->assertSame('http://127.0.0.1:8099/feed', $config->getExchangeRatesServiceUrl());
-    }
-
-    public function testExchangeRatesServiceUrlRejectsNonHttpScheme(): void
-    {
-        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 'ftp://example.org/feed']]));
-        $config->load();
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('exchangeRates.serviceUrl');
-        $config->getExchangeRatesServiceUrl();
-    }
-
-    public function testExchangeRatesServiceUrlRejectsNonString(): void
-    {
-        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['exchangeRates' => ['serviceUrl' => 42]]));
-        $config->load();
-
-        $this->expectException(\RuntimeException::class);
-        $config->getExchangeRatesServiceUrl();
-    }
-
     /** @return array<string, mixed> */
     private function baseConfig(): array
     {
         return ['host' => '127.0.0.1', 'port' => 3306, 'admin_user' => 'root', 'admin_password' => 'secret', 'mode' => 'production'];
-    }
-
-    public function testGetRegistryPersonsBaseUrlRejectsNonHttpScheme(): void
-    {
-        $path = $this->createConfig([
-            'host'           => '127.0.0.1',
-            'port'           => 3306,
-            'admin_user'     => 'root',
-            'admin_password' => 'secret',
-            'mode'           => 'production',
-            'registry'       => ['persons' => ['baseUrl' => 'ftp://example.org/persons']],
-        ]);
-
-        $config = new ServerConfig($path);
-        $config->load();
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/registry\.persons\.baseUrl.*http/i');
-
-        $config->getRegistryPersonsBaseUrl();
     }
 
     public function testLoadMissingEachRequiredField(): void

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Mail\Analysis\AnalysisSlots;
+use Shipard\Module\Core\Mail\Analysis\MailAnalysisServerConfig;
 
 /**
  * Sloty souběhu (D15): nejvýš `maxConcurrent` držených zámků, uvolnění,
@@ -120,7 +121,7 @@ final class AnalysisSlotsTest extends TestCase
         file_put_contents($path, json_encode($base + ['ai' => ['analysis' => ['maxConcurrent' => 'two']]]));
         $config = new ServerConfig($path);
         $config->load();
-        $this->assertSame(ServerConfig::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT, AnalysisSlots::maxConcurrentOf($config));
+        $this->assertSame(MailAnalysisServerConfig::DEFAULT_MAX_CONCURRENT, AnalysisSlots::maxConcurrentOf($config));
         $this->assertStringContainsString('invalid ai.analysis.maxConcurrent', (string) file_get_contents($this->logFile));
 
         unlink($path);

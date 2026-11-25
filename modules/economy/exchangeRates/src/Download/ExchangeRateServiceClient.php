@@ -13,7 +13,7 @@ namespace Shipard\Module\Economy\ExchangeRates\Download;
  * `{"valid": 1, "data": [lístky]}`, bez lístku `{"valid": 0}`, chybné
  * parametry `{"valid": 0, "error": "…"}`. Do zpráv jde jen stručný důvod,
  * nikdy tělo odpovědi. Adresa jen ze server.json
- * (`ServerConfig::getExchangeRatesServiceUrl`).
+ * (`ExchangeRatesServerConfig`, sekce `exchangeRates`).
  */
 final class ExchangeRateServiceClient
 {

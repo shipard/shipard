@@ -12,6 +12,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Base\Persons\Registry\PersonsRegistryClient;
+use Shipard\Module\Base\Persons\Registry\PersonsRegistryServerConfig;
 use Shipard\Module\Base\Persons\Registry\RegistryPersonImporter;
 use Shipard\Module\Base\Persons\Registry\RegistryUnavailableException;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
@@ -63,7 +64,7 @@ class PersonsRegistryControllerTest extends IntegrationTestCase
         } catch (\RuntimeException $e) {
             $this->markTestSkipped('ServerConfig not loadable: ' . $e->getMessage());
         }
-        $this->registryBaseUrl = $serverConfig->getRegistryPersonsBaseUrl();
+        $this->registryBaseUrl = PersonsRegistryServerConfig::fromServerConfig($serverConfig)->baseUrl();
 
         $modulePathResolver = new ModulePathResolver([dirname(__DIR__, 3) . '/modules']);
         $documentRegistry = DocumentLoader::load($this->dsConfig, $modulePathResolver);

@@ -70,7 +70,7 @@ class PersonsRegistryClient
 
     public static function fromServerConfig(ServerConfig $config): self
     {
-        return new self($config->getRegistryPersonsBaseUrl());
+        return new self(PersonsRegistryServerConfig::fromServerConfig($config)->baseUrl());
     }
 
     // ── Public API ──────────────────────────────────────────────────────────

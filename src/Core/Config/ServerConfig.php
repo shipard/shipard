@@ -11,11 +11,6 @@ use Shipard\Core\Server\HostingConfig;
 
 class ServerConfig
 {
-    public const DEFAULT_AI_ANALYSIS_MAX_CONCURRENT = 2;
-
-    /** Veřejná služba kurzovních lístků (#121 task B, U3). */
-    public const DEFAULT_EXCHANGE_RATES_SERVICE_URL = 'https://data.shipard.app/feed/money-exchange-rates';
-
     /**
      * Klíče nejvyšší úrovně `server.json`, které čte jádro (#172 D10).
      * Sekce deklarovaná modulem (`serverConfig` v `module.jsonc`) jimi
@@ -149,64 +144,6 @@ class ServerConfig
     }
 
     /**
-     * Base URL of the Shipard persons registry (combined ARES + RPO +
-     * VAT-registry HTTP service). Read from nested config key
-     * `registry.persons.baseUrl`; defaults to the public service.
-     *
-     * Trailing slash is stripped so callers can append paths uniformly:
-     *   `{baseUrl}/{country}/{companyId}/json?formatMode=ns`
-     *
-     * Used by `PersonsRegistryClient` (modul base.persons) for the
-     * "Přidat firmu z registru" wizard and the exchange party import.
-     */
-    public function getRegistryPersonsBaseUrl(): string
-    {
-        $url = $this->data['registry']['persons']['baseUrl']
-            ?? 'https://data.shipard.org/persons';
-        if (!is_string($url) || $url === '') {
-            throw new \RuntimeException(
-                "Server config 'registry.persons.baseUrl' must be a non-empty string",
-            );
-        }
-        if (!preg_match('#^https?://#', $url)) {
-            throw new \RuntimeException(
-                "Server config 'registry.persons.baseUrl' must start with http:// or https://, got '{$url}'",
-            );
-        }
-        return rtrim($url, '/');
-    }
-
-    /**
-     * Adresa služby kurzovních lístků — `exchangeRates.serviceUrl`
-     * (#121 task B, U3, docs/exchange-rates.md §9): klíč chybí → veřejná
-     * služba; prázdný řetězec → null = stahování vypnuté (úloha
-     * `exchange-rates-download` skončí hned); jiná hodnota musí být http(s).
-     * Čte ji `ExchangeRatesDownloadCommand` (modul economy.exchangeRates).
-     */
-    public function getExchangeRatesServiceUrl(): ?string
-    {
-        $section = $this->data['exchangeRates'] ?? null;
-        if (!is_array($section) || !array_key_exists('serviceUrl', $section)) {
-            return self::DEFAULT_EXCHANGE_RATES_SERVICE_URL;
-        }
-        $url = $section['serviceUrl'];
-        if ($url === '') {
-            return null;
-        }
-        if (!is_string($url)) {
-            throw new \RuntimeException(
-                "Server config 'exchangeRates.serviceUrl' must be a string (empty string disables downloading)",
-            );
-        }
-        if (!preg_match('#^https?://#', $url)) {
-            throw new \RuntimeException(
-                "Server config 'exchangeRates.serviceUrl' must start with http:// or https://, got '{$url}'",
-            );
-        }
-        return rtrim($url, '/');
-    }
-
-    /**
      * Server-wide default SMTP relay pro odchozí poštu — nested klíč
      * `mail.relay`. Null = relay není nakonfigurován (per-DS override
      * v main.json může platit i tak; merge dělá MailServiceFactory).
@@ -269,28 +206,6 @@ class ServerConfig
             throw new \RuntimeException("Server config 'devAi' must be an object");
         }
         return DevAiConfig::fromArray($devAi);
-    }
-
-    /**
-     * Limit souběhu AI analýz pošty per server — nested klíč
-     * `ai.analysis.maxConcurrent` (tasks/mail-analysis-inprocess.md D15).
-     * Chybějící sekce = výchozí {@see DEFAULT_AI_ANALYSIS_MAX_CONCURRENT};
-     * `0` = analýza pošty na tomto serveru vypnutá (vypínač, žádný
-     * runner se nespustí).
-     * Záporná nebo nečíselná hodnota je chyba konfigurace.
-     */
-    public function getAiAnalysisMaxConcurrent(): int
-    {
-        $ai = $this->data['ai'] ?? null;
-        $analysis = is_array($ai) ? ($ai['analysis'] ?? null) : null;
-        $value = is_array($analysis) ? ($analysis['maxConcurrent'] ?? null) : null;
-        if ($value === null) {
-            return self::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT;
-        }
-        if (!is_int($value) || $value < 0) {
-            throw new \RuntimeException("Server config 'ai.analysis.maxConcurrent' must be a non-negative integer");
-        }
-        return $value;
     }
 
     /**

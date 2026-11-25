@@ -25,6 +25,7 @@ use Shipard\Module\Economy\ExchangeRates\Download\FiscalYears;
 use Shipard\Module\Economy\ExchangeRates\Download\WorkingDayCalendars;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateListImporter;
 use Shipard\Module\Economy\ExchangeRates\ExchangeRateResolver;
+use Shipard\Module\Economy\ExchangeRates\ExchangeRatesServerConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -265,7 +266,7 @@ class ExchangeRatesDownloadCommand extends Command
             return ['url' => null, 'error' => 'server.json: ' . $e->getMessage()];
         }
         try {
-            $url = $serverConfig->getExchangeRatesServiceUrl();
+            $url = ExchangeRatesServerConfig::fromServerConfig($serverConfig)->serviceUrl();
         } catch (\RuntimeException $e) {
             return ['url' => null, 'error' => $e->getMessage()];
         }

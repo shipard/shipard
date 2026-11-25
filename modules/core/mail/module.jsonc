@@ -46,6 +46,12 @@
         {"command": "mail-idempotency-prune", "slot": "daily", "states": ["active", "read_only"]}
     ],
 
+    // Sekce server.json, kterou čte jen tento modul (#172 D7, D10): limit
+    // souběhu analýz pošty `ai.analysis.maxConcurrent`.
+    "serverConfig": [
+        {"key": "ai.analysis", "class": "Shipard\\Module\\Core\\Mail\\Analysis\\MailAnalysisServerConfig"}
+    ],
+
     // AI funkce modulu (#85 D36). Model určuje mapa úrovní `core.ai.tiers`,
     // zdroj dat ji přepíše v nastavení funkce nebo v AI profilu (D4).
     "aiFunctions": [

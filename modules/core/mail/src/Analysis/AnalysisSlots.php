@@ -10,7 +10,8 @@ use Shipard\Core\Server\CronProvisioner;
 
 /**
  * Limit souběhu AI analýz per server (tasks/mail-analysis-inprocess.md D15):
- * `ai.analysis.maxConcurrent` v server.json (výchozí 2), slot = neblokující
+ * `ai.analysis.maxConcurrent` v server.json (výchozí 2, sekci čte
+ * {@see MailAnalysisServerConfig}), slot = neblokující
  * `flock` na `ai-analysis-<n>.lock` v {@see CronProvisioner::RUN_DIR}.
  * Runner bez volného slotu končí bez claimu — zpráva zůstává ve frontě
  * pro sweep. Hodnota 0 = analýza v procesu vypnutá.
@@ -44,17 +45,17 @@ final class AnalysisSlots
                 $config = new ServerConfig();
                 $config->load();
             } catch (\Throwable) {
-                return ServerConfig::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT;
+                return MailAnalysisServerConfig::DEFAULT_MAX_CONCURRENT;
             }
         }
         try {
-            return $config->getAiAnalysisMaxConcurrent();
+            return MailAnalysisServerConfig::fromServerConfig($config)->maxConcurrent();
         } catch (\Throwable $e) {
             ErrorLogger::error('AnalysisSlots: invalid ai.analysis.maxConcurrent in server.json — using the default', [
                 'error' => $e->getMessage(),
-                'default' => ServerConfig::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT,
+                'default' => MailAnalysisServerConfig::DEFAULT_MAX_CONCURRENT,
             ]);
-            return ServerConfig::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT;
+            return MailAnalysisServerConfig::DEFAULT_MAX_CONCURRENT;
         }
     }
 
