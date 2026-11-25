@@ -49,6 +49,10 @@ class ModuleDefinition
         public readonly array $overviewBlocks = [],
         /** Druh modulu (#170 D4): instalační podle skupiny, doplněk podle pole `kind`, jinak jádro. */
         public readonly ModuleKind $kind = ModuleKind::Core,
+        /** @var list<array<string, mixed>> vlastní sekce hlavního sidebaru (#170 D13) */
+        public readonly array $navSections = [],
+        /** @var list<array<string, mixed>> vlastní sekce Nastavení, volitelně s podsekcemi (#170 D13) */
+        public readonly array $settingsSections = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -87,6 +91,14 @@ class ModuleDefinition
             }
             $kind = ModuleKind::Addon;
         }
+
+        // navSections / settingsSections — vlastní sekce modulu v hlavním
+        // sidebaru a v Nastavení (#170 D13). ConfigCompiler je připojí
+        // k sekcím instalačního modulu (`global.navSections`,
+        // `global.settingsSections`); položky do nich modul dává jako do
+        // každé jiné sekce (`navSection` vieweru, `section` u settingsItems).
+        $navSections = self::parseSections($data, 'navSections', false);
+        $settingsSections = self::parseSections($data, 'settingsSections', true);
 
         // settingsItems (Nastavení aplikace) i accountItems (Nastavení účtu)
         // sdílí stejný tvar položky (viewer|table|page + section/order) —
@@ -838,7 +850,113 @@ class ModuleDefinition
             aiFunctions: $aiFunctions,
             overviewBlocks: $overviewBlocks,
             kind: $kind,
+            navSections: $navSections,
+            settingsSections: $settingsSections,
         );
+    }
+
+    /**
+     * Vlastní sekce modulu (`navSections`, `settingsSections`, #170 D13) —
+     * tvar položky jako v `navSections.jsonc` / `settingsSections.jsonc`
+     * instalačního modulu: povinné `id`, `name` (+ varianty `name:<jazyk>`)
+     * a celočíselné `order`, volitelný `icon`; sekce Nastavení smí nést
+     * `subsections`. Varianty názvu zůstávají — lokalizuje až kompilace.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array<string, mixed>>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseSections(array $data, string $key, bool $allowSubsections): array
+    {
+        if (!array_key_exists($key, $data)) {
+            return [];
+        }
+        if (!is_array($data[$key]) || !array_is_list($data[$key])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': {$key} must be a JSON array");
+        }
+
+        $sections = [];
+        foreach ($data[$key] as $idx => $raw) {
+            $where = "Module '{$data['id']}': {$key}[{$idx}]";
+            $section = self::parseSection($raw, $where, '/^[a-z][a-zA-Z0-9]*$/', $allowSubsections ? ['icon', 'subsections'] : ['icon']);
+            $sectionId = $section['id'];
+            if (isset($sections[$sectionId])) {
+                throw new \InvalidArgumentException("Module '{$data['id']}': {$key} has duplicate id '{$sectionId}'");
+            }
+
+            if (array_key_exists('subsections', $section)) {
+                if (!is_array($section['subsections']) || !array_is_list($section['subsections'])) {
+                    throw new \InvalidArgumentException("{$where}.subsections must be a JSON array");
+                }
+                // Podsekce nese id sekce jako prefix (`other.system`) — id
+                // podsekce je tak jedinečné napříč sekcemi.
+                $subsections = [];
+                foreach ($section['subsections'] as $subIdx => $rawSub) {
+                    $sub = self::parseSection(
+                        $rawSub,
+                        "{$where}.subsections[{$subIdx}]",
+                        '/^' . preg_quote($sectionId, '/') . '\.[a-z][a-zA-Z0-9]*$/',
+                        [],
+                    );
+                    if (isset($subsections[$sub['id']])) {
+                        throw new \InvalidArgumentException("{$where}.subsections has duplicate id '{$sub['id']}'");
+                    }
+                    $subsections[$sub['id']] = $sub;
+                }
+                $section['subsections'] = array_values($subsections);
+            }
+
+            $sections[$sectionId] = $section;
+        }
+        return array_values($sections);
+    }
+
+    /**
+     * Jedna sekce nebo podsekce: `id` podle vzoru, `name`, `order`
+     * a volitelné klíče; neznámý klíč je chyba (překlep by jinak tiše zmizel).
+     *
+     * @param list<string> $optionalKeys
+     * @return array<string, mixed>
+     */
+    private static function parseSection(mixed $raw, string $where, string $idPattern, array $optionalKeys): array
+    {
+        if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+            throw new \InvalidArgumentException("{$where} must be an object");
+        }
+        $id = $raw['id'] ?? null;
+        if (!is_string($id) || !preg_match($idPattern, $id)) {
+            throw new \InvalidArgumentException("{$where}.id is missing or invalid (expected {$idPattern})");
+        }
+        if (!is_string($raw['name'] ?? null) || $raw['name'] === '') {
+            throw new \InvalidArgumentException("{$where} requires a non-empty 'name'");
+        }
+        if (!is_int($raw['order'] ?? null)) {
+            throw new \InvalidArgumentException("{$where}.order must be an integer");
+        }
+
+        $section = ['id' => $id];
+        foreach ($raw as $field => $value) {
+            $field = (string) $field;
+            if ($field === 'id') {
+                continue;
+            }
+            if ($field === 'name' || preg_match('/^name:[a-z]{2}$/', $field)) {
+                if (!is_string($value) || $value === '') {
+                    throw new \InvalidArgumentException("{$where}.{$field} must be a non-empty string");
+                }
+            } elseif ($field === 'icon') {
+                if (!in_array('icon', $optionalKeys, true)) {
+                    throw new \InvalidArgumentException("{$where} has unknown key 'icon'");
+                }
+                if (!is_string($value) || $value === '') {
+                    throw new \InvalidArgumentException("{$where}.icon must be a non-empty string");
+                }
+            } elseif ($field !== 'order' && !in_array($field, $optionalKeys, true)) {
+                throw new \InvalidArgumentException("{$where} has unknown key '{$field}'");
+            }
+            $section[$field] = $value;
+        }
+        return $section;
     }
 
     /**
