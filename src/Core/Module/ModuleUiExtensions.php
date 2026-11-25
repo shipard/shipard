@@ -6,13 +6,15 @@ namespace Shipard\Core\Module;
 
 use Shipard\Core\Form\ModuleFormTab;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\RecordAction\RecordAction;
 use Shipard\Core\Viewer\DetailExtension;
 use Shipard\Core\Viewer\RowDecorator;
 
 /**
  * Rozšíření UI cizích tabulek z modulů zdroje dat (#172 D16–D19): taby
- * a štítky detailu (`detailExtensions`), záložky formuláře (`formTabs`)
- * a štítky řádku seznamu (`rowDecorators`).
+ * a štítky detailu (`detailExtensions`), záložky formuláře (`formTabs`),
+ * štítky řádku seznamu (`rowDecorators`) a akce záznamu s obsluhou
+ * v modulu (`recordActions`, #172 D12).
  *
  * Staví se z **resolvovaných** modulů — tedy jen z modulů aktivních ve
  * zdroji dat (stejný `ModuleResolver::resolve` jako viewery a formuláře).
@@ -28,12 +30,14 @@ final class ModuleUiExtensions
     public const string DETAIL = 'detailExtensions';
     public const string FORM_TABS = 'formTabs';
     public const string ROW_DECORATORS = 'rowDecorators';
+    public const string RECORD_ACTIONS = 'recordActions';
 
     /** Druh (= pole `module.jsonc`) → rozhraní, které poskytovatel implementuje. */
     public const array KINDS = [
         self::DETAIL => DetailExtension::class,
         self::FORM_TABS => ModuleFormTab::class,
         self::ROW_DECORATORS => RowDecorator::class,
+        self::RECORD_ACTIONS => RecordAction::class,
     ];
 
     /** @var array<string, array<string, list<ModuleUiExtension>>> druh → tabulka → seřazené registrace */
@@ -67,7 +71,15 @@ final class ModuleUiExtensions
                         $reg['order'],
                         $module->id,
                         $idx,
-                        new ModuleUiExtension($kind, $module->id, $reg['table'], $reg['class'], $reg['order']),
+                        new ModuleUiExtension(
+                            $kind,
+                            $module->id,
+                            $reg['table'],
+                            $reg['class'],
+                            $reg['order'],
+                            $reg['id'] ?? null,
+                            $reg['admin'] ?? false,
+                        ),
                     ];
                 }
             }
@@ -93,6 +105,20 @@ final class ModuleUiExtensions
     public function for(string $kind, string $table): array
     {
         return $this->byKind[$kind][$table] ?? [];
+    }
+
+    /**
+     * Akce záznamu tabulky podle globálního id (`<id modulu>.<id akce>`);
+     * `null`, když ji žádný aktivní modul pro tabulku nedeklaruje.
+     */
+    public function recordAction(string $table, string $globalId): ?ModuleUiExtension
+    {
+        foreach ($this->for(self::RECORD_ACTIONS, $table) as $extension) {
+            if ($extension->globalId() === $globalId) {
+                return $extension;
+            }
+        }
+        return null;
     }
 
     /**

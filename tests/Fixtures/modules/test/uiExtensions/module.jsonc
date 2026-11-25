@@ -1,10 +1,13 @@
 // Fixture pro testy rozšíření UI z modulů (#172 D16–D19): modul, který
 // cizí tabulce přidá sloupec (`extensions`) a přispívá do jejího detailu
-// (`detailExtensions`), formuláře (`formTabs`) a seznamu (`rowDecorators`).
+// (`detailExtensions`), formuláře (`formTabs`) a seznamu (`rowDecorators`)
+// a přidává jejímu záznamu akce s obsluhou v modulu (`recordActions`,
+// #172 D12–D15): bez dialogu, s potvrzením, s dialogem se všemi typy polí
+// a jednu jen pro správce.
 {
     "id": "test.uiExtensions",
     "name": "Test UI extensions",
-    "description": "Fixture module: detail tabs and badges, a form tab and row tags for a foreign table.",
+    "description": "Fixture module: detail tabs and badges, a form tab, row tags and record actions for a foreign table.",
 
     "dependencies": ["test.uiHost"],
 
@@ -20,5 +23,11 @@
     ],
     "rowDecorators": [
         {"table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureRowDecorator"}
+    ],
+    "recordActions": [
+        {"id": "ping", "table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixturePingAction"},
+        {"id": "confirmPayment", "table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureConfirmAction", "order": 600},
+        {"id": "uploadCertificate", "table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureDialogAction", "order": 700},
+        {"id": "purge", "table": "test_uihost_records", "class": "Shipard\\Module\\Test\\UiExtensions\\FixtureAdminAction", "admin": true, "order": 100}
     ]
 }

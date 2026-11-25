@@ -11,6 +11,7 @@ use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleUiExtension;
 use Shipard\Core\Module\ModuleUiExtensions;
 use Shipard\Module\Test\UiExtensions\FixtureDetailExtension;
+use Shipard\Module\Test\UiExtensions\FixturePingAction;
 use Shipard\Module\Test\UiExtensions\FixtureRowDecorator;
 
 /**
@@ -114,9 +115,54 @@ class ModuleUiExtensionsTest extends TestCase
 
         $active = $this->uiExtensionsOf(['test.uiExtensions']);
         foreach (array_keys(ModuleUiExtensions::KINDS) as $kind) {
-            $this->assertCount(1, $active->for($kind, self::UI_TABLE), $kind);
+            // Fixtura má čtyři akce záznamu, od ostatních druhů po jednom.
+            $expected = $kind === ModuleUiExtensions::RECORD_ACTIONS ? 4 : 1;
+            $this->assertCount($expected, $active->for($kind, self::UI_TABLE), $kind);
             $this->assertSame('test.uiExtensions', $active->for($kind, self::UI_TABLE)[0]->moduleId);
         }
+    }
+
+    public function testRecordActionsCarryIdAndAdminFlagInRegistryOrder(): void
+    {
+        $actions = $this->uiExtensionsOf()->for(ModuleUiExtensions::RECORD_ACTIONS, self::UI_TABLE);
+
+        $this->assertSame(
+            [
+                'test.uiExtensions.purge',
+                'test.uiExtensions.ping',
+                'test.uiExtensions.confirmPayment',
+                'test.uiExtensions.uploadCertificate',
+            ],
+            array_map(static fn (ModuleUiExtension $e): string => $e->globalId(), $actions),
+            'pořadí order → id modulu → deklarace',
+        );
+        $this->assertSame([true, false, false, false], array_column($actions, 'admin'));
+        $this->assertSame(FixturePingAction::class, $actions[1]->class);
+    }
+
+    public function testRecordActionIsFoundByGlobalIdAndTable(): void
+    {
+        $extensions = $this->uiExtensionsOf();
+
+        $ping = $extensions->recordAction(self::UI_TABLE, 'test.uiExtensions.ping');
+        $this->assertNotNull($ping);
+        $this->assertSame('ping', $ping->id);
+        $this->assertSame(ModuleUiExtensions::RECORD_ACTIONS, $ping->kind);
+
+        $this->assertNull($extensions->recordAction(self::UI_TABLE, 'test.uiExtensions.nope'));
+        $this->assertNull($extensions->recordAction(self::UI_TABLE, 'ping'), 'krátké id nestačí');
+        $this->assertNull($extensions->recordAction('other_table', 'test.uiExtensions.ping'), 'akce jiné tabulky');
+        // Neaktivní modul: akci zdroj dat nezná.
+        $this->assertNull($this->uiExtensionsOf(['test.uiHost'])->recordAction(self::UI_TABLE, 'test.uiExtensions.ping'));
+    }
+
+    public function testExtensionOfAnotherKindHasNoGlobalId(): void
+    {
+        $detail = $this->uiExtensionsOf()->for(ModuleUiExtensions::DETAIL, self::UI_TABLE)[0];
+
+        $this->assertNull($detail->id);
+        $this->expectException(\LogicException::class);
+        $detail->globalId();
     }
 
     public function testLoadersTakeExtensionsFromModulesOfTheDataSource(): void

@@ -1579,6 +1579,73 @@ class ModuleDefinitionTest extends TestCase
         return $cases;
     }
 
+    // ── recordActions (#172 D12) ────────────────────────────────────────────
+
+    public function testRecordActionsDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT']);
+
+        $this->assertSame([], $def->recordActions);
+    }
+
+    public function testRecordActionsAreParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'economy.salesRegistration',
+            'name' => 'Sales',
+            'recordActions' => [
+                ['id' => 'uploadCertificate', 'table' => 'docs_core_heads', 'class' => '\\Shipard\\Module\\Economy\\SalesRegistration\\Upload'],
+                ['order' => 100, 'admin' => true, 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\Check', 'table' => 'docs_core_rows', 'id' => 'check'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['id' => 'uploadCertificate', 'table' => 'docs_core_heads', 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\Upload', 'admin' => false, 'order' => 500],
+            ['id' => 'check', 'table' => 'docs_core_rows', 'class' => 'Shipard\\Module\\Economy\\SalesRegistration\\Check', 'admin' => true, 'order' => 100],
+        ], $def->recordActions, 'výchozí admin je false a order 500, pořadí klíčů položky je pevné');
+    }
+
+    /** @param mixed $value */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidRecordActions')]
+    public function testInvalidRecordActionThrows(mixed $value, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': recordActions" . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', 'recordActions' => $value]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidRecordActions(): array
+    {
+        $valid = ['id' => 'run', 'table' => 'docs_core_heads', 'class' => 'A\\B'];
+
+        return [
+            'objekt místo pole'    => [$valid, ' must be a JSON array'],
+            'řetězec místo položky' => [['A\\B'], '[0] must be an object'],
+            'neznámý klíč'         => [[$valid + ['label' => 'Run']], "[0] has unknown key 'label'"],
+            'bez id'               => [[['table' => 'docs_core_heads', 'class' => 'A\\B']], '[0].id must match [a-z][a-zA-Z0-9]*'],
+            'id s tečkou'          => [[['id' => 'sales.run'] + $valid], '[0].id must match [a-z][a-zA-Z0-9]*'],
+            'id velkým písmenem'   => [[['id' => 'Run'] + $valid], '[0].id must match [a-z][a-zA-Z0-9]*'],
+            'id s podtržítkem'     => [[['id' => 'run_now'] + $valid], '[0].id must match [a-z][a-zA-Z0-9]*'],
+            'bez tabulky'          => [[['id' => 'run', 'class' => 'A\\B']], '[0].table must be a table name'],
+            'bez třídy'            => [[$valid, ['id' => 'other', 'table' => 'docs_core_heads']], '[1].class must be a non-empty class name'],
+            'admin řetězcem'       => [[$valid + ['admin' => 'true']], '[0].admin must be a boolean'],
+            'admin číslem'         => [[$valid + ['admin' => 1]], '[0].admin must be a boolean'],
+            'order řetězcem'       => [[$valid + ['order' => '500']], '[0].order must be an integer'],
+        ];
+    }
+
+    public function testUiExtensionsDoNotAcceptActionKeys(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("detailExtensions[0] has unknown key 'id'");
+        ModuleDefinition::fromArray([
+            'id' => 'economy.vat',
+            'name' => 'VAT',
+            'detailExtensions' => [['id' => 'run', 'table' => 'docs_core_heads', 'class' => 'A\\B']],
+        ]);
+    }
+
     // ── commands / serverCommands / cronJobs (#172 D2, D6) ──────────────────
 
     public function testCommandsAndCronJobsDefaultToEmpty(): void

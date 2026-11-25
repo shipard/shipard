@@ -10,6 +10,7 @@ use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleUiExtensionRules;
+use Shipard\Core\RecordAction\RecordAction;
 use Shipard\Core\Viewer\DetailExtension;
 use Shipard\Core\Viewer\RowDecorator;
 
@@ -25,6 +26,8 @@ class ModuleUiExtensionRulesTest extends TestCase
     private const DETAIL = self::UI_NAMESPACE . 'FixtureDetailExtension';
     private const FORM_TAB = self::UI_NAMESPACE . 'FixtureFormTab';
     private const ROW = self::UI_NAMESPACE . 'FixtureRowDecorator';
+    private const ACTION = self::UI_NAMESPACE . 'FixturePingAction';
+    private const OTHER_ACTION = self::UI_NAMESPACE . 'FixtureConfirmAction';
 
     protected function setUp(): void
     {
@@ -66,6 +69,10 @@ class ModuleUiExtensionRulesTest extends TestCase
                 'detailExtensions' => [$this->reg(self::DETAIL)],
                 'formTabs' => [$this->reg(self::FORM_TAB)],
                 'rowDecorators' => [$this->reg(self::ROW)],
+                'recordActions' => [
+                    ['id' => 'ping'] + $this->reg(self::ACTION),
+                    ['id' => 'confirm', 'admin' => true] + $this->reg(self::OTHER_ACTION),
+                ],
             ]),
         ]));
     }
@@ -188,6 +195,55 @@ class ModuleUiExtensionRulesTest extends TestCase
                 'tables' => ['test_uiextensions_own'],
                 'detailExtensions' => [$this->reg(self::DETAIL), $this->reg(self::DETAIL, 'test_uiextensions_own')],
             ]),
+        ]));
+    }
+
+    public function testRecordActionClassMustImplementRecordAction(): void
+    {
+        $violations = ModuleUiExtensionRules::violations([
+            $this->host(),
+            $this->addon(['recordActions' => [
+                ['id' => 'detail'] + $this->reg(self::DETAIL),
+                ['id' => 'missing'] + $this->reg(self::UI_NAMESPACE . 'NoSuchAction'),
+                ['id' => 'elsewhere'] + $this->reg(self::ACTION, 'no_such_table'),
+            ]]),
+        ]);
+
+        $this->assertCount(3, $violations);
+        $this->assertStringContainsString('recordActions[0]', $violations[0]);
+        $this->assertStringContainsString('does not implement ' . RecordAction::class, $violations[0]);
+        $this->assertStringContainsString('recordActions[1]', $violations[1]);
+        $this->assertStringContainsString('does not exist', $violations[1]);
+        $this->assertStringContainsString("recordActions[2] table 'no_such_table'", $violations[2]);
+    }
+
+    public function testRecordActionIdMustBeUniqueInModule(): void
+    {
+        $violations = ModuleUiExtensionRules::violations([
+            $this->host(),
+            $this->addon(['recordActions' => [
+                ['id' => 'run'] + $this->reg(self::ACTION),
+                ['id' => 'run'] + $this->reg(self::OTHER_ACTION),
+            ]]),
+        ]);
+
+        $this->assertSame(
+            ["Module 'test.uiExtensions': recordActions[1] id 'run' is already used in the module"],
+            $violations,
+        );
+    }
+
+    public function testSameRecordActionIdInTwoModulesIsAllowed(): void
+    {
+        // Globální id nese id modulu, takže se dvě akce `run` nepotkají.
+        $this->assertSame([], ModuleUiExtensionRules::violations([
+            ModuleDefinition::fromArray([
+                'id' => 'test.uiExtensions',
+                'name' => 'addon',
+                'tables' => ['test_uiextensions_own'],
+                'recordActions' => [['id' => 'run'] + $this->reg(self::ACTION, 'test_uiextensions_own')],
+            ]),
+            ModuleDefinition::fromArray(['id' => 'test.other', 'name' => 'other']),
         ]));
     }
 

@@ -19,8 +19,12 @@ use Shipard\Core\Database\TableDefinition;
  *
  * `$tableDef` je `null` jen tam, kde definice tabulek nejsou po ruce
  * (viewer vytvořený bez `ViewerRegistry::setTables()`).
+ *
+ * Akce záznamu (`recordActions`, #172 D12) dostávají potomka
+ * `RecordAction\RecordActionContext` — totéž a navíc přihlášený uživatel
+ * a `ServerConfig`.
  */
-final class ModuleExtensionContext
+class ModuleExtensionContext
 {
     public function __construct(
         public readonly string $table,

@@ -6,7 +6,8 @@ namespace Shipard\Core\Module;
 
 /**
  * Pravidla pro rozšíření UI deklarovaná v `module.jsonc`
- * (`detailExtensions`, `formTabs`, `rowDecorators`, #172 D16–D19) jako čistá
+ * (`detailExtensions`, `formTabs`, `rowDecorators`, #172 D16–D19,
+ * a `recordActions`, #172 D12) jako čistá
  * funkce nad definicemi — test je pouští nad skutečným stromem `modules/`
  * i nad syntetickými moduly. Tvar deklarace hlídá už
  * `ModuleDefinition::fromArray`; tady je to, co potřebuje načíst třídy nebo
@@ -20,6 +21,8 @@ namespace Shipard\Core\Module;
  *     modul (tranzitivně) závisí — rozšíření tabulky, kterou zdroj dat
  *     s aktivním modulem mít nemusí, by nikdy nedostalo slovo.
  *  3. Tatáž třída není pro tabulku v jednom druhu registrovaná dvakrát.
+ *  4. Akce záznamu má `id` jedinečné v modulu — globální id akce
+ *     `<id modulu>.<id>` je tím jedinečné ve stromu.
  */
 final class ModuleUiExtensionRules
 {
@@ -44,8 +47,16 @@ final class ModuleUiExtensionRules
             $reachable = null;
             foreach (ModuleUiExtensions::KINDS as $kind => $interface) {
                 $seen = [];
+                $seenIds = [];
                 foreach ($definition->{$kind} as $idx => $reg) {
                     $where = "Module '{$id}': {$kind}[{$idx}]";
+
+                    if (isset($reg['id'])) {
+                        if (isset($seenIds[$reg['id']])) {
+                            $violations[] = "{$where} id '{$reg['id']}' is already used in the module";
+                        }
+                        $seenIds[$reg['id']] = true;
+                    }
 
                     self::checkClass($id, $where, $reg['class'], $interface, $violations);
 

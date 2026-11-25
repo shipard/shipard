@@ -79,6 +79,8 @@ class ModuleDefinition
         public readonly array $formTabs = [],
         /** @var list<array{table: string, class: class-string, order: int}> štítky řádku seznamu cizí tabulky (#172 D18) */
         public readonly array $rowDecorators = [],
+        /** @var list<array{id: string, table: string, class: class-string, admin: bool, order: int}> akce záznamu s obsluhou v modulu (#172 D12) */
+        public readonly array $recordActions = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -861,6 +863,9 @@ class ModuleDefinition
         $detailExtensions = self::parseUiExtensions($data, 'detailExtensions');
         $formTabs = self::parseUiExtensions($data, 'formTabs');
         $rowDecorators = self::parseUiExtensions($data, 'rowDecorators');
+        // recordActions — akce záznamu s obsluhou v modulu (#172 D12): totéž
+        // a navíc `id` akce a příznak `admin`.
+        $recordActions = self::parseUiExtensions($data, 'recordActions', withAction: true);
 
         return new self(
             id: $data['id'],
@@ -906,6 +911,7 @@ class ModuleDefinition
             detailExtensions: $detailExtensions,
             formTabs: $formTabs,
             rowDecorators: $rowDecorators,
+            recordActions: $recordActions,
         );
     }
 
@@ -917,11 +923,18 @@ class ModuleDefinition
      * číslo (výchozí {@see self::UI_EXTENSION_DEFAULT_ORDER}). Neznámý klíč
      * položky je chyba, překlep by jinak tiše zmizel. Třída se tu nenačítá.
      *
+     * Akce záznamu (`recordActions`, #172 D12, `$withAction`) mají navíc
+     * povinné `id` (`[a-z][a-zA-Z0-9]*` — globální id akce je
+     * `<id modulu>.<id>`) a volitelné `admin` (jen pro správce, výchozí
+     * `false`). Jedinečnost `id` v modulu hlídá `ModuleUiExtensionRules`.
+     *
      * @param array<string, mixed> $data
-     * @return list<array{table: string, class: class-string, order: int}>
+     * @return ($withAction is true
+     *     ? list<array{id: string, table: string, class: class-string, admin: bool, order: int}>
+     *     : list<array{table: string, class: class-string, order: int}>)
      * @throws \InvalidArgumentException
      */
-    private static function parseUiExtensions(array $data, string $key): array
+    private static function parseUiExtensions(array $data, string $key, bool $withAction = false): array
     {
         if (!array_key_exists($key, $data)) {
             return [];
@@ -930,15 +943,26 @@ class ModuleDefinition
             throw new \InvalidArgumentException("Module '{$data['id']}': {$key} must be a JSON array");
         }
 
+        $allowed = $withAction ? ['id', 'table', 'class', 'admin', 'order'] : ['table', 'class', 'order'];
+
         $extensions = [];
         foreach ($data[$key] as $idx => $raw) {
             $where = "Module '{$data['id']}': {$key}[{$idx}]";
             if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
                 throw new \InvalidArgumentException("{$where} must be an object");
             }
-            $unknown = array_diff(array_keys($raw), ['table', 'class', 'order']);
+            $unknown = array_diff(array_keys($raw), $allowed);
             if ($unknown !== []) {
                 throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $action = [];
+            if ($withAction) {
+                $id = $raw['id'] ?? null;
+                if (!is_string($id) || preg_match('/^[a-z][a-zA-Z0-9]*$/', $id) !== 1) {
+                    throw new \InvalidArgumentException("{$where}.id must match [a-z][a-zA-Z0-9]*");
+                }
+                $action = ['id' => $id];
             }
 
             $table = $raw['table'] ?? null;
@@ -951,12 +975,20 @@ class ModuleDefinition
                 throw new \InvalidArgumentException("{$where}.class must be a non-empty class name");
             }
 
+            $admin = [];
+            if ($withAction) {
+                if (!is_bool($raw['admin'] ?? false)) {
+                    throw new \InvalidArgumentException("{$where}.admin must be a boolean");
+                }
+                $admin = ['admin' => $raw['admin'] ?? false];
+            }
+
             $order = $raw['order'] ?? self::UI_EXTENSION_DEFAULT_ORDER;
             if (!is_int($order)) {
                 throw new \InvalidArgumentException("{$where}.order must be an integer");
             }
 
-            $extensions[] = ['table' => $table, 'class' => ltrim($class, '\\'), 'order' => $order];
+            $extensions[] = $action + ['table' => $table, 'class' => ltrim($class, '\\')] + $admin + ['order' => $order];
         }
         return $extensions;
     }
