@@ -53,6 +53,8 @@ class ViewerDetailContractTest extends IntegrationTestCase
     private const OVERVIEW_REPEAT_ALLOWED = [
         // Druh položky se často jmenuje stejně jako typ položky (Služba / Služba).
         'economy.items.kinds' => ['Typ položky'],
+        // Seedovaný druh místa se jmenuje stejně jako jeho typ (Budova / Budova); uživatelské druhy ne.
+        'base.places.kinds' => ['Typ místa'],
         // Součty případu s jediným pohybem = částka toho pohybu v podtitulku.
         'economy.accbal.ledger' => ['Předpisy', 'Úhrady', 'Zůstatek'],
         // Kód bankovního účtu bývá jeho pořadové číslo.

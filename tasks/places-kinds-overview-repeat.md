@@ -1,6 +1,6 @@
 # Druhy míst: kontrakt detailu — „Typ místa“ opakuje titulek (#169)
 
-**Stav:** naplánováno — zadání 2026-11-25 (nález z ověření #172 C1)
+**Stav:** hotovo — 2026-11-25 (nález z ověření #172 C1); ověřeno nad dvěma volnými zdroji dat s tabulkami Míst
 
 > Drobný task pro Claude Code (1 commit). Nález z integrační sady při
 > ověřování `tasks/module-ui-extensions.md`; s tím taskem nesouvisí.
@@ -37,6 +37,6 @@ Kontrola test pouští právě kvůli systematickému opakování ve vzorku.
 
 ## Hotovo když
 
-- [ ] `testOverviewDoesNotRepeatHeader` nad volným zdrojem dat s tabulkami
+- [x] `testOverviewDoesNotRepeatHeader` nad volným zdrojem dat s tabulkami
       Míst prochází
-- [ ] ostatní testy `ViewerDetailContractTest` beze změny výsledku
+- [x] ostatní testy `ViewerDetailContractTest` beze změny výsledku

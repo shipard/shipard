@@ -1989,8 +1989,8 @@ obsahu) popisuje `docs/frontend.md`; tady je vzhled.
      (`LedgerViewer::titleOf()`, `BankTransactionsViewer::partyOf()`,
      `BankStatementsViewer::reconciliationBadge()`). Karta strany dokladu
      s názvem partnera je součást návrhu (D16), ne opakování. Shoda hodnot,
-     která opakováním není (druh položky pojmenovaný jako typ, součty
-     případu s jediným pohybem, pořadí bankovního účtu rovné kódu,
+     která opakováním není (druh položky nebo místa pojmenovaný jako typ,
+     součty případu s jediným pohybem, pořadí bankovního účtu rovné kódu,
      systémový kód jednotky, splatnost zápisu rovná datu), zůstává. Hlídá to
      `ViewerDetailContractTest::testOverviewDoesNotRepeatHeader` nad pěti
      nejnovějšími záznamy každého vieweru: chyba je jen soustavná shoda,
