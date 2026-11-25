@@ -8,6 +8,18 @@ Moduly jsou organizovány do **skupin** (groups) pro přehlednost. Skupina je č
 
 Na jednom serveru běží stovky modulů. Každý zdroj dat (data source) má v konfiguraci seznam aktivovaných modulů. Existují speciální instalační moduly (např. `install.base`), které nemají vlastní tabulky, ale přes závislosti aktivují sadu potřebných modulů.
 
+### Druhy modulů
+
+Moduly jsou tří druhů (#170 D1). O místě rozhoduje, **komu kód patří**, ne kolik zákazníků ho použije:
+
+| Druh | Kde leží | Jak se dostane do zdroje dat |
+|------|----------|------------------------------|
+| **jádro** | `modules/` | závislost `install.base` |
+| **doplněk** | `modules/`, v `module.jsonc` má `"kind": "addon"` | zapne se ve zdroji dat (`shpd-ds ds-module enable`); případně ho přinese vlastní instalační modul dedikovaného zdroje dat (jako `install.hosting`) |
+| **privátní** | vlastní repozitář, `extraModulesPath` (kapitola 10) | zapne se ve zdroji dat |
+
+Obecné a veřejné patří do hlavního repozitáře — jako jádro, nebo jako doplněk, když ho většina firem nepoužije (správa budovy, správa počítačové sítě). Logika jedné firmy nebo neveřejný kód je privátní modul mimo repozitář. Doplňky popisuje kapitola 9, přehled všech modulů po druzích je v generovaném rozcestníku [`modules/README.md`](../modules/README.md).
+
 ---
 
 ## 2. Formát konfiguračních souborů — JSONC
@@ -286,9 +298,13 @@ Příklady:
 - `core.system` — systémové tabulky (uživatelé, sessions, nastavení)
 
 Pravidla:
-- Skupina i modul: malá písmena, bez diakritiky, `[a-z][a-z0-9]*`
+- Skupina: jedno slovo malými písmeny, bez diakritiky a podtržítek — `[a-z][a-z0-9]*`
+- Modul: camelCase s malým počátečním písmenem, bez diakritiky a podtržítek — `[a-z][a-zA-Z0-9]*` (např. `workOrders`, `invoicesOut`)
 - Vždy právě dvě úrovně (skupina.modul)
 - ID modulu je globálně unikátní
+- ID je trvalé — určuje názvy tabulek, namespace PHP tříd a klíče konfigurace. Druh modulu (jádro × doplněk) trvalý není, mění se jedním polem
+
+Adresář s `module.jsonc`, jehož jméno skupiny nebo modulu tvaru neodpovídá, je **chyba při načtení modulů** (`RuntimeException` s cestou a očekávaným tvarem), ne tiché přeskočení — modul by se jinak nikdy nenačetl a nic by neřeklo proč. Adresáře bez `module.jsonc` se ignorují.
 
 ### Adresářová struktura
 
@@ -393,6 +409,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `id` | string | Ano | Ne | ID modulu v tečkové notaci |
 | `name` | string | Ano | Ano | Lidsky čitelný název modulu |
 | `description` | string | Ne | Ano | Popis modulu |
+| `kind` | string | Ne | Ne | Druh modulu: jediná povolená hodnota `"addon"` = doplněk; bez pole je modul jádro. Instalační modul (skupina `install`) pole mít nesmí. Jiná hodnota nebo typ je chyba načtení modulu (kapitola 9 → Doplňky) |
 | `dependencies` | string[] | Ne | Ne | Seznam ID modulů, na kterých tento modul závisí |
 | `tables` | string[] | Ne | Ne | Seznam ID tabulek (odpovídá názvům souborů v `tables/`) |
 | `extensions` | object[] | Ne | Ne | Rozšíření tabulek jiných modulů |
@@ -406,6 +423,8 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `clearSettingsOnReset[].key` | string | Ano | Ne | Klíč nastavení (vlastní klíč modulu) |
 | `clearSettingsOnReset[].table` | string | Ano | Ne | Tabulka, jejíž id řádku klíč nese (smí být cizí) |
 | `settingsItems` | object[] | Ne | Ne | Položky v navigaci režimu Nastavení (viz níže) |
+| `navSections` | object[] | Ne | Ano (`name`) | Vlastní sekce hlavního sidebaru (#170 D13): `id` (`[a-z][a-zA-Z0-9]*`), `name`, `order` (int) povinné, `icon` volitelný. `ConfigCompiler` je připojí k sekcím instalačního modulu v cfgItem `global.navSections`; shodné `id` je chyba kompilace (viz Sekce hlavního sidebaru) |
+| `settingsSections` | object[] | Ne | Ano (`name`) | Vlastní sekce Nastavení (#170 D13): tvar jako `navSections`, navíc volitelné `subsections` (`id` ve tvaru `<id sekce>.<název>`, `name`, `order`). Připojí se k cfgItem `global.settingsSections` ([app-settings.md](app-settings.md)) |
 | `settingsPages` | object[] | Ne | Ano | Server-driven stránky vlastností v Nastavení (viz níže) |
 | `documentEventHandlers` | object[] | Ne | Ne | Hooky na události dokumentů cizích tabulek (viz níže) |
 | `documentEventHandlers[].table` | string | Ano | Ne | ID cílové tabulky |
@@ -832,6 +851,11 @@ sekcí**, ne podle prefixu module ID. Mechanismus je paralelní k Nastavení:
   v `GET /_ui/dashboard` (viz [dashboard.md](dashboard.md)).
 - **Fallback:** viewer/tabulka bez `navSection` (nebo s neznámou sekcí) padá do
   sekce `system`. Prázdné sekce se ve výstupu vynechají.
+- **Vlastní sekce modulu** (#170 D13): položku do **existující** sekce modul
+  přidá tak, že její `id` uvede v `navSection` — bez dalšího. **Novou** sekci
+  deklaruje polem `navSections` ve svém `module.jsonc` (viz níže); potřebuje
+  ji hlavně doplněk, který nemá kam dát svou agendu. Sekce instalačních
+  modulů zůstávají v `config/navSections.jsonc`.
 
 ```jsonc
 "viewers": [
@@ -846,6 +870,40 @@ sekcí**, ne podle prefixu module ID. Mechanismus je paralelní k Nastavení:
     }
 ]
 ```
+
+#### Vlastní sekce modulu — `navSections` a `settingsSections`
+
+```jsonc
+"navSections": [
+    { "id": "facility", "name": "Facility", "name:cs": "Správa budovy",
+      "name:en": "Facility", "icon": "company", "order": 37 }
+],
+"settingsSections": [
+    { "id": "facility", "name": "Facility", "name:cs": "Správa budovy",
+      "name:en": "Facility", "icon": "company", "order": 16 }
+]
+```
+
+- Tvar položky je stejný jako v `navSections.jsonc` / `settingsSections.jsonc`
+  instalačního modulu: `id` (`[a-z][a-zA-Z0-9]*`), `name` s jazykovými
+  variantami a celočíselné `order` jsou povinné, `icon` volitelný. Sekce
+  Nastavení smí nést `subsections` — podsekce má `id` ve tvaru
+  `<id sekce>.<název>` (jako `other.system`), `name` a `order`. Chybný tvar
+  nebo neznámý klíč je `InvalidArgumentException` při načtení modulu.
+- `ConfigCompiler` sekce aktivních modulů **připojí** do `sections` cfgItemu
+  `global.navSections`, resp. `global.settingsSections`, který dodal
+  instalační modul — před lokalizací, takže `name:cs` se přeloží stejně jako
+  u sekcí ze souboru. Pořadí v poli nehraje roli, oba controllery řadí podle
+  `order`.
+- **Shodné `id`** se sekcí instalačního modulu nebo se sekcí jiného modulu je
+  chyba kompilace (`RuntimeException` se jmény obou modulů), ne tiché
+  přepsání. Sekce deklarovaná ve zdroji dat, kde cfgItem žádný instalační
+  modul nedodal, je také chyba — zdroj dat bez instalačního modulu
+  nepodporujeme.
+- Modul smí přidat jen **vlastní** sekci (případně s podsekcemi); podsekci do
+  cizí sekce Nastavení nepřidává.
+- Sekce bez položek se nevykreslí — prázdné sekce vynechává
+  `NavigationController` i `SettingsController`.
 
 **Viewer bez `table`:** klíč `table` je volitelný. Viewer bez tabulky
 (přehled z konfigurace, vzor `core.ai.modelCatalog`) přepisuje
@@ -1090,7 +1148,7 @@ viz [operations/secrets.md](operations/secrets.md) §5):
 }
 ```
 
-Pole `modules` obsahuje seznam přímo aktivovaných modulů. Tranzitivní závislosti se dořeší automaticky.
+Pole `modules` obsahuje seznam přímo aktivovaných modulů. Tranzitivní závislosti se dořeší automaticky. Zdroj dat má v seznamu svůj instalační modul; další moduly (doplňky, privátní moduly) se přidávají příkazem `shpd-ds ds-module`, ne ruční úpravou souboru.
 
 Pole `defaultLanguage` určuje jazyk, pokud informace o jazyce uživatele chybí (nepřihlášený uživatel, API volání bez jazykového kontextu).
 
@@ -1100,6 +1158,45 @@ Při odebrání modulu z `modules`:
 - Tabulky se **neodstraňují** automaticky
 - Konfigurační položky modulu se odeberou z kompilovaných souborů při další kompilaci
 - Časem bude existovat servisní chod pro výmaz nepotřebných tabulek
+
+### Doplňky
+
+**Doplněk** je modul, který není součástí `install.base` a ve zdroji dat se zapíná — správa budovy, správa počítačové sítě (#170). Většina firem ho nepoužije, ale je obecný a veřejný, takže patří do hlavního repozitáře.
+
+**Umístění.** Doplněk leží v `modules/{skupina}/{modul}/` jako každý jiný modul, ve skupině podle své domény. Žádný podadresář `addons/` ani druhý kořen: ID je trvalé (tabulky, namespace, klíče konfigurace), zařazení ne — doplněk přejde do jádra a naopak změnou jednoho pole. Doplněk je vždy **jeden modul**.
+
+**Deklarace.** Od jádra se doplněk liší jen polem v `module.jsonc`:
+
+```jsonc
+{
+    "id": "facility.core",
+    "name": "Facility management",
+    "kind": "addon",
+    "dependencies": ["core.system", "base.persons"]
+}
+```
+
+`ModuleDefinition` vrací druh jako `ModuleKind` (`Core`, `Addon`, `Install` — instalační podle skupiny `install`). Pravidla mezi druhy drží `ModuleKindRules` a test je pouští nad celým stromem `modules/`:
+
+- modul jádra nezávisí, ani tranzitivně, na doplňku;
+- `install.base` nezávisí, ani tranzitivně, na doplňku — jiný instalační modul smí (dedikovaný zdroj dat doplněk přinese rovnou);
+- každý modul je dosažitelný z některého instalačního modulu, nebo je doplněk, nebo závislost doplňku.
+
+**Zapnutí a vypnutí** — `shpd-ds ds-module` v adresáři zdroje dat ([cli.md](cli.md)):
+
+```bash
+shpd-ds ds-module list [--json]        # přímé a aktivní moduly, dostupné doplňky
+shpd-ds ds-module enable <id>          # jen doplněk nebo modul z dalšího kořene
+shpd-ds ds-module disable <id>         # jen přímo zapnutý modul mimo install.*
+```
+
+Příkaz zapíše `modules` v `config/main.json` a ve stejném procesu spustí `ds-upgrade` — jinak by `main.json` tvrdil aktivní modul bez tabulek a dispatcher periodických úloh, který aktivní moduly čte z `main.json`, by pouštěl jeho úlohy. Vypnutí nechává tabulky modulu v databázi (viz Deaktivace modulu). Stránka Doplňky v Nastavení, kde doplněk zapne admin zdroje dat, je cílový stav — zatím jen CLI.
+
+**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `workOrderInvoiceContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections` a další pole z kapitoly 5. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou (mechanismus má vlastní issue).
+
+**Dokumentace doplňku** žije u modulu: `README.md` podle [documentation.md](documentation.md) a specifikace v `modules/{skupina}/{modul}/docs/` (vzor `modules/core/mail/docs/`) — do kořenového `docs/` patří jen obecná pravidla. Uživatelská dokumentace zůstává v `help/`, zadání v `tasks/`. Přehled všech modulů po druzích je v generovaném rozcestníku [`modules/README.md`](../modules/README.md) (`php scripts/modules-index.php`, `--check` běží v pre-commit hooku).
+
+**Co běží u zákazníka** — agent v jeho síti, sběr dat z čidel — není modul, ale samostatná komponenta podle [services.md](services.md).
 
 ---
 
@@ -1143,34 +1240,34 @@ Externí root má stejnou strukturu jako hlavní `modules/`:
 
 ```
 /opt/shipard/extra/acme-customer/modules/
-└── cust_acme/                       ← skupina
+└── custacme/                        ← skupina
     └── reporting/                   ← modul
         ├── module.jsonc
         ├── tables/
-        │   └── cust_acme_reporting_reports.jsonc
+        │   └── custacme_reporting_reports.jsonc
         ├── src/
-        │   └── ReportDocument.php   ← Shipard\Module\CustAcme\Reporting\ReportDocument
+        │   └── ReportDocument.php   ← Shipard\Module\Custacme\Reporting\ReportDocument
         └── forms/
-            └── cust_acme_reporting_reports.jsonc
+            └── custacme_reporting_reports.jsonc
 ```
 
-Skupiny v externím rootu mohou být úplně nové (`cust_acme`) nebo i existující (`economy`, pokud chce externí modul přidávat do oficiální skupiny). Jediná podmínka — ID modulu `{skupina}.{modul}` musí být globálně unikátní napříč všemi rooty.
+Skupiny v externím rootu mohou být úplně nové (`custacme`) nebo i existující (`economy`, pokud chce externí modul přidávat do oficiální skupiny). Jediná podmínka — ID modulu `{skupina}.{modul}` musí být globálně unikátní napříč všemi rooty.
 
 ### 10.3 Konvence pro ID modulu
 
-Aby se předešlo kolizím mezi externími moduly, doporučujeme tyto prefixy ve skupině:
+Aby se předešlo kolizím mezi externími moduly, doporučujeme tyto prefixy ve skupině — **bez podtržítka**, skupina je jedno slovo malými písmeny (kapitola 4):
 
 | Prefix | Účel | Příklad |
 |--------|------|---------|
-| `cust_*` | Zákaznické (in-house) moduly | `cust_acme.reporting` |
-| `ext_*` | Placené moduly od vendorů | `ext_billingpro.invoices` |
+| `cust…` | Zákaznické (in-house) moduly | `custacme.reporting` |
+| `ext…` | Placené moduly od vendorů | `extbillingpro.invoices` |
 
-Konvence **není vynucena v kódu** — systém pouze detekuje kolize ID. Pokud dva externí rooty deklarují stejné ID modulu, `ds-upgrade` (nebo HTTP request) selže s konkrétní chybovou hláškou jmenující obě cesty:
+Konvence prefixů **není vynucena v kódu** — systém hlídá jen tvar jména (10.8) a kolize ID. Pokud dva externí rooty deklarují stejné ID modulu, `ds-upgrade` (nebo HTTP request) selže s konkrétní chybovou hláškou jmenující obě cesty:
 
 ```
-Module 'cust_acme.reporting' found in multiple roots:
-  '/opt/shipard/extra/acme-v1/modules/cust_acme/reporting'
-  '/opt/shipard/extra/acme-v2/modules/cust_acme/reporting'
+Module 'custacme.reporting' found in multiple roots:
+  '/opt/shipard/extra/acme-v1/modules/custacme/reporting'
+  '/opt/shipard/extra/acme-v2/modules/custacme/reporting'
 ```
 
 ### 10.4 Rezervované rozsahy `tableId`
@@ -1205,7 +1302,7 @@ PHP třídy externích modulů se autoloadují **automaticky**. Konvence namespa
 - Cesta: `{root}/{group}/{module}/src/{ClassName}.php`
 
 Konverze:
-- Group v namespace = PascalCase → adresář v lowercase (`CustAcme` → `cust_acme` — pozor, **lcfirst**, ne `strtolower`)
+- Group v namespace = první písmeno velké → adresář malými písmeny (`Custacme` → `custacme`)
 - Module v namespace = PascalCase → adresář v camelCase (`Reporting` → `reporting`, `MyModule` → `myModule`)
 
 Pravidlo: první písmeno na malé, zbytek beze změny.
@@ -1216,9 +1313,9 @@ Příklady:
 |-----------|---------|
 | `Shipard\Module\Base\Persons\PersonDocument` | `base/persons/src/PersonDocument.php` |
 | `Shipard\Module\Docs\InvoicesOut\Foo` | `docs/invoicesOut/src/Foo.php` |
-| `Shipard\Module\CustAcme\Reporting\ReportDocument` | `custAcme/reporting/src/ReportDocument.php` |
+| `Shipard\Module\Custacme\Reporting\ReportDocument` | `custacme/reporting/src/ReportDocument.php` |
 
-> ⚠️ **Pozor na skupiny s podtržítkem v ID.** ID modulu `cust_acme.reporting` znamená skupina `cust_acme` a modul `reporting`. V namespace se ale skupina musí psát jako jeden PascalCase token: `CustAcme`. Tj. pokud máš podtržítkové ID, namespace odpovídá `Shipard\Module\CustAcme\Reporting\…` a adresář `cust_acme/reporting/`. Autoloader se řídí podle adresářového ID, takže funkčně to sedí — ale **konvence pojmenování PHP tříd v takových modulech vyžaduje pozornost**. Doporučujeme držet jednoduchá skupinová jména bez podtržítek tam, kde to jde.
+> ⚠️ **Skupina je jedno slovo malými písmeny.** Jméno skupiny nesmí obsahovat podtržítko ani velké písmeno (`[a-z][a-z0-9]*`) — `cust_acme` ani `custAcme` neprojde a adresář s `module.jsonc` pod takovým jménem je chyba při načtení modulů (10.8). Skupina `custacme` má namespace `Shipard\Module\Custacme\Reporting\…`: v namespace se z ní stane jen první písmeno velké. Víceslovné jméno v camelCase smí mít jen **modul** (`myModule` → `MyModule`).
 
 `composer.json` **nemusí být upravován** — registrace tříd je dynamická přes `ModuleClassLoader`.
 
@@ -1233,8 +1330,7 @@ Praktický důsledek: externí modul může definovat tabulky, viewer pro CRUD, 
 1. Naklonovat / zkopírovat externí modul na server, např. do `/opt/shipard/extra/acme-customer/modules/`
 2. Přidat cestu do `server.json` pole `extraModulesPath`
 3. Restartovat aplikaci (nebo počkat na další request — PHP nemá perzistentní stav)
-4. Aktivovat modul v konkrétním DS přidáním jeho ID do `modules` v `config/main.json`
-5. Spustit `shpd-ds ds-upgrade` v adresáři DS
+4. Aktivovat modul v konkrétním DS: `shpd-ds ds-module enable <id>` v adresáři DS — zapíše ID do `modules` v `config/main.json` a spustí `ds-upgrade` (kapitola 9 → Doplňky)
 
 Update modulu = `git pull` (nebo nahrání nové verze) v externím adresáři + `ds-upgrade` na všech DS, kde je modul aktivní.
 
@@ -1244,6 +1340,7 @@ Update modulu = `git pull` (nebo nahrání nové verze) v externím adresáři +
 |---------|---------|
 | Cesta v `extraModulesPath` neexistuje | `RuntimeException` při startu — adminkovi se ukáže konkrétní hláška |
 | Stejné ID modulu ve dvou rootech | `RuntimeException` při startu s oběma cestami |
+| Adresář s `module.jsonc` a neplatným jménem skupiny nebo modulu (`cust_acme/reporting`, `core/Work_orders`) | `RuntimeException` při načtení modulů s cestou a očekávaným tvarem — stejná závažnost jako kolize ID; adresáře bez `module.jsonc` se ignorují |
 | Stejné `tableId` ve dvou modulech | `SchemaValidator` selže během `ds-upgrade` se seznamem konfliktních souborů |
 | Modul aktivovaný v DS, ale neexistující v žádném rootu | `ModuleResolver` zaloguje warning a modul přeskočí |
 | PHP třída z modulu, který není v žádném rootu | Standardní PHP `Class not found` při použití |
@@ -1252,7 +1349,7 @@ Update modulu = `git pull` (nebo nahrání nové verze) v externím adresáři +
 
 Pro úplnost — tyto věci jsou mimo scope aktuální implementace a budou řešeny později:
 
-- **Verzování modulů** — neexistuje `require: "ext_billingpro.invoices: ^2.0"`. Externí moduly jsou prostě adresáře s aktuální verzí
+- **Verzování modulů** — neexistuje `require: "extbillingpro.invoices: ^2.0"`. Externí moduly jsou prostě adresáře s aktuální verzí
 - **Distribuce přes composer** — externí moduly nejsou composer balíky, instalují se ručně (případně jako git submoduly do separátního privátního repozitáře)
 - **Sandbox / izolace PHP kódu** — PHP třídy z externích modulů běží ve stejném procesu se stejnými oprávněními
 - **Frontend komponenty** — viz 10.6

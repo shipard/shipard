@@ -126,6 +126,14 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 - [ ] Smazání datového zdroje z rozhraní
 - [ ] Rate limiting a evidence neúspěšných přihlášení
 
+## Doplňky
+
+Agendy, které většina firem nepoužije — nejsou součástí základní instalace
+a zapínají se ve zdroji dat, kde je chtějí (`docs/modules.md` §9, #170).
+
+- [ ] Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace
+- [ ] Správa počítačové sítě
+
 ---
 
 ## Vědomě mimo rozsah
@@ -134,7 +142,7 @@ Rozhodnuto, že se **nedělá** — ať se k tomu nevracíme.
 
 | Co | Proč |
 |---|---|
-| Maloobchod / kasa, jídelna, rezervace, IT síť | mimo záběr účetní aplikace |
+| Maloobchod / kasa, jídelna, rezervace | mimo záběr účetní aplikace |
 | Štítky | rozhodnuto nezavádět |
 | Hromadné e-maily | mimo záběr |
 | Mobilní nativní aplikace | responzivní web pokrývá potřebu |

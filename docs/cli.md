@@ -1165,6 +1165,57 @@ jen `dataset-seed`, #103 F6b D59). Přehled přes všechny zdroje:
 Exit 1: není adresář zdroje dat nebo nečitelný `main.json`, neznámá akce
 nebo třída, neplatný účel, přechod na `free` bez terminálu, chyba zápisu.
 
+#### `ds-module`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ds-module                              # list (výchozí akce)
+shpd-ds ds-module list --json
+sudo shpd-ds ds-module enable facility.core    # zapíše main.json a spustí ds-upgrade
+sudo shpd-ds ds-module disable facility.core   # tabulky modulu zůstávají
+sudo shpd-ds ds-module enable facility.core --no-upgrade
+```
+
+Moduly zdroje dat a zapínání **doplňků** (#170 D5,
+[`tasks/addon-modules.md`](../tasks/addon-modules.md)). Doplněk je modul
+s `"kind": "addon"` v `module.jsonc` — není součástí `install.base` a zapíná
+se per zdroj dat ([modules.md](modules.md) §9 → Doplňky). Příkaz mění pole
+`modules` v `config/main.json`; bez interaktivního potvrzení.
+
+- **`list`** — přímé moduly z `main.json`, aktivní moduly celkem (rozvinuté
+  o závislosti) s druhem (`core` / `addon` / `install`) a značkou `direct`
+  / `extra root`, dostupné neaktivní doplňky a dostupné neaktivní moduly
+  z dalších kořenů (`extraModulesPath`). Neaktivní jádro ani instalační
+  moduly se nenabízejí — zapnout nejdou; doplněk z dalšího kořene je jen
+  mezi doplňky. `--json` vrací `{direct, active[], availableAddons[],
+  availableExtraModules[], errors[]}` (`errors` = hlášky resolveru —
+  neznámý modul v `main.json`, cyklus).
+- **`enable <id>`** — modul musí existovat v některém kořeni a být
+  **doplněk nebo modul z dalšího kořene**; jádro a `install.*` příkaz
+  odmítne (jádro přichází s instalačním modulem). Už aktivní modul — přímo
+  i přes závislost — dá `unchanged`, exit 0, `main.json` beze změny. Před
+  zápisem musí nový seznam projít resolverem: chybějící závislost nebo
+  cyklus je chyba a nic se nezapíše. Nový modul jde na konec seznamu,
+  pořadí ostatních zůstává.
+- **`disable <id>`** — jen modul uvedený **přímo** v `modules` a mimo
+  `install.*`. Modul aktivní jen jako závislost, modul, který by po
+  odebrání zůstal aktivní (příkaz vypíše, které moduly ho potřebují),
+  instalační modul i modul, který zapnutý není, končí chybou. **Tabulky
+  modulu v databázi zůstávají** ([modules.md](modules.md) §9).
+- Po zápisu běží **`ds-upgrade` ve stejném procesu** se stejnou úrovní
+  výpisu: bez něj by `main.json` tvrdil aktivní modul bez tabulek
+  a dispatcher periodických úloh by pouštěl jeho úlohy. `--no-upgrade`
+  upgrade vynechá (dávkové použití) a vypíše, co spustit. Selže-li
+  upgrade, příkaz končí chybou a **`main.json` zůstává změněný** — oprav
+  chybu a pusť `shpd-ds ds-upgrade`.
+- Zápis přes `MainConfigFile::patch` (atomicky, 0600, vlastník podle
+  `config/` i pod rootem).
+
+Exit 1: není adresář zdroje dat nebo nečitelný `main.json`, definice
+modulů nejdou načíst (i adresář modulu s neplatným jménem), neznámá akce
+nebo chybějící ID, odmítnutý modul, seznam neprojde resolverem, chyba
+zápisu, selhání `ds-upgrade`.
+
 #### `doc-reaccount <docId> [--force]`
 
 ```bash

@@ -58,6 +58,28 @@ a další subjekty, se kterými systém pracuje.
 | `base.persons.personTypes` | [config/personTypes.jsonc](config/personTypes.jsonc) | Číselník typů osob |
 ```
 
+### Specifikace u modulu — `docs/`
+
+**Umístění:** `modules/{skupina}/{modul}/docs/`
+
+Modul smí mít vlastní adresář `docs/` se specifikacemi, které se týkají jen
+jeho (vzor `modules/core/mail/docs/`). `README.md` modulu na ně odkazuje.
+**Doplněk** (`"kind": "addon"`, [modules.md](modules.md) §9) tam drží všechno,
+co by jinak bylo v kořenovém `docs/` — do kořenového `docs/` patří jen obecná
+pravidla a specifikace jádra.
+
+Pozor na záměnu: `modules/docs/` je skupina modulů dokladů, ne dokumentace.
+
+### Rozcestník modulů — `modules/README.md`
+
+Přehled všech modulů po druzích (instalační, jádro po skupinách, doplňky)
+s odkazem na `README.md` každého modulu je v [`modules/README.md`](../modules/README.md).
+Blok mezi značkami `MODULY:BEGIN` / `MODULY:END` generuje
+`php scripts/modules-index.php` z `module.jsonc` (`name:cs`, `description:cs`,
+`kind`); ručně se needituje. `--check` běží v pre-commit hooku a shodu hlídá
+i `ModulesIndexTest` — po přidání modulu, změně jeho názvu, popisu, druhu
+nebo po přidání `README.md` skript spusť znovu.
+
 ---
 
 ## 3. Dokumentace tabulky

@@ -67,10 +67,17 @@ To hlavní je rozšiřitelnost. Když ti něco chybí:
 
 - **Hodí se to všem?** Patří to do základu — založ issue nebo pošli
   pull request.
+- **Je to obecné, ale jen pro některé firmy?** Je to doplněk — modul
+  v hlavním repozitáři, který se zapíná ve zdroji dat, kde ho chtějí
+  (správa budovy, správa počítačové sítě;
+  [`docs/modules.md`](docs/modules.md), kapitola 9).
 - **Je to potřeba jedné firmy?** Udělej z toho soukromý modul mimo hlavní
   repozitář. Modul přidává tabulky, přehledy, formuláře a vlastní logiku;
   vlastní komponenty frontendu zatím ne
   ([`docs/modules.md`](docs/modules.md), kapitola 10).
+
+Co už existuje, ukazuje přehled modulů a doplňků
+[`modules/README.md`](modules/README.md).
 
 V obou případech nepíšeš kód, ale zadání. A za výsledek ručíš ty.
 

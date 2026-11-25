@@ -133,7 +133,12 @@ exempt nejsou.
 
 1. Do `module.jsonc` modulu přidej `settingsPages` (id, name+`:cs`/`:en`,
    icon, fields) a `settingsItems: [{ "page": "<id>", "section": "...", "order": N }]`.
-   Sekce musí existovat v `modules/install/base/config/settingsSections.jsonc`.
+   Sekce musí existovat — buď v `settingsSections.jsonc` instalačního modulu
+   (`modules/install/base/config/`), nebo ji modul deklaruje sám polem
+   `settingsSections` ve svém `module.jsonc` (vlastní sekce doplňku, případně
+   s podsekcemi; `ConfigCompiler` ji připojí ke `global.settingsSections`,
+   shodné `id` je chyba kompilace — [modules.md](modules.md) → Vlastní sekce
+   modulu, #170 D13).
 2. Klíče polí namespacuj podle modulu (`mail.signature`, ne `signature`).
 3. Textové pole: `type: "text"` (+ `maxLength`, `hint:cs`). Obrázkové pole
    vyžaduje branding slot — slot je potřeba přidat do

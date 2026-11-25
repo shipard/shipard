@@ -1,6 +1,6 @@
 # Doplňkové moduly — druh modulu, `ds-module`, rozcestník, sekce z modulů (#170)
 
-**Stav:** naplánováno — design #170 D1–D13, upřesnění U1–U4 potvrzena
+**Stav:** hotovo — 2026-11-25 (#170 D1–D13, U1–U4); zbývá nasazení mimo vývojový stroj (kontrola jmen v `extraModulesPath`) a první doplněk
 
 > Jednorázový task pro Claude Code (5 commitů). Design: issue #170.
 
@@ -301,18 +301,18 @@ deklarovat **vlastní sekce**:
 
 ## Hotovo když
 
-- [ ] `kind: addon` se validuje a `ModuleDefinition` vrací druh
-- [ ] neplatné jméno modulu nebo skupiny s `module.jsonc` je chyba, ne
+- [x] `kind: addon` se validuje a `ModuleDefinition` vrací druh
+- [x] neplatné jméno modulu nebo skupiny s `module.jsonc` je chyba, ne
       tiché přeskočení
-- [ ] pravidla druhů hlídá test; `core.help` je v `install.base`
-- [ ] `shpd-ds ds-module list|enable|disable` podle kroku 4
-- [ ] `modules/README.md` generuje skript, `--check` běží v pre-commit
+- [x] pravidla druhů hlídá test; `core.help` je v `install.base`
+- [x] `shpd-ds ds-module list|enable|disable` podle kroku 4
+- [x] `modules/README.md` generuje skript, `--check` běží v pre-commit
       hooku
-- [ ] modul může deklarovat vlastní sekce sidebaru a Nastavení
+- [x] modul může deklarovat vlastní sekce sidebaru a Nastavení
       (`navSections`, `settingsSections`), kolize `id` je chyba
-- [ ] dokumentace podle kroků 6–8
-- [ ] `php -l`, cílené testy, celá sada
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+- [x] dokumentace podle kroků 6–8
+- [x] `php -l`, cílené testy, celá sada
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
 
 ## Rozhodnutí k designu (potvrzená)
 
@@ -357,3 +357,31 @@ Upřesnění tohoto tasku (v issue nejsou; potvrzeno 2026-11-24):
   nástroje se registrují pro každý zdroj dat.
 - ✓ **U4** — rozcestník generuje PHP skript (kvůli JSONC), `--check` běží
   v pre-commit hooku jako u `help-index.py`.
+
+## Poznámky k implementaci (2026-11-25)
+
+Upřesnění proti zadání, potvrzená před implementací:
+
+- **ID podsekce Nastavení** má tvar `<id sekce>.<název>` (jako stávající
+  `other.system`) — regex sekce `[a-z][a-zA-Z0-9]*` na podsekce nesedí.
+  Neznámý klíč v položce `navSections` / `settingsSections` je chyba, ne
+  tiché zahození.
+- **Rozcestník** generuje třída `Core\Module\ModulesIndex`, skript
+  `scripts/modules-index.php` je tenký obal; shodu `modules/README.md` se
+  stromem hlídá vedle hooku i `ModulesIndexTest` (hook se bez PHP nebo
+  `vendor/` přeskočí).
+- **Pořadí kontrol v `enable`:** existence → druh a kořen → už aktivní →
+  resolver. `enable core.mail` tak končí chybou, ne `unchanged`.
+- **`disable` modulu, který zapnutý není,** je chyba (ne `unchanged`).
+  Přímo uvedený modul, jehož definice už neexistuje, vypnout jde.
+
+Další:
+
+- `ModulePathResolver::rootOf()` / `isInMainRoot()` — `ds-module` podle nich
+  pozná modul z dalšího kořene. V `list` je neaktivní doplněk z dalšího
+  kořene jen mezi doplňky; instalační moduly se nenabízejí.
+- `hosting.core` nemá `kind` a rozcestník ho vede v oddílu Jádro — do
+  zdroje dat ho přináší `install.hosting`, pravidla druhů tím splňuje.
+- Před nasazením na server s `extraModulesPath` zkontrolovat jména adresářů
+  v dalších kořenech: adresář s `module.jsonc` a neplatným jménem nově
+  zastaví načtení modulů (start aplikace i CLI).
