@@ -14,6 +14,17 @@
         "world.base"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingOidcInitCommand",
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingOidcClientCommand",
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingServerKeyCommand",
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingRouterKeyCommand",
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingAiGwInitCommand",
+        "Shipard\\Module\\Hosting\\Core\\Command\\HostingAiTokenCommand"
+    ],
+
     "tables": [
         "hosting_core_servers",
         "hosting_core_data_sources",

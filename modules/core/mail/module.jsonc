@@ -14,6 +14,24 @@
         "base.persons"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Core\\Mail\\Command\\MailRouterBootstrapCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailRouterSetupCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailIdempotencyPruneCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailOutboxRunCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailOutboxRetryCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailSendTestCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailAnalysisReapCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailPreprocessCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailAnalyzeCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\MailTargetBackfillCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\AiProfileReloadCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\AiEvalCompareCommand",
+        "Shipard\\Module\\Core\\Mail\\Command\\PrintSendCommand"
+    ],
+
     // AI funkce modulu (#85 D36). Model určuje mapa úrovní `core.ai.tiers`,
     // zdroj dat ji přepíše v nastavení funkce nebo v AI profilu (D4).
     "aiFunctions": [

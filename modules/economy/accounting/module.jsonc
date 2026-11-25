@@ -9,6 +9,12 @@
 
     "dependencies": ["core.system", "economy.items", "docs.core"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\Accounting\\Command\\DocReaccountCommand"
+    ],
+
     "tables": [
         "economy_accounting_accounts",
         "economy_accounting_journal"

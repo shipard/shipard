@@ -9,6 +9,12 @@
 
     "dependencies": ["core.system", "economy.accounting", "economy.codebooks", "docs.core", "core.attachments", "world.validations"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\Bank\\Command\\BankImportStatementCommand"
+    ],
+
     "tables": [
         "economy_bank_transactions",
         "economy_bank_statements"

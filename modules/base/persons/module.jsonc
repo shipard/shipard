@@ -15,6 +15,12 @@
         "world.validations",
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Base\\Persons\\Command\\ValuesNormalizeCommand"
+    ],
+
     "tables": [
         "base_persons_persons",
         "base_persons_contacts",

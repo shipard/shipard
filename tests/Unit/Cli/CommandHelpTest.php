@@ -22,7 +22,7 @@ class CommandHelpTest extends TestCase
 {
     public function testDsCommandHelpListsItsOptions(): void
     {
-        $output = $this->helpOutput(DsApplicationFactory::create(), 'booking-history');
+        $output = $this->helpOutput(DsApplicationFactory::create(self::allModuleIds()), 'booking-history');
 
         $this->assertStringContainsString('--input', $output);
         $this->assertStringContainsString('--tag-items', $output);
@@ -41,6 +41,17 @@ class CommandHelpTest extends TestCase
     {
         $output = $this->helpOutput(ServerApplicationFactory::create(), null);
         $this->assertStringContainsString('ds-create', $output);
+    }
+
+    /**
+     * Všechny moduly hlavního stromu — nápověda zatím vypisuje příkazy
+     * modulů ručně, takže test staví aplikaci se všemi (#172).
+     *
+     * @return list<string>
+     */
+    private static function allModuleIds(): array
+    {
+        return (new \Shipard\Core\Module\ModulePathResolver([dirname(__DIR__, 3) . '/modules']))->allModuleIds();
     }
 
     private function helpOutput(Application $app, ?string $command): string

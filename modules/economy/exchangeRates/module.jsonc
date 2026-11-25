@@ -16,6 +16,14 @@
 
     "dependencies": ["core.system", "world.base"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\ExchangeRates\\Command\\ExchangeRatesImportCommand",
+        "Shipard\\Module\\Economy\\ExchangeRates\\Command\\ExchangeRateCommand",
+        "Shipard\\Module\\Economy\\ExchangeRates\\Command\\ExchangeRatesDownloadCommand"
+    ],
+
     "tables": [
         "economy_exchange_rates_lists",
         "economy_exchange_rates_values"

@@ -14,6 +14,12 @@
         "core.mail"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Base\\Registry\\Command\\RegistryExtractTextsCommand"
+    ],
+
     "tables": [
         "base_registry_binders",
         "base_registry_documents"

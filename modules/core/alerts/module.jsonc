@@ -11,6 +11,13 @@
         "core.system"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Core\\Alerts\\Command\\AlertsRunCommand",
+        "Shipard\\Module\\Core\\Alerts\\Command\\AlertsPruneCommand"
+    ],
+
     "tables": [
         "core_alerts_alerts",
         "core_alerts_check_states"

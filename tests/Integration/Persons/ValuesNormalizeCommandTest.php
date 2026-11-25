@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Persons;
 
-use Shipard\Command\DataSource\ValuesNormalizeCommand;
+use Shipard\Module\Base\Persons\Command\ValuesNormalizeCommand;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Tests\Integration\IntegrationTestCase;

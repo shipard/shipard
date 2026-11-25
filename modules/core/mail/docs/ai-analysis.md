@@ -402,7 +402,7 @@ neposílá.
 `AnalysisRunnerFactory`; `modules/core/mail/src/Isdoc/IsdocDocumentCollector.php`
 (sběr ISDOC → canonical pro `IsdocImportService` a evaluaci);
 reaper `modules/core/mail/src/AnalysisClaimReaper.php`;
-CLI `src/Command/DataSource/MailAnalyzeCommand.php` a `MailAnalysisReapCommand.php`
+CLI `modules/core/mail/src/Command/MailAnalyzeCommand.php` a `MailAnalysisReapCommand.php`
 ([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`, § `mail-analysis-reap`).
 
 ## Šifrování API klíčů připojení

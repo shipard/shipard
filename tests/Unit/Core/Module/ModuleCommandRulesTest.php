@@ -12,6 +12,7 @@ use Shipard\Core\Module\ModuleCommandRules;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\DataSourceModules;
 
 /**
  * Pravidla příkazů a úloh cronu z modulů (#172 D2, D6) — na syntetických
@@ -207,10 +208,18 @@ class ModuleCommandRulesTest extends TestCase
         $definitions = ModuleLoader::loadAllModules(new ModulePathResolver([self::mainModulesPath()]));
         $this->assertNotEmpty($definitions);
 
+        // Jména jádra = factory bez modulů (Symfony vestavěné příkazy v nich jsou také).
+        $noModules = new class extends DataSourceModules {
+            protected function loadDefinitions(): array
+            {
+                return [];
+            }
+        };
+
         $this->assertSame([], ModuleCommandRules::violations(
             $definitions,
-            array_map(strval(...), array_keys(DsApplicationFactory::create()->all())),
-            array_map(strval(...), array_keys(ServerApplicationFactory::create()->all())),
+            array_map(strval(...), array_keys(DsApplicationFactory::create([], $noModules)->all())),
+            array_map(strval(...), array_keys(ServerApplicationFactory::create($noModules)->all())),
         ));
     }
 }

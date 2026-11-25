@@ -906,7 +906,7 @@ vratka se spáruje sama.
 
 - **Automaticky:** engine při každém účtování transakce (§5.1), trigger po
   zaúčtování předpisu (§5.2).
-- **CLI `accbal-match`** (`src/Command/DataSource/AccbalMatchCommand.php`):
+- **CLI `accbal-match`** (`modules/economy/accbal/src/Command/AccbalMatchCommand.php`):
   `--all` / `--partner=` / `--fiscal-year=` + `--dry-run` — dávka
   `ClearingRouter::rerouteAll()` nad clearingem (import, ladění).
 - **CLI `accbal-regenerate`** (§4.6) — hromadná re-derivace ledgeru

@@ -13,6 +13,12 @@
     // world.assets = pravidla daňových odpisů per stát (D31).
     "dependencies": ["core.system", "core.attachments", "base.persons", "docs.core", "economy.accounting", "world.assets"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\Assets\\Command\\AssetsImportVerifyCommand"
+    ],
+
     "tables": [
         "economy_assets_assets",
         "economy_assets_types",

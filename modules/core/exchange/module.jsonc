@@ -20,6 +20,19 @@
         "core.attachments"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Core\\Exchange\\Command\\BookingHistoryCommand",
+        "Shipard\\Module\\Core\\Exchange\\Command\\AiEvalCommand"
+    ],
+
+    // Příkazy shpd-server, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "serverCommands": [
+        "Shipard\\Module\\Core\\Exchange\\Command\\EInvoiceRenderCommand"
+    ],
+
     "tables": [
         "core_exchange_tag_rules"
     ],

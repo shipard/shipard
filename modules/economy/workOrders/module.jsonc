@@ -17,6 +17,12 @@
 
     "dependencies": ["core.system", "core.attachments", "base.persons", "economy.codebooks", "docs.core", "economy.accounting"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\WorkOrders\\Command\\WorkOrdersInvoiceRunCommand"
+    ],
+
     "tables": [
         "economy_work_orders_kinds",
         "economy_work_orders_number_series",

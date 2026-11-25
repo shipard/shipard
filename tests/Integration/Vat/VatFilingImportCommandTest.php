@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Vat;
 
-use Shipard\Command\DataSource\VatFilingImportCommand;
+use Shipard\Module\Economy\Vat\Command\VatFilingImportCommand;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;

@@ -11,6 +11,13 @@
         "core.system"
     ],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Core\\Ai\\Command\\AiBackendSetKeyCommand",
+        "Shipard\\Module\\Core\\Ai\\Command\\AiTestCommand"
+    ],
+
     "tables": [
         "core_ai_backends",
         "core_ai_function_settings",

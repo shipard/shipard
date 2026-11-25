@@ -14,6 +14,17 @@
     // pracoviště v profilu podatele, #74).
     "dependencies": ["world.vat", "world.cz", "economy.codebooks", "docs.core", "economy.accounting"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatPeriodsEnsureCommand",
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingComposeCommand",
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingFilesCommand",
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingXmlDiffCommand",
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingAccountCommand",
+        "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingImportCommand"
+    ],
+
     "tables": [
         "economy_vat_report_periods",
         "economy_vat_deduction_coefficients",

@@ -9,6 +9,13 @@
 
     "dependencies": ["core.system", "economy.accounting", "economy.bank", "docs.core", "economy.codebooks"],
 
+    // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
+    // v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\Accbal\\Command\\AccbalMatchCommand",
+        "Shipard\\Module\\Economy\\Accbal\\Command\\AccbalRegenerateCommand"
+    ],
+
     "tables": [
         "economy_accbal_balances",
         "economy_accbal_balance_accounts",

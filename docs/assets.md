@@ -1173,7 +1173,7 @@ s historií, doplnění karty na už importované doklady a ověření výsledku
 | `AssetImportApplier` (+ `AssetImportResult`) | formát `shpd.assets.asset.v1`: párování podle inventárního čísla, založení / přepis karty, náhrada událostí původu `import`, přeskočení karty s místními událostmi, koncept bez úplné účetní skupiny (D79), varování z plánu; `validate` = celý průběh s rollbackem |
 | `AssetDocLinkService` | doplnění karty na doklad (D80): párování řádků, sloupce `asset`, přegenerování deníku s pojistkou obratů, zámky jen do logu |
 | `AssetImportVerifier` | ověření (D82): zlatý test daňového okruhu, účetní okruh × deník od prvního roku s vazbou (D85), kontrola evidence × deník po letech do roku dnešního data (D85), uplynulá doba účetního odpisování (D83) |
-| `Command\DataSource\AssetsImportVerifyCommand` | `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` |
+| `Shipard\Module\Economy\Assets\Command\AssetsImportVerifyCommand` | `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` |
 
 Schéma `modules/core/exchange/schemas/shpd.assets.asset.v1.jsonc` je
 u ostatních formátů (čte je `SchemaLoader`, parity hlídá `SchemaDriftTest`);

@@ -28,7 +28,7 @@ class HelpDriftTest extends TestCase
         $oldCwd = (string) getcwd();
         chdir($tempDir);
         try {
-            $this->assertHelpCoversCommands(DsApplicationFactory::create(), 'shpd-ds');
+            $this->assertHelpCoversCommands(DsApplicationFactory::create(self::allModuleIds()), 'shpd-ds');
         } finally {
             chdir($oldCwd);
             unlink($tempDir . '/config/main.json');
@@ -58,6 +58,17 @@ class HelpDriftTest extends TestCase
             chdir($oldCwd);
             rmdir($tempDir);
         }
+    }
+
+    /**
+     * Všechny moduly hlavního stromu — nápověda zatím vypisuje příkazy
+     * modulů ručně, takže test staví aplikaci se všemi (#172).
+     *
+     * @return list<string>
+     */
+    private static function allModuleIds(): array
+    {
+        return (new \Shipard\Core\Module\ModulePathResolver([dirname(__DIR__, 3) . '/modules']))->allModuleIds();
     }
 
     private function assertHelpCoversCommands(Application $app, string $binary): void

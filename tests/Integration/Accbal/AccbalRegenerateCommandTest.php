@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Accbal;
 
-use Shipard\Command\DataSource\AccbalRegenerateCommand;
+use Shipard\Module\Economy\Accbal\Command\AccbalRegenerateCommand;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Tests\Integration\IntegrationTestCase;
