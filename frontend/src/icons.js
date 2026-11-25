@@ -55,6 +55,9 @@ import {
   faBars,
   faAnglesLeft,
   faAnglesRight,
+  faAnglesDown,
+  faAnglesUp,
+  faSitemap,
   faCircleNotch,
   faTriangleExclamation,
   faCircleInfo,
@@ -161,6 +164,8 @@ export const iconMenu = faBars;
 export const iconClose = faXmark; // ✕ — zavření drawera / panelu (význam „zavřít", odlišný od iconCancel)
 export const iconCollapse = faAnglesLeft;
 export const iconExpand = faAnglesRight;
+export const iconExpandAll = faAnglesDown; // strom vieweru — rozbalit všechny uzly
+export const iconCollapseAll = faAnglesUp; // strom vieweru — sbalit všechny uzly
 export const iconHome = faHouse; // 🏠 — domeček `_top` v horním menu classic shellu
 export const iconMore = faEllipsisVertical;
 export const iconDots = faEllipsis; // ⋯ — sekce „Ostatní" v Nastavení
@@ -199,6 +204,7 @@ export const iconFolder = faFolderOpen;
 export const iconTable = faTable;
 export const iconTableList = faTableList; // Účtový rozvrh
 export const iconList = faList;
+export const iconTree = faSitemap; // stromový layout vieweru (přepínač layoutů)
 export const iconMail = faEnvelope;
 export const iconMailOut = faPaperPlane; // Odeslaná pošta
 export const iconSend = faPaperPlane; // Odeslat / Odeslat znovu
@@ -326,6 +332,7 @@ export const iconMap = {
   'table': iconTable,
   'table-list': iconTableList,
   'list': iconList,
+  'tree': iconTree,
   'mail': iconMail,
   'mail-out': iconMailOut,
   'send-with': iconSendWith,

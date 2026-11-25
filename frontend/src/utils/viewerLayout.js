@@ -1,7 +1,7 @@
-// Persistence volby layoutu vieweru (list | grid) — docs/viewer-grid.md
+// Persistence volby layoutu vieweru (list | grid | tree) — docs/viewer-grid.md
 // §7.2 (D10). localStorage, per-DS klíč (stejný vzor jako storageKey
 // v theme store — volby různých DS na stejném originu se nesmí míchat).
-// Hodnota = JSON mapa {viewerId: 'list'|'grid'}. Server-side persistence
+// Hodnota = JSON mapa {viewerId: 'list'|'grid'|'tree'}. Server-side persistence
 // (user settings) až bude potřeba.
 import { DATA_SOURCE_ID } from '../api/config.js';
 
@@ -23,7 +23,7 @@ function readMap() {
  *  meta.layouts si ověřuje volající (Viewer.svelte). */
 export function getViewerLayout(viewerId) {
   const value = readMap()[viewerId];
-  return value === 'list' || value === 'grid' ? value : null;
+  return value === 'list' || value === 'grid' || value === 'tree' ? value : null;
 }
 
 export function setViewerLayout(viewerId, layout) {
