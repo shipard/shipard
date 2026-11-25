@@ -25,6 +25,11 @@
         "Shipard\\Module\\Economy\\Vat\\Command\\VatFilingImportCommand"
     ],
 
+    // Úloha cronu (#172 D6): instance daňových tvrzení pro dnešek a zítřek.
+    "cronJobs": [
+        {"command": "vat-periods-ensure", "slot": "daily"}
+    ],
+
     "tables": [
         "economy_vat_report_periods",
         "economy_vat_deduction_coefficients",

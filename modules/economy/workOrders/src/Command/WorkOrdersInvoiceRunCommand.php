@@ -25,7 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Běh periodické fakturace (docs/work-orders.md D5, tasks/work-orders-phase2.md
- * §3): denní cron (CronCommand::SLOT_JOBS['daily'], stav DS active)
+ * §3): denní cron (`cronJobs` v module.jsonc modulu, stav DS active)
  * a ruční spuštění s náhledem.
  *
  *   --date=YYYY-MM-DD   simuluje datum běhu (splatnost období)

@@ -24,6 +24,12 @@
         "Shipard\\Module\\Economy\\ExchangeRates\\Command\\ExchangeRatesDownloadCommand"
     ],
 
+    // Úloha cronu (#172 D6): stažení chybějících kurzovních lístků; výchozí
+    // pořadí ji řadí před upozornění (`alerts-run` má 900).
+    "cronJobs": [
+        {"command": "exchange-rates-download", "slot": "five-minutes"}
+    ],
+
     "tables": [
         "economy_exchange_rates_lists",
         "economy_exchange_rates_values"

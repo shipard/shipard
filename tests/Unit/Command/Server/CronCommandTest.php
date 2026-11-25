@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Command\Server\CronCommand;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\CronJob;
 use Shipard\Core\Server\CronProvisioner;
 use Shipard\Core\Server\DataSourceModules;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -39,7 +40,7 @@ class TestableCronCommand extends CronCommand
     /** @var list<array{ds: string, job: string}> */
     public array $callLog = [];
 
-    /** null = výchozí zjišťování (repo modules; main.json `{}` testů = nelze určit → všechny joby). */
+    /** null = strom modulů repa (main.json `{}` testů = moduly nelze určit → všechny joby). */
     public ?DataSourceModules $modules = null;
 
     public function __construct(
@@ -73,7 +74,10 @@ class TestableCronCommand extends CronCommand
 
     protected function createDataSourceModules(): DataSourceModules
     {
-        return $this->modules ?? parent::createDataSourceModules();
+        // Jen hlavní strom repa — `extraModulesPath` ze server.json stroje,
+        // na kterém testy běží, do úloh slotu mluvit nesmí.
+        return $this->modules
+            ??= new DataSourceModules(new ModulePathResolver([dirname(__DIR__, 4) . '/modules']));
     }
 
     protected function runJob(string $dsDir, string $job): array
@@ -119,6 +123,18 @@ class TimeoutCronCommand extends CronCommand
 
 class CronCommandTest extends TestCase
 {
+    /**
+     * Úlohy slotů, jak je deklarují moduly (shodu `module.jsonc` s touto
+     * tabulkou hlídá CronJobRegistryTest).
+     */
+    private const SLOT_JOBS = [
+        'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'],
+        'two-minutes'  => [],
+        'five-minutes' => ['exchange-rates-download', 'alerts-run'],
+        'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
+        'weekly'       => ['alerts-prune'],
+    ];
+
     private string $tmpDir;
     private string $dsDir;
     private string $runDir;
@@ -169,7 +185,8 @@ class CronCommandTest extends TestCase
 
     /**
      * Dočasný strom modulů: install.mailless = jen core.system + core.alerts
-     * (jako install.hosting), install.full = vše, co mají joby v JOB_MODULES.
+     * (jako install.hosting), install.full = všechny moduly s úlohou cronu.
+     * Úlohy (`cronJobs`) kopírují deklarace skutečných modulů.
      */
     private function makeModuleTree(): ModulePathResolver
     {
@@ -177,22 +194,39 @@ class CronCommandTest extends TestCase
         if (is_dir($root)) {
             return new ModulePathResolver([$root]);
         }
+        $cleanup = ['active', 'read_only'];
         $defs = [
-            'core/system'        => ['core.system', []],
-            'core/alerts'        => ['core.alerts', ['core.system']],
-            'core/mail'          => ['core.mail', ['core.system']],
-            'economy/vat'        => ['economy.vat', ['core.system']],
-            'economy/workOrders' => ['economy.workOrders', ['core.system']],
-            'economy/exchangeRates' => ['economy.exchangeRates', ['core.system']],
-            'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts']],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates']],
+            'core/system'        => ['core.system', [], []],
+            'core/alerts'        => ['core.alerts', ['core.system'], [
+                ['command' => 'alerts-run', 'slot' => 'five-minutes', 'order' => 900],
+                ['command' => 'alerts-prune', 'slot' => 'weekly', 'states' => $cleanup],
+            ]],
+            'core/mail'          => ['core.mail', ['core.system'], [
+                ['command' => 'mail-outbox-run', 'slot' => 'minute'],
+                ['command' => 'mail-analysis-reap', 'slot' => 'minute'],
+                ['command' => 'mail-preprocess --sweep', 'slot' => 'minute'],
+                ['command' => 'mail-analyze --sweep', 'slot' => 'minute'],
+                ['command' => 'mail-idempotency-prune', 'slot' => 'daily', 'states' => $cleanup],
+            ]],
+            'economy/vat'        => ['economy.vat', ['core.system'], [
+                ['command' => 'vat-periods-ensure', 'slot' => 'daily'],
+            ]],
+            'economy/workOrders' => ['economy.workOrders', ['core.system'], [
+                ['command' => 'work-orders-invoice-run', 'slot' => 'daily'],
+            ]],
+            'economy/exchangeRates' => ['economy.exchangeRates', ['core.system'], [
+                ['command' => 'exchange-rates-download', 'slot' => 'five-minutes'],
+            ]],
+            'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts'], []],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates'], []],
         ];
-        foreach ($defs as $path => [$id, $deps]) {
+        foreach ($defs as $path => [$id, $deps, $cronJobs]) {
             mkdir($root . '/' . $path, 0755, true);
             file_put_contents($root . '/' . $path . '/module.jsonc', json_encode([
                 'id' => $id,
                 'name' => $id,
                 'dependencies' => $deps,
+                'cronJobs' => $cronJobs,
             ]));
         }
         return new ModulePathResolver([$root]);
@@ -307,14 +341,6 @@ class CronCommandTest extends TestCase
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-preprocess --sweep'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analyze --sweep'],
         ], $cmd->callLog);
-    }
-
-    public function testSlotJobsMapping(): void
-    {
-        $this->assertSame(['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'], CronCommand::SLOT_JOBS['minute']);
-        $this->assertSame(['exchange-rates-download', 'alerts-run'], CronCommand::SLOT_JOBS['five-minutes'], 'stahování před upozorněními — čerstvý zdroj dat nedostane nález dřív, než poprvé stáhne');
-        $this->assertSame(['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'], CronCommand::SLOT_JOBS['daily']);
-        $this->assertSame(['alerts-prune'], CronCommand::SLOT_JOBS['weekly']);
     }
 
     public function testFailedJobContinuesAndExitsSuccess(): void
@@ -517,16 +543,39 @@ class CronCommandTest extends TestCase
         $this->assertSame([['ds' => '(server)', 'job' => 'hosting-sync']], $cmd->callLog);
     }
 
-    public function testJobAllowedStatesCoverAllSlotJobs(): void
+    public function testJobsForStateFollowsDeclaredStates(): void
     {
-        foreach (CronCommand::SLOT_JOBS as $slot => $jobs) {
-            foreach ($jobs as $job) {
-                $this->assertArrayHasKey($job, CronCommand::JOB_ALLOWED_STATES, "{$slot}: {$job}");
+        $activeOnly = new CronJob('x', 'core.mail', 'daily', 500, ['active']);
+        $cleanup = new CronJob('y', 'core.mail', 'daily', 500, ['active', 'read_only']);
+
+        $this->assertSame([$activeOnly, $cleanup], CronCommand::jobsForState([$activeOnly, $cleanup], 'active'));
+        $this->assertSame([$cleanup], CronCommand::jobsForState([$activeOnly, $cleanup], 'read_only'));
+        $this->assertSame([], CronCommand::jobsForState([$activeOnly, $cleanup], 'suspended'));
+        $this->assertSame([], CronCommand::jobsForState([$activeOnly, $cleanup], 'pending_deletion'));
+    }
+
+    public function testUnloadableModuleDefinitionsAreAnInfraError(): void
+    {
+        // Bez definic modulů dispatcher neví, co spouštět — FAILURE, ne
+        // tichý prázdný slot; serverové joby ani heartbeat.
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        $modules = new class extends DataSourceModules {
+            protected function loadDefinitions(): array
+            {
+                throw new \RuntimeException('broken module.jsonc');
             }
+        };
+
+        foreach ([['--slot' => 'daily'], ['--slot' => 'daily', '--ds' => 'aaaa-aaaa-aaaa-aaaa']] as $input) {
+            [$cmd, $tester] = $this->makeTester($modules);
+            $exit = $tester->execute($input);
+
+            $this->assertSame(1, $exit);
+            $this->assertSame([], $cmd->callLog);
+            $this->assertStringContainsString('Cannot load module definitions', $tester->getDisplay());
         }
-        // Neznámý job = jen active (fail-closed).
-        $this->assertSame(['x'], CronCommand::jobsForState(['x'], 'active'));
-        $this->assertSame([], CronCommand::jobsForState(['x'], 'read_only'));
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('daily', $this->runDir));
+        $this->assertStringContainsString('cron: module definitions cannot be loaded', (string) file_get_contents($this->logPath));
     }
 
     // ── Přepínač periodických úloh (#115 D1) ────────────────────────────────
@@ -545,7 +594,7 @@ class CronCommandTest extends TestCase
             $forA = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] === 'aaaa-aaaa-aaaa-aaaa'));
             $this->assertSame([], $forA, $slot);
             $forB = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] === 'bbbb-bbbb-bbbb-bbbb'));
-            $this->assertCount(count(CronCommand::SLOT_JOBS[$slot]), $forB, $slot);
+            $this->assertCount(count(self::SLOT_JOBS[$slot]), $forB, $slot);
 
             $hb = $this->readHeartbeat($slot);
             $this->assertSame(2, $hb['dsCount'], $slot);
@@ -626,7 +675,7 @@ class CronCommandTest extends TestCase
             $tester->execute(['--slot' => $slot]);
             $perDs = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] !== '(server)'));
             $this->assertSame(
-                array_map(static fn(string $job) => ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => $job], CronCommand::SLOT_JOBS[$slot]),
+                array_map(static fn(string $job) => ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => $job], self::SLOT_JOBS[$slot]),
                 $perDs,
                 $slot,
             );
@@ -646,7 +695,7 @@ class CronCommandTest extends TestCase
         $exit = $tester->execute(['--slot' => 'minute']);
 
         $this->assertSame(0, $exit);
-        $this->assertCount(3 * count(CronCommand::SLOT_JOBS['minute']), $cmd->callLog);
+        $this->assertCount(3 * count(self::SLOT_JOBS['minute']), $cmd->callLog);
         $this->assertSame(12, $this->readHeartbeat('minute')['jobsRun']);
         $log = (string) file_get_contents($this->logPath);
         $this->assertSame(3, substr_count($log, 'active modules unknown'));
@@ -664,7 +713,7 @@ class CronCommandTest extends TestCase
 
         $this->assertSame(1, $modules->definitionLoads);
         $this->assertSame(3, $modules->queries);
-        $this->assertCount(2 * count(CronCommand::SLOT_JOBS['minute']), $cmd->callLog);
+        $this->assertCount(2 * count(self::SLOT_JOBS['minute']), $cmd->callLog);
     }
 
     public function testCronOffOrClosedDsDoesNotQueryModules(): void
@@ -685,8 +734,8 @@ class CronCommandTest extends TestCase
         $tester->execute(['--slot' => 'minute']);
 
         $this->assertSame([], $cmd->callLog);
-        $this->assertSame(0, $modules->queries);
-        $this->assertSame(0, $modules->definitionLoads);
+        $this->assertSame(0, $modules->queries, 'aktivní moduly zdroje dat se nezjišťují');
+        $this->assertSame(1, $modules->definitionLoads, 'definice jen jednou — pro úlohy slotu');
         $hb = $this->readHeartbeat('minute');
         $this->assertSame(1, $hb['cronDisabledDataSources']);
         $this->assertSame(3, $hb['skippedDataSources']);
@@ -702,7 +751,7 @@ class CronCommandTest extends TestCase
         $this->assertSame(0, $exit);
         $this->assertSame([], $cmd->callLog);
         $display = $tester->getDisplay();
-        foreach (CronCommand::SLOT_JOBS['minute'] as $job) {
+        foreach (self::SLOT_JOBS['minute'] as $job) {
             $this->assertStringContainsString("  · {$job}: skipped (module core.mail not active)", $display);
         }
         $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
@@ -726,23 +775,16 @@ class CronCommandTest extends TestCase
         $this->assertStringContainsString('· work-orders-invoice-run: skipped (module economy.workOrders not active)', $display);
     }
 
-    public function testJobModulesCoverAllSlotJobs(): void
+    public function testJobsForModulesKeepsJobsOfActiveModules(): void
     {
-        foreach (CronCommand::SLOT_JOBS as $slot => $jobs) {
-            foreach ($jobs as $job) {
-                // Záznam i s hodnotou null je rozhodnutí; chybějící klíč = nová úloha bez rozhodnutí.
-                $this->assertArrayHasKey($job, CronCommand::JOB_MODULES, "{$slot}: {$job}");
-            }
-        }
-        foreach (CronCommand::JOB_MODULES as $job => $module) {
-            $this->assertTrue($module === null || (is_string($module) && str_contains($module, '.')), $job);
-        }
+        $mail = new CronJob('mail-outbox-run', 'core.mail', 'minute', 500, ['active']);
+        $alerts = new CronJob('alerts-run', 'core.alerts', 'five-minutes', 900, ['active']);
+        $jobs = [$mail, $alerts];
 
-        // null = moduly nelze určit → beze změny; job bez záznamu = běží všude.
-        $jobs = ['mail-outbox-run', 'alerts-run', 'x'];
+        // null = moduly nelze určit → beze změny.
         $this->assertSame($jobs, CronCommand::jobsForModules($jobs, null));
-        $this->assertSame(['x'], CronCommand::jobsForModules($jobs, []));
-        $this->assertSame(['alerts-run', 'x'], CronCommand::jobsForModules($jobs, ['core.system', 'core.alerts']));
+        $this->assertSame([], CronCommand::jobsForModules($jobs, []));
+        $this->assertSame([$alerts], CronCommand::jobsForModules($jobs, ['core.system', 'core.alerts']));
         $this->assertSame($jobs, CronCommand::jobsForModules($jobs, ['core.mail', 'core.alerts']));
     }
 

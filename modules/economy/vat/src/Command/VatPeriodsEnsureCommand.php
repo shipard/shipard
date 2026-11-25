@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * instance daňových tvrzení všech tří typů pokrývající dnešek a zítřek.
  * Idempotentní — existující instance přeskočí. Dopředu nic negeneruje.
  *
- * Registrace v CronCommand::SLOT_JOBS['daily'] + JOB_ALLOWED_STATES.
+ * Úloha cronu slotu `daily` — `cronJobs` v module.jsonc modulu (#172 D6).
  */
 class VatPeriodsEnsureCommand extends Command
 {

@@ -33,7 +33,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Stažení chybějících kurzovních lístků ze služby (#121 D2, D3, task B §5,
  * docs/exchange-rates.md §9): periodická úloha slotu `five-minutes`
- * (CronCommand::SLOT_JOBS) a ruční doplnění.
+ * (`cronJobs` v module.jsonc modulu) a ruční doplnění.
  *
  *   --from=YYYY-MM-DD, --to=YYYY-MM-DD   okno místo předchozího fiskálního
  *                                        roku; ruční mód bez limitu dotazů

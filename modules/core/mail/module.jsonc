@@ -32,6 +32,20 @@
         "Shipard\\Module\\Core\\Mail\\Command\\PrintSendCommand"
     ],
 
+    // Úlohy cronu (#172 D6). Pořadí ve slotu `minute` je pořadí deklarace:
+    // fronta odchozí pošty, uvolnění vypršelých claimů analýzy, pak záchranné
+    // sweepy — primární spouštěč předzpracování i analýzy je odpojený proces
+    // po příjmu zprávy (tasks/mail-preprocess.md D8,
+    // tasks/mail-analysis-inprocess.md D14). Úklid idempotenčních klíčů běží
+    // i ve stavu jen ke čtení.
+    "cronJobs": [
+        {"command": "mail-outbox-run", "slot": "minute"},
+        {"command": "mail-analysis-reap", "slot": "minute"},
+        {"command": "mail-preprocess --sweep", "slot": "minute"},
+        {"command": "mail-analyze --sweep", "slot": "minute"},
+        {"command": "mail-idempotency-prune", "slot": "daily", "states": ["active", "read_only"]}
+    ],
+
     // AI funkce modulu (#85 D36). Model určuje mapa úrovní `core.ai.tiers`,
     // zdroj dat ji přepíše v nastavení funkce nebo v AI profilu (D4).
     "aiFunctions": [

@@ -18,6 +18,14 @@
         "Shipard\\Module\\Core\\Alerts\\Command\\AlertsPruneCommand"
     ],
 
+    // Úlohy cronu (#172 D6). `alerts-run` má pořadí 900 — upozornění až po
+    // úlohách slotu, které mění data (čerstvý zdroj dat nedostane nález dřív,
+    // než poprvé stáhne kurzy). Úklid běží i ve stavu jen ke čtení.
+    "cronJobs": [
+        {"command": "alerts-run", "slot": "five-minutes", "order": 900},
+        {"command": "alerts-prune", "slot": "weekly", "states": ["active", "read_only"]}
+    ],
+
     "tables": [
         "core_alerts_alerts",
         "core_alerts_check_states"

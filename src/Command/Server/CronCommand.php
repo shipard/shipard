@@ -7,6 +7,8 @@ namespace Shipard\Command\Server;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Server\CronJob;
+use Shipard\Core\Server\CronJobRegistry;
 use Shipard\Core\Server\CronProvisioner;
 use Shipard\Core\Server\DataSourceModules;
 use Shipard\Core\Utils\IdGenerator;
@@ -22,9 +24,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  * server-level příkazy slotu (SERVER_SLOT_JOBS, shpd-server) běží jednou
  * za běh. Lock proti překryvu běhů a heartbeat soubor pro doctor.
  *
+ * Úlohy per DS deklarují moduly (`cronJobs` v `module.jsonc`, #172 D6):
+ * příkaz téhož modulu s volbami, slot, pořadí a stavy zdroje dat. Skládá
+ * je `CronJobRegistry` z definic všech modulů; jádro žádnou per-DS úlohu
+ * nezná. Platné sloty jsou `CronProvisioner::SLOTS`.
+ *
  * Exit kód: SUCCESS i při selhaných jobech (reportuje doctor/alerty),
- * FAILURE jen infra chyba (neznámý slot, nečitelný seznam DS, heartbeat
- * nelze zapsat).
+ * FAILURE jen infra chyba (neznámý slot, definice modulů nejdou načíst,
+ * nečitelný seznam DS, heartbeat nelze zapsat).
  *
  * Přepínač periodických úloh per DS (`cron: false` v state.json, #115 D1,
  * D7): dispatcher takový DS přeskočí celý včetně úklidu, serverové joby
@@ -35,10 +42,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  * zakrýt neběžící cron), bez serverových jobů; exit FAILURE při selhané
  * úloze.
  *
- * Aktivní moduly (D15): úloha běží jen na DS, který má aktivní její modul
- * (JOB_MODULES; moduly z main.json přes resolver — `DataSourceModules`,
- * definice jednou za běh). Pořadí kontrol: přepínač → stav → moduly;
- * moduly se zjišťují až pro DS, kterému po stavu zbyla aspoň jedna úloha.
+ * Aktivní moduly (D15): úloha běží jen na DS, který má aktivní modul, jenž
+ * ji deklaruje (moduly z main.json přes resolver — `DataSourceModules`,
+ * definice jednou za běh). Pořadí kontrol: přepínač → stav (`states`
+ * úlohy, výchozí jen `active`) → moduly; moduly zdroje dat se zjišťují až
+ * pro DS, kterému po stavu zbyla aspoň jedna úloha.
  * Vyřazená úloha se nespouští ani nepočítá (není běh ani selhání, žádný
  * čítač v heartbeatu). Nelze-li moduly určit, běží všechny úlohy jako
  * dřív — chyba se ukáže jako selhaná úloha, tiché vynechání by ji schovalo.
@@ -46,63 +54,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CronCommand extends Command
 {
-    /**
-     * slot → per-DS shpd-ds příkazy (řetězec = příkaz + volby oddělené
-     * mezerou); deklarativní registr v module.jsonc až bude jobů víc.
-     * mail-preprocess --sweep je jen záchrana — primární spouštěč runneru
-     * je detached spawn z intake (tasks/mail-preprocess.md D8). Totéž
-     * mail-analyze --sweep za reaperem: runnery AI analýzy spouští příjem,
-     * předzpracování a reanalýza, sweep dohledává frontu bez claimu
-     * (tasks/mail-analysis-inprocess.md D14).
-     */
-    public const SLOT_JOBS = [
-        'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'],
-        'two-minutes'  => [],
-        'five-minutes' => ['exchange-rates-download', 'alerts-run'],
-        'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
-        'weekly'       => ['alerts-prune'],
-    ];
-
-    /**
-     * job → lifecycle stavy DS, ve kterých job běží (docs/ds-state.md, #56).
-     * Job bez záznamu běží jen v `active` (fail-closed). V `suspended` /
-     * maintenance / `pending_deletion` neběží nic — efektivní stav se
-     * v mapě nehledá. Registr se přesune do module.jsonc spolu se SLOT_JOBS.
-     */
-    public const JOB_ALLOWED_STATES = [
-        'mail-outbox-run'         => [DataSourceState::ACTIVE],
-        'mail-analysis-reap'      => [DataSourceState::ACTIVE],
-        'mail-preprocess --sweep' => [DataSourceState::ACTIVE],
-        'mail-analyze --sweep'    => [DataSourceState::ACTIVE],
-        'exchange-rates-download' => [DataSourceState::ACTIVE],
-        'alerts-run'              => [DataSourceState::ACTIVE],
-        'mail-idempotency-prune'  => [DataSourceState::ACTIVE, DataSourceState::READ_ONLY],
-        'vat-periods-ensure'      => [DataSourceState::ACTIVE],
-        'work-orders-invoice-run' => [DataSourceState::ACTIVE],
-        'alerts-prune'            => [DataSourceState::ACTIVE, DataSourceState::READ_ONLY],
-    ];
-
-    /**
-     * job → modul, bez kterého se úloha na DS nespouští (#115 D15): DS bez
-     * modulu nemá jeho tabulky a úloha by jen selhala. `null` = úloha bez
-     * vazby na modul, běží všude. Každá úloha ze SLOT_JOBS musí mít záznam
-     * (hlídá test) — nová úloha bez rozhodnutí o modulu neprojde. Serverových
-     * jobů (SERVER_SLOT_JOBS) se netýká. Registr se přesune do module.jsonc
-     * spolu se SLOT_JOBS.
-     */
-    public const JOB_MODULES = [
-        'mail-outbox-run'         => 'core.mail',
-        'mail-analysis-reap'      => 'core.mail',
-        'mail-preprocess --sweep' => 'core.mail',
-        'mail-analyze --sweep'    => 'core.mail',
-        'mail-idempotency-prune'  => 'core.mail',
-        'exchange-rates-download' => 'economy.exchangeRates',
-        'alerts-run'              => 'core.alerts',
-        'alerts-prune'            => 'core.alerts',
-        'vat-periods-ensure'      => 'economy.vat',
-        'work-orders-invoice-run' => 'economy.workOrders',
-    ];
-
     /**
      * slot → server-level shpd-server příkazy — jednou za běh slotu, ne per
      * DS. Neřídí se stavem DS (běží i pro zavřené DS — ds-state-check právě
@@ -122,7 +73,7 @@ class CronCommand extends Command
     {
         $this->setName('cron')
              ->setDescription('Run scheduled per-DS jobs for the given slot (invoked from /etc/cron.d/shipard)')
-             ->addOption('slot', null, InputOption::VALUE_REQUIRED, 'Slot to run: ' . implode(', ', array_keys(self::SLOT_JOBS)))
+             ->addOption('slot', null, InputOption::VALUE_REQUIRED, 'Slot to run: ' . implode(', ', CronProvisioner::SLOTS))
              ->addOption('ds', null, InputOption::VALUE_REQUIRED, 'Run the slot jobs for this data source only (ignores its cron switch; no lock, no heartbeat, no server-level jobs)');
     }
 
@@ -167,22 +118,34 @@ class CronCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $slot = $input->getOption('slot');
-        if (!is_string($slot) || !isset(self::SLOT_JOBS[$slot])) {
+        if (!is_string($slot) || !in_array($slot, CronProvisioner::SLOTS, true)) {
             $output->writeln(sprintf(
                 '<error>Unknown or missing --slot (valid: %s)</error>',
-                implode(', ', array_keys(self::SLOT_JOBS)),
+                implode(', ', CronProvisioner::SLOTS),
             ));
             return Command::FAILURE;
         }
 
         ErrorLogger::setLogPath($this->getLogPath());
 
+        // Úlohy slotu z definic modulů — jedna instance na běh, definice se
+        // načítají jednou. Bez definic dispatcher neví, co spouštět: infra
+        // chyba, ne tichý prázdný slot.
+        $modules = $this->createDataSourceModules();
+        $definitions = $modules->definitions();
+        if ($definitions === null) {
+            $output->writeln('<error>Cannot load module definitions — no jobs to run (see shipard.log)</error>');
+            ErrorLogger::error('cron: module definitions cannot be loaded', ['slot' => $slot]);
+            return Command::FAILURE;
+        }
+        $jobs = (new CronJobRegistry($definitions))->forSlot($slot);
+
         // `--ds` zadané = cokoli jiného než null. Prázdná hodnota je chyba
         // (neprojde přes formát ID), nikdy nesmí propadnout do běhu celého
         // slotu nad všemi DS.
         $dsOption = $input->getOption('ds');
         if ($dsOption !== null) {
-            return $this->executeSingle($slot, (string) $dsOption, $output);
+            return $this->executeSingle($slot, (string) $dsOption, $jobs, $modules, $output);
         }
 
         ErrorLogger::setRequestContext('cli: cron --slot=' . $slot);
@@ -221,12 +184,11 @@ class CronCommand extends Command
             static fn(string $d): bool => is_file($d . '/config/main.json')
         ));
 
-        $jobs = self::SLOT_JOBS[$slot];
         $serverJobs = self::SERVER_SLOT_JOBS[$slot] ?? [];
         ErrorLogger::info('cron slot started', [
             'slot' => $slot,
             'dsCount' => count($candidates),
-            'jobs' => $jobs,
+            'jobs' => array_map(static fn(CronJob $job): string => $job->command, $jobs),
             'serverJobs' => $serverJobs,
         ]);
 
@@ -235,10 +197,6 @@ class CronCommand extends Command
         $skippedDataSources = 0;
         $cronDisabledDataSources = 0;
         $corruptedStateFiles = 0;
-        // Jedna instance na běh — definice modulů se načítají jednou, až
-        // pro první DS, kterému po stavu zbyla úloha.
-        $modules = $this->createDataSourceModules();
-
         // Server-level joby (shpd-server) — jednou za běh slotu, ne per DS.
         foreach ($serverJobs as $job) {
             $result = $this->runServerJob($job);
@@ -289,19 +247,19 @@ class CronCommand extends Command
             // nespouští a nepočítá — DS bez zbylé úlohy není skip stavem.
             $dsJobs = self::jobsForModules($dsJobs, $modules->activeIds($d));
             foreach ($dsJobs as $job) {
-                $result = $this->runJob($d, $job);
+                $result = $this->runJob($d, $job->command);
                 $jobsRun++;
                 if ($result['exitCode'] !== 0 || $result['timedOut']) {
                     $failures[] = [
                         'ds' => $id,
-                        'job' => $job,
+                        'job' => $job->command,
                         'exitCode' => $result['exitCode'],
                         'timedOut' => $result['timedOut'],
                     ];
                     ErrorLogger::error('cron job failed', [
                         'slot' => $slot,
                         'ds' => $id,
-                        'job' => $job,
+                        'job' => $job->command,
                         'exitCode' => $result['exitCode'],
                         'timedOut' => $result['timedOut'],
                         'outputTail' => $result['output'],
@@ -369,8 +327,10 @@ class CronCommand extends Command
      * `--ds=<id>` — jeden tik pro jeden DS (#115 D8). Přepínač ignoruje,
      * stav z #56 platí; bez zámku, heartbeatu i serverových jobů. Formát ID
      * se ověřuje před složením cesty.
+     *
+     * @param list<CronJob> $jobs úlohy slotu
      */
-    private function executeSingle(string $slot, string $dsId, OutputInterface $output): int
+    private function executeSingle(string $slot, string $dsId, array $jobs, DataSourceModules $modules, OutputInterface $output): int
     {
         if (!preg_match(IdGenerator::ID_PATTERN, $dsId)) {
             $output->writeln('<error>Invalid --ds: ' . ($dsId === '' ? '(empty)' : $dsId) . ' (expected xxxx-xxxx-xxxx-xxxx)</error>');
@@ -398,22 +358,24 @@ class CronCommand extends Command
             $state->isCronEnabled() ? '' : ', cron switch off (ignored by --ds)',
         ));
 
-        $dsJobs = self::jobsForState(self::SLOT_JOBS[$slot], $state->getEffectiveState());
+        $dsJobs = self::jobsForState($jobs, $state->getEffectiveState());
         if ($dsJobs === []) {
             $output->writeln('  No jobs of this slot run in the current data source state.');
             return Command::SUCCESS;
         }
 
         // Moduly (D15): vyřazené úlohy se vypíší, na exit kód nemají vliv.
-        $activeModules = $this->createDataSourceModules()->activeIds($dsDir);
-        $runnable = self::jobsForModules($dsJobs, $activeModules);
-        foreach (array_diff($dsJobs, $runnable) as $job) {
-            $output->writeln(sprintf('  · %s: skipped (module %s not active)', $job, self::JOB_MODULES[$job]));
+        $runnable = self::jobsForModules($dsJobs, $modules->activeIds($dsDir));
+        foreach ($dsJobs as $job) {
+            if (!in_array($job, $runnable, true)) {
+                $output->writeln(sprintf('  · %s: skipped (module %s not active)', $job->command, $job->module));
+            }
         }
         $dsJobs = $runnable;
 
         $failed = 0;
-        foreach ($dsJobs as $job) {
+        foreach ($dsJobs as $cronJob) {
+            $job = $cronJob->command;
             $startedAt = microtime(true);
             $result = $this->runJob($dsDir, $job);
             $ms = (int) round((microtime(true) - $startedAt) * 1000);
@@ -456,32 +418,28 @@ class CronCommand extends Command
     }
 
     /**
-     * Joby slotu povolené pro efektivní stav DS (JOB_ALLOWED_STATES;
-     * job bez záznamu = jen active).
+     * Úlohy slotu, které běží v efektivním stavu DS (`states` úlohy; bez
+     * deklarace jen `active` — fail-closed). V `suspended` / maintenance /
+     * `pending_deletion` neběží nic, pokud to úloha výslovně nedeklaruje.
      *
-     * @param list<string> $jobs
-     * @return list<string>
+     * @param list<CronJob> $jobs
+     * @return list<CronJob>
      */
     public static function jobsForState(array $jobs, string $effectiveState): array
     {
         return array_values(array_filter(
             $jobs,
-            static fn(string $job): bool => in_array(
-                $effectiveState,
-                self::JOB_ALLOWED_STATES[$job] ?? [DataSourceState::ACTIVE],
-                true,
-            ),
+            static fn(CronJob $job): bool => $job->runsIn($effectiveState),
         ));
     }
 
     /**
-     * Joby, jejichž modul (JOB_MODULES) je na DS aktivní; job bez vazby
-     * (null) projde vždy. `$activeModules === null` = moduly nelze určit →
-     * beze změny (fail-loud, D15).
+     * Úlohy, jejichž modul je na DS aktivní. `$activeModules === null` =
+     * moduly nelze určit → beze změny (fail-loud, D15).
      *
-     * @param list<string> $jobs
+     * @param list<CronJob> $jobs
      * @param list<string>|null $activeModules
-     * @return list<string>
+     * @return list<CronJob>
      */
     public static function jobsForModules(array $jobs, ?array $activeModules): array
     {
@@ -490,14 +448,11 @@ class CronCommand extends Command
         }
         return array_values(array_filter(
             $jobs,
-            static function (string $job) use ($activeModules): bool {
-                $module = self::JOB_MODULES[$job] ?? null;
-                return $module === null || in_array($module, $activeModules, true);
-            },
+            static fn(CronJob $job): bool => in_array($job->module, $activeModules, true),
         ));
     }
 
-    /** Zjišťování aktivních modulů DS — protected seam pro testy. */
+    /** Definice modulů a aktivní moduly DS — protected seam pro testy. */
     protected function createDataSourceModules(): DataSourceModules
     {
         return new DataSourceModules();

@@ -23,6 +23,12 @@
         "Shipard\\Module\\Economy\\WorkOrders\\Command\\WorkOrdersInvoiceRunCommand"
     ],
 
+    // Úloha cronu (#172 D6): koncepty faktur periodických zakázek za splatná
+    // období.
+    "cronJobs": [
+        {"command": "work-orders-invoice-run", "slot": "daily"}
+    ],
+
     "tables": [
         "economy_work_orders_kinds",
         "economy_work_orders_number_series",
