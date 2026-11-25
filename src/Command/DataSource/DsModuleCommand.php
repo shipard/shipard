@@ -271,15 +271,22 @@ class DsModuleCommand extends Command
         }
 
         // Nový seznam musí projít resolverem — chybějící závislost nebo
-        // cyklus = chyba a nic se nezapíše.
+        // cyklus = chyba a nic se nezapíše. Chybou jsou jen hlášky, které
+        // přidáním modulu přibyly: co resolver hlásí už nad současným
+        // seznamem (přímo uvedený modul, který v žádném kořeni není), zapnutí
+        // doplňku nebrání a vypíše se jako varování.
         $errors = [];
         $this->resolve($definitions, [...$direct, $id], $errors);
-        if ($errors !== []) {
+        $added = self::addedErrors($errors, $currentErrors);
+        if ($added !== []) {
             $output->writeln("<error>Cannot enable '{$id}' — the module list would not resolve; config/main.json is unchanged:</error>");
-            foreach ($errors as $error) {
+            foreach ($added as $error) {
                 $output->writeln("<error>  {$error}</error>");
             }
             return Command::FAILURE;
+        }
+        foreach ($currentErrors as $error) {
+            $output->writeln("<comment>  [WARN] {$error}</comment>");
         }
 
         try {
@@ -364,6 +371,26 @@ class DsModuleCommand extends Command
             return Command::FAILURE;
         }
         return Command::SUCCESS;
+    }
+
+    /**
+     * Hlášky resolveru, které v novém seznamu přibyly proti současnému.
+     * Počítá výskyty: stejná hláška podruhé (nový modul závisí na modulu,
+     * který chybí už dnes) je nová chyba.
+     *
+     * @param list<string> $errors hlášky nad novým seznamem
+     * @param list<string> $known  hlášky nad současným seznamem
+     * @return list<string>
+     */
+    private static function addedErrors(array $errors, array $known): array
+    {
+        foreach ($known as $error) {
+            $index = array_search($error, $errors, true);
+            if ($index !== false) {
+                unset($errors[$index]);
+            }
+        }
+        return array_values($errors);
     }
 
     /**

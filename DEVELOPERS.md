@@ -79,7 +79,7 @@ To hlavní je rozšiřitelnost. Když ti něco chybí:
 Co už existuje, ukazuje přehled modulů a doplňků
 [`modules/README.md`](modules/README.md).
 
-V obou případech nepíšeš kód, ale zadání. A za výsledek ručíš ty.
+Ve všech případech nepíšeš kód, ale zadání. A za výsledek ručíš ty.
 
 ## Jak se Shipard vyvíjí
 

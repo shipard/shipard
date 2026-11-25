@@ -326,6 +326,47 @@ class DsModuleCommandTest extends TestCase
         $this->assertSame(0, $this->command->upgradeCalls);
     }
 
+    public function testEnableIgnoresResolverErrorsThatWereThereBefore(): void
+    {
+        // Přímo uvedený modul, jehož definice už v žádném kořeni není.
+        $this->writeMainJson(['install.base', 'gone.module']);
+        $tester = $this->makeTester();
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['action' => 'enable', 'id' => 'facility.core']));
+        $this->assertSame(['install.base', 'gone.module', 'facility.core'], $this->mainJson()['modules']);
+        $this->assertSame(1, $this->command->upgradeCalls);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString("[WARN] Warning: module 'gone.module' not found, skipping", $display);
+        $this->assertStringNotContainsString('Cannot enable', $display);
+        $this->assertStringContainsString('Module facility.core enabled', $display);
+    }
+
+    public function testEnableWithNewMissingDependencyFailsDespiteEarlierErrors(): void
+    {
+        $before = $this->writeMainJson(['install.base', 'gone.module']);
+        $tester = $this->makeTester();
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['action' => 'enable', 'id' => 'facility.broken']));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString("Cannot enable 'facility.broken'", $display);
+        $this->assertStringContainsString("module 'nope.missing' not found", $display);
+        $this->assertStringNotContainsString("module 'gone.module' not found", $display, 'předchozí hláška mezi chybami není');
+        $this->assertSame($before, $this->rawMainJson());
+        $this->assertSame(0, $this->command->upgradeCalls);
+    }
+
+    public function testEnableModuleDependingOnAlreadyMissingModuleFails(): void
+    {
+        // Stejná hláška jako nad současným seznamem, ale podruhé — nová chyba.
+        $before = $this->writeMainJson(['install.base', 'nope.missing']);
+        $tester = $this->makeTester();
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['action' => 'enable', 'id' => 'facility.broken']));
+        $this->assertStringContainsString("Cannot enable 'facility.broken'", $tester->getDisplay());
+        $this->assertSame($before, $this->rawMainJson());
+        $this->assertSame(0, $this->command->upgradeCalls);
+    }
+
     public function testEnableWithDependencyCycleWritesNothing(): void
     {
         $this->makeModule($this->mainRoot, 'loop.a', ['loop.b'], addon: true);

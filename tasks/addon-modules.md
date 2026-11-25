@@ -1,6 +1,6 @@
 # Doplňkové moduly — druh modulu, `ds-module`, rozcestník, sekce z modulů (#170)
 
-**Stav:** hotovo — 2026-11-25 (#170 D1–D13, U1–U4); zbývá nasazení mimo vývojový stroj (kontrola jmen v `extraModulesPath`) a první doplněk
+**Stav:** hotovo — 2026-11-25 (#170 D1–D13, U1–U4) včetně drobností z ověření V1–V2; ověření `enable` / `disable` se skutečným `ds-upgrade` proběhne s prvním doplňkem
 
 > Jednorázový task pro Claude Code (5 commitů). Design: issue #170.
 
@@ -385,3 +385,50 @@ Další:
 - Před nasazením na server s `extraModulesPath` zkontrolovat jména adresářů
   v dalších kořenech: adresář s `module.jsonc` a neplatným jménem nově
   zastaví načtení modulů (start aplikace i CLI).
+
+## Drobnosti z ověření (2026-11-25)
+
+Ověření v chatu: cílené testy (moduly, `ds-module`, `ConfigCompiler`,
+`MainConfigPatcher`, testy nad stromem modulů, navigace a Nastavení) zelené,
+`php scripts/modules-index.php --check` projde, `ds-module list` a odmítnutí
+(`enable core.mail`, `disable install.base`, `disable core.mail`, neznámý
+modul) na zdroji dat `free` podle zadání.
+
+### V1 — `enable` a předchozí chyby resolveru
+
+`DsModuleCommand::runEnable()` naplní `$currentErrors` (resolver nad
+současným seznamem), ale nepoužije je. Kontrola nového seznamu
+(`[...$direct, $id]`) pak selže na **předchozí** hlášce — typicky
+`Warning: module '<id>' not found, skipping` pro modul, který je v `main.json`
+přímo a v žádném kořeni už není — a příkaz odmítne zapnout doplněk se
+zavádějícím „the module list would not resolve“.
+
+- Za chybu považuj jen hlášky, které přidáním modulu **přibyly** (nový
+  seznam proti `$currentErrors`). Předchozí hlášky příkaz vypíše jako
+  `[WARN]` (jako `list`) a pokračuje.
+- Test v `DsModuleCommandTest`: `main.json` s přímým modulem, jehož definice
+  neexistuje → `enable` doplňku zapíše a spustí upgrade (šev), výstup
+  nese varování o chybějícím modulu. Stávající testy chybějící závislosti
+  a cyklu nového modulu dál končí chybou bez zápisu.
+
+### V2 — `DEVELOPERS.md`
+
+V „Základ a moduly“ jsou teď tři větve, pod nimi zůstala věta „V obou
+případech nepíšeš kód, ale zadání.“ → „Ve všech případech …“.
+
+### Mimo tuto opravu
+
+- **Ověření `enable` / `disable` se skutečným `ds-upgrade` ve stejném
+  procesu** (tabulky, sekce v sidebaru a v Nastavení, vypnutí) proběhne
+  s prvním reálným doplňkem — v repu zatím žádný doplněk není.
+- **Příklad ID `facility.core`** v `docs/modules.md` §9 a `docs/cli.md`
+  přepsat, až se v issue doplňku správy budovy rozhodne název.
+
+Commit: `fix(cli): ds-module enable nepočítá předchozí chyby resolveru; drobnosti z ověření (#170)`
+— V1, V2, `**Stav:**` na hotovo, `python3 scripts/tasks-index.py`.
+
+**Opraveno 2026-11-25.** V1: `DsModuleCommand::addedErrors()` porovnává
+hlášky nového seznamu se současným **včetně počtu výskytů** — nový modul,
+který závisí na modulu chybějícím už dnes, vyrobí tutéž hlášku podruhé
+a dál končí chybou bez zápisu (test). Předchozí hlášky jdou jako `[WARN]`
+před zápisem; popsáno v `docs/cli.md`. V2 opraveno.

@@ -1195,8 +1195,10 @@ se per zdroj dat ([modules.md](modules.md) §9 → Doplňky). Příkaz mění po
   odmítne (jádro přichází s instalačním modulem). Už aktivní modul — přímo
   i přes závislost — dá `unchanged`, exit 0, `main.json` beze změny. Před
   zápisem musí nový seznam projít resolverem: chybějící závislost nebo
-  cyklus je chyba a nic se nezapíše. Nový modul jde na konec seznamu,
-  pořadí ostatních zůstává.
+  cyklus je chyba a nic se nezapíše. Chybou jsou jen hlášky, které přidáním
+  modulu **přibyly** — co resolver hlásí už nad současným seznamem (přímo
+  uvedený modul, který v žádném kořeni není), vypíše příkaz jako `[WARN]`
+  a pokračuje. Nový modul jde na konec seznamu, pořadí ostatních zůstává.
 - **`disable <id>`** — jen modul uvedený **přímo** v `modules` a mimo
   `install.*`. Modul aktivní jen jako závislost, modul, který by po
   odebrání zůstal aktivní (příkaz vypíše, které moduly ho potřebují),
