@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # pre-commit: ověří citlivé údaje ve staged souborech, soulad generovaných
-# souhrnů (tasks/README.md, help/README.md) se zdroji pravdy, metadata
+# souhrnů (tasks/README.md, help/README.md, modules/README.md) se zdroji pravdy, metadata
 # stránek uživatelské dokumentace, CSS tokeny frontendu (nedefinovaný
 # token použitý bez fallbacku, #129 D14; tónový color-mix, #153 D90), jednotky v CSS frontendu (px
 # v mezerách, zaoblení a písmu, #134 D10) a breakpointy (@media jen shell
@@ -90,4 +90,17 @@ if ! python3 "$REPO_ROOT/scripts/help-index.py" --check; then
     echo "    Pravidla: docs/help-authoring.md"
     echo ""
     exit 1
+fi
+
+# Rozcestník modulů čte module.jsonc (JSONC) — generuje ho PHP. Bez PHP nebo
+# bez vendor/ se kontrola přeskočí; shodu hlídá i ModulesIndexTest.
+if command -v php >/dev/null 2>&1 && [ -f "$REPO_ROOT/vendor/autoload.php" ]; then
+    if ! php "$REPO_ROOT/scripts/modules-index.php" --check; then
+        echo ""
+        echo "==> Commit zastaven: rozcestník modulů není aktuální."
+        echo "    Spusť:  php scripts/modules-index.php"
+        echo "    Pak:    git add modules/README.md"
+        echo ""
+        exit 1
+    fi
 fi
