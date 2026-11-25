@@ -13,8 +13,11 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\I18n\CatalogText;
 use Shipard\Core\I18n\DisplayDate;
+use Shipard\Core\Module\ModuleExtensionContext;
+use Shipard\Core\Module\ModuleUiExtensions;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
+use Shipard\Core\Viewer\Detail\DetailExtensions;
 use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\Detail\RecordAttachments;
 
@@ -80,6 +83,9 @@ abstract class TableViewer
      */
     protected ?ViewerDefinition $definition = null;
 
+    /** Rozšíření UI z aktivních modulů (`detailExtensions`, #172 D16); null = žádná. */
+    private ?ModuleUiExtensions $uiExtensions = null;
+
     public function __construct(
         protected DataSourceConnection $db,
         protected string $table,
@@ -120,6 +126,15 @@ abstract class TableViewer
     }
 
     /** Inject the viewer declaration — called by ViewerRegistry after construction. */
+    /**
+     * Rozšíření UI z aktivních modulů (#172 D16) — předává `ViewerRegistry`
+     * jen vieweru nad tabulkou; builder detailu z nich bere taby a štítky.
+     */
+    public function setUiExtensions(ModuleUiExtensions $uiExtensions): void
+    {
+        $this->uiExtensions = $uiExtensions;
+    }
+
     public function setDefinition(ViewerDefinition $definition): void
     {
         $this->definition = $definition;
@@ -483,6 +498,11 @@ abstract class TableViewer
      * štítky (stav z konfigurace stavů, pak `detailBadges()`) → taby →
      * přílohy záznamu podle `detailAttachments` deklarace → akce.
      *
+     * Za štítky a taby vieweru přidá štítky a taby z modulů
+     * (`detailExtensions` v `module.jsonc`, #172 D16 — sběr a kontrola
+     * kontraktu v `DetailExtensions`); taby modulů jsou před tabem Přílohy.
+     * Viewer bez tabulky rozšíření nemá.
+     *
      * Tvar výsledku: `title`, `subtitle`, `badges`, `icon`, `tabs`,
      * volitelně `attachments {groups}` a `actions` (jen neprázdné);
      * nenalezený záznam → `{tabs: []}`. Zámek, tisky, odeslání a Odeslanou
@@ -512,7 +532,8 @@ abstract class TableViewer
         if ($stateBadge !== null) {
             $badges[] = $stateBadge;
         }
-        $badges = [...$badges, ...$this->detailBadges($record)];
+        $fromModules = $this->detailFromModules($record);
+        $badges = [...$badges, ...$this->detailBadges($record), ...$fromModules['badges']];
 
         $detail = [
             'title'    => $header->title,
@@ -520,7 +541,7 @@ abstract class TableViewer
             'badges'   => $badges,
             // Háček bez ikony = ikona z deklarace vieweru (stejná jako řádek seznamu).
             'icon'     => $header->icon ?? $this->definition?->icon,
-            'tabs'     => $this->detailTabs($record),
+            'tabs'     => [...$this->detailTabs($record), ...$fromModules['tabs']],
         ];
 
         $placement = $this->definition?->detailAttachments ?? ViewerDefinition::ATTACHMENTS_OVERVIEW;
@@ -544,6 +565,36 @@ abstract class TableViewer
         }
 
         return $detail;
+    }
+
+    /**
+     * Taby a štítky z modulů pro záznam (`detailExtensions`, #172 D16).
+     * Bez registru, bez deklarace nebo u vieweru bez tabulky nic.
+     *
+     * @param array<string, mixed> $record
+     * @return array{tabs: list<array<string, mixed>>, badges: list<array{label: string, style: string}>}
+     */
+    private function detailFromModules(array $record): array
+    {
+        if ($this->uiExtensions === null
+            || $this->table === ''
+            || $this->uiExtensions->for(ModuleUiExtensions::DETAIL, $this->table) === []
+        ) {
+            return ['tabs' => [], 'badges' => []];
+        }
+
+        return DetailExtensions::collect(
+            $this->uiExtensions,
+            new ModuleExtensionContext(
+                $this->table,
+                $this->db,
+                $this->config,
+                $this->dsConfig,
+                $this->language ?? 'en',
+                $this->tables[$this->table] ?? null,
+            ),
+            $record,
+        );
     }
 
     /**

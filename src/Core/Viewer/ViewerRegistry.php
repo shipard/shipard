@@ -144,6 +144,10 @@ class ViewerRegistry
         if ($this->tables !== []) {
             $viewer->setTables($this->tables);
         }
+        // Viewer bez tabulky rozšíření z modulů nemá (#172 D16).
+        if ($this->uiExtensions !== null && $def->table !== null) {
+            $viewer->setUiExtensions($this->uiExtensions);
+        }
         return $viewer;
     }
 }
