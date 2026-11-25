@@ -37,7 +37,8 @@ final class DsApplicationFactory
     {
         $app = new ShipardApplication('Shipard Data Source Tool', Version::VERSION);
         $app->add(new \Shipard\Command\DataSource\VersionCommand());
-        $app->add(new \Shipard\Command\DataSource\HelpCommand());
+        $help = new \Shipard\Command\DataSource\HelpCommand();
+        $app->add($help);
         $app->add(new \Shipard\Command\DataSource\DsUpgradeCommand());
         $app->add(new \Shipard\Command\DataSource\DsResetCommand());
         $app->add(new \Shipard\Command\DataSource\DsSettingCommand());
@@ -62,13 +63,16 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\DsSecretsHealthCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsRotateCommand());
         $app->add(new \Shipard\Command\DataSource\HostingStatsCommand());
-        self::addModuleCommands($app, $activeModules, $modules ?? new DataSourceModules());
+        $help->setModuleGroups(self::addModuleCommands($app, $activeModules, $modules ?? new DataSourceModules()));
         $app->setDefaultCommand('help');
         return $app;
     }
 
-    /** @param list<string>|null $activeModules */
-    private static function addModuleCommands(ShipardApplication $app, ?array $activeModules, DataSourceModules $modules): void
+    /**
+     * @param list<string>|null $activeModules
+     * @return list<ModuleCommandGroup> registrované příkazy po modulech (pro nápovědu)
+     */
+    private static function addModuleCommands(ShipardApplication $app, ?array $activeModules, DataSourceModules $modules): array
     {
         $dsDir = (string) getcwd();
         $moduleCommands = new ModuleCommands($modules);
@@ -77,7 +81,7 @@ final class DsApplicationFactory
         // někdo nezadá příkaz, který jádro nezná (D4).
         if ($activeModules === null && !is_file($dsDir . '/config/main.json')) {
             $app->setModuleCommands($moduleCommands, false);
-            return;
+            return [];
         }
 
         $all = false;
@@ -86,7 +90,8 @@ final class DsApplicationFactory
             $all = $activeModules === null;
         }
 
-        foreach ($moduleCommands->dsGroups($all ? null : $activeModules) as $group) {
+        $groups = $moduleCommands->dsGroups($all ? null : $activeModules);
+        foreach ($groups as $group) {
             foreach ($group->commands as $command) {
                 $app->add($command);
             }
@@ -95,5 +100,6 @@ final class DsApplicationFactory
             $app->setStartupWarning('<comment>' . self::MODULES_UNKNOWN_WARNING . '</comment>');
         }
         $app->setModuleCommands($moduleCommands, true);
+        return $groups;
     }
 }

@@ -27,7 +27,8 @@ final class ServerApplicationFactory
     {
         $app = new Application('Shipard Server Management', Version::VERSION);
         $app->add(new \Shipard\Command\Server\VersionCommand());
-        $app->add(new \Shipard\Command\Server\HelpCommand());
+        $help = new \Shipard\Command\Server\HelpCommand();
+        $app->add($help);
         $app->add(new \Shipard\Command\Server\ServerInitCommand());
         $app->add(new \Shipard\Command\Server\DsCreateCommand());
         $app->add(new \Shipard\Command\Server\DsDeleteCommand());
@@ -52,11 +53,13 @@ final class ServerApplicationFactory
         $app->add(new \Shipard\Command\Server\TestRoundRunCommand());
         $app->add(new \Shipard\Command\Server\DoctorCommand());
         $app->add(new \Shipard\Command\Server\FixPermissionsCommand());
-        foreach ((new ModuleCommands($modules ?? new DataSourceModules()))->serverGroups() as $group) {
+        $groups = (new ModuleCommands($modules ?? new DataSourceModules()))->serverGroups();
+        foreach ($groups as $group) {
             foreach ($group->commands as $command) {
                 $app->add($command);
             }
         }
+        $help->setModuleGroups($groups);
         $app->setDefaultCommand('help');
         return $app;
     }

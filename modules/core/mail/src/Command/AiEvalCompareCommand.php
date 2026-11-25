@@ -26,7 +26,7 @@ class AiEvalCompareCommand extends Command
     protected function configure(): void
     {
         $this->setName('ai-eval-compare')
-            ->setDescription('Porovnání dvou běhů evaluace AI (soubory tests/eval/<sada>/*.json): metriky s rozdílem, šum opakování, pole zlepšená / zhoršená')
+            ->setDescription('Compare two ai-eval results files (tests/eval/<set>/*.json) side by side: metric deltas, repeat noise, fields improved / worsened (--json)')
             ->addArgument('a', InputArgument::REQUIRED, 'Soubor výsledků A')
             ->addArgument('b', InputArgument::REQUIRED, 'Soubor výsledků B')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Porovnání jako JSON na stdout');

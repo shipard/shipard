@@ -7,6 +7,8 @@ namespace Shipard\Tests\Unit\Cli;
 use PHPUnit\Framework\TestCase;
 use Shipard\Cli\DsApplicationFactory;
 use Shipard\Cli\ServerApplicationFactory;
+use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\DataSourceModules;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -22,7 +24,7 @@ class CommandHelpTest extends TestCase
 {
     public function testDsCommandHelpListsItsOptions(): void
     {
-        $output = $this->helpOutput(DsApplicationFactory::create(self::allModuleIds()), 'booking-history');
+        $output = $this->helpOutput(self::dsApplicationWithAllModules(), 'booking-history');
 
         $this->assertStringContainsString('--input', $output);
         $this->assertStringContainsString('--tag-items', $output);
@@ -43,15 +45,11 @@ class CommandHelpTest extends TestCase
         $this->assertStringContainsString('ds-create', $output);
     }
 
-    /**
-     * Všechny moduly hlavního stromu — nápověda zatím vypisuje příkazy
-     * modulů ručně, takže test staví aplikaci se všemi (#172).
-     *
-     * @return list<string>
-     */
-    private static function allModuleIds(): array
+    /** Aplikace `shpd-ds` s příkazy všech modulů hlavního stromu repa. */
+    private static function dsApplicationWithAllModules(): Application
     {
-        return (new \Shipard\Core\Module\ModulePathResolver([dirname(__DIR__, 3) . '/modules']))->allModuleIds();
+        $resolver = new ModulePathResolver([dirname(__DIR__, 3) . '/modules']);
+        return DsApplicationFactory::create($resolver->allModuleIds(), new DataSourceModules($resolver));
     }
 
     private function helpOutput(Application $app, ?string $command): string

@@ -40,7 +40,7 @@ class AccbalRegenerateCommand extends Command
     protected function configure(): void
     {
         $this->setName('accbal-regenerate')
-            ->setDescription('Přegeneruje saldo pohyby z účetního deníku (všechny zdroje, jeden doklad nebo fiskální rok)')
+            ->setDescription('Přegeneruje saldo pohyby z účetního deníku (--all | --doc <id> | --fiscal-year <id>; --dry-run jen spočítá)')
             ->addOption('all', null, InputOption::VALUE_NONE, 'Všechny zdroje deníku i ledgeru')
             ->addOption('doc', null, InputOption::VALUE_REQUIRED, 'Jen tento doklad (id)')
             ->addOption('fiscal-year', null, InputOption::VALUE_REQUIRED, 'Jen zdroje tohoto fiskálního roku (id)')

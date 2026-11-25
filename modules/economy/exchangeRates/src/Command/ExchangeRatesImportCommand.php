@@ -53,7 +53,7 @@ class ExchangeRatesImportCommand extends Command
     protected function configure(): void
     {
         $this->setName('exchange-rates-import')
-            ->setDescription('Import exchange rate lists (shpd.exchangeRates.list.v1) from a file or a folder; --replace overwrites lists with different content')
+            ->setDescription('Nahraje kurzovní lístky (shpd.exchangeRates.list.v1) ze souboru nebo složky; shodný lístek beze změny, jiný obsah = konflikt, --replace přepíše')
             ->addArgument('path', InputArgument::REQUIRED, 'JSONC/JSON file with one list, or a folder with such files')
             ->addOption('replace', null, InputOption::VALUE_NONE, 'Replace existing lists whose content differs (default: conflict)');
     }

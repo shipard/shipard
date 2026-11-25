@@ -99,15 +99,27 @@ Kontrakty: [docs/mail/api-contract.md](../../../docs/mail/api-contract.md).
 
 ## CLI příkazy
 
+Příkazy modulu leží v [src/Command/](src/Command/) a registrují se polem
+`commands` v `module.jsonc` (#172) — `shpd-ds` je nabízí jen ve zdroji dat
+s aktivním `core.mail`. Úlohy cronu modulu deklaruje `cronJobs` tamtéž.
+
 | Příkaz | Popis |
 |---|---|
 | `bin/shpd-ds mail-router-bootstrap` | Bootstrap `_mail_router` + default schránky. |
 | `bin/shpd-ds mail-router-setup [--force] [--ip=X]` | API klíč pro mail-router. |
-| `bin/shpd-ds mail-idempotency-prune [--days N]` | Prune idempotency klíčů (cron 1×/den). |
-| `bin/shpd-ds ai-backend-set-key [--backend default]` | Nastaví/zrotuje API klíč AI backendu — skrytý vstup / STDIN, `--api-key` pro provisioning agenta (šifruje přes `DsSecretCipher`). |
+| `bin/shpd-ds mail-idempotency-prune [--days N]` | Prune idempotency klíčů (cron 1×/den, i ve stavu jen ke čtení). |
+| `bin/shpd-ds mail-outbox-run [--limit=N]` | Zpracuje frontu odchozí pošty (cron 1×/min). Viz [docs/mail/outbound.md](../../../docs/mail/outbound.md). |
+| `bin/shpd-ds mail-outbox-retry --id N` | Vrátí selhanou odchozí zprávu do fronty. |
+| `bin/shpd-ds mail-send-test --to x@y…` | Testovací zpráva odchozím transportem. |
 | `bin/shpd-ds mail-analyze --message <id>` / `--sweep` | Runner AI analýzy v procesu / minutový sweep fronty. Viz [docs/ai-analysis.md](docs/ai-analysis.md). |
 | `bin/shpd-ds mail-analysis-reap` | Reaper expirovaných claimů (cron 1×/min). |
 | `bin/shpd-ds mail-preprocess --message <id> [--force]` / `--sweep` | Runner technického předzpracování zprávy (plán z intake) / záchrana zaseknutých (cron 1×/min). Viz [docs/preprocess.md](docs/preprocess.md). |
+| `bin/shpd-ds mail-target-backfill [--dry-run] [--limit=N] [--batch=N]` | Partner a titulek zpráv navázaných na doklad (jen prázdné sloupce). |
+| `bin/shpd-ds ai-profile-reload` | Nahraje AI profil pošty z JSONC šablony do databáze. |
+| `bin/shpd-ds ai-eval-compare <A.json> <B.json> [--json]` | Porovnání dvou běhů evaluace AI. Běh sám (`ai-eval`) patří modulu `core.exchange`. |
+| `bin/shpd-ds print-send <printId> <recordId> …` | Odeslání záznamu e-mailem (zpráva v Odeslané poště + řádek fronty). Viz [docs/prints.md](../../../docs/prints.md) §9. |
+
+Klíč AI připojení nastavuje `ai-backend-set-key` modulu `core.ai`.
 
 Default AI backend a profil zakládá `ds-upgrade` (`MailAiProvisioner`); `mail-router-bootstrap` se z něj volá automaticky.
 

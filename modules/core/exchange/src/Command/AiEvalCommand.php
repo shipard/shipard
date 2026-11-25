@@ -108,7 +108,7 @@ class AiEvalCommand extends Command implements SignalableCommandInterface
     protected function configure(): void
     {
         $this->setName('ai-eval')
-            ->setDescription('Evaluace AI analýzy nad datovou sadou: analýza nanečisto, porovnání s očekáváním po polích, soubor výsledků (stojí peníze)')
+            ->setDescription('Evaluate the AI analysis over a dataset: dry-run analysis vs. expected canonical, results file in tests/eval/ (--variant, --only, --limit, --repeat, --save-raw, --out, --yes, --json, --estimate, --max-cost, --progress-file; costs money)')
             ->addArgument('path', InputArgument::REQUIRED, 'Složka sady (s expected/) nebo .zip')
             ->addOption('variant', null, InputOption::VALUE_REQUIRED, 'Soubor varianty (tests/eval/variants/<název>.jsonc)')
             ->addOption('only', null, InputOption::VALUE_REQUIRED, 'Jen tyto doklady: čísla buněk, stemy, varianty nebo messageId, čárkami (0101,0902)')

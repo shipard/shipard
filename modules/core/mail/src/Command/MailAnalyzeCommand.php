@@ -45,7 +45,7 @@ class MailAnalyzeCommand extends Command
     protected function configure(): void
     {
         $this->setName('mail-analyze')
-            ->setDescription('Run the AI analysis of a queued incoming message in process, or spawn runners for the queue')
+            ->setDescription('Run the AI analysis of a queued message in process (--message <id>) or spawn runners for the queue (--sweep)')
             ->addOption('message', null, InputOption::VALUE_REQUIRED, 'Id of the queued incoming message to analyze')
             ->addOption('sweep', null, InputOption::VALUE_NONE, 'Spawn runners for queued messages without an active claim (up to the free slots)');
     }

@@ -49,9 +49,9 @@ permanentní chybu a poštu zahodily; 503 znamená „zkus později" — router
 zprávy frontuje a po otevření DS doručí. Zavřený DS **není chyba** —
 odmítnutý request se loguje na úrovni `info`, ne `error`.
 
-Registr cron jobů a jejich povolených stavů je
-`CronCommand::JOB_ALLOWED_STATES` — job bez záznamu běží **jen** v
-`active` (fail-closed). Přeskočený DS se neloguje per běh (minute slot by
+Cron joby a jejich povolené stavy deklarují moduly (`cronJobs[].states`
+v `module.jsonc`, #172 D6; skládá `Core\Server\CronJobRegistry`) — job bez
+pole `states` běží **jen** v `active` (fail-closed). Přeskočený DS se neloguje per běh (minute slot by
 spamoval); počet jde do heartbeat souboru slotu (`skippedDataSources`,
 `corruptedStateFiles`), viz [cli.md](cli.md) → `cron --slot`.
 
@@ -171,7 +171,8 @@ je fáze 3.
 | `Api\ReadOnlyPolicy` + `Api\ReadOnlyVerdict` | klasifikace rout pro `read_only` (sekce 6) |
 | `Api\Mcp\McpToolRegistry::readOnlyView()` | registr jen s `isReadOnly()` nástroji — sdílí chat i `/_mcp` v `read_only` |
 | `Core\Server\DataSourceStateScanner` + `DataSourceStateEntry` | sken `data-sources/*/config/state.json` pro doctor, `ds-state-check` (D8) a `ds-cron`; `countByState()['cronOff']`, `isCronOff()` |
-| `Command\Server\CronCommand::JOB_ALLOWED_STATES` / `JOB_MODULES` | registry job → povolené lifecycle stavy a job → modul (`null` = běží všude; každý job ze `SLOT_JOBS` má záznam — test); smyčka dispatcheru čte přepínač → stav → moduly, `--ds` = `executeSingle()` |
+| `Core\Server\CronJobRegistry` + `CronJob` | úlohy cronu z `cronJobs` všech modulů (#172 D6): příkaz, modul, slot, pořadí, povolené lifecycle stavy; řazení `order` → id modulu → deklarace. Shodu stromu se zapsanou tabulkou hlídá `CronJobRegistryTest` |
+| `Command\Server\CronCommand` | smyčka dispatcheru: úlohy slotu z registru, pak přepínač → stav (`CronJob::runsIn()`) → moduly; `--ds` = `executeSingle()` |
 | `Core\Server\DataSourceModules` | aktivní moduly DS pro server-level nástroje (`activeIds()` / `isActive()`): přímé moduly z `main.json` přes `ModuleResolver`, definice jednou na instanci; `null` = nelze určit (dispatcher pak pustí vše, #115 D15); `loadDefinitions()` je šev pro testy |
 | `Command\Server\DsStateCheckCommand` | `shpd-server ds-state-check` — daily warning D8 |
 | `Command\Server\DsCronCommand` | `shpd-server ds-cron` — přehled a hromadné přepínání (sekce 8) |
@@ -295,7 +296,7 @@ bez plánovaných běhů. `ds-reset` nechává `state.json` být, přepínač te
 přežije cyklus reset → reimport.
 
 **Co při vypnutí neběží** — všechny per-DS úlohy dispatcheru
-(`CronCommand::SLOT_JOBS`) včetně úklidových: fronta odchozí pošty
+(`cronJobs` modulů) včetně úklidových: fronta odchozí pošty
 (`mail-outbox-run`), reaper a sweepy analýzy pošty, stahování kurzovních
 lístků (`exchange-rates-download`), upozornění
 (`alerts-run`, `alerts-prune`), úklid idempotence pošty, instance tvrzení
@@ -321,8 +322,8 @@ heartbeatu slotu, logu `cron slot finished` i souhrnu na stdout. Přepínač
 se vyhodnocuje **před** stavem, DS se počítá jen jednou.
 
 **Pořadí kontrol: přepínač → stav → moduly** (#115 D15). Po stavu
-dispatcher vyřadí úlohy, jejichž modul (`CronCommand::JOB_MODULES`) DS
-nemá aktivní — aktivní moduly čte `Core\Server\DataSourceModules`
+dispatcher vyřadí úlohy, jejichž modul (ten, který úlohu deklaruje
+v `cronJobs`, #172 D6) DS nemá aktivní — aktivní moduly čte `Core\Server\DataSourceModules`
 z `config/main.json` rozvinuté o závislosti, definice modulů jednou za běh,
 a ptá se až pro DS, kterému po stavu zbyla aspoň jedna úloha. Vyřazená
 úloha není běh, selhání ani skip stavem — žádný čítač v heartbeatu.

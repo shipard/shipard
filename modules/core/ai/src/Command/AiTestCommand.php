@@ -57,7 +57,7 @@ class AiTestCommand extends Command
     protected function configure(): void
     {
         $this->setName('ai-test')
-            ->setDescription('Test AI functions: resolver decision + a minimal live request per function (costs a fraction of a cent)')
+            ->setDescription('Test AI functions: resolver decision + a minimal live request per function (--function, --json; costs a fraction of a cent)')
             ->addOption('function', null, InputOption::VALUE_REQUIRED, 'Test only this AI function (id, e.g. mail.extraction); default = all declared functions')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Print a single JSON object {"ok", "functions": [...]} to stdout (human lines go to stderr)');
     }

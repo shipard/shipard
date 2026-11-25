@@ -43,7 +43,7 @@ class AccbalMatchCommand extends Command
     protected function configure(): void
     {
         $this->setName('accbal-match')
-            ->setDescription('Přeúčtuje clearingové úhrady s klíčem otevřeného předpisu na 311/321')
+            ->setDescription('Přeúčtuje clearingové úhrady s klíčem otevřeného předpisu na 311/321 (--dry-run vypíše plán)')
             ->addOption('all', null, InputOption::VALUE_NONE, 'Zpracovat všechny clearingové kandidáty')
             ->addOption('partner', null, InputOption::VALUE_REQUIRED, 'Jen úhrady tohoto partnera (id)')
             ->addOption('fiscal-year', null, InputOption::VALUE_REQUIRED, 'Jen úhrady tohoto fiskálního roku (id)')

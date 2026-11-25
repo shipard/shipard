@@ -34,7 +34,7 @@ class ExchangeRateCommand extends Command
     protected function configure(): void
     {
         $this->setName('exchange-rate')
-            ->setDescription('Show the exchange rate of a currency for a date as the resolver sees it (default today)')
+            ->setDescription('Kurz měny k datu podle resolveru (kurz za jednotku, typ lístku, platnost od, číslo), nebo důvod, proč nenalezen; <měna> [<datum>]')
             ->addArgument('currency', InputArgument::REQUIRED, 'ISO 4217 code, e.g. eur')
             ->addArgument('date', InputArgument::OPTIONAL, 'Date YYYY-MM-DD (default today)');
     }

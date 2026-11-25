@@ -341,10 +341,11 @@ poslal dotaz.
 přítomno / chybí, varování a dotazy s pauzou / limitem — bez sítě
 a zápisu; exit 1 při chybě služby, konfliktu nebo selhání zápisu; INVALID
 při špatném datu (`--to` nejvýš dnešek, `--from` ≤ `--to`) nebo neznámém
-`--type`. **Cron**: `CronCommand::SLOT_JOBS['five-minutes']` =
-`exchange-rates-download` (před `alerts-run`, aby čerstvý zdroj dat
-nedostal nález dřív, než poprvé stáhne), stav `active`, modul
-`economy.exchangeRates`; přepínač cronu a stav zdroje dat řeší dispatcher.
+`--type`. **Cron**: úloha `exchange-rates-download` ve slotu
+`five-minutes` — deklaruje ji `cronJobs` v `module.jsonc` modulu
+`economy.exchangeRates` (#172 D6; výchozí pořadí ji řadí před `alerts-run`
+s pořadím 900, aby čerstvý zdroj dat nedostal nález dřív, než poprvé
+stáhne), stav `active`; přepínač cronu a stav zdroje dat řeší dispatcher.
 
 **Upozornění `economy.exchangerates.list_missing`** (D9, U6; warning,
 1 h, sekce Účetnictví, `Checks\ListMissingCheck`): denní typ bez lístku za

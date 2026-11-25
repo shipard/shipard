@@ -39,7 +39,7 @@ class MailPreprocessCommand extends Command
     protected function configure(): void
     {
         $this->setName('mail-preprocess')
-            ->setDescription('Run the stored preprocess plan of an incoming message, or rescue stuck messages')
+            ->setDescription('Run the stored preprocess plan of a message (--message <id> [--force]) or rescue stuck ones (--sweep)')
             ->addOption('message', null, InputOption::VALUE_REQUIRED, 'Id of the incoming message to preprocess')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Re-match current rules, drop previously generated attachments and regenerate (any state)')
             ->addOption('sweep', null, InputOption::VALUE_NONE, 'Rescue stuck messages (pending without runner, running with a dead process)');

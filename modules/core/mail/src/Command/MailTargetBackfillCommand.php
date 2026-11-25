@@ -44,7 +44,7 @@ class MailTargetBackfillCommand extends Command
     protected function configure(): void
     {
         $this->setName('mail-target-backfill')
-            ->setDescription('Fill partner and title of incoming messages linked to a document (NULL columns only)')
+            ->setDescription('Fill partner and title of incoming messages linked to a document (NULL columns only; --dry-run, --limit, --batch)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only count and print a few titles, write nothing')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Process at most N messages (0 = no limit)', '0')
             ->addOption('batch', null, InputOption::VALUE_REQUIRED, 'Rows fetched per query', (string) self::DEFAULT_BATCH);

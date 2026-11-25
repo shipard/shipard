@@ -45,7 +45,7 @@ class ValuesNormalizeCommand extends Command
     protected function configure(): void
     {
         $this->setName('values-normalize')
-            ->setDescription('Normalizuje existující údaje adresáře (osoby, adresy, kontakty, účty) stejnými pravidly jako uložení; vypíše změny a nevalidní hodnoty')
+            ->setDescription('Normalize stored directory values (persons, addresses, contacts, bank accounts) with the same rules as saving; --dry-run counts only, --json, --only=<kinds> (phone, email, web, zip, ids, accounts), -v lists every change and finding with values (personal data — screen only)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Jen spočítej a vypiš změny, nic nezapisuj')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Výstup jako JSON')
             ->addOption(

@@ -49,7 +49,7 @@ class AiBackendSetKeyCommand extends Command
     {
         $this->setName(self::NAME)
              ->setAliases([self::LEGACY_ALIAS])
-             ->setDescription('Set (or rotate) the API key of an AI backend — hidden prompt or --api-key; encrypts via DsSecretCipher')
+             ->setDescription('Set (or rotate) the API key of an AI backend — hidden prompt / STDIN, or --api-key; encrypts via DsSecretCipher')
              ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'Backend code (default: "default")', 'default')
              ->addOption('api-key', null, InputOption::VALUE_REQUIRED, 'Plaintext API key (otherwise read hidden from the prompt / STDIN)')
              ->addOption('base-url', null, InputOption::VALUE_REQUIRED, 'Base URL of the API (empty string resets to the default address of the connection platform)');

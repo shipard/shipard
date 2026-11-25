@@ -47,7 +47,7 @@ class WorkOrdersInvoiceRunCommand extends Command
     protected function configure(): void
     {
         $this->setName('work-orders-invoice-run')
-            ->setDescription('Issue periodic work order invoices (drafts) for due periods — daily cron; --dry-run previews')
+            ->setDescription('Vystaví koncepty faktur periodických zakázek za splatná období — denní cron; --date=YYYY-MM-DD simuluje datum běhu, --work-order=<číslo> jen jedna zakázka bez pojistky dohánění, --dry-run jen vypíše')
             ->addOption('date', null, InputOption::VALUE_REQUIRED, 'Run date YYYY-MM-DD (default today)')
             ->addOption('work-order', null, InputOption::VALUE_REQUIRED, 'Only this work order (number); issues all due periods regardless of the catch-up guard')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'List periods and documents that would be issued, write nothing');

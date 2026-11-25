@@ -18,6 +18,43 @@ a `/usr/bin/shpd-ds`, takže oba nástroje jsou poté volatelné odkudkoliv.
 V repu lze nástroje spustit i přímo přes `php bin/shpd-server` /
 `php bin/shpd-ds` — stejné chování, žádný setup nepotřeba.
 
+### Příkazy jádra a příkazy modulů
+
+Příkaz, který patří jen jednomu modulu, žije v modulu (#172): třída
+v `modules/<skupina>/<modul>/src/Command/`, deklarace v `module.jsonc`
+(`commands` pro `shpd-ds`, `serverCommands` pro `shpd-server` —
+[modules.md](modules.md) kap. 5). V jádře (`src/Command/`) zůstává, co je
+společné všem zdrojům dat, nástroje přes víc modulů a agenti serveru.
+U příkazu modulu je v této referenci řádek „Modul: `<id>`“.
+
+- **`shpd-ds` nabízí jen příkazy jádra a modulů aktivních ve zdroji dat**
+  v aktuálním adresáři (přímé moduly z `config/main.json` rozvinuté
+  o závislosti). Zdroj dat hostingu (`install.hosting`) tak nemá
+  `vat-periods-ensure` ani `mail-outbox-run`, běžný zdroj dat nemá
+  `hosting-oidc-init`.
+- **Příkaz neaktivního modulu končí chybou, která modul jmenuje** (exit 1):
+  `Command "vat-periods-ensure" belongs to module economy.vat, which is not
+  active in this data source.` Neznámé jméno dál končí obecným
+  „command not defined“.
+- **Mimo zdroj dat** (adresář bez `config/main.json`) zná `shpd-ds` jen
+  jádro; příkaz modulu tam končí chybou `… belongs to module <id>; run it
+  from a data source directory where the module is active.` Platí to
+  i pro příkazy, které jen porovnávají soubory (`ai-eval-compare`,
+  `vat-filing-xml-diff`) — pouštějí se ze zdroje dat s jejich modulem.
+- **Moduly zdroje dat nejde určit** (nečitelný `main.json`, chyba
+  resolveru) → `shpd-ds` nabídne příkazy všech modulů a na chybový výstup
+  vypíše jeden řádek varování (`modules of the data source cannot be
+  determined — offering commands of all modules; see shipard.log`).
+- **`shpd-server`** registruje `serverCommands` všech modulů ve stromu —
+  ve zdroji dat neběží, aktivní moduly pro něj nic neznamenají.
+- **Nápověda** (`help`): příkazy jádra jsou psané ručně, pod nimi je
+  generovaná část `Modules:` — pro každý modul s příkazy nadpis
+  `<id modulu> — <název modulu>` a řádky `<jméno>  <popis>` (popis příkazu
+  z jeho `setDescription()`). Drift test (`HelpDriftTest`) hlídá obojí.
+- **Nový příkaz modulu** = třída v `src/Command/` modulu + řádek
+  v `commands`; factory ani `HelpCommand` se nemění. Jména jsou unikátní
+  napříč jádrem a moduly (`ModuleCommandRules`, test nad stromem).
+
 ---
 
 ## `shpd-server` — kompletní reference
@@ -349,23 +386,33 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 | `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
-Registr povolených stavů je `CronCommand::JOB_ALLOWED_STATES`; job bez
-záznamu běží jen v `active`. V `suspended` / maintenance /
-`pending_deletion` neběží per-DS nic. Přeskočený DS se neloguje (minute
-slot by spamoval) — počet jde do heartbeatu.
+**Odkud se úlohy berou** (#172 D6): per-DS úlohy deklarují moduly polem
+`cronJobs` v `module.jsonc` — příkaz téhož modulu s volbami, slot, pořadí
+(`order`, výchozí 500) a stavy zdroje dat (`states`, výchozí jen `active`);
+tabulka výše je jejich souhrn. Dispatcher je skládá z definic **všech**
+modulů ve stromu (`Core\Server\CronJobRegistry`; pořadí ve slotu `order`
+vzestupně, pak id modulu, pak pořadí deklarace) a pro každý DS je filtruje.
+Jádro žádnou per-DS úlohu nezná; platné sloty jsou `CronProvisioner::SLOTS`.
+Novou úlohu přidá modul deklarací ([modules.md](modules.md) kap. 5), ne
+úpravou dispatcheru. Nejdou-li definice modulů načíst, dispatcher končí
+infra chybou (exit 1) — bez nich neví, co spouštět.
 
-Po stavu se vyřadí **úlohy bez aktivního modulu** (sloupec Modul,
-`CronCommand::JOB_MODULES`, #115 D15): DS bez modulu nemá jeho tabulky
-a úloha by jen selhala. Aktivní moduly DS = přímé moduly z `config/main.json`
+Stavy, ve kterých úloha běží, říká její `states`; úloha bez pole běží jen
+v `active`. V `suspended` / maintenance / `pending_deletion` neběží per-DS
+nic. Přeskočený DS se neloguje (minute slot by spamoval) — počet jde do
+heartbeatu.
+
+Po stavu se vyřadí **úlohy bez aktivního modulu** (sloupec Modul = modul,
+který úlohu deklaruje, #115 D15): DS bez modulu nemá jeho tabulky ani
+příkaz a úloha by jen selhala. Aktivní moduly DS = přímé moduly z `config/main.json`
 rozvinuté o závislosti (`Core\Server\DataSourceModules`; definice modulů
-se načítají jednou za běh, moduly se zjišťují až pro DS, kterému po stavu
-zbyla aspoň jedna úloha). Vyřazená úloha se **nespouští ani nepočítá** —
+se načítají jednou za běh, aktivní moduly se zjišťují až pro DS, kterému
+po stavu zbyla aspoň jedna úloha). Vyřazená úloha se **nespouští ani nepočítá** —
 není běh, selhání ani skip stavem, v heartbeatu čítač nemá. Nelze-li
 moduly určit (nečitelný `main.json`, chyba resolveru), běží všechny úlohy
 jako dřív a do logu jde `warn` — chyba se ukáže jako selhaná úloha, tiché
-vynechání by ji schovalo. Úloha s hodnotou `null` v mapě běží všude;
-server-level jobů se moduly netýkají. Pořadí kontrol: přepínač → stav →
-moduly.
+vynechání by ji schovalo. Server-level jobů se moduly netýkají. Pořadí
+kontrol: přepínač → stav → moduly.
 
 Před stavem se vyhodnocuje **přepínač periodických úloh** (`"cron": false`
 v `state.json`, [ds-state.md](ds-state.md) §8, #115 D1): vypnutý = DS se
@@ -409,7 +456,8 @@ Chování:
 
 Exit code: **SUCCESS i při selhaných jobech** (reportuje doctor a alert
 checky, cron nesmí spamovat MAILTO); FAILURE jen infra chyba (neznámý
-slot, nečitelný seznam DS, nezapsatelný heartbeat).
+slot, definice modulů nejdou načíst, nečitelný seznam DS, nezapsatelný
+heartbeat).
 
 | Opce | Význam |
 |------|--------|
@@ -484,6 +532,8 @@ v `modules/*/*/tables/`). Pomocný příkaz při tvorbě nové tabulky —
 hodnotu se vepíše do `tableId` v JSONC definici.
 
 ### `einvoice-render --format=isdoc --input=<canonical.json> --output=<soubor> --uuid-name=<text> [--issuing-system=<text>]`
+
+Modul: `core.exchange` (`serverCommands`)
 
 ```bash
 shpd-server einvoice-render --format=isdoc --input=doc.json --output=doc.isdoc \
@@ -871,7 +921,9 @@ Verze nástroje.
 shpd-ds help
 ```
 
-Vypíše seznam příkazů.
+Vypíše seznam příkazů: ručně psané příkazy jádra a pod nimi část
+`Modules:` s příkazy modulů aktivních ve zdroji dat — po modulech, řádek
+`<jméno>  <popis>` (viz Příkazy jádra a příkazy modulů v úvodu).
 
 #### `ds-upgrade`
 
@@ -1220,6 +1272,8 @@ zápisu, selhání `ds-upgrade`.
 
 #### `doc-reaccount <docId> [--force]`
 
+Modul: `economy.accounting`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds doc-reaccount 4711            # přegeneruje deník dokladu ve stavu 40
@@ -1235,6 +1289,8 @@ derivát dokladu — force slouží k opravě rozvrhu nebo předpisu nad uzavře
 obdobím, obsah dokladu se nemění. Viz [accounting.md](accounting.md) §7.6.
 
 #### `assets-import-verify [--asset=<číslo>] [--json]`
+
+Modul: `economy.assets`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1266,6 +1322,8 @@ stavu `errors` (varování a uplynulá doba neshazují); FAILURE i při chybě
 prostředí.
 
 #### `work-orders-invoice-run [--date=YYYY-MM-DD] [--work-order=<číslo>] [--dry-run]`
+
+Modul: `economy.workOrders`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1301,6 +1359,8 @@ datu nebo neznámém čísle zakázky.
 
 #### `exchange-rates-import <soubor|složka> [--replace]`
 
+Modul: `economy.exchangeRates`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds exchange-rates-import kurzy/2026-10-16-cnb-daily.jsonc   # jeden lístek
@@ -1334,6 +1394,8 @@ INVALID při neexistující cestě nebo složce bez souborů.
 
 #### `exchange-rate <měna> [<datum>]`
 
+Modul: `economy.exchangeRates`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds exchange-rate eur               # kurz EUR k dnešku
@@ -1351,6 +1413,8 @@ Exit 0 nalezen; 1 nenalezen nebo chybějící modul; INVALID při špatné měn�
 nebo datu.
 
 #### `exchange-rates-download [--from=YYYY-MM-DD] [--to=YYYY-MM-DD] [--type=<id>] [--dry-run]`
+
+Modul: `economy.exchangeRates`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1389,6 +1453,8 @@ Exit 0; 1 při chybě služby nebo sítě (běh skončí, další běhy hodinu
 
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 
+Modul: `economy.accbal`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds accbal-match --all --dry-run       # plán: které clearingové úhrady by šly na 311/321
@@ -1407,6 +1473,8 @@ dorovnání. Bez `--all` ani filtru příkaz nic neudělá. Viz
 [accbal.md](accbal.md) §5.7, [bank.md](bank.md) §6.1.
 
 #### `accbal-regenerate --all | --doc=<id> | --fiscal-year=<id> [--dry-run]`
+
+Modul: `economy.accbal`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1429,6 +1497,8 @@ při podezření na rozjetý ledger. Bez `--all` / `--doc` / `--fiscal-year`
 příkaz nic neudělá. Na importovaném DS běží nízké desítky sekund.
 
 #### `values-normalize [--dry-run] [--json] [--only=<druhy>] [-v]`
+
+Modul: `base.persons`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1503,6 +1573,8 @@ páruje přes normalizované tvary na obou stranách.
 
 #### `vat-filing-account <filingId> [--dry-run]`
 
+Modul: `economy.vat`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds vat-filing-account 33 --dry-run   # řádky účetního dokladu přiznání bez zápisu
@@ -1522,6 +1594,8 @@ bez něj jen jediná aktivní řada typu. Viz README modulu `economy.vat` →
 Zaúčtování přiznání.
 
 #### `vat-filing-import --period=<id> --type=return|cs|rs [--kind=…] [--xml=<soubor>] [--attach=<soubor>]… [--dry-run]`
+
+Modul: `economy.vat`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1640,6 +1714,8 @@ nevzniklo (druh selhání render služby je ve výpisu).
 
 #### `print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]… [--from=<adresa>] [--language=cs|en|sk|de] [--dry-run]`
 
+Modul: `core.mail`
+
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds print-send docs.invoicesOut.invoice 123 --dry-run             # návrh jako JSON, nic nevznikne
@@ -1689,6 +1765,19 @@ kontrola importu ze starého Shipardu. Porovnává detailní řádky podle účt
 a součty podle popisku, sloupce v průniku dle `id`, tolerance 0,005.
 Exit 0 shoda, 1 rozdíly, 2 chyba vstupu; `--strict` odmítne stranu se
 `status: errors`. Viz [reports.md](reports.md) §7.4 a §13.
+
+#### Příkazy modulů bez vlastní kapitoly
+
+Příkazy, které tato reference nepopisuje samostatně — popis dává
+`shpd-ds help` a `shpd-ds <příkaz> --help` ve zdroji dat s aktivním modulem:
+
+| Příkaz | Modul |
+|--------|-------|
+| `alerts-run`, `alerts-prune` | `core.alerts` |
+| `booking-history` | `core.exchange` |
+| `registry-extract-texts` | `base.registry` |
+| `bank-import-statement` | `economy.bank` |
+| `vat-periods-ensure`, `vat-filing-compose`, `vat-filing-files`, `vat-filing-xml-diff` | `economy.vat` |
 
 ### Users
 
@@ -1883,6 +1972,8 @@ před jakoukoli změnou (DB i klíč netknuté).
 
 #### `mail-router-bootstrap`
 
+Modul: `core.mail`
+
 ```bash
 sudo shpd-ds mail-router-bootstrap
 ```
@@ -1891,6 +1982,8 @@ Idempotentně zajistí systémového uživatele `_mail_router` a výchozí
 mailbox. Spouští se jednou před prvním nasazením mail integrace.
 
 #### `mail-router-setup`
+
+Modul: `core.mail`
 
 ```bash
 sudo shpd-ds mail-router-setup
@@ -1909,6 +2002,8 @@ Vygeneruje (nebo rotuje) API klíč pro externí mail-router.
 
 #### `mail-idempotency-prune`
 
+Modul: `core.mail`
+
 ```bash
 sudo shpd-ds mail-idempotency-prune
 sudo shpd-ds mail-idempotency-prune --days 30
@@ -1921,6 +2016,8 @@ Odstraní idempotency klíče incoming mailů starší než TTL.
 | `--days <N>` | TTL v dnech (default: hodnota `IdempotencyStore::TTL_DAYS`) |
 
 #### `mail-outbox-run`
+
+Modul: `core.mail`
 
 ```bash
 shpd-ds mail-outbox-run
@@ -1939,6 +2036,8 @@ Exit SUCCESS i při selhaných zprávách (reportuje je alert check
 
 #### `mail-outbox-retry`
 
+Modul: `core.mail`
+
 ```bash
 shpd-ds mail-outbox-retry --id 42
 ```
@@ -1948,6 +2047,8 @@ počítadlem pokusů. Použij po opravě transportu — viz runbook
 [`docs/mail/outbound.md`](mail/outbound.md).
 
 #### `mail-send-test`
+
+Modul: `core.mail`
 
 ```bash
 shpd-ds mail-send-test --to admin@example.com
@@ -1981,6 +2082,8 @@ Jediný ruční krok při zřízení zdroje dat je klíč připojení:
 
 #### `ai-backend-set-key`
 
+Modul: `core.ai`
+
 ```bash
 sudo shpd-ds ai-backend-set-key                       # klíč zadáš skrytě na výzvu
 sudo shpd-ds ai-backend-set-key --backend=second      # jiné než výchozí připojení
@@ -2011,6 +2114,8 @@ D20–D21) — jedno vydání funguje s upozorněním na stderr. Příkazy
 
 #### `ai-test`
 
+Modul: `core.ai`
+
 ```bash
 sudo shpd-ds ai-test                                  # všechny AI funkce
 sudo shpd-ds ai-test --function mail.extraction       # jedna funkce
@@ -2037,6 +2142,8 @@ z cronu.
 | `--json` | Stdout = jediný JSON objekt `{ok, functions: [{id, ok, connection, connectionOrigin, model, elapsedMs, inputTokens, outputTokens, costUsd, stopReason, reply}]}`, u selhání `{id, ok: false, code, error, …}`; lidské řádky jdou na stderr. `connectionOrigin` = původ připojení (`override` / `function` / `default` / `server` — serverové připojení pro vývoj, #103 D40; `connection` je pak `server`) |
 
 #### `ai-eval`
+
+Modul: `core.exchange`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -2113,6 +2220,8 @@ Výstup nikdy přes `| head` (SIGPIPE) — `--json > soubor`.
 
 #### `ai-eval-compare`
 
+Modul: `core.mail`
+
 ```bash
 shpd-ds ai-eval-compare tests/eval/cz-vat-payer/2026-10-15-baseline.json tests/eval/cz-vat-payer/2026-10-20-sonnet55.json
 shpd-ds ai-eval-compare A.json B.json --json
@@ -2151,6 +2260,8 @@ je i v lidském výpisu).
 
 #### `ai-profile-reload`
 
+Modul: `core.mail`
+
 ```bash
 sudo shpd-ds ai-profile-reload
 sudo shpd-ds ai-profile-reload --profile=mail-classifier
@@ -2180,6 +2291,8 @@ hlídá `ProfileSchemaDriftTest`). Profil přežije i `ds-reset`
 
 #### `mail-analysis-reap`
 
+Modul: `core.mail`
+
 ```bash
 sudo shpd-ds mail-analysis-reap
 ```
@@ -2192,6 +2305,8 @@ expired)“) — strop pro pády, které PHP nezachytí (#85 D26); takový řád
 výpis označí. Bezpečné spouštět opakovaně (např. z cronu).
 
 #### `mail-preprocess`
+
+Modul: `core.mail`
 
 ```bash
 sudo shpd-ds mail-preprocess --message 1234          # vykoná uložený plán zprávy
@@ -2213,6 +2328,8 @@ skončí ve stavu Hotovo s chybami (40) a projde do AI fronty.
 | `--sweep` | Rescue: stav 10 starší než 5 min (spawn selhal) a stav 20 starší než 15 min (proces umřel) → zpět na 10 + spawn; po 3 pokusech stav 40. Exit 0 i bez nálezu |
 
 #### `mail-analyze`
+
+Modul: `core.mail`
 
 ```bash
 sudo shpd-ds mail-analyze --message 1234   # AI analýza jedné zprávy ve frontě
@@ -2243,6 +2360,8 @@ viz [operations/production.md](operations/production.md) § 10. Běh zvedne
 `memory_limit` na 512 MB, je-li nižší (přílohy v base64 a v těle požadavku).
 
 #### `mail-target-backfill`
+
+Modul: `core.mail`
 
 ```bash
 sudo shpd-ds mail-target-backfill --dry-run   # jen počty + ukázka titulků
@@ -2278,6 +2397,8 @@ Příkazy pro DS s modulem `hosting.core` (centrální správa DS —
 
 #### `hosting-oidc-init`
 
+Modul: `hosting.core`
+
 ```bash
 sudo shpd-ds hosting-oidc-init
 ```
@@ -2287,6 +2408,8 @@ kid. Další krok: nastavit issuer v Nastavení → Hosting
 (`hosting.oidc.issuer`).
 
 #### `hosting-oidc-client`
+
+Modul: `hosting.core`
 
 ```bash
 sudo shpd-ds hosting-oidc-client --ds abcd-efgh-ijkl-mnop --redirect-uri https://firma.example.com/api/v1/_auth/oidc/callback --generate
@@ -2307,6 +2430,8 @@ uloží dodanou hodnotu. Fáze 2: pro nové DS z portálu tohle dělá
 
 #### `hosting-server-key`
 
+Modul: `hosting.core`
+
 ```bash
 sudo shpd-ds hosting-server-key --server 3 --generate
 sudo shpd-ds hosting-server-key --server 3 --revoke
@@ -2324,6 +2449,8 @@ uloží jen prefix + SHA-256 hash a token vytiskne **jednou** — patří do
 | `--generate` / `--revoke` | právě jedna z opcí |
 
 #### `hosting-router-key`
+
+Modul: `hosting.core`
 
 ```bash
 sudo shpd-ds hosting-router-key --router 1 --generate
@@ -2344,6 +2471,8 @@ jede dál na stale lookup).
 
 #### `hosting-ai-gw-init`
 
+Modul: `hosting.core`
+
 ```bash
 sudo shpd-ds hosting-ai-gw-init --set-key    # klíč z promptu (skrytý vstup) / STDIN
 sudo shpd-ds hosting-ai-gw-init --status     # existence + mtime + práva, nikdy obsah
@@ -2360,6 +2489,8 @@ soubor per-request).
 | `--set-key` / `--status` | právě jedna z opcí |
 
 #### `hosting-ai-token`
+
+Modul: `hosting.core`
 
 ```bash
 sudo shpd-ds hosting-ai-token --ds 7 --generate [--note "backfill vlm9"]

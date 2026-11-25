@@ -33,7 +33,7 @@ class VatPeriodsEnsureCommand extends Command
     protected function configure(): void
     {
         $this->setName('vat-periods-ensure')
-            ->setDescription('Ensure VAT report period instances (return/cs/rs) cover today and tomorrow for active registrations')
+            ->setDescription('Zajistí instance daňových tvrzení (přiznání/KH/SH) aktivních registrací DPH pro dnešek a zítřek — denní cron')
             ->addOption('date', null, InputOption::VALUE_REQUIRED, 'Reference date YYYY-MM-DD (default today)');
     }
 

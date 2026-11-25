@@ -49,7 +49,10 @@ Backend infrastruktura (sdílená, ne specifická pro modul) žije v
 
 API kontroler: `src/Api/Controller/AlertsController.php`.
 
-CLI: `shpd-ds alerts-run`, `shpd-ds alerts-prune`.
+CLI: `shpd-ds alerts-run`, `shpd-ds alerts-prune` — třídy v `src/Command/`,
+registrace polem `commands` v `module.jsonc`; úlohy cronu (`alerts-run`
+ve slotu `five-minutes` s pořadím 900, `alerts-prune` ve slotu `weekly`)
+deklaruje `cronJobs` tamtéž (#172).
 
 ## Kompletní spec
 

@@ -1,6 +1,6 @@
 # Moduly nesou své CLI příkazy a úlohy cronu (#172 D1–D6)
 
-**Stav:** naplánováno — zadání 2026-11-25 (#172 D1–D6)
+**Stav:** hotovo — 2026-11-25 (#172 D1–D6); zbývá nasazení na alfu
 
 > Task pro Claude Code (5 commitů). Design: issue #172. Navazuje na #170
 > (doplňky) a #115 D15 (dispatcher respektuje aktivní moduly). První
@@ -247,28 +247,104 @@ Commit 5 (`docs: příkazy a úlohy cronu z modulů (#172 D1–D6)`) včetně
 
 ## Hotovo když
 
-- [ ] `module.jsonc` umí `commands`, `serverCommands`, `cronJobs`;
+- [x] `module.jsonc` umí `commands`, `serverCommands`, `cronJobs`;
       vadná deklarace selže při načtení modulu; test stromu hlídá třídy,
       namespace, unikátní jména a vazbu úlohy na příkaz modulu
-- [ ] `shpd-ds` ve zdroji dat nabízí jen příkazy jádra a aktivních modulů;
+- [x] `shpd-ds` ve zdroji dat nabízí jen příkazy jádra a aktivních modulů;
       příkaz neaktivního modulu končí chybou s jeho id (D4); nečitelné
       moduly → příkazy všech modulů + varování
-- [ ] ve zdroji dat s `install.hosting` není `vat-periods-ensure` ani
+- [x] ve zdroji dat s `install.hosting` není `vat-periods-ensure` ani
       `mail-outbox-run`, jsou tam příkazy `hosting-*` a `alerts-*`;
       v běžném zdroji dat `install.base` nejsou `hosting-oidc-*` apod.
-- [ ] `shpd-server einvoice-render` funguje beze změny z `core.exchange`
-- [ ] příkazy modulů leží v `modules/…/src/Command/`, factory je neznají;
+- [x] `shpd-server einvoice-render` funguje beze změny z `core.exchange`
+- [x] příkazy modulů leží v `modules/…/src/Command/`, factory je neznají;
       jména, volby a výstupy beze změny
-- [ ] dispatcher skládá úlohy z `cronJobs`; test shody s dřívějšími
+- [x] dispatcher skládá úlohy z `cronJobs`; test shody s dřívějšími
       konstantami prochází; `cron --slot=<slot> --ds=<id>` na dev serveru
       vypíše stejné úlohy jako před změnou
-- [ ] `shpd-ds help` a `shpd-server help` ukazují příkazy modulů po
+- [x] `shpd-ds help` a `shpd-server help` ukazují příkazy modulů po
       modulech; drift test pokrývá jádro i moduly
-- [ ] `shpd-ds version` se nezpomalil citelně (měření v poznámkách)
-- [ ] dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
+- [x] `shpd-ds version` se nezpomalil citelně (měření v poznámkách)
+- [x] dokumentace podle kroku 4, `**Stav:**` aktualizovaný, index tasků
       přegenerovaný
-- [ ] celá sada PHPUnit lokálně zelená
+- [x] celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-25 v pěti commitech podle zadání.
+
+**Odchylky od tabulky přesunů (D3).**
+
+- `ai-eval` je v **`core.exchange`**, ne v `core.mail`: příkaz přímo
+  importuje třídy `core.exchange` (datové sady, porovnání, ISDOC)
+  a `core.mail` na `core.exchange` nezávisí. `ai-eval-compare` zůstal
+  v `core.mail`. V nápovědě jsou tak oba příkazy pod různými moduly.
+  (Kód `core.mail` sám `core.exchange` používá bez deklarované závislosti —
+  pravidlo jsem proto posuzoval podle přímých importů a tabulek třídy
+  příkazu, ne tranzitivně.)
+- Ostatní řádky tabulky vyšly podle pravidla. `mail-target-backfill` je
+  v `core.mail`: `docs_core_heads` čte jen pro zprávy navázané na doklad.
+  Šest příkazů `hosting-*` pracuje s tabulkami `hosting_core_*` nebo klíči
+  v `secrets/` zdroje dat hostingu; ověřeno na zdroji dat `gn5c-m`
+  (`install.hosting`).
+
+**Změna chování, kterou zadání nejmenuje.** `ai-eval-compare`
+a `vat-filing-xml-diff` jen porovnávají dva soubory a dřív běžely
+odkudkoli. Jako příkazy modulu jdou spustit jen ze zdroje dat s aktivním
+modulem; mimo zdroj dat končí chybou `Command "…" belongs to module <id>;
+run it from a data source directory where the module is active.`
+(rozhodnuto při plánování, popsáno v `docs/cli.md`).
+
+**Jak je to udělané.**
+
+- Jedinečnost jmen se hlídá **v rámci binárky** (`shpd-ds`: jádro + moduly,
+  `shpd-server`: jádro + `serverCommands`) — `version` a `help` mají obě
+  factory, napříč binárkami se neporovnává. Pravidla jsou čistá funkce
+  `ModuleCommandRules` (vzor `ModuleKindRules`), počítají i aliasy.
+- D4 je přepis `find()` v `Shipard\Cli\ShipardApplication`: **přesné** jméno
+  příkazu modulu, které v aplikaci registrované není, končí
+  `CommandNotFoundException` s id modulu (exit 1) dřív, než ho Symfony zkusí
+  doplnit na jiný příkaz. Mapa jméno → modul (`ModuleCommands::dsOwner`) se
+  staví až při prvním dotazu; mimo zdroj dat se strom modulů nenačte vůbec,
+  dokud někdo nezadá příkaz, který jádro nezná.
+- Varování „modules of the data source cannot be determined“ nejde z factory
+  přes `fwrite`, ale z aplikace na chybový výstup před během příkazu — jednou,
+  a jde testovat.
+- `bin/shpd-ds` a `bin/shpd-server` předávají factory `DataSourceModules`
+  nad resolverem, který už mají (druhý sken kořenů modulů odpadl).
+- Dispatcher čte definice modulů **vždy jednou na začátku běhu** (potřebuje
+  je pro úlohy slotu); dřív až pro první zdroj dat, kterému po stavu zbyla
+  úloha. Nejdou-li načíst, končí infra chybou (exit 1) — zadání tenhle
+  případ neřeší, tichý prázdný slot by schoval rozbitý strom modulů.
+- Test shody (`CronJobRegistryTest`) vznikl proti konstantám `SLOT_JOBS` /
+  `JOB_MODULES` / `JOB_ALLOWED_STATES`, prošel, a teprve pak konstanty
+  zanikly; zůstal proti zapsané tabulce.
+- Nápověda: generovanou část píše `ModuleCommandHelp`. Do `setDescription()`
+  jsem přenesl text ruční nápovědy u 18 příkazů, kde nesl víc (volby, exit
+  kódy); u čtyř je popis sloučený z obou. Ruční sekce Mail, Alerts, Registry
+  a AI zanikly, „Economy“ je „Reports and prints“ (zbyly `report-run`,
+  `report-diff`, `print-run`). Popis `einvoice-render` nese i syntaxi a exit
+  kódy, které měla sekce Options nápovědy `shpd-server`.
+- Fixtury pro testy: `tests/Fixtures/modules/test/commands` a `commandsTwo`
+  (třídy v namespace modulu, načítá je `ModuleClassLoader` nad druhým
+  kořenem).
+
+**Měření.** `shpd-ds version` ve zdroji dat `4l3j-z`: na výchozím commitu
+medián 0,27 s (10 běhů), po změně 0,29 s (15 běhů) — asi 20 ms navíc,
+pod hranicí 100 ms ze zadání. Z toho načtení definic všech 40 modulů asi
+15 ms. Mimo zdroj dat se definice nenačítají (0,06 s).
+
+**Ověřeno na dev serveru.** Zdroj dat s `install.hosting`: `shpd-ds list`
+má jen `alerts-*` a `hosting-*` z příkazů modulů, `vat-periods-ensure`
+a `mail-outbox-run` končí chybou D4; běžný zdroj dat nemá `hosting-oidc-*`,
+`hosting-stats` (jádro) má. `cron --slot=<slot> --ds=<id>` pro všech pět
+slotů na obou zdrojích dává stejný výpis jako před commitem 4 (20 řádků
+úloh, včetně `skipped (module … not active)`).
+
+**Neověřeno.** Celá integrační sada (běžely jen tři testy, kterým se měnil
+import — Accbal, Persons, Vat nad `blkm-i`); strom s dalším kořenem modulů
+(`extraModulesPath`) ručně — pokrývají ho jen jednotkové testy s fixturovým
+kořenem.
+
+**Dokumentace.** Devět přesunutých příkazů nemá v `docs/cli.md` vlastní
+kapitolu (neměly ji ani dřív) — je u nich tabulka příkaz → modul.

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Command\DataSource;
 
+use Shipard\Cli\ModuleCommandGroup;
+use Shipard\Cli\ModuleCommandHelp;
 use Shipard\Core\Version;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\DescriptorHelper;
@@ -14,6 +16,20 @@ class HelpCommand extends Command
 {
     /** Příkaz, který si vyžádal `--help`; null = obecná nápověda. */
     private ?Command $describeCommand = null;
+
+    /** @var list<ModuleCommandGroup> příkazy modulů registrované v aplikaci */
+    private array $moduleGroups = [];
+
+    /**
+     * Příkazy modulů pro generovanou část nápovědy — factory předá ty,
+     * které v aplikaci registrovala (moduly aktivní ve zdroji dat).
+     *
+     * @param list<ModuleCommandGroup> $groups
+     */
+    public function setModuleGroups(array $groups): void
+    {
+        $this->moduleGroups = $groups;
+    }
 
     /**
      * Symfony volá při `<příkaz> --help` na commandu jménem `help`. Ručně
@@ -53,7 +69,6 @@ class HelpCommand extends Command
         $output->writeln('  <info>help</info>                    Show this help message');
         $output->writeln('  <info>ds-upgrade</info>              Upgrade the data source schema and configuration');
         $output->writeln('  <info>ds-reset</info>                Reset the data source — drop all data tables and recreate them, keeping users, API keys and protected tables');
-        $output->writeln('  <info>values-normalize</info>        Normalize stored directory values (persons, addresses, contacts, bank accounts) with the same rules as saving; --dry-run counts only, --json, --only=<kinds> (phone, email, web, zip, ids, accounts), -v lists every change and finding with values (personal data — screen only)');
         $output->writeln('');
         $output->writeln('<comment>Settings:</comment>');
         $output->writeln('  <info>ds-setting</info>              Read and write data source settings: list | get <key> | set <key> <value> [--unset]');
@@ -77,61 +92,12 @@ class HelpCommand extends Command
         $output->writeln('  <info>ds-secrets-rotate</info>       Rotate the per-DS secrets.key — re-encrypts all encrypted_text columns');
         $output->writeln('');
         $output->writeln('<comment>Hosting:</comment>');
-        $output->writeln('  <info>hosting-oidc-init</info>       Generate the OIDC OP RSA signing key (secrets/oidc-op.key)');
-        $output->writeln('  <info>hosting-oidc-client</info>     Register a data source as an OIDC OP client — set client secret and redirect URI');
-        $output->writeln('  <info>hosting-server-key</info>      Generate or revoke the provisioning API key of a hosting server');
-        $output->writeln('  <info>hosting-router-key</info>      Generate or revoke the lookup API key of a hosting mail router');
-        $output->writeln('  <info>hosting-ai-gw-init</info>      Manage the AI gateway org key (secrets/ai-gw-anthropic.key)');
-        $output->writeln('  <info>hosting-ai-token</info>        Generate or revoke an AI gateway token for a data source');
         $output->writeln('  <info>hosting-stats</info>           Collect pending-work counts (alerts, mail) for the hosting stats push');
         $output->writeln('');
-        $output->writeln('<comment>Mail:</comment>');
-        $output->writeln('  <info>mail-router-bootstrap</info>   Ensure _mail_router system user and default mailbox exist');
-        $output->writeln('  <info>mail-router-setup</info>       Generate (or rotate) the API key used by the external mail-router');
-        $output->writeln('  <info>mail-idempotency-prune</info>  Remove expired idempotency keys for incoming mail');
-        $output->writeln('  <info>mail-outbox-run</info>         Process due messages in the outbound mail queue');
-        $output->writeln('  <info>mail-outbox-retry</info>       Re-queue a failed outbound message');
-        $output->writeln('  <info>mail-send-test</info>          Send a test message through the outbound mail transport');
-        $output->writeln('  <info>mail-preprocess</info>         Run the stored preprocess plan of a message (--message <id> [--force]) or rescue stuck ones (--sweep)');
-        $output->writeln('  <info>mail-analyze</info>            Run the AI analysis of a queued message in process (--message <id>) or spawn runners for the queue (--sweep)');
-        $output->writeln('  <info>mail-target-backfill</info>   Fill partner and title of messages linked to a document (--dry-run, --limit, --batch)');
-        $output->writeln('');
-        $output->writeln('<comment>Alerts:</comment>');
-        $output->writeln('  <info>alerts-run</info>              Run due alert checks (or a single check)');
-        $output->writeln('  <info>alerts-prune</info>            Delete resolved/dismissed alerts older than the retention window');
-        $output->writeln('');
-        $output->writeln('<comment>Economy:</comment>');
-        $output->writeln('  <info>bank-import-statement</info>   Import bankovního výpisu ze souboru (CAMT/GPC/FIO)');
-        $output->writeln('  <info>accbal-match</info>            Přeúčtuje clearingové úhrady s klíčem otevřeného předpisu na 311/321 (--dry-run vypíše plán)');
-        $output->writeln('  <info>accbal-regenerate</info>       Přegeneruje saldo pohyby z účetního deníku (--all | --doc <id> | --fiscal-year <id>; --dry-run jen spočítá)');
-        $output->writeln('  <info>booking-history</info>         Zpracuje soubor účetní historie (report kvality, seed pravidel IČO→štítek, otagování položek)');
+        $output->writeln('<comment>Reports and prints:</comment>');
         $output->writeln('  <info>report-run</info>              Spustí report a vypíše ReportResult jako JSON na stdout; --param id=hodnota = parametr reportu; --format=xlsx|csv [--output=<soubor>] = export');
         $output->writeln('  <info>report-diff</info>             Porovná dva ReportResult JSON soubory (kontrolní diff)');
         $output->writeln('  <info>print-run</info>               Spustí tisk nad záznamem: PrintData jako JSON na stdout; --format=pdf --output=<soubor> = PDF; --format=html --output=<adresář> = HTML pro vývoj šablon; --data=<PrintData.json> = render bez databáze; --language=cs|en|sk|de');
-        $output->writeln('  <info>print-send</info>              Odešle záznam e-mailem: zpráva v Odeslané poště s PDF tisku + řádek fronty; --to=<adresa> (lze opakovat; bez něj adresy z kontaktů — povinné jen na neprodukčním serveru s vypnutou pojistkou pošty), --cc, --from, --language; --dry-run jen vypíše návrh (JSON)');
-        $output->writeln('  <info>vat-periods-ensure</info>      Zajistí instance daňových tvrzení (přiznání/KH/SH) pro dnešek a zítřek — denní cron');
-        $output->writeln('  <info>vat-filing-compose</info>      Sestaví podání DPH za instanci tvrzení, nebo přepočítá snapshot konceptu');
-        $output->writeln('  <info>vat-filing-files</info>        Vyrobí soubory podání DPH pro daňový portál (XML, PDF opis)');
-        $output->writeln('  <info>vat-filing-xml-diff</info>     Porovná dva soubory podání DPH po větách a atributech');
-        $output->writeln('  <info>vat-filing-account</info>      Zaúčtuje podané přiznání DPH — účetní doklad (koncept) navázaný na podání; --dry-run jen vypíše řádky');
-        $output->writeln('  <info>vat-filing-import</info>       Importuje staré podání DPH z původního XML (snapshot composerem, podané hodnoty z XML, přílohy, Podáno); --dry-run jen porovná');
-        $output->writeln('  <info>doc-reaccount</info>           Přegeneruje účetní deník dokladu ve stavu 40; --force obejde zámek období (zaloguje se)');
-        $output->writeln('  <info>assets-import-verify</info>    Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech; --asset=<číslo>, --json; exit 1 s rozdíly');
-        $output->writeln('  <info>work-orders-invoice-run</info> Vystaví koncepty faktur periodických zakázek za splatná období — denní cron; --date=YYYY-MM-DD simuluje datum běhu, --work-order=<číslo> jen jedna zakázka bez pojistky dohánění, --dry-run jen vypíše');
-        $output->writeln('  <info>exchange-rates-import</info>   Nahraje kurzovní lístky (shpd.exchangeRates.list.v1) ze souboru nebo složky; shodný lístek beze změny, jiný obsah = konflikt, --replace přepíše');
-        $output->writeln('  <info>exchange-rate</info>           Kurz měny k datu podle resolveru (kurz za jednotku, typ lístku, platnost od, číslo), nebo důvod, proč nenalezen; <měna> [<datum>]');
-        $output->writeln('  <info>exchange-rates-download</info> Stáhne chybějící kurzovní lístky ze služby (five-minutes cron: okno od předchozího fiskálního roku, nejvýš 6 dotazů, pauza 1 h); --from/--to = ruční okno bez limitu, --type = jeden typ, --dry-run jen vypíše');
-        $output->writeln('');
-        $output->writeln('<comment>Registry (Spisovna):</comment>');
-        $output->writeln('  <info>registry-extract-texts</info>  Fill registry documents extracted_text from attachments (default: missing only)');
-        $output->writeln('');
-        $output->writeln('<comment>AI:</comment>');
-        $output->writeln('  <info>ai-backend-set-key</info>      Set (or rotate) the API key of an AI backend — hidden prompt / STDIN, or --api-key; encrypts via DsSecretCipher');
-        $output->writeln('  <info>ai-profile-reload</info>       Reload AI profile from JSONC template into the DB');
-        $output->writeln('  <info>ai-test</info>                 Test AI functions: resolver decision + a minimal live request per function (--function, --json; costs a fraction of a cent)');
-        $output->writeln('  <info>ai-eval</info>                 Evaluate the AI analysis over a dataset: dry-run analysis vs. expected canonical, results file in tests/eval/ (--variant, --only, --limit, --repeat, --save-raw, --out, --yes, --json, --estimate, --max-cost, --progress-file; costs money)');
-        $output->writeln('  <info>ai-eval-compare</info>         Compare two ai-eval results files side by side: metric deltas, repeat noise, fields improved / worsened (--json)');
-        $output->writeln('  <info>mail-analysis-reap</info>      Release expired AI analysis claims and re-queue affected messages');
         $output->writeln('');
         $output->writeln('<comment>Dataset:</comment>');
         $output->writeln('  <info>dataset-dump</info>            Export the whole DS into a portable dataset folder (--zip, --force)');
@@ -140,6 +106,9 @@ class HelpCommand extends Command
         $output->writeln('  <info>dataset-e2e</info>             Reseed the free DS with a dataset, click through every proposal card in the browser (Playwright Test) and run dataset-verify --no-apply (--no-reseed, --base-url, --output-dir, --json, --progress-file; development only, exit 0/1/2/130)');
         $output->writeln('  <info>video-run</info>               Build the demo dataset of a video scenario anchored at today, reseed the free DS, open a session and check or record the video (--verb check|build, --anchor, --base-url, --json, --progress-file; development only, exit 0/1/2/130)');
         $output->writeln('');
+        // Příkazy modulů aktivních ve zdroji dat — generované z popisů
+        // příkazů (#172 D5); ručně psané jsou jen příkazy jádra výše.
+        ModuleCommandHelp::write($output, $this->moduleGroups);
         $output->writeln('<comment>Usage:</comment>');
         $output->writeln('  shpd-ds <command> [options]');
         $output->writeln('');
@@ -155,11 +124,6 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ds-module list');
         $output->writeln('  shpd-ds ds-module enable facility.core');
         $output->writeln('  shpd-ds user-create --login=admin --password=...');
-        $output->writeln('  shpd-ds ai-backend-set-key --backend default');
-        $output->writeln('  shpd-ds ai-test --function mail.extraction');
-        $output->writeln('  shpd-ds ai-eval /path/to/repo/tests/datasets/cz/vat-payer --variant /path/to/repo/tests/eval/variants/baseline.jsonc --only 0101 --yes');
-        $output->writeln('  shpd-ds ai-eval /path/to/repo/tests/datasets/cz/vat-payer --variant /path/to/repo/tests/eval/variants/baseline.jsonc --estimate --json');
-        $output->writeln('  shpd-ds ai-eval-compare tests/eval/cz-vat-payer/A.json tests/eval/cz-vat-payer/B.json');
         $output->writeln('  shpd-ds ds-secret set mail-relay.password');
         $output->writeln('  shpd-ds ds-secrets-rotate --dry-run');
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');

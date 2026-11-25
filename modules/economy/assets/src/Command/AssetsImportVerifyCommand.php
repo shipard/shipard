@@ -45,7 +45,7 @@ class AssetsImportVerifyCommand extends Command
     protected function configure(): void
     {
         $this->setName('assets-import-verify')
-             ->setDescription('Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech, uplynulá doba účetního odpisování (nic nemění)')
+             ->setDescription('Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech, uplynulá doba účetního odpisování (nic nemění); --asset=<číslo>, --json; exit 1 s rozdíly')
              ->addOption('asset', null, InputOption::VALUE_REQUIRED, 'Jen karta s tímto inventárním číslem (kontrola po letech se pak vynechá)')
              ->addOption('json', null, InputOption::VALUE_NONE, 'Výsledek jako JSON na stdout');
     }

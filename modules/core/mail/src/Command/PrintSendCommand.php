@@ -54,7 +54,7 @@ class PrintSendCommand extends Command
     protected function configure(): void
     {
         $this->setName('print-send')
-             ->setDescription('Odešle záznam e-mailem: zpráva v Odeslané poště s PDF tisku + řádek fronty; --dry-run jen vypíše návrh (JSON)')
+             ->setDescription('Odešle záznam e-mailem: zpráva v Odeslané poště s PDF tisku + řádek fronty; --to=<adresa> (lze opakovat; bez něj adresy z kontaktů — povinné jen na neprodukčním serveru s vypnutou pojistkou pošty), --cc, --from, --language; --dry-run jen vypíše návrh (JSON)')
              ->addArgument('printId', InputArgument::REQUIRED, 'Id tisku (např. docs.invoicesOut.invoice)')
              ->addArgument('recordId', InputArgument::REQUIRED, 'Id záznamu v tabulce tisku')
              ->addOption('to', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Příjemce (lze opakovat); bez něj adresy z kontaktů — povinné jen na neprodukčním serveru s vypnutou pojistkou pošty')

@@ -60,7 +60,7 @@ class ExchangeRatesDownloadCommand extends Command
     protected function configure(): void
     {
         $this->setName('exchange-rates-download')
-            ->setDescription('Download missing exchange rate lists from the service (five-minutes cron); --from/--to = manual range, --type = one list type, --dry-run = plan only')
+            ->setDescription('Stáhne chybějící kurzovní lístky ze služby (five-minutes cron: okno od předchozího fiskálního roku, nejvýš 6 dotazů, pauza 1 h); --from/--to = ruční okno bez limitu, --type = jeden typ, --dry-run jen vypíše')
             ->addOption('from', null, InputOption::VALUE_REQUIRED, 'Window start YYYY-MM-DD (default: start of the previous fiscal year)')
             ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Window end YYYY-MM-DD (default and maximum: today)')
             ->addOption('type', null, InputOption::VALUE_REQUIRED, 'Only this list type id (e.g. cz.cnb.daily)')

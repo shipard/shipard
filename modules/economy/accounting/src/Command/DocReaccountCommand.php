@@ -47,7 +47,7 @@ class DocReaccountCommand extends Command
     {
         $this
             ->setName('doc-reaccount')
-            ->setDescription('Re-generate the accounting journal of one document (state 40); --force bypasses period locks')
+            ->setDescription('Přegeneruje účetní deník dokladu ve stavu 40; --force obejde zámek období (zaloguje se)')
             ->addArgument('docId', InputArgument::REQUIRED, 'docs_core_heads.id')
             ->addOption('force', null, InputOption::VALUE_NONE, 'Bypass document locks (locked VAT period / fiscal month); logged');
     }

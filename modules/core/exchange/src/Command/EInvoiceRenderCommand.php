@@ -53,7 +53,7 @@ missing or unsupported values — paths on stderr, nothing written);
 HELP;
 
         $this->setName('einvoice-render')
-             ->setDescription('Render a structured e-invoice (ISDOC) from a canonical JSON document; no data source needed')
+             ->setDescription('Render a structured e-invoice (ISDOC) from a canonical JSON document, no data source needed: --format=isdoc --input=<canonical.json> --output=<file> --uuid-name=<text> [--issuing-system=<text>]; validated against XSD 6.0.1 and 6.0.2; exit 1 = input problem (paths on stderr), 2 = output failed the schema; nothing written on error')
              ->setHelp($help)
              ->addOption('format', null, InputOption::VALUE_REQUIRED, 'E-invoice format (' . implode(', ', EInvoiceFormats::ids()) . ')')
              ->addOption('input', null, InputOption::VALUE_REQUIRED, 'Canonical shpd.docs.document.v1 JSON with rows[].computed')
