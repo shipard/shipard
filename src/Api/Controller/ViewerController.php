@@ -9,6 +9,7 @@ use Shipard\Api\Response;
 use Shipard\Api\TableAccessGuard;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentLockRegistry;
 use Shipard\Core\Document\DocumentRegistry;
@@ -272,6 +273,7 @@ class ViewerController
 		?DocumentRegistry $documents = null,
 		?DataSourceConfig $dsConfig = null,
 		?PrintRegistry $prints = null,
+		?ServerConfig $serverConfig = null,
 	): Response {
 		$def = $registry->get($viewerId);
 		if ($def === null) {
@@ -293,6 +295,12 @@ class ViewerController
 		$record = $viewer->loadRecord($recordId);
 		if ($record === null) {
 			return Response::error('RECORD_NOT_FOUND', "Record {$recordId} not found", 404);
+		}
+
+		// Akce záznamu z modulů (#172 D12, D15): viewer musí vědět, komu
+		// detail kreslí — akce `admin: true` vidí jen správce.
+		if ($auth->isAuthenticated) {
+			$viewer->setRecordActionUser($auth->userId, $auth->isAdmin, $serverConfig);
 		}
 
 		$toolbar = $viewer->getToolbarActions($record);

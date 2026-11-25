@@ -6,6 +6,7 @@ namespace Shipard\Core\Viewer;
 
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\RecordPattern;
 use Shipard\Core\Database\SearchCondition;
@@ -15,6 +16,8 @@ use Shipard\Core\I18n\CatalogText;
 use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Module\ModuleExtensionContext;
 use Shipard\Core\Module\ModuleUiExtensions;
+use Shipard\Core\RecordAction\RecordActionContext;
+use Shipard\Core\RecordAction\RecordActions;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
 use Shipard\Core\Viewer\Detail\DetailExtensions;
@@ -86,6 +89,9 @@ abstract class TableViewer
     /** Rozšíření UI z aktivních modulů (`detailExtensions`, #172 D16); null = žádná. */
     private ?ModuleUiExtensions $uiExtensions = null;
 
+    /** @var array{userId: ?int, isAdmin: bool, serverConfig: ?ServerConfig}|null uživatel pro akce záznamu z modulů */
+    private ?array $recordActionUser = null;
+
     public function __construct(
         protected DataSourceConnection $db,
         protected string $table,
@@ -133,6 +139,17 @@ abstract class TableViewer
     public function setUiExtensions(ModuleUiExtensions $uiExtensions): void
     {
         $this->uiExtensions = $uiExtensions;
+    }
+
+    /**
+     * Uživatel, pro kterého se detail kreslí — zapíná akce záznamu z modulů
+     * (`recordActions`, #172 D12, D15). Volá `ViewerController::detail()`;
+     * bez volání (jiný kód, testy) detail akce modulů nevypisuje vůbec,
+     * protože neví, komu je ukazuje.
+     */
+    public function setRecordActionUser(?int $userId, bool $isAdmin, ?ServerConfig $serverConfig = null): void
+    {
+        $this->recordActionUser = ['userId' => $userId, 'isAdmin' => $isAdmin, 'serverConfig' => $serverConfig];
     }
 
     public function setDefinition(ViewerDefinition $definition): void
@@ -502,6 +519,8 @@ abstract class TableViewer
      * (`detailExtensions` v `module.jsonc`, #172 D16 — sběr a kontrola
      * kontraktu v `DetailExtensions`); taby modulů jsou před tabem Přílohy.
      * Viewer bez tabulky rozšíření nemá.
+     * Za akce vieweru přidá akce záznamu z modulů (`recordActions`,
+     * #172 D12 — `RecordActions`), jen když zná uživatele.
      *
      * Tvar výsledku: `title`, `subtitle`, `badges`, `icon`, `tabs`,
      * volitelně `attachments {groups}` a `actions` (jen neprázdné);
@@ -559,7 +578,7 @@ abstract class TableViewer
             }
         }
 
-        $actions = $this->detailActions($record);
+        $actions = [...$this->detailActions($record), ...$this->recordActionsFromModules($recordId)];
         if ($actions !== []) {
             $detail['actions'] = $actions;
         }
@@ -594,6 +613,48 @@ abstract class TableViewer
                 $this->tables[$this->table] ?? null,
             ),
             $record,
+        );
+    }
+
+    /**
+     * Akce záznamu z modulů (`recordActions`, #172 D12) — za akce vieweru.
+     * Akce dostává **holý řádek tabulky** (`loadRecord()`), ne záznam háčků
+     * s JOINy: endpoint, který akci provede, viewer nemá a musí vidět
+     * totéž. Dotaz navíc jen u tabulky, která nějakou akci má. Bez
+     * uživatele ({@see self::setRecordActionUser()}) nic.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function recordActionsFromModules(int $recordId): array
+    {
+        if ($this->uiExtensions === null
+            || $this->recordActionUser === null
+            || $this->table === ''
+            || $this->uiExtensions->for(ModuleUiExtensions::RECORD_ACTIONS, $this->table) === []
+        ) {
+            return [];
+        }
+
+        $row = $this->loadRecord($recordId);
+        if ($row === null) {
+            return [];
+        }
+
+        return RecordActions::forDetail(
+            $this->uiExtensions,
+            new RecordActionContext(
+                $this->table,
+                $this->db,
+                $this->config,
+                $this->dsConfig,
+                $this->language ?? 'en',
+                $this->tables[$this->table] ?? null,
+                $this->recordActionUser['userId'],
+                $this->recordActionUser['isAdmin'],
+                $this->recordActionUser['serverConfig'],
+            ),
+            $row,
+            $recordId,
         );
     }
 

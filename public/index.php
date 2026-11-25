@@ -360,7 +360,7 @@ function dispatch(
 		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState(), $serverConfig, $resolved->state->isCronEnabled()),
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
-		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver),
+		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver, $serverConfig),
 		'mail'    => dispatchMail($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'senderRules' => dispatchSenderRules($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'registry' => dispatchRegistry($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
@@ -1741,6 +1741,7 @@ function dispatchViewer(
 	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
 	?\Shipard\Core\Config\DataSourceConfig $dsConfig = null,
 	?ModulePathResolver $modulePathResolver = null,
+	?ServerConfig $serverConfig = null,
 ): Response {
 	$ctrl     = new ViewerController();
 	$viewerId = $route->table ?? '';
@@ -1755,7 +1756,7 @@ function dispatchViewer(
 	return match ($route->action) {
 		'meta'   => $ctrl->meta($viewerId, $auth, $registry, $tables, $db, $config, $language),
 		'rows'   => $ctrl->rows($viewerId, $request, $auth, $registry, $tables, $db, $config, $language),
-		'detail' => $ctrl->detail($viewerId, (int) $route->id, $auth, $registry, $tables, $db, $config, $language, $documentRegistry, $dsConfig, $prints),
+		'detail' => $ctrl->detail($viewerId, (int) $route->id, $auth, $registry, $tables, $db, $config, $language, $documentRegistry, $dsConfig, $prints, $serverConfig),
 		default  => Response::error('INTERNAL_ERROR', "Unknown viewer action: {$route->action}", 500),
 	};
 }
