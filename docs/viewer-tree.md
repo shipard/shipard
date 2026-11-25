@@ -42,6 +42,7 @@ Tři věci strom od seznamu a gridu odlišují:
 | D22 | Rozbalení se pamatuje v prohlížeči per zdroj dat a viewer; bez uloženého stavu jsou rozbalené kořeny. Při hledání, vlastním filtru nebo jiné záložce stavů je strom dočasně rozbalený celý a nic se neukládá. |
 | D24 | Seznam zůstává druhým layoutem přes přepínač. Telefon kreslí strom, když je zvolený; grid dál degraduje na seznam. |
 | D25 | Víc než 5 000 vybraných uzlů → strom se nevykreslí, odpověď nese `tooMany`. Strom se nikdy neořezává napůl. |
+| D26 | Odkaz na záznam téhož vieweru v detailu (Podřízená místa) vybere záznam ve stromu a přepne drawer — akce `select_row`. Když záznam mezi načtenými řádky není, otevře se read-only náhled jako `open_detail`. |
 
 ## 3. Backend
 
@@ -236,6 +237,12 @@ a fetch helpery ho nečtou: rozbalení nikdy nespustí nové načtení řádků.
   ukáže, jen když jsou tam aspoň dva layouty (grid tam není)
 - výběr přežívá nové načtení řádků (po uložení formuláře); nově založený
   záznam se sám nevybírá
+- **akce `select_row`** (D26) — `target {viewerId, recordId}` jako
+  `open_detail`. Záznam téhož vieweru, který je mezi načtenými řádky, se
+  vybere (`revealTreeRow()` odkryje cestu) a detail se přepne; jinak
+  read-only náhled v modalu. Funguje i v seznamu (výběr načteného řádku).
+  Hostitelé mimo viewer (dashboard, reporty, `ViewerDetailModal`) ji
+  neznají — viewer ji posílá jen v detailu vlastních záznamů
 
 Texty: `viewer.layout.showTree`, `viewer.tree.*` v `i18n/cs.js` a `en.js`.
 Počet podřízených a hláška D25 jsou obecné („3 položky“, „Záznamů je

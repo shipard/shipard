@@ -425,8 +425,11 @@ class PlacesViewer extends PlacesViewerBase
                 'name'    => (string) ($child['name'] ?? ''),
                 'code'    => (string) ($child['code'] ?? ''),
                 'kind'    => (string) ($child['kind_name'] ?? ''),
+                // Klik vybere podřízené místo ve stromu a přepne na něj
+                // drawer (#169 D26); není-li v načtených řádcích, otevře se
+                // náhled jako open_detail (stejný target).
                 '_action' => [
-                    'kind'   => 'open_detail',
+                    'kind'   => 'select_row',
                     'target' => [
                         'viewerId' => $this->definition?->id ?? self::VIEWER_ID,
                         'recordId' => (int) $child['id'],

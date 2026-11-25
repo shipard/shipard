@@ -1079,6 +1079,24 @@
       openFormFromAction(action);
       return;
     }
+    // Výběr záznamu téhož vieweru (#169 D26 — Podřízená místa v detailu):
+    // je-li v načtených řádcích, vybere se (strom odkryje cestu) a detail
+    // se přepne na něj — žádný modal nad drawerem. Pojistka: záznam mezi
+    // řádky není (jiná záložka stavů, stránkování seznamu) → read-only
+    // náhled jako open_detail se stejným targetem.
+    if (action.kind === 'select_row') {
+      const target = action.target ?? {};
+      if (target.recordId == null) return;
+      if (target.viewerId === tab.viewerId && rows.some(r => r.id === target.recordId)) {
+        revealTreeRow(target.recordId);
+        selectedRowId = target.recordId;
+        fetchDetail(target.recordId);
+        return;
+      }
+      if (!target.viewerId) return;
+      detailModal = { viewerId: target.viewerId, recordId: target.recordId, tabId: target.tabId ?? null };
+      return;
+    }
     // Read-only náhled jiného záznamu v modalu (odkaz na doklad z tabulky
     // detailu) — uživatel zůstává ve vieweru.
     if (action.kind === 'open_detail') {

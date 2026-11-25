@@ -201,8 +201,10 @@ Podřízená místa v detailu mají vždy stejné pořadí.
 *Detail*: titulek název, podtitul cesta · druh. Přehled hlavičku neopakuje
 — nese kód, zkrácený název (jen když se liší od názvu), pořadí, adresu
 (jen typ s adresou; tvar dává sdílená `Base\Persons\Values\AddressFormat`),
-poznámku a tabulku **Podřízená místa (N)** v pořadí stromu, jejíž řádek
-otevírá detail podřízeného místa (`open_detail`).
+poznámku a tabulku **Podřízená místa (N)** v pořadí stromu. Klik na řádek
+podřízené místo vybere ve stromu a přepne na něj drawer (akce
+`select_row`, #169 D26); když mezi načtenými řádky není (archivované
+místo v záložce Aktivní), otevře se read-only náhled jako `open_detail`.
 
 **Přidat podřízené** (D10, D23) — jedna akce `addChild` (`open_form`
 s `preset`) na řádku stromu („+“) i v detailu, skládá ji

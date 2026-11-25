@@ -506,7 +506,7 @@ class PlacesViewersTest extends TestCase
         // Pořadí stromu: Sklep (pořadí 1) před 1. NP (pořadí 2).
         $this->assertSame(['Sklep', '1. NP'], array_column($table['rows'], 'name'));
         $this->assertSame(
-            ['kind' => 'open_detail', 'target' => ['viewerId' => 'base.places.places', 'recordId' => 3]],
+            ['kind' => 'select_row', 'target' => ['viewerId' => 'base.places.places', 'recordId' => 3]],
             $table['rows'][1]['_action'],
         );
         $this->assertSame('muted', $table['rows'][0]['_class'], 'archivované podřízené místo tlumeně');

@@ -84,7 +84,8 @@ Místa se ukazují jako strom se sloupci **Název**, **Kód** a **Druh**.
   nejvyšší úrovně.
 - Klik na řádek otevře detail místa v panelu vpravo; klik na jiný řádek
   ho přepne, **Esc** zavře. Detail ukazuje **Podřízená místa**; kliknutím
-  na řádek otevřeš podřízené místo.
+  na řádek se podřízené místo vybere ve stromu a detail se přepne na něj.
+  Zpátky na nadřazené místo se dostaneš klikem na jeho řádek ve stromu.
 
 **Hledání ve stromu**
 
