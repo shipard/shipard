@@ -454,6 +454,9 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `cronJobs[].slot` | string | Ano | Ne | Slot cronu: `minute`, `two-minutes`, `five-minutes`, `daily`, `weekly` (`CronProvisioner::SLOTS`) |
 | `cronJobs[].order` | int | Ne | Ne | Pořadí ve slotu, výchozí 500; řadí se `order` vzestupně, pak id modulu, pak pořadí deklarace |
 | `cronJobs[].states` | string[] | Ne | Ne | Lifecycle stavy zdroje dat (`active`, `read_only`, `suspended`, `pending_deletion`), ve kterých úloha běží; výchozí `["active"]` |
+| `serverConfig` | object[] | Ne | Ne | Sekce `/etc/shipard/server.json`, které čte jen kód tohoto modulu (#172 D7, D10, viz níže) |
+| `serverConfig[].key` | string | Ano | Ne | Cesta sekce — segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou (`exchangeRates`, `ai.analysis`) |
+| `serverConfig[].class` | string | Ano | Ne | FQCN třídy v namespace modulu, která sekci načte a zkontroluje (implements `ServerConfigSection`) |
 
 ### Pole `commands`, `serverCommands` a `cronJobs`
 
@@ -494,6 +497,67 @@ nenačítají. Co potřebuje vidět třídy nebo víc modulů najednou, hlídá
   navzájem i proti příkazům jádra;
 - první slovo `cronJobs[].command` je příkaz z `commands` téhož modulu
   a tentýž řetězec příkazu není ve slotu dvakrát.
+
+### Pole `serverConfig`
+
+Sekce `/etc/shipard/server.json` patří tam, kde žije kód, který ji čte
+(#172 D7, D10). Co čte jádro (databáze, režim, logy, `mail`, `render`,
+`devAi`, `hosting`), má typovaný getter v `ServerConfig`. Co čte jen modul,
+modul deklaruje a načte si sám — `ServerConfig` mu dává jen surová data.
+
+```jsonc
+"serverConfig": [
+    {
+        "key": "exchangeRates",
+        "class": "Shipard\\Module\\Economy\\ExchangeRates\\ExchangeRatesServerConfig"
+    }
+]
+```
+
+- **`key`** — cesta sekce v `server.json`: segmenty `[a-z][a-zA-Z0-9]*`
+  oddělené tečkou. Jednosegmentová cesta je klíč nejvyšší úrovně
+  (`exchangeRates`), vícesegmentová vnořený objekt (`ai.analysis` =
+  `{"ai": {"analysis": {…}}}`). Modul smí deklarovat víc sekcí.
+- **`class`** — třída modulu, která implementuje
+  `Shipard\Core\Config\ServerConfigSection`:
+
+  ```php
+  public static function key(): string;                                   // tatáž cesta jako v deklaraci
+  public static function fromServerConfig(ServerConfig $config): static;  // načte a zkontroluje
+  ```
+
+  Sekci čte přes `ServerConfig::getSection(string $path): mixed` — surová
+  hodnota na cestě, `null`, když cesta chybí (i když segment uprostřed
+  není objekt). Typ hodnoty, výchozí stav a chybové hlášky jsou věc třídy;
+  `ServerConfig` dostává celý, aby mohla číst i režim serveru. Chybná
+  sekce vyhazuje `\RuntimeException` **při `fromServerConfig()`**, ne při
+  `ServerConfig::load()` — chybná sekce jednoho modulu nesmí rozbít
+  načtení konfigurace ostatním.
+
+Kód modulu pak nevolá getter `ServerConfig`, ale třídu sekce:
+
+```php
+$url = ExchangeRatesServerConfig::fromServerConfig($serverConfig)->serviceUrl();
+```
+
+Tvar deklarace hlídá `ModuleDefinition::fromArray()` — špatný typ, neznámý
+klíč položky, cesta mimo vzor nebo prázdná třída je chyba při načtení
+modulu. Ostatní hlídá `ModuleServerConfigRules` testem nad celým stromem
+`modules/`:
+
+- třída existuje, implementuje `ServerConfigSection`, leží v namespace
+  svého modulu (`Shipard\Module\<Skupina>\<Modul>\`, kdekoli pod ním)
+  a její `key()` se shoduje s deklarací;
+- žádné dvě deklarace nekolidují — stejná cesta, nebo jedna je prefixem
+  druhé **po segmentech**: `ai` × `ai.analysis` kolidují, `ai.analysis`
+  × `ai.chat` ne (sekci tak čte vždy právě jedna třída);
+- první segment cesty není klíč, který čte jádro
+  (`ServerConfig::CORE_KEYS` — `host`, `port`, `admin_user`,
+  `admin_password`, `mode`, `domainsFile`, `dataSources`, `logFile`,
+  `logLevel`, `extraModulesPath`, `mail`, `render`, `devAi`, `hosting`).
+
+Neznámé klíče v `server.json` se tolerují: sekce neaktivního nebo
+odebraného modulu načtení konfigurace nerozbije a nikdo ji nečte.
 
 ### Pole `sendPurposes`
 

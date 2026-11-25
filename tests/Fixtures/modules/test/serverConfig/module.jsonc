@@ -1,0 +1,14 @@
+// Fixture pro testy sekcí server.json z modulů (#172 D7, D10): modul se
+// dvěma sekcemi pod společným prvním segmentem.
+{
+    "id": "test.serverConfig",
+    "name": "Test server config",
+    "description": "Fixture module: server.json sections declared in module.jsonc.",
+
+    "dependencies": [],
+
+    "serverConfig": [
+        {"key": "fixture.section", "class": "Shipard\\Module\\Test\\ServerConfig\\FixtureServerConfig"},
+        {"key": "fixture.other", "class": "Shipard\\Module\\Test\\ServerConfig\\FixtureOtherServerConfig"}
+    ]
+}

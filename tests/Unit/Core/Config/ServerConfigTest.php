@@ -53,6 +53,73 @@ class ServerConfigTest extends TestCase
         $this->assertSame('/etc/shipard/domains.json', $config->getDomainsFile());
     }
 
+    // ── getSection() + CORE_KEYS (#172 D7, D10) ─────────────────────────────
+
+    public function testGetSectionReturnsRawValueOnPath(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + [
+            'exchangeRates' => ['serviceUrl' => ''],
+            'ai' => ['analysis' => ['maxConcurrent' => 3], 'label' => 'x'],
+            'flag' => false,
+            'list' => ['a', 'b'],
+        ]));
+        $config->load();
+
+        $this->assertSame(['serviceUrl' => ''], $config->getSection('exchangeRates'));
+        $this->assertSame(['maxConcurrent' => 3], $config->getSection('ai.analysis'));
+        $this->assertSame(3, $config->getSection('ai.analysis.maxConcurrent'));
+        $this->assertSame('', $config->getSection('exchangeRates.serviceUrl'), 'prázdný řetězec není null');
+        $this->assertFalse($config->getSection('flag'), 'typ hodnoty kontroluje třída sekce');
+        $this->assertSame(['a', 'b'], $config->getSection('list'));
+        $this->assertSame('production', $config->getSection('mode'), 'cestu neomezuje — klíče jádra hlídají pravidla modulů');
+    }
+
+    public function testGetSectionReturnsNullForMissingPath(): void
+    {
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + [
+            'ai' => ['analysis' => ['maxConcurrent' => 3], 'label' => 'x'],
+            'registry' => 'not-an-object',
+            'list' => ['a', 'b'],
+        ]));
+        $config->load();
+
+        $this->assertNull($config->getSection('exchangeRates'), 'sekce chybí');
+        $this->assertNull($config->getSection('ai.chat'), 'podsekce chybí');
+        $this->assertNull($config->getSection('ai.analysis.maxConcurrent.deeper'), 'pod skalárem nic není');
+        $this->assertNull($config->getSection('ai.label.x'), 'segment uprostřed není objekt');
+        $this->assertNull($config->getSection('registry.persons'), 'segment uprostřed není objekt');
+        $this->assertNull($config->getSection('list.persons'), 'seznam nemá pojmenované klíče');
+        $this->assertNull($config->getSection(''));
+    }
+
+    public function testGetSectionBeforeLoadIsNull(): void
+    {
+        $this->assertNull((new ServerConfig($this->tempDir . '/missing.json'))->getSection('ai.analysis'));
+    }
+
+    /**
+     * `CORE_KEYS` odpovídá tomu, co `ServerConfig` z nejvyšší úrovně
+     * `server.json` opravdu čte — nový getter jádra bez klíče v seznamu
+     * (sekci by si mohl zabrat modul) i klíč bez čtenáře test shodí.
+     */
+    public function testCoreKeysMatchTheKeysServerConfigReads(): void
+    {
+        $source = (string) file_get_contents((new \ReflectionClass(ServerConfig::class))->getFileName());
+        preg_match_all('/\$(?:this->)?data\[\'([A-Za-z_]+)\'\]/', $source, $matches);
+        $read = array_values(array_unique($matches[1]));
+        // povinná pole čte load() smyčkou přes seznam, ne literálem
+        $read = array_values(array_unique([...$read, 'host', 'port', 'admin_user', 'admin_password', 'mode']));
+
+        // Sekce, které čte jen kód modulu — stěhují se do modulů (#172 D10).
+        $moduleSections = ['registry', 'exchangeRates', 'ai'];
+
+        $expected = [...ServerConfig::CORE_KEYS, ...$moduleSections];
+        sort($read);
+        sort($expected);
+        $this->assertSame($expected, $read);
+        $this->assertSame([], array_intersect(ServerConfig::CORE_KEYS, $moduleSections));
+    }
+
     public function testGetAiAnalysisMaxConcurrentDefaultsAndValidates(): void
     {
         $base = ['host' => 'h', 'port' => 1, 'admin_user' => 'u', 'admin_password' => 'p', 'mode' => 'development'];

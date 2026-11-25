@@ -1446,6 +1446,67 @@ class ModuleDefinitionTest extends TestCase
         ];
     }
 
+    // ── serverConfig (#172 D7, D10) ─────────────────────────────────────────
+
+    public function testServerConfigDefaultsToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.exchangeRates', 'name' => 'Rates']);
+
+        $this->assertSame([], $def->serverConfig);
+    }
+
+    public function testServerConfigSectionsAreParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'core.mail',
+            'name' => 'Mail',
+            'serverConfig' => [
+                ['key' => 'ai.analysis', 'class' => '\\Shipard\\Module\\Core\\Mail\\Analysis\\MailAnalysisServerConfig'],
+                ['class' => 'Shipard\\Module\\Core\\Mail\\Other', 'key' => 'mailRouter2'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['key' => 'ai.analysis', 'class' => 'Shipard\\Module\\Core\\Mail\\Analysis\\MailAnalysisServerConfig'],
+            ['key' => 'mailRouter2', 'class' => 'Shipard\\Module\\Core\\Mail\\Other'],
+        ], $def->serverConfig, 'úvodní zpětné lomítko se odřízne, pořadí klíčů položky je pevné');
+    }
+
+    /** @param mixed $serverConfig */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidServerConfig')]
+    public function testInvalidServerConfigThrows(mixed $serverConfig, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'core.mail': " . $message);
+        ModuleDefinition::fromArray(['id' => 'core.mail', 'name' => 'Mail', 'serverConfig' => $serverConfig]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidServerConfig(): array
+    {
+        $valid = ['key' => 'ai.analysis', 'class' => 'A\\B'];
+        $keyMessage = 'serverConfig[0].key must be a path of segments [a-z][a-zA-Z0-9]* separated by dots';
+        return [
+            'objekt místo pole'     => [$valid, 'serverConfig must be a JSON array'],
+            'řetězec místo pole'    => ['ai.analysis', 'serverConfig must be a JSON array'],
+            'řetězec místo položky' => [['ai.analysis'], 'serverConfig[0] must be an object'],
+            'pole místo položky'    => [[['ai.analysis', 'A\\B']], 'serverConfig[0] must be an object'],
+            'neznámý klíč'          => [[$valid + ['clas' => 'A\\B']], "serverConfig[0] has unknown key 'clas'"],
+            'bez klíče'             => [[['class' => 'A\\B']], $keyMessage],
+            'klíč číslem'           => [[['key' => 5, 'class' => 'A\\B']], $keyMessage],
+            'prázdný klíč'          => [[['key' => '', 'class' => 'A\\B']], $keyMessage],
+            'velké první písmeno'   => [[['key' => 'Ai.analysis', 'class' => 'A\\B']], $keyMessage],
+            'prázdný segment'       => [[['key' => 'ai..analysis', 'class' => 'A\\B']], $keyMessage],
+            'tečka na konci'        => [[['key' => 'ai.', 'class' => 'A\\B']], $keyMessage],
+            'podtržítko'            => [[['key' => 'ai.max_concurrent', 'class' => 'A\\B']], $keyMessage],
+            'segment od číslice'    => [[['key' => 'ai.2fast', 'class' => 'A\\B']], $keyMessage],
+            'druhá položka'         => [[$valid, ['key' => 'x y', 'class' => 'A\\B']], 'serverConfig[1].key must be a path'],
+            'bez třídy'             => [[['key' => 'ai.analysis']], 'serverConfig[0].class must be a non-empty class name'],
+            'prázdná třída'         => [[['key' => 'ai.analysis', 'class' => '\\']], 'serverConfig[0].class must be a non-empty class name'],
+            'třída číslem'          => [[['key' => 'ai.analysis', 'class' => 7]], 'serverConfig[0].class must be a non-empty class name'],
+        ];
+    }
+
     // ── commands / serverCommands / cronJobs (#172 D2, D6) ──────────────────
 
     public function testCommandsAndCronJobsDefaultToEmpty(): void

@@ -16,6 +16,18 @@ class ServerConfig
     /** Veřejná služba kurzovních lístků (#121 task B, U3). */
     public const DEFAULT_EXCHANGE_RATES_SERVICE_URL = 'https://data.shipard.app/feed/money-exchange-rates';
 
+    /**
+     * Klíče nejvyšší úrovně `server.json`, které čte jádro (#172 D10).
+     * Sekce deklarovaná modulem (`serverConfig` v `module.jsonc`) jimi
+     * nesmí začínat — hlídá `ModuleServerConfigRules`. Seznam odpovídá
+     * getterům této třídy (`ServerConfigTest`).
+     */
+    public const array CORE_KEYS = [
+        'host', 'port', 'admin_user', 'admin_password', 'mode',
+        'domainsFile', 'dataSources', 'logFile', 'logLevel', 'extraModulesPath',
+        'mail', 'render', 'devAi', 'hosting',
+    ];
+
     private array $data = [];
 
     public function __construct(private readonly string $configPath = '/etc/shipard/server.json')
@@ -115,6 +127,25 @@ class ServerConfig
     public function getExtraModulesPath(): array
     {
         return $this->data['extraModulesPath'] ?? [];
+    }
+
+    /**
+     * Surová hodnota sekce na cestě s tečkami (`exchangeRates`,
+     * `ai.analysis`) — pro třídy sekcí modulů ({@see ServerConfigSection},
+     * #172 D7, D10). `null`, když cesta chybí; segment uprostřed, který není
+     * objekt, je také `null`, ne výjimka. Typ a obsah hodnoty kontroluje
+     * třída sekce.
+     */
+    public function getSection(string $path): mixed
+    {
+        $value = $this->data;
+        foreach (explode('.', $path) as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return null;
+            }
+            $value = $value[$segment];
+        }
+        return $value;
     }
 
     /**

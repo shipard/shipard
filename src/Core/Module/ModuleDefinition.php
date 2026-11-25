@@ -18,6 +18,9 @@ class ModuleDefinition
     /** Výchozí pořadí úlohy cronu ve slotu (`cronJobs[].order`, #172 D6). */
     public const int CRON_JOB_DEFAULT_ORDER = 500;
 
+    /** Cesta sekce `server.json` (`serverConfig[].key`, #172 D10): segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou. */
+    public const string SERVER_CONFIG_KEY_PATTERN = '/^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*$/';
+
     public function __construct(
         public readonly string $id,
         public readonly string $name,
@@ -65,6 +68,8 @@ class ModuleDefinition
         public readonly array $serverCommands = [],
         /** @var list<array{command: string, slot: string, order: int, states: list<string>}> úlohy cronu modulu (#172 D6) */
         public readonly array $cronJobs = [],
+        /** @var list<array{key: string, class: class-string}> sekce `server.json` modulu (#172 D7, D10) */
+        public readonly array $serverConfig = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -835,6 +840,11 @@ class ModuleDefinition
         $serverCommands = self::parseCommandClasses($data, 'serverCommands');
         $cronJobs = self::parseCronJobs($data);
 
+        // serverConfig — sekce `server.json`, které čte jen kód modulu
+        // (#172 D7, D10). Tady jen tvar; třídu, shodu klíče a kolize cest
+        // hlídá ModuleServerConfigRules nad celým stromem.
+        $serverConfig = self::parseServerConfig($data);
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -875,7 +885,56 @@ class ModuleDefinition
             commands: $commands,
             serverCommands: $serverCommands,
             cronJobs: $cronJobs,
+            serverConfig: $serverConfig,
         );
+    }
+
+    /**
+     * Sekce `server.json` modulu (`serverConfig`, #172 D7, D10): seznam
+     * `{key, class}` — `key` je cesta segmentů oddělených tečkou
+     * (`exchangeRates`, `ai.analysis`), `class` třída, která sekci načte
+     * (`ServerConfigSection`). Neznámý klíč položky je chyba. Třída se tu
+     * nenačítá a kolize cest se tu neposuzují.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array{key: string, class: class-string}>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseServerConfig(array $data): array
+    {
+        if (!array_key_exists('serverConfig', $data)) {
+            return [];
+        }
+        if (!is_array($data['serverConfig']) || !array_is_list($data['serverConfig'])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': serverConfig must be a JSON array");
+        }
+
+        $sections = [];
+        foreach ($data['serverConfig'] as $idx => $raw) {
+            $where = "Module '{$data['id']}': serverConfig[{$idx}]";
+            if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+                throw new \InvalidArgumentException("{$where} must be an object");
+            }
+            $unknown = array_diff(array_keys($raw), ['key', 'class']);
+            if ($unknown !== []) {
+                throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $key = $raw['key'] ?? null;
+            if (!is_string($key) || preg_match(self::SERVER_CONFIG_KEY_PATTERN, $key) !== 1) {
+                throw new \InvalidArgumentException(
+                    "{$where}.key must be a path of segments [a-z][a-zA-Z0-9]* separated by dots",
+                );
+            }
+
+            $class = $raw['class'] ?? null;
+            if (!is_string($class) || ltrim($class, '\\') === '') {
+                throw new \InvalidArgumentException("{$where}.class must be a non-empty class name");
+            }
+
+            $sections[] = ['key' => $key, 'class' => ltrim($class, '\\')];
+        }
+        return $sections;
     }
 
     /**

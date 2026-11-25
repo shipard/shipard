@@ -1,0 +1,13 @@
+// Fixture pro testy sekcí server.json z modulů (#172 D7, D10): druhý modul
+// — sekce s jiným prvním segmentem a třídy pro kolize mezi moduly.
+{
+    "id": "test.serverConfigTwo",
+    "name": "Test server config two",
+    "description": "Fixture module: a second owner of server.json sections.",
+
+    "dependencies": [],
+
+    "serverConfig": [
+        {"key": "fixtureTwo", "class": "Shipard\\Module\\Test\\ServerConfigTwo\\FixtureTwoServerConfig"}
+    ]
+}
