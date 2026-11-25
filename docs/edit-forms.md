@@ -696,6 +696,7 @@ existující záznam (přechod stavu naostro je až druhý PUT s `{docState}`).
 `FormEditor` provádí `sanitizeFormData()` před každým odesláním:
 - `select` s numerickými options → převede string na number (HTML `<select>` vždy vrací string)
 - `input_type: date/number/datetime...` s prázdnou hodnotou → převede `""` na `null`
+  (textové pole nad číselným sloupcem ne — viz past u tabulky metod `TabBuilder`, §11)
 
 ---
 
@@ -961,6 +962,16 @@ $tab = $this->tab('basic', 'Základní údaje')
 | `checkbox` | `checkbox` | `boolean` |
 | `select` | — | `enumInt`, `enumString` |
 | `multiselect` | — | `json` (list hodnot) |
+
+**Past — číselný sloupec přes `input()`.** `input()` typ pole neodvozuje
+ze sloupce: bez `inputType` je to textové pole a prázdná hodnota odejde
+jako `""`. Sanitizace (§8 *Sanitizace dat před odesláním*) mění `""` na
+`null` jen u `input_type: number/date/…`, takže `""` dorazí až do DB
+a MariaDB ho do `numeric`/`int` sloupce odmítne — uložení skončí vnitřní
+chybou serveru, ne validační hláškou. Číselný sloupec proto vždy přes
+`number()`. Když musí zůstat textový (např. kvůli desetinné čárce), dokument
+v `beforeSave()` převede `""` na `null` a hodnotu sám zvaliduje (vzor GPS
+u místa, `PlaceDocument`, #169).
 
 ```php
 // Element factory metody (musí být uvnitř otevřeného col())
