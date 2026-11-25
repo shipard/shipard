@@ -59,6 +59,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>ds-setting</info>              Read and write data source settings: list | get <key> | set <key> <value> [--unset]');
         $output->writeln('  <info>ds-state</info>                Show or change the data source state (config/state.json): show | set <state> [--delete-after] | maintenance --on [--reason] | --off | cron --on | --off');
         $output->writeln('  <info>ds-class</info>                Show or change the data class (config/main.json dataClass free | realCopy): show | set free|realCopy [--purpose=<text>] — set free only in an interactive terminal');
+        $output->writeln('  <info>ds-module</info>               List modules of the data source and enable or disable add-ons (config/main.json modules, then ds-upgrade): list [--json] | enable <id> | disable <id> [--no-upgrade]');
         $output->writeln('');
         $output->writeln('<comment>Users:</comment>');
         $output->writeln('  <info>user-create</info>             Create a new user in the data source');
@@ -151,6 +152,8 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ds-state maintenance --on --reason=import');
         $output->writeln('  shpd-ds ds-state cron --off');
         $output->writeln('  shpd-ds ds-class set free --purpose="Ruční zkoušení UI"');
+        $output->writeln('  shpd-ds ds-module list');
+        $output->writeln('  shpd-ds ds-module enable facility.core');
         $output->writeln('  shpd-ds user-create --login=admin --password=...');
         $output->writeln('  shpd-ds ai-backend-set-key --backend default');
         $output->writeln('  shpd-ds ai-test --function mail.extraction');
