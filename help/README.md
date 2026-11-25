@@ -109,7 +109,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
-| [Místa a druhy míst](mista/mista-a-druhy-mist.md) | Jak založit strom míst od areálu po pracovní místo, co smí být pod čím, jak místo přesunout a kdy má místo adresu. |
+| [Místa a druhy míst](mista/mista-a-druhy-mist.md) | Jak založit strom míst od areálu po pracovní místo, jak se ve stromu pohybovat a přidat podřízené místo, co smí být pod čím, jak místo přesunout a kdy má místo adresu. |
 
 ### Účtárna
 

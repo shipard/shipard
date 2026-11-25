@@ -4,10 +4,12 @@ Obecný číselník míst s hierarchií (areál → budova → podlaží → mí
 místo). Základ budoucí správy budovy a společný číselník pro další moduly
 (umístění majetku, zakázky, měřidla). Design: issue #169 (D1–D18).
 
-Hotový je **task A** (`tasks/places-model.md`): model, validace, formuláře,
-lookup, viewery v list layoutu a sekce **Místa** v Nastavení. Strom
-v prohlížeči a detail v draweru přinese task B (generický layout `tree`,
-D8–D12).
+Hotové jsou oba tasky: **A** (`tasks/places-model.md`) — model, validace,
+formuláře, lookup, viewery a sekce **Místa** v Nastavení — a **B**
+(`tasks/viewer-tree-layout.md`, D8–D12, D20–D25) — prohlížeč míst jako
+strom s detailem v draweru a akcí Přidat podřízené. Strom sám je obecný
+layout vieweru, popsaný v [`viewer-tree.md`](viewer-tree.md); tady je jen
+to, co k němu dodávají Místa.
 
 ## 1. Model
 
@@ -46,12 +48,20 @@ cfgItem `base.places.types` (`config/types.jsonc`), plochá mapa id → definice
 | `spot` | Místo | 60 | ne |
 | `other` | Ostatní | `null` | ne |
 
-Každý typ nese i `icon` (klíč `place-*` z `frontend/src/icons.js`)
-a `order` (pořadí v nabídce).
+Každý typ nese i `icon` (klíč `place-*` z `frontend/src/icons.js`),
+`order` (pořadí v nabídce) a `defaultChildType` — typ, který se navrhne
+pro první podřízené místo (§ 6, D23): areál → budova, budova a část budovy
+→ podlaží, podlaží → místnost, místnost a venkovní plocha → místo; Místo
+a Ostatní žádný.
 
 **Jediné čtení cfgItemu je `PlaceTypes`** — `label()`, `level()`, `icon()`,
-`hasAddress()`, `isUnknown()`, `options()`, `canBeParent()`. Nikde v kódu
-není `=== 'room'`; nový typ tak nevyžaduje úpravu PHP.
+`hasAddress()`, `isUnknown()`, `options()`, `canBeParent()`,
+`canHaveChildren()`, `defaultChildType()`. Nikde v kódu není `=== 'room'`;
+nový typ tak nevyžaduje úpravu PHP.
+
+`canHaveChildren($type)` říká, jestli pod místo typu podle úrovní něco
+smí: ne, když žádný typ nemá úroveň vyšší (dnes jen Místo). Typ bez
+úrovně nadřazený být smí.
 
 `PlaceTypes::canBeParent($parentType, $childType)` je pravidlo D3:
 nadřazené místo musí mít **nižší** úroveň. Úrovně jde přeskočit (přízemní
@@ -126,6 +136,7 @@ a zapamatovanými v instanci:
 | `ancestors(id)` | předky shora, bez místa samotného |
 | `pathLabels(id)` / `pathText(id)` | popisky předků (`short_name ?? name`) / spojené ` › ` |
 | `children(id)` | přímá podřízená v pořadí stromu: pořadí → kód → název; `null` = nejvyšší úroveň |
+| `compareNodes(a, b)` | statické porovnání sourozenců (pořadí → kód → název → id) — jediné místo pravidla, řadí jím `children()` i strom ve vieweru |
 | `subtreeIds(id)` | místo a všechny potomky |
 | `typeOf(id)` | typ místa |
 
@@ -149,8 +160,8 @@ znovu. Lookup **Nadřazené místo** dostává filtr spočítaný z dat:
 | `childType` | typ zvoleného druhu — lookup nabídne jen místa, pod která typ smí (`PlaceTypes::canBeParent()`) |
 | `exclude` | id záznamu — lookup vynechá místo a celý jeho podstrom |
 
-Nový záznam s předvyplněným `parent` a `kind` (task B ho otevírá přes
-`open_form` s `preset`) nepotřebuje další kód.
+Nový záznam s předvyplněným `parent` a `kind` (akce Přidat podřízené ho
+otevírá přes `open_form` s `preset`, § 6) nepotřebuje další kód.
 
 **`PlacesLookup`** hledá v názvu, zkráceném názvu a kódu a nabízí místa
 v Konceptu, V pořádku a V opravě. `primary` = název, `secondary` = cesta
@@ -172,13 +183,46 @@ Sekce **Místa** v Nastavení (`settingsSections.jsonc`, `order` 16, mezi
 Majetkem a Sklady) s viewery `base.places.places` a `base.places.kinds`.
 Do hlavní navigace nepatří.
 
-**`PlacesViewer`** — dočasně list layout: název, kód, ve druhém řádku
-cesta · druh, ikona podle druhu. Detail: titulek název, podtitul cesta
-· druh. Přehled hlavičku neopakuje — nese kód, zkrácený název (jen když se
-liší od názvu), pořadí, adresu (jen typ s adresou; tvar dává sdílená
-`Base\Persons\Values\AddressFormat`), poznámku a tabulku **Podřízená
-místa (N)** v pořadí stromu, jejíž řádek otevírá detail podřízeného místa
-(`open_detail`).
+**`PlacesViewer`** má dva layouty; výchozí je **strom**, seznam zůstává
+přes přepínač (D24 — hodí se pro „všechny kanceláře“ napříč budovami).
+
+*Strom* ([`viewer-tree.md`](viewer-tree.md)): sloupce Název (se štítkem
+stavu), Kód a Druh, ikona podle druhu. `selectRows()`, `selectTreeRows()`
+i `selectTreeRowsByIds()` sdílejí jeden SELECT (`baseSelect()`) a filtr
+(`filterWhere()` — stavy, hledání v názvu, zkráceném názvu a kódu);
+sourozence řadí `PlaceTree::compareNodes()`, takže strom a tabulka
+Podřízená místa v detailu mají vždy stejné pořadí.
+
+*Seznam*: název, kód, ve druhém řádku cesta · druh, ikona podle druhu.
+
+*Detail*: titulek název, podtitul cesta · druh. Přehled hlavičku neopakuje
+— nese kód, zkrácený název (jen když se liší od názvu), pořadí, adresu
+(jen typ s adresou; tvar dává sdílená `Base\Persons\Values\AddressFormat`),
+poznámku a tabulku **Podřízená místa (N)** v pořadí stromu, jejíž řádek
+otevírá detail podřízeného místa (`open_detail`).
+
+**Přidat podřízené** (D10, D23) — jedna akce `addChild` (`open_form`
+s `preset`) na řádku stromu („+“) i v detailu, skládá ji
+`PlacesViewer::addChildAction()`. Přidat v liště zakládá místo nejvyšší
+úrovně. Akce chybí:
+
+- u typu, pod který podle úrovní nic nesmí (`PlaceTypes::canHaveChildren()`
+  — typ Místo)
+- u místa mimo živý stav (archiv, koš) — nadřazené místo musí být
+  v Konceptu, V pořádku nebo V opravě (§ 3)
+
+`childPreset()` předvyplní nadřazené místo a navrhne druh:
+
+1. druh **posledního podřízeného místa** mimo koš (poslední podle pořadí
+   stromu) — další kancelář na patře bude nejspíš zase kancelář. Jen když
+   je ten druh živý; vyřazený druh by formulář ukázal jako neplatný
+2. jinak **výchozí podřízený typ** (`defaultChildType`) a z něj seedový
+   druh (`system_code` = typ)
+3. bez seedového druhu první živý druh toho typu podle názvu
+4. bez vhodného druhu se předvyplní jen nadřazené místo
+
+Živé druhy se čtou jedním dotazem na požadavek, strom jedním dotazem
+z `PlaceTree` — návrh se nepočítá dotazem na řádek.
 
 **Seed** (`PlaceKindsProvisioner`, volá `ds-upgrade` vedle jednotek): jeden
 druh na typ, `system_code` = id typu, název v jazyce zdroje dat
@@ -190,7 +234,6 @@ druhu by na migrovaném zdroji dat nešlo založit žádné místo.
 
 ## 7. Mimo rozsah
 
-Layout `tree`, drawer, hledání s předky a akce Přidat podřízené (task B);
-přetahování myší; plochý seznam jako druhý layout; výměnný formát, datové
-sady a `exchangeKey`; import ze starého Shipardu; vazby z jiných modulů
+Přetahování myší (změna nadřazeného místa a pořadí, D12 — druhá fáze);
+výměnný formát, datové sady a `exchangeKey`; import ze starého Shipardu; vazby z jiných modulů
 (umístění majetku); plocha, kapacita a další údaje správy budovy.

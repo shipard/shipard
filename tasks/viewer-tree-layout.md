@@ -1,6 +1,6 @@
 # Viewer — generický layout `tree`, pilot Místa (task B)
 
-**Stav:** naplánováno — design #169 D8–D12, D20–D25
+**Stav:** hotovo — 2026-11-25; design #169 D8–D12, D20–D25
 
 > PRD pro jednu Claude Code session (4 commity). Design: issue #169
 > (D8–D12 zamčené, D20–D25 níže). Navazuje na task A
@@ -322,13 +322,44 @@ přepne detail, Esc zavře; přepínač strom ↔ seznam; telefon (DevTools
 
 ## Hotovo když
 
-- [ ] kontrakt `tree` v `TableViewer` + `TreeRowsBuilder` + controller s testy
-- [ ] `ViewerTree.svelte` s rozbalením, pamětí, hledáním s předky, akcí
+- [x] kontrakt `tree` v `TableViewer` + `TreeRowsBuilder` + controller s testy
+- [x] `ViewerTree.svelte` s rozbalením, pamětí, hledáním s předky, akcí
       řádku, drawerem a telefonem; helpery s testy
-- [ ] Místa výchozí jako strom, Přidat podřízené na řádku i v detailu (D23)
-- [ ] dokumentace a nápověda
-- [ ] PHPUnit, frontend testy, build a CSS kontroly projdou
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py`
+- [x] Místa výchozí jako strom, Přidat podřízené na řádku i v detailu (D23)
+- [x] dokumentace a nápověda
+- [x] PHPUnit, frontend testy, build a CSS kontroly projdou
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py`
+
+Odchylky a upřesnění proti zadání:
+
+- **Test controlleru** je v novém `ViewerControllerTreeTest.php` — zadání
+  jmenuje `ViewerControllerTest`, ten neexistuje (větev layoutů testuje
+  `ViewerControllerLayoutTest`).
+- **Texty stromu jsou obecné**: počet podřízených „3 položky“ (ICU plurál)
+  a hláška D25 „Záznamů je příliš mnoho na strom…“ — `ViewerTree`
+  a `Viewer.svelte` nevědí, co viewer ukazuje, „míst“ by v dalším stromu
+  nesedělo.
+- **Rozbalit vše / Sbalit vše v dočasném pohledu neukládá** (hledání,
+  filtr, jiná záložka stavů) — mění jen dočasnou kopii, v souladu s D22;
+  mimo něj ukládá.
+- **Přepínač layoutů je i na telefonu**, když tam jsou aspoň dva layouty
+  (seznam + strom) — jinak by výzva D25 „přepněte na seznam“ neměla čím.
+  Viewer jen se seznamem a gridem přepínač na telefonu dál nemá.
+- **D23 — druh posledního podřízeného jen když je živý**; vyřazený druh by
+  formulář předvyplnil jako neplatný, proto se použije výchozí podřízený
+  typ. Akce Přidat podřízené chybí i u místa mimo živý stav (archiv, koš)
+  — pod takové místo dokument nové založit nedovolí.
+- **Cyklus v datech**: `TreeRowsBuilder` uzly v cyklu vydá jako další
+  kořeny (od uzlu, který na cyklu leží), nic nezmizí.
+- **Dočasný pohled a výchozí filtr**: vlastní filtr se počítá, jen když se
+  liší od výchozí hodnoty z definice filtru (`isTemporaryView()`), a u
+  položky s pevnou záložkou stavů je výchozí ta pevná.
+- **Sloupce stromu mají pevné rozvržení** (`table-layout: fixed`) —
+  deklarovaná šířka platí, stromový sloupec bere zbytek (nejmíň 14rem,
+  pak se strom roluje do strany). Bez toho se Kód a Druh smrskly na obsah.
+- Navíc čisté funkce `utils/viewerLayoutPick.js` (výběr layoutu byl ve
+  `Viewer.svelte` dvakrát) a `PlaceTypes` se ve viewerech míst drží jednou
+  na požadavek.
 
 ## Pasti
 

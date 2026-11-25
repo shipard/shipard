@@ -239,13 +239,13 @@ na kartě vybereš, ale Shipard se podle něj ještě nechová — žádné mno�
 
 ## Místa
 
-**Místa se neukazují jako strom.** Seznam v **Nastavení aplikace → Místa**
-je zatím plochý — kam místo patří, říká cesta pod názvem (viz
-[Místa a druhy míst](mista/mista-a-druhy-mist.md)). Rozbalovací strom
-teprve bude.
+**Místo nepřetáhneš myší.** Ve stromu v **Nastavení aplikace → Místa**
+místa přetahovat nejde — pod jiné nadřazené místo ho přesuneš polem
+**Nadřazené místo**, pořadí změníš polem **Pořadí** (viz
+[Místa a druhy míst](mista/mista-a-druhy-mist.md)).
 
-**Místo nepřetáhneš myší.** Pod jiné nadřazené místo ho přesuneš polem
-**Nadřazené místo**, pořadí změníš polem **Pořadí**.
+**Stromem míst neprojdeš šipkami na klávesnici.** Rozbaluje se a vybírá
+myší nebo tabulátorem a mezerníkem.
 
 **Jiné části Shipardu místa zatím nepoužívají.** Kartě majetku, zakázce
 ani dokladu místo nepřiřadíš; rezervace místností, plocha a kapacita

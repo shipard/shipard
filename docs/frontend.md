@@ -833,6 +833,22 @@ Kompletní kontrakty a rozhodnutí: `docs/viewer-grid.md`. Piloty:
 `BankTransactionsViewer` (první editovatelný grid, badge Zaúčtování,
 bez footeru).
 
+### Stromový layout (tree)
+
+Třetí layout pro tabulky se sloupcem rodiče: odsazené řádky s rozbalováním,
+celý strom v jedné odpovědi bez stránkování, detail vždy v draweru. Viewer
+implementuje `getTreeOptions()` + `selectTreeRows()` +
+`selectTreeRowsByIds()` + `compareTreeRows()` + `renderTreeRow()`; pořadí,
+hloubku a předky nalezených uzlů (kontext při hledání, tlumeně) skládá
+`TreeRowsBuilder`. Meta vrací `layouts` s `tree` a klíč `tree`, endpoint
+`rows` přijímá `layout=tree`. Rozbalení si pamatuje prohlížeč per zdroj
+dat a viewer (`utils/viewerTreeState.js`); při hledání, vlastním filtru
+nebo jiné záložce stavů je strom dočasně rozbalený celý. Řádek smí nést
+akci (`rowAction`, „+“ na konci řádku). Na telefonu strom **nedegraduje**
+na seznam — kreslí se přes celou šířku s dvouřádkovými řádky.
+**Přepínač layoutů** je obecný: další layout v pořadí `meta.layouts`.
+Kompletní kontrakt: `docs/viewer-tree.md`. Pilot: `PlacesViewer`.
+
 ### Mobilní viewer (list/detail)
 
 Na ≤ 48rem se viewer přepne z dvoupanelu na list/detail přepínání:
@@ -877,7 +893,7 @@ PersonsViewer          (PHP — konkrétní viewer pro base.persons)
 
 | Endpoint | Popis |
 |----------|-------|
-| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, bottomTabs, newRecordDefaults |
+| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, bottomTabs, newRecordDefaults, layouts, defaultLayout, grid, tree |
 | `GET /_ui/viewer/{id}/rows` | Záznamy (stránkované, fulltext, viewGroup + bottomTab filter) |
 | `GET /_ui/viewer/{id}/detail/{recordId}` | Detail vybraného záznamu (tabs) |
 
@@ -897,6 +913,10 @@ Parametry pro `rows`:
 - `sort=<colId>:<asc|desc>` — řazení gridu (jen s `layout=grid`); colId
   musí být `sortable` sloupec, nevalidní hodnota se tiše ignoruje.
   Viz `docs/viewer-grid.md` §7.1
+- `layout=tree` — stromový render (`renderTreeRow()`, tvar `cells` +
+  `parent`, `depth`, `childCount`, `match`); celý strom najednou, `page`
+  a `sort` se nečtou, `hasMore` je vždy `false`. Víc vybraných uzlů než
+  strop → `tooMany: true` a žádné řádky. Viz `docs/viewer-tree.md` §3
 
 ### Tab bar (doc state taby)
 
