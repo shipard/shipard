@@ -20,6 +20,17 @@ final class Money
         return (int) round(((float) $amount) * 100);
     }
 
+    /**
+     * Částka pro obrazovku — se znaménkem a měnou, oddělovače podle jazyka
+     * požadavku (česky `1 234,50 CZK`, jinak `1,234.50 CZK`).
+     */
+    public static function display(int $cents, string $currency, string $language): string
+    {
+        $czech = $language === 'cs';
+        $amount = number_format($cents / 100, 2, $czech ? ',' : '.', $czech ? ' ' : ',');
+        return trim($amount . ' ' . strtoupper($currency));
+    }
+
     public static function decimal(int $cents): string
     {
         $sign = $cents < 0 ? '-' : '';

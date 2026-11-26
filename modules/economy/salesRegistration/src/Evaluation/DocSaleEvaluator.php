@@ -166,11 +166,13 @@ final class DocSaleEvaluator
                 $matching[] = $registration;
                 continue;
             }
-            if (!$registration->isValidOn($soldOn)) {
+            if ($source === null) {
+                // Dřív než platnost: u dokladu, kterého se evidence netýká
+                // (faktura Převodem), je důvod „typ a úhrada“, ne registrace.
+                $reason = DocEvaluation::REASON_NO_RULE;
                 continue;
             }
-            if ($source === null) {
-                $reason = DocEvaluation::REASON_NO_RULE;
+            if (!$registration->isValidOn($soldOn)) {
                 continue;
             }
             // D8d: doklad vystavený před začátkem platnosti registrace do

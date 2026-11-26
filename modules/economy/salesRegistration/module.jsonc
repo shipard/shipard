@@ -63,6 +63,21 @@
         }
     ],
 
+    // Evidence tržeb na dokladu (#171 D13, U18, U19): záložka s vyhodnocením
+    // a tržbami a štítek stavu v detailu dokladu, štítek „EET“ v seznamu.
+    "detailExtensions": [
+        {
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Docs\\DocSalesDetailExtension"
+        }
+    ],
+    "rowDecorators": [
+        {
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Docs\\DocSalesRowDecorator"
+        }
+    ],
+
     // Tržby z dokladů (#171 D6, D7, U12): přechod do V pořádku nebo Storno
     // spustí rozdílový výpočet; doklad s tržbou nejde přesunout do koše.
     "documentEventHandlers": [

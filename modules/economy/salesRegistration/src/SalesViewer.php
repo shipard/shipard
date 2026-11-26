@@ -477,9 +477,7 @@ class SalesViewer extends TableViewer
     /** Částka se znaménkem a měnou — oddělovače podle jazyka požadavku. */
     private function amount(array $row): string
     {
-        $czech = ($this->language ?? 'en') === 'cs';
-        $amount = number_format(Money::cents($row['amount'] ?? 0) / 100, 2, $czech ? ',' : '.', $czech ? ' ' : ',');
-        return trim($amount . ' ' . strtoupper((string) ($row['currency'] ?? '')));
+        return Money::display(Money::cents($row['amount'] ?? 0), (string) ($row['currency'] ?? ''), $this->language ?? 'en');
     }
 
     /** @param array<string, scalar> $params */
