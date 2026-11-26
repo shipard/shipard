@@ -9,6 +9,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { FORM_DATA_CONTEXT } from './formContext.js';
+  import { multiLookupErrorColumn, joinFieldError, sameList } from '../../utils/multiLookup.js';
 
   let {
     table,
@@ -145,6 +146,9 @@
         // Speciální případ: null vs '' z formuláře — nepovažujeme za změnu.
         // Server vrací null u nullable polí, formulář je interně reprezentuje jako ''.
         if ((a[k] == null || a[k] === '') && (b[k] == null || b[k] === '')) continue;
+        // Seznamy (multilookup, multiselect) se porovnávají podle obsahu
+        // a pořadí, ne podle reference — přepočet i každý výběr dávají nové pole.
+        if (sameList(a[k], b[k]) === true) continue;
         return false;
       }
     }
@@ -527,13 +531,19 @@
    * sloupci ve formuláři (přes buildElementMap). Vše ostatní (`_form`, `rows`,
    * prázdný field, neznámý sloupec) jde do formErrors. Čistá funkce — vrací
    * objekt, nesahá na state (testovatelná samostatně).
+   *
+   * Prvek `multilookup` (#176 D5) sbírá i chyby řádků své child tabulky
+   * (`places.1.place` → pole `places`); víc zpráv jednoho pole se spojí.
    */
   function extractValidationErrors(details) {
     const elMap = buildElementMap();
     const fieldErrs = {};
     const formErrs = [];
     for (const d of details ?? []) {
-      if (d.field && elMap[d.field]) {
+      const multiLookupColumn = multiLookupErrorColumn(d.field, elMap);
+      if (multiLookupColumn !== null) {
+        fieldErrs[multiLookupColumn] = joinFieldError(fieldErrs[multiLookupColumn], d.message);
+      } else if (d.field && elMap[d.field]) {
         fieldErrs[d.field] = d.message;
       } else {
         // `field` zachováváme — form-level chyba, jejíž field odpovídá id tabu

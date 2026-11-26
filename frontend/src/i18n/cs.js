@@ -40,6 +40,8 @@ export default {
   'lookup.error': 'Chyba načítání',
   'lookup.editItem': 'Upravit',
   'lookup.createNew': 'Vytvořit nový záznam',
+  'multilookup.placeholder': 'Hledat…',
+  'multilookup.remove': 'Odebrat {name}',
 
   // ── Sidebar ─────────────────────────────────────────────────────────────
   'sidebar.language': 'Jazyk',

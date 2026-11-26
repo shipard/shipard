@@ -31,6 +31,8 @@ export default {
   'lookup.error': 'Loading error',
   'lookup.editItem': 'Edit',
   'lookup.createNew': 'Create new',
+  'multilookup.placeholder': 'Search…',
+  'multilookup.remove': 'Remove {name}',
 
   // ── Sidebar ─────────────────────────────────────────────────────────────
   'sidebar.language': 'Language',

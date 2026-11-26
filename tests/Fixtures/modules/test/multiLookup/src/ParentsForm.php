@@ -28,7 +28,13 @@ class ParentsForm extends TableForm
         $kind = (string) ($data['kind'] ?? '');
         $tab = $this->tab('basic', 'Basic')->section()->col()
             ->input('name')
-            ->input('kind', triggers: 'reload');
+            // Výběr, ne textové pole — změna spouští přepočet i v prohlížeči.
+            ->select('kind', options: [
+                ['value' => 'a', 'label' => 'A'],
+                ['value' => 'b', 'label' => 'B'],
+                ['value' => self::KIND_LOCKED, 'label' => 'Locked'],
+                ['value' => self::KIND_PLAIN, 'label' => 'Plain'],
+            ], triggers: 'reload');
 
         if ($kind !== self::KIND_PLAIN) {
             $selected = is_array($data['targets'] ?? null) ? count($data['targets']) : 0;
