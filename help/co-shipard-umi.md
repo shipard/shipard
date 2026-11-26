@@ -99,7 +99,7 @@ je zapíná správce.
 
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
-| **Evidence tržeb** | Příprava na evidenci tržeb (EET 2.0, povinná od 1. 1. 2027): registrace s evidenčními jednotkami, nahrání pokladního certifikátu, volba režimu a ověření spojení se správcem daně. Není v levém menu: po zapnutí doplňku ji najdeš v **Nastavení aplikace → Evidence tržeb**. **Tržby z dokladů se zatím neodesílají** — zatím jde jen o přípravu a zkoušku spojení | [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) |
+| **Evidence tržeb** | Evidence tržeb (EET 2.0, povinná od 1. 1. 2027): prodejka, pokladní doklad a faktura placená hotově nebo kartou se po potvrzení samy odešlou správci daně jako tržba, storno a oprava pošlou rozdíl; nepotvrzené tržby se posílají znovu a upozorní na ně Dashboard. Po zapnutí doplňku je v sekci **Prodej → Evidence tržeb**, registrace, evidenční jednotky a pokladní certifikát v **Nastavení aplikace → Evidence tržeb** | [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md), [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) |
 
 ---
 

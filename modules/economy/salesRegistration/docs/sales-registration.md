@@ -2,7 +2,12 @@
 
 Doplněk `economy.salesRegistration` (#171). Tento dokument popisuje, **jak je
 to udělané**; návod pro uživatele je v `help/`, zadání v
-`tasks/sales-registration-phase1.md`.
+`tasks/sales-registration-phase1.md` a `tasks/sales-registration-phase2.md`.
+
+Kapitoly 2–9 popisují základ z fáze 1 (typ, registrace, certifikát,
+pojistka, engine), kapitoly 10–16 tržby z dokladů z fáze 2 (data,
+vyhodnocení dokladu, rozdílové zasílání, fronta, záchranná síť, agenda,
+upozornění).
 
 ## 1. Rozsah
 
@@ -13,7 +18,7 @@ registrací různých typů v jednom zdroji dat (#171 D16).
 | Fáze | Obsah | Stav |
 |---|---|---|
 | 1 | typ evidence, registrace a evidenční jednotky, certifikát, pojistka serveru, engine, Ověřit spojení, upozornění na certifikát | hotovo 2026-11-26 (`tasks/sales-registration-phase1.md`) |
-| 2 | tržby a pokusy, napojení na doklady, opakování cronem | — |
+| 2 | tržby a pokusy, napojení na doklady, fronta s opakováním, záchranná síť, agenda Evidence tržeb, upozornění na tržby | hotovo 2026-11-26 (`tasks/sales-registration-phase2.md`) |
 | 3 | Kontaktní platba, záložka a štítky na dokladu | — |
 
 Mimo rozsah (#171 D14): `urceno_cerp_zuct` / `cerp_zuct`, pověřující
@@ -28,7 +33,9 @@ Typ evidence má dvě poloviny, každou u jiného modulu:
   `world.<země>.salesRegistrationTypes`, klíč = id typu (`cz.eet2`): název,
   `country`, `validFrom`, `currency`, `environments` (`production`,
   `playground` → `url`), masky `taxpayerId` (s popiskem — v Česku „EIČ“),
-  `unitId`, `cashRegisterId`, `serialNumber`;
+  `unitId`, `cashRegisterId` (s popisem masky `hint` pro hlášku ve
+  formuláři řady), `serialNumber` a `amount`, časová zóna místa tržby
+  `timeZone` a pravidla `rules`, kdy doklad do evidence spadá (§ 11.1);
 - **třídu engine** přiřazuje doplněk — cfgItem
   `economy.salesRegistration.engines`, `{"<id typu>": "<FQCN>"}`.
 
@@ -330,8 +337,8 @@ Hlídají se jen **platné registrace**: stav V pořádku a dnešek v rozmezí
 `valid_from` – `valid_to`. Koncept, registrace v opravě, archiv a registrace
 mimo platnost upozornění nenesou. Jeden nález na registraci
 (`findingKey` = id, předmět = řádek registrace), nálezy „vyprší“ a „vypršel“
-se nepřekrývají. Kontroly soukromý klíč nenačítají. Upozornění na
-nepotvrzenou tržbu přijde s tržbami ve fázi 2.
+se nepřekrývají. Kontroly soukromý klíč nenačítají. Upozornění na tržby
+ve frontě a na doklady, které nejde zaevidovat, jsou v § 16.
 
 ## 8. Chybějící body rozšíření
 
@@ -350,6 +357,21 @@ Co fáze 1 obešla a co patří do obecné změny jádra s vlastní issue
 - **Doplněk se nezapíná z aplikace** — jen `shpd-ds ds-module enable`
   (stránka Doplňky v Nastavení je cílový stav #170).
 
+Fáze 2 k tomu přidala:
+
+- **Handler událostí dokladů nedostává `ServerConfig`** — pojistku si čte
+  sám stejně jako viewer (`DocsHeadsSalesHandler::queue()`).
+- **Handler `beforeSave` neumí chybu k poli** — kontrola kódu číselné řady
+  (§ 10.3) i zákaz koše (§ 12.3) končí `\DomainException`, tedy hláškou
+  nad formulářem (422 `DOMAIN_ERROR`), ne u pole.
+- **`beforeDelete` se pro hlavičku dokladu z aplikace nevolá** — doklad se
+  „maže“ přechodem do stavu Smazáno; doplněk proto hlídá přechod
+  v `beforeSave` (§ 12.3).
+- **Handler nemá „po commitu“ uvnitř cizí transakce** — z applieru běží
+  `stateChanged` před commitem; doplněk to pozná (`NestedTransaction::isActive()`)
+  a odeslání nechá cronu (§ 13.4). Obecný bod „po commitu vnější transakce“
+  jádro nemá.
+
 ## 9. Co není ověřené
 
 - **Produkce.** Knihovna i doplněk jsou ověřené jen proti playgroundu —
@@ -362,3 +384,289 @@ Co fáze 1 obešla a co patří do obecné změny jádra s vlastní issue
 - **Fixtury stárnou**: testovací certifikát playgroundu do 14. 5. 2027,
   podpisový certifikát skutečného potvrzení do 8. 6. 2027; testy začnou
   padat 30 dní předem.
+
+Z fáze 2:
+
+- **Časová zóna serveru.** Čas přechodu dokladu (`doc_state_changed_at`),
+  a tedy i čas tržby, se ukládá v zóně PHP (`date()`); aplikace zónu
+  nenastavuje. Převod do zóny místa tržby je správný, dokud mají PHP-FPM
+  a CLI (cron) stejnou zónu — na vývojovém serveru UTC u obou. Rozdílná
+  zóna by posunula čas tržeb založených záchrannou sítí a rozhodila
+  upozornění; `doctor` to nehlídá.
+- **Odmítnutí tržby službou naostro.** Stav `failed` a text chyby jsou
+  ověřené jen na připravených výsledcích enginu — playground při ověření
+  žádnou z našich zpráv neodmítl.
+- **Výpadek služby naostro.** Backoff, jistič a přeskočení registrace
+  v běhu cronu jsou ověřené testy, ne skutečným výpadkem.
+- **Kód detekce duplicit.** Metodika klíč duplicit nedefinuje; opakování
+  po nejasné odpovědi (`unknown`) posílá stejná data s novým UUID
+  a `prvni_zaslani = false`. Jak se k tomu služba staví, playground
+  neukázal.
+- **Zátěž záchranné sítě.** Průchod posledních 7 dní je levný díky
+  předvýběru (§ 14), na zdroji dat s tisíci prodejek denně ale změřený
+  není.
+- **Doklady importované před fází 2** nemají příznak `imported` (sloupec
+  vznikl až teď, výchozí 0). Záchranná síť je vidí jen v okně 7 dní od
+  importu a D8d je vyřadí, pokud jsou vystavené před začátkem registrace —
+  ostrá registrace dřív než 1. 1. 2027 začít nesmí.
+
+## 10. Data tržeb (D4, D5, D21)
+
+### 10.1 Tržba — `economy_sales_registration_sales`
+
+Závazek poslat správci daně jednu zprávu s pevnými daty. Vzniká z přechodu
+dokladu rozdílovým výpočtem (§ 12); doklad může mít víc tržeb.
+
+| Skupina | Sloupce |
+|---|---|
+| pevná data | `doc_head`, `doc_sequence` (pořadí tržby dokladu 1, 2, …), `registration`, `unit`, `unit_id` (označení jednotky v době vzniku), `cash_register_id` (kód řady), `serial_number`, `sold_at`, `amount` (se znaménkem), `currency`, `created` |
+| fronta | `state`, `attempt_count`, `next_attempt`, `claimed_at`, `confirmation_code`, `confirmed_at`, `environment`, `test`, `last_problem`, `last_error` |
+
+Indexy: unikátní (`doc_head`, `doc_sequence`) — pojistka proti dvojímu
+rozdílu (U7), (`state`, `next_attempt`) pro frontu, `registration`,
+`sold_at`. Data tržby se po vzniku nemění, mění se jen stav fronty.
+Tabulka je `systemManaged` a všechny sloupce systémové — generické CRUD
+záznam nezaloží, nesmaže ani nepřepíše.
+
+`sold_at` je ve stejné zóně jako `doc_state_changed_at` dokladu (zóna PHP);
+do zóny místa tržby (`timeZone` typu, U10) ho převádí až sestavení zprávy.
+
+### 10.2 Pokus — `economy_sales_registration_attempts`
+
+Jedna datová zpráva: `sale`, `uuid`, `started_at`, `first_sending`,
+`verification`, `environment`, `test_identity`, `status` (`sending` nebo
+hodnota `SendStatus`), `sent`, `problem`, `error_code`, `error_text`,
+`warnings` (JSON), `confirmation_code`, `transaction_id`, `request_body`,
+`response_body` (`mediumtext`), `duration_ms`.
+
+Řádek vzniká **před odesláním** (UUID, čas, stav `sending`) a po odpovědi
+se doplní — pád procesu uprostřed tak zanechá stopu, že zpráva odejít
+mohla. Opakování je nový řádek s novým UUID. `first_sending` je pravda,
+dokud tržba nemá pokus se `sent = 1`; pokusy zastavené pojistkou nebo
+problémem na naší straně se nepočítají. Těla zpráv zůstávají jen tady —
+v detailu tržby ani v logu nejsou.
+
+### 10.3 Evidenční jednotka na číselné řadě (D21)
+
+Pokladní zařízení = číselná řada: `id_pokl` je kód řady
+(`docs_core_number_series.code`). Jednotku řadě přidává extension doplňku —
+sloupec `sales_registration_unit` (`extensions/docs_core_number_series.jsonc`,
+nesystémový, aby ho směla editovat záložka z modulu).
+
+- **Záložka** `Series\SeriesUnitFormTab` (`formTabs`) — select jednotek
+  registrací V pořádku (`registrace — číslo název`); vybraná jednotka zůstává
+  v nabídce i po archivaci registrace. Bez jediné jednotky se záložka
+  nezobrazí. První skutečné `formTabs` ve stromu.
+- **Kontrola** `Series\SeriesUnitHandler` (`beforeSave` na řadě) — při
+  přiřazení jednotky i při změně kódu řady s jednotkou musí kód projít
+  maskou `cashRegisterId` typu (EET 2.0: 20 znaků, omezená sada); řada
+  s jednotkou musí mít kód. Chyba je `\DomainException` s popisem masky
+  z dat typu. Řada, která se nemění, se znovu nekontroluje.
+
+## 11. Vyhodnocení dokladu (D8a, D8d, D8e, D18, D19, D22, U9, U11)
+
+`Evaluation\DocSaleEvaluator` — čistá služba bez sítě, databáze a zápisu.
+Vstup `DocFacts` (hlavička, řádky, řada, země) a registrace V pořádku
+(`RegistrationFacts`), výstup `DocEvaluation`: **nespadá** / **spadá**
+(částka, registrace, jednotka, označení pokladny) / **spadá, ale nejde
+založit** (důvod). Databázi čte jen `DocFactsLoader`. Stejné vyhodnocení
+používá handler, záchranná síť i upozornění.
+
+### 11.1 Pravidla typu (D23)
+
+`rules` u typu jsou data země; první pravidlo, které se hlavičky týká,
+rozhodne (`SaleRule`, `SalesRegistrationType::ruleFor()`):
+
+| Klíč | Význam |
+|---|---|
+| `docTypes` | typy dokladů (povinné) |
+| `paymentMethods` | způsoby úhrady; chybí = jakýkoli |
+| `cashDir` | směr pokladního dokladu; chybí = jakýkoli |
+| `rowOperations` | pravidlo nad řádky — do evidence jde jen součet řádků s těmito pohyby (`sale.*` = prefix); chybí = celá částka dokladu |
+
+`cz.eet2`: prodejka a faktura vydaná hotově nebo kartou celou částkou;
+pokladní doklad příjem řádky `sale.*`, `payment.receivable`,
+`advance.received`. Platební bránou (5) do evidence nespadá (D15),
+`transfer.in` a `acc.entry` taky ne. Vadné pravidlo vyřadí celý typ —
+tiše vynechané pravidlo by znamenalo neodeslané tržby. Odkazy pravidel na
+existující typy dokladů, způsoby úhrady a pohyby hlídá
+`SalesRegistrationTypesDataTest`.
+
+### 11.2 Pořadí rozhodování
+
+1. doklad převzatý importem → nespadá nikdy: trvalý příznak hlavičky
+   `imported` (nastavuje `DocDocument` při vzniku dokladu v importním
+   módu), nebo `source_kind` `import.*` (D8e, U11). Doklad založený
+   pokynem přes API je skutečná tržba;
+2. jen stavy V pořádku a Storno; Storno = částka 0;
+3. registrace podle **země registrace DPH** dokladu (`vat_registration` →
+   `country`, bez ní domácí země zdroje dat) a **platnosti k času tržby**
+   v zóně místa tržby (D22), jejíž typ má pro hlavičku pravidlo a která
+   nezačala až po vystavení dokladu (D8d: `issue_date` < `valid_from`).
+   Žádná = nespadá, víc = nejde založit;
+4. částka (D18): pravidlo nad hlavičkou bere `total_amount_dom` (obsahuje
+   zaokrouhlení, cizí měna jde kurzem dokladu); pravidlo nad řádky součet
+   `vat_total_dom` vyhovujících řádků — a když vyhovují všechny řádky
+   s nenulovou částkou, zase `total_amount_dom`, aby šla hotovost
+   zaokrouhleně. Nulová částka = nespadá;
+5. domácí měna dokladu = měna typu, jednotka z řady, jinak výchozí jednotka
+   registrace (musí patřit té registraci), označení pokladny = kód řady —
+   vše přes masky typu.
+
+Pořadové číslo (D19) je `SerialNumber::of()`: první tržba dokladu nese číslo
+dokladu, další příponu `-2`, `-3`, … Pořadové číslo a částku proti maskám
+typu kontroluje až `saleProblem()` nad konkrétní tržbou — číslo závisí na
+pořadí tržby a částka je rozdíl.
+
+**Doklad s tržbou zůstává u její registrace**: další vyhodnocení bere jen
+tu registraci a platnost k času tržby ani D8d znovu neposuzuje. Oprava
+dokladu po skončení registrace by jinak poslala storno platné tržby.
+
+Důvody „nejde založit“ (U9): `multipleRegistrations`, `registrationGone`,
+`currency`, `noUnit`, `foreignUnit`, `unitId`, `cashRegisterId`,
+`serialNumber`, `amount`.
+
+Kontaktní platba (fáze 3, D8b) přidá další zdroj v kroku 3–4; místo je
+označené v `DocSaleEvaluator::matchingRegistrations()`.
+
+## 12. Tržby z dokladů — rozdílové zasílání (D6, D20, U7, U12)
+
+### 12.1 Rozdíl
+
+`Sales\SaleSync::sync(docId)`: částka podle vyhodnocení − součet **všech**
+tržeb dokladu (bez ohledu na stav); nenulový rozdíl = nová tržba `pending`
+s `sold_at` = `doc_state_changed_at` dokladu (D20) a pořadím `n` = poslední
++ 1. Storno dá zápornou tržbu `-2`, oprava rozdíl, oprava beze změny částky
+nic; součet tržeb dokladu = částka, která do evidence spadá. Koncept
+a V opravě se nevyhodnocují.
+
+Vyrovnávací tržba dokladu, který do evidence už nespadá (storno, změna
+způsobu úhrady), bere registraci, jednotku a označení pokladny z poslední
+tržby — vznikne i po archivaci registrace.
+
+### 12.2 Souběh (U7)
+
+Výpočet běží pod pojmenovaným zámkem dokladu (`GET_LOCK`, klíč
+`<databáze>:salesreg:doc:<id>`, 5 s) — funguje i uvnitř cizí transakce.
+(doklad, pořadí) je unikátní; duplicita znamená, že tržbu vytvořil jiný
+proces, a výpočet se zopakuje. Doklad bez tržeb, který nespadá, se vyřídí
+bez zámku. Výsledek `SyncResult`: `none` / `created` / `wouldCreate`
+(nanečisto) / `unregistrable` / `busy`.
+
+### 12.3 Handler dokladů
+
+`Sales\DocsHeadsSalesHandler` na `docs_core_heads`:
+
+- `stateChanged` — nový stav 40 nebo 30 (i starý stav 0: „Vystavit
+  a uzavřít“, pokyn přes API) spustí `sync()`. Výjimky loguje; chybějící
+  tržbu dorovná záchranná síť.
+- `beforeSave` — doklad s tržbou nejde přesunout do koše (stav 90):
+  `\DomainException`, formulář dostane 422 s hláškou „stornujte ho“.
+- `beforeDelete` — pojistka pro tvrdé smazání řádku.
+
+## 13. Fronta a stavy (D5, D7, D24, U5, U6)
+
+### 13.1 Stavy tržby
+
+```
+pending ──claim──▶ sending ──▶ confirmed   (potvrzeno; povinnost splněna)
+   ▲                  │   ├──▶ verified    (ověřovací režim; konečný)
+   │                  │   ├──▶ dropped     (pojistka serveru; konečný, bez upozornění)
+   │                  │   └──▶ failed      (odmítnuto službou / neplatná zpráva)
+   └── backoff ───────┘                       └─ Odeslat znovu → pending
+```
+
+`Queue\SaleOutcome` mapuje `SendResult` na stav. Odesílač vrací problémy
+na naší straně stavem „odmítnuto“ s vyplněným `problem`, proto se
+rozhoduje podle něj:
+
+| Výsledek | Stav tržby |
+|---|---|
+| `confirmed` | `confirmed` + kód, čas, `test` (playground / testovací identita) |
+| `verified` | `verified` |
+| `dropped` | `dropped` |
+| `rejected` bez `problem`, nebo `problem = message` | `failed` |
+| `retryLater`, `unknown` | `pending` + backoff |
+| `rejected` s jiným `problem` (certifikát, klíč, testovací identita, typ, prostředí, registrace není V pořádku, interní chyba) | `pending` + backoff — zpráva neodešla a problém odstraní nastavení |
+
+Backoff 1 min → 5 min → 15 min → 1 h, dál po hodině bez konce (D7).
+
+### 13.2 Jeden pokus
+
+`Queue\SaleQueue::attempt()` je jediná cesta odeslání — handler, cron
+i akce Odeslat znovu:
+
+1. **zámek odesílatele** (D24): `UPDATE … SET state = 'sending' WHERE id = ?
+   AND state = 'pending'`; kdo řádek nezmění, neposílá;
+2. pokus zapsaný před odesláním (§ 10.2);
+3. `SalesRegistrationSender::send()` se zprávou z dat tržby — nové UUID,
+   původní `sold_at` převedený do zóny typu, `firstSending` podle pokusů;
+4. výsledek do pokusu, stav tržby podle § 13.1, log (id, stavy, kódy, doby —
+   bez těl zpráv a klíčů).
+
+SQL je v `Queue\SaleStore`; čas dostává parametrem z PHP, žádné `NOW()`.
+`sending` starší 10 minut znamená pád procesu — `recoverStale()` vrací
+tržbu na `pending` bez zvýšení počtu pokusů.
+
+### 13.3 Jistič (U6)
+
+`circuitOpen(registrace)`: skončil poslední dokončený pokus registrace
+v posledních 60 s výpadkem (`retryLater`, `unknown`)? Handler pak neposílá
+hned a tržbu nechá cronu. Běh cronu po výpadku přeskočí zbylé tržby téže
+registrace (`skipped`).
+
+### 13.4 Kdy se posílá
+
+- **Handler** hned po založení tržby — jen mimo transakci a při zavřeném
+  jističi. Z applieru běží `stateChanged` před commitem a doklad se ještě
+  může vrátit (`totals_check_failed`); tržba tam vznikne v téže transakci
+  a odešle ji cron. Okamžité odeslání se tak týká dokladů z formuláře.
+- **Cron** `sales-registration-run` (slot `minute`, `--limit`, výchozí 20):
+  obnova zaseknutých + splatné `pending` od nejstaršího termínu.
+- **Akce Odeslat znovu** (§ 15).
+
+Handler ani příkaz `ServerConfig` nedostávají — pojistku čtou přes
+`SalesRegistrationServerConfig::forServer()` (fail-closed).
+
+## 14. Záchranná síť (D7, D20, U9)
+
+`sales-registration-reconcile` (slot `five-minutes`, před `alerts-run`;
+`--days`, výchozí 7; `--dry-run`) → `Sales\ReconcileScanner`: doklady ve
+stavu 40 a 30 se změnou stavu v okně projde týmž `SaleSync::sync()`. Tržba
+dostane čas přechodu dokladu, ne čas nálezu, a pošle ji nejbližší běh
+fronty.
+
+Předvýběr v SQL (index `idx_doc_state_changed`): bez importovaných, typ
+dokladu z pravidel registrací V pořádku nebo doklad, který už tržbu má,
+a **bez dokladů s tržbou založenou po posledním přechodu** — u těch je
+rozdíl hotový. `--dry-run` vypíše, co by vzniklo.
+
+## 15. Agenda a akce (D25, U12)
+
+- **Viewer** `SalesViewer` (`economy.salesRegistration.sales`, sekce
+  Prodej): řádek = pořadové číslo, částka, jednotka, stav, štítek testu,
+  čas tržby a konec kódu potvrzení. Filtry stav (vč. „Nevyřízené“),
+  registrace a jednotka (jen když je z čeho vybírat), období (kalendářní
+  měsíc). Tržby nemají `docState` — stav fronty je sloupec `state`, popisky
+  a styl z `economy.salesRegistration.saleStates`. Bez akce Přidat.
+- **Detail**: hlavička pořadové číslo + částka, štítek stavu; Přehled (tržba,
+  odeslání) a záložka Pokusy (čas, prostředí, výsledek, kódy a varování,
+  `transactionId`, doba). Akce **Otevřít doklad** (`open_detail` na
+  `docs.core.heads`). Těla zpráv viewer nečte.
+- **Akce záznamu Odeslat znovu** (`Actions\ResendSaleAction`,
+  `recordActions`, bez `admin`): tržbu `failed` nebo `pending` vrátí do
+  fronty s termínem hned a zkusí ji odeslat. Pojistku bere z kontextu akce.
+
+## 16. Upozornění na tržby (D13, D25, U9)
+
+| Check | Závažnost | Kdy |
+|---|---|---|
+| `economy.salesregistration.sale_unconfirmed` | warning | tržba `pending` / `sending` / `failed` starší než 1 h (a mladší než 48 h) |
+| `economy.salesregistration.sale_overdue` | error | táž tržba starší než 48 h |
+| `economy.salesregistration.sale_failed` | error | tržba `failed` |
+| `economy.salesregistration.doc_unregistrable` | error | doklad spadá, ale tržbu založit nejde (§ 11.2) |
+
+Stáří se měří od času tržby. První tři dávají **jeden nález na registraci**
+s počtem a nejstarší tržbou (`Checks\SaleCheck`) — výpadek služby nedá
+stovky upozornění. `doc_unregistrable` je průchod záchranné sítě nanečisto,
+nález na doklad, nejvýš 30. `dropped` a `verified` upozornění nedávají.

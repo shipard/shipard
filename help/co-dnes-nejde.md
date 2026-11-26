@@ -255,16 +255,23 @@ místa nejsou. Místa ze starého Shipardu se zatím nepřevádějí.
 
 ## Evidence tržeb
 
-Doplněk **Evidence tržeb** (EET 2.0, povinná od 1. 1. 2027) zatím umí jen
-přípravu — viz [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md).
+Doplněk **Evidence tržeb** (EET 2.0, povinná od 1. 1. 2027) eviduje tržby
+z prodejek, pokladních dokladů a faktur placených hotově nebo kartou —
+viz [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md)
+a [Registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md).
 
-**Tržby z dokladů se neodesílají.** Prodejka, pokladní doklad ani faktura
-placená hotově nebo kartou zatím žádnou zprávu správci daně nepošle
-a potvrzovací kód na dokladu ani na tisku není. Odeslat jde jen zkušební
-zpráva akcí **Ověřit spojení**, která nic neeviduje.
+**Kontaktní platbu na dokladu neoznačíš.** Fakturu placenou převodem,
+kterou zákazník zaplatil na místě QR kódem nebo kartou, zatím jako tržbu
+zaevidovat nejde — pole ani akce k tomu nejsou. Stejně tak zálohovou
+fakturu.
 
-**Kontaktní platbu na dokladu neoznačíš** — pole ani akce k tomu zatím
-nejsou.
+**Na dokladu tržbu nevidíš.** Stav tržby ani kód potvrzení není v detailu
+dokladu, v seznamu dokladů ani na tisku — jen v agendě **Evidence tržeb**.
+
+**Tržby ze starého Shipardu se nepřevádějí.** Doklad převzatý importem do
+evidence nevstoupí, ani když ho později stornuješ.
+
+**Poukázky, dobíjení a pověřující poplatník** se neevidují.
 
 **Certifikát se neobnovuje sám.** Nový si každý rok vystavíš v portálu
 CA EET a nahraješ ho; Shipard na blížící se konec platnosti upozorní.

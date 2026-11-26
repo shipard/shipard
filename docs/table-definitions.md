@@ -633,7 +633,10 @@ Extension je JSONC soubor, který přidává sloupce a indexy do tabulky jiného
 
 ### Umístění
 
-`modules/{skupina}/{modul}/extensions/ext-{cilova-tabulka}.jsonc`
+`modules/{skupina}/{modul}/extensions/{cilova-tabulka}.jsonc` — soubor se
+jmenuje přesně jako cílová tabulka a `module.jsonc` ho uvádí jejím názvem:
+`"extensions": ["docs_core_heads"]` (`SchemaLoader` čte
+`extensions/<název>.jsonc`).
 
 ### Struktura
 

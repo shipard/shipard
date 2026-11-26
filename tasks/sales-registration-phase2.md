@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 2: tržby a pokusy, napojení na doklady, opakování cronem (#171)
 
-**Stav:** naplánováno — rozhodnutí #171 D4–D8, D13, D18–D25 a upřesnění U5–U12 (schválená 2026-11-26), připraveno k implementaci
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči (agenda, detail, Odeslat znovu, záložka řady) a nasazení
 
 > Task pro Claude Code (6 commitů). Design: issue #171 (EET 2.0), komentář
 > s D18–D25. Staví na fázi 1 (`tasks/sales-registration-phase1.md` —
@@ -304,37 +304,177 @@ neeviduje.
 
 ## Hotovo když
 
-- [ ] prodejka hotově a kartou, faktura vydaná hotově a kartou a pokladní
+- [x] prodejka hotově a kartou, faktura vydaná hotově a kartou a pokladní
       doklad příjem s vyhovujícími řádky dají po přechodu do V pořádku
       tržbu se správnou částkou (včetně zaokrouhlení a cizí měny);
       převodem, bránou, pokladní doklad výdej a řádky `transfer.in` /
       `acc.entry` tržbu nedají
-- [ ] storno dá zápornou tržbu `-2`, oprava rozdíl, oprava beze změny
+- [x] storno dá zápornou tržbu `-2`, oprava rozdíl, oprava beze změny
       částky nic; součet tržeb dokladu = částka, která do evidence spadá
-- [ ] doklad vystavený před `valid_from` registrace nic nedá ani stornem;
+- [x] doklad vystavený před `valid_from` registrace nic nedá ani stornem;
       import (`source_kind` `import.*`) nic nedá, doklad z API V pořádku ano
-- [ ] výběr registrace podle země a platnosti; víc kandidátů = upozornění
-- [ ] jednotka na řadě se ukládá ze záložky formuláře řady; neplatný kód
+- [x] výběr registrace podle země a platnosti; víc kandidátů = upozornění
+- [x] jednotka na řadě se ukládá ze záložky formuláře řady; neplatný kód
       řady dá chybu ve formuláři
-- [ ] handler a záchranná síť souběžně nevytvoří dvě tržby (test)
-- [ ] stavy a backoff podle U5 pokryté testy nad výsledky enginu; jistič
+- [x] handler a záchranná síť souběžně nevytvoří dvě tržby (test)
+- [x] stavy a backoff podle U5 pokryté testy nad výsledky enginu; jistič
       (U6); obnova `sending`
-- [ ] záchranná síť dorovná chybějící tržbu s původním časem
-- [ ] agenda, detail s pokusy, akce Odeslat znovu, čtyři upozornění
-- [ ] na volném zdroji dat s pojistkou `playground` (předanou kontextu jako
+- [x] záchranná síť dorovná chybějící tržbu s původním časem
+- [x] agenda, detail s pokusy, akce Odeslat znovu, čtyři upozornění
+- [x] na volném zdroji dat s pojistkou `playground` (předanou kontextu jako
       ve fázi 1) a registrací v režimu playground: prodejka → `confirmed`
       s kódem `-ff`, storno → druhá tržba `confirmed`; bez sekce pojistky
       → `dropped`; výsledek v poznámkách
-- [ ] dokumentace, nápověda, README, roadmapa a features
-- [ ] celá sada PHPUnit lokálně zelená
+- [x] dokumentace, nápověda, README, roadmapa a features
+- [x] celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-26 v sedmi commitech na `stable` (jeden pro jádro, šest pro
+doplněk), nepushnuto:
+
+| Commit | Obsah |
+|---|---|
+| `ef1704f9` | jádro: trvalý příznak dokladu převzatého importem (`imported`, U11) |
+| `86f11164` | tabulky tržeb a pokusů, jednotka na řadě, pravidla typu, validace registrace |
+| `917e14bc` | vyhodnocení dokladu |
+| `403a10e9` | tržby z dokladů rozdílovým výpočtem, handler dokladů |
+| `2c253e78` | fronta, opakování, záchranná síť, příkazy a cron |
+| `78996a90` | agenda Evidence tržeb, Odeslat znovu, upozornění |
+| (tento) | dokumentace, nápověda, stav tasku |
+
+Specifikace: `modules/economy/salesRegistration/docs/sales-registration.md`
+§ 10–16.
+
+### Rozhodnutí při implementaci a odchylky od zadání
+
+- **U11 — import nejde poznat ze `source_kind`** (schváleno 2026-11-26):
+  pokyn bez bloku `source` ukládá `NULL`, demo sady nesou `NULL` nebo
+  `workOrder`, a marker `_importNumber` odstraní `DocDocument::beforeSave()`
+  dřív, než běží handlery. Změna jádra: systémový sloupec `imported` na
+  `docs_core_heads`, nastaví ho `DocDocument::markImported()` při vzniku
+  dokladu v importním módu; update ho nemění, hodnota z payloadu se nebere
+  (klíč mimo import do INSERTu vůbec nejde, takže zdroj dat před
+  `ds-upgrade` dál ukládá). Vyhodnocení bere `imported` **nebo**
+  `source_kind` `import.*`. Matice round-tripu sloupec vylučuje jako původ
+  dokladu (`RoundTripColumns::EXCLUDED` — doklad B vzniká z exportu vždy
+  v importním módu); **je to nová výjimka seznamu, který výjimky žádá
+  schvalovat — ke schválení**.
+- **U12 — `beforeDelete` se pro hlavičku z aplikace nevolá** (schváleno
+  2026-11-26): doklad se maže přechodem do stavu Smazáno, generické `DELETE`
+  jde mimo gateway. Zákaz proto hlídá `beforeSave` handler (přechod do 90
+  u dokladu s tržbou → `\DomainException` → 422 s hláškou „stornujte ho“);
+  `beforeDelete` zůstal jako pojistka. Zákaz platí pro doklad s jakoukoli
+  tržbou, i když součet tržeb je nula (po stornu).
+- **D7 — doklad z API se neposílá hned.** `DocumentApplier` ukládá přes
+  gateway bez vlastní transakce, takže `stateChanged` běží před jeho
+  commitem a doklad se ještě může vrátit (`totals_check_failed`). Handler
+  v otevřené transakci tržbu jen založí (vrátí se s dokladem) a odešle ji
+  cron do minuty. Okamžité odeslání se týká dokladů z formuláře.
+- **Doklad s tržbou zůstává u její registrace.** Zadání říká „registrace
+  platná k `dat_trzby`“ (D22); pro druhou a další tržbu dokladu by to při
+  střídání registrací poslalo storno platné tržby (oprava dokladu po konci
+  registrace: nová registrace doklad kvůli D8d nevezme → částka 0 →
+  záporný rozdíl). Další vyhodnocení proto bere jen registraci dosavadních
+  tržeb a platnost k času ani D8d znovu neposuzuje.
+- **Vyrovnávací tržba** dokladu, který už nespadá (storno, změna úhrady),
+  bere registraci, jednotku a označení pokladny z poslední tržby — vznikne
+  i po archivaci registrace (pokus pak čeká s problémem `registration`).
+- **U5 — odesílač vrací problémy na naší straně stavem `rejected`**
+  s vyplněným `problem`. `SaleOutcome` proto rozhoduje podle `problem`:
+  `message` → `failed`, ostatní → `pending` s backoffem. Přibyl problém
+  `registration` (registrace tržby není V pořádku).
+- **U7 — zámek `GET_LOCK`**, ne `SELECT … FOR UPDATE`: funguje i uvnitř
+  transakce applieru a nezamyká mezeru indexu. Doklad, který nespadá
+  a tržbu nemá, se vyřídí bez zámku (většina dokladů).
+- **U8 — ostrý režim vyžaduje `valid_from`.** Bez data by registrace
+  platila „odjakživa“, tedy i před 1. 1. 2027.
+- **U10 — `doc_state_changed_at` je v zóně PHP** (`date()`, aplikace zónu
+  nenastavuje; na vývojovém serveru UTC). `sold_at` se ukládá stejně a do
+  zóny místa tržby (`timeZone` typu, nově v datech `cz.eet2`) ho převádí
+  fronta při sestavení zprávy. `Eet2Engine::TIMEZONE` zůstal jako pojistka
+  enginu. Rozdílná zóna PHP-FPM a CLI by časy rozhodila — „Co není
+  ověřené“ ve specifikaci.
+- **D21 — chyba kódu řady není u pole.** Handler `beforeSave` chybu k poli
+  vrátit neumí; `\DomainException` dá 422 s hláškou nad formulářem (popis
+  masky je v datech typu, `cashRegisterId.hint`). Záložka je první skutečné
+  `formTabs` ve stromu; lookup nést nesmí, nabídku jednotek skládá sama.
+- **D23 — vadné pravidlo vyřadí celý typ.** Tiše vynechané pravidlo by
+  znamenalo neodeslané tržby; odkazy pravidel na typy dokladů, způsoby
+  úhrady a pohyby hlídá `SalesRegistrationTypesDataTest`.
+- **D18 — maska částky** (`amount` v datech typu podle `CastkaType`)
+  a kontrola domácí měny dokladu proti měně typu; nulová částka = nespadá.
+- **Upozornění dávají jeden nález na registraci**, ne na tržbu — výpadek
+  služby by jinak dal stovky upozornění. `doc_unregistrable` je nález na
+  doklad (nejvýš 30), běží jednou za hodinu; `sale_unconfirmed` kryje okno
+  1 h – 48 h, starší přebírá `sale_overdue`.
+- **Záchranná síť vynechává doklady s tržbou založenou po posledním
+  přechodu** (rozdíl je hotový) a řádky čte jen u typů dokladů s pravidlem
+  nad řádky — průchod 7 dní je tak levný.
+- **Agenda**: filtr období je kalendářní měsíc (fiskální měsíce zdroje
+  dat), filtry registrace a jednotka se nabízejí jen při víc než jedné
+  volbě. Odkaz na doklad je akce detailu **Otevřít doklad** (`open_detail`
+  na `docs.core.heads`); číslo dokladu se v Přehledu neopakuje (pořadové
+  číslo první tržby je číslo dokladu a kontrakt detailu opakování hlavičky
+  zakazuje).
+- **Úlohy cronu**: `CronCommandTest` má vlastní tabulku úloh a strom
+  modulů — nová úloha znamenala úpravu obou (vedle `CronJobRegistryTest`).
+- **Dokumentace jádra opravená podle kódu**: pole `extensions`
+  v `module.jsonc` je seznam názvů tabulek a soubor `extensions/<tabulka>.jsonc`
+  (`docs/modules.md` a `docs/table-definitions.md` psaly `{table, file}`
+  a `ext-<tabulka>.jsonc`).
+
+### Ověření
+
+- **Testy**: celá sada PHPUnit zelená (13 272 testů). Integrační
+  `tests/Integration/SalesRegistration/SalesFromDocumentsTest` (5 testů:
+  životní cyklus prodejky, souběh se zámkem druhého spojení a unikátním
+  indexem, fronta nad skutečnými tabulkami, záchranná síť, import) nad
+  zdrojem dat `8yft-3` — handler v testu běží bez okamžitého odeslání
+  (`NoSendSalesHandler`), ven nic neposílá. `ViewerDetailContractTest`
+  tamtéž prošel i s novým viewerem.
+- **Zdroj dat pro ověření**: `8yft-3` (volný, demo sada) — doplněk zapnut
+  `ds-module enable`, registrace `cz.eet2` v režimu playground s jednotkou
+  181, platná od 2026-11-26. `bgse-r` (zkušební registrace z fáze 1) nemá
+  nastavené účetnictví ani pokladnu, pro doklady se nehodil; dostal jen
+  `ds-upgrade` a nastavení osnovy.
+- **Živě proti playgroundu** (pojistka `playground` — na vývojovém serveru
+  je teď v `server.json`, takže šla skutečnou cestou handleru; v jednom
+  běhu navíc předaná frontě jako ve fázi 1):
+  - prodejka hotově 121 Kč → tržba `confirmed`, kód končí `-ff`, `test`,
+    prostředí playground, 1 pokus (≈ 50 ms);
+  - storno → druhá tržba `…-2` −121 Kč `confirmed` s kódem `-ff`;
+  - `server.json` bez sekce pojistky (podvržený soubor, režim
+    `development`) → tržba `dropped`, 1 pokus s problémem `safety`, nic
+    neodešlo;
+  - prodejka pokynem přes REST (`/_exchange/docs/document/apply`,
+    `targetDocState` 40, `source.kind` `api`) → tržba `pending` bez pokusu
+    (transakce applieru), odeslal ji běh cronu;
+  - tržba, kterou handler neodeslal, převzal `sales-registration-run`.
+- **Proti skutečné databázi**: záložka řady a kontrola kódu (uložení přes
+  gateway se skutečnými handlery, rollback), agenda přes HTTP (`meta`,
+  `rows`, `detail`, položka v navigaci sekce Prodej), filtry a hledání,
+  čtyři kontroly upozornění, `sales-registration-reconcile --dry-run`.
+- Akce Odeslat znovu přes HTTP ověřená není (endpoint akcí chce
+  přihlášení) — pokrývají ji testy nad frontou.
+
+### Stav zdrojů dat po ověření
+
+- `8yft-3`: zapnutý doplněk, registrace a několik zkušebních prodejek
+  s tržbami (potvrzené z playgroundu, jedna `dropped`) — data pro ruční
+  proklik agendy. Cron tam běží, takže fronta i záchranná síť jedou.
+- `bgse-r`: po `ds-upgrade`, nastavená osnova a fiskální rok.
+- Ostatní zdroje dat `ds-upgrade` nedostaly — sloupec `imported` a nové
+  tabulky jim přidá až upgrade.
 
 ### Zbývá
 
 - Ruční proklik v prohlížeči s pojistkou `playground` v `server.json`
-  (člověk): agenda, detail, Odeslat znovu, záložka řady.
-- Nasazení: `ds-upgrade` zdrojů dat s doplňkem; pojistka na testovacím
-  serveru nastavuje člověk.
+  (člověk): agenda, detail, Odeslat znovu, záložka řady, hláška při
+  pokusu smazat doklad s tržbou.
+- Schválit výjimku `imported` v `RoundTripColumns::EXCLUDED`.
+- Nasazení: `ds-upgrade` **všech** zdrojů dat (sloupec `imported` je
+  v jádře), ne jen těch s doplňkem; pojistka na testovacím serveru
+  nastavuje člověk.
+- Komentář do #171 (fáze 2 hotová, odchylky) a případně doplnění #178
+  o body z § 8 specifikace.

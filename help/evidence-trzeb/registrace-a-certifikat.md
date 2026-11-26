@@ -2,7 +2,7 @@
 title: Evidence tržeb — registrace a certifikát
 summary: Jak zapnout doplněk Evidence tržeb (EET 2.0), založit registraci s evidenčními jednotkami, nahrát pokladní certifikát, zvolit režim a ověřit spojení se správcem daně.
 keywords: [evidence tržeb, evidenci tržeb, EET, EET 2.0, eet2, e-tržby, etržby, elektronická evidence tržeb, registrace k evidenci tržeb, registraci, pokladní certifikát, certifikát pokladny, nahrát certifikát, certifikátu, p12, pfx, heslo k certifikátu, EIČ, evidenční identifikační číslo, evidenční jednotka, evidenční jednotky, id jednotky, DIS+, CA EET, ověřit spojení, ověření spojení, ověřovací režim, ostrý režim, playground, pojistka serveru, zprávy se neodesílají, certifikát vyprší, certifikát vypršel, obnova certifikátu, kontaktní platba, POK, potvrzovací kód]
-related: [co-dnes-nejde.md, co-shipard-umi.md, pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md]
+related: [evidence-trzeb/trzby-z-dokladu.md, co-dnes-nejde.md, co-shipard-umi.md, pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md]
 modules: [economy.salesRegistration]
 ---
 
@@ -13,9 +13,9 @@ V Shipardu je to **doplněk**, který se zapíná jen tam, kde ho firma
 potřebuje. Tahle stránka popisuje přípravu: registraci, evidenční jednotky,
 pokladní certifikát a ověření spojení.
 
-**Tržby z dokladů se zatím neodesílají** — to přijde v dalších krocích
-(viz [Co Shipard dnes neumí](../co-dnes-nejde.md)). Teď si připravíš
-a vyzkoušíš všechno, co k tomu bude potřeba.
+Jakmile je registrace **V pořádku**, začnou se tržby z dokladů evidovat
+samy — které doklady a jak, popisuje
+[Evidence tržeb — tržby z dokladů](trzby-z-dokladu.md).
 
 ## Kdy to potřebuješ
 
@@ -46,7 +46,9 @@ Potom se v **Nastavení aplikace** objeví sekce **Evidence tržeb**.
 1. V **Nastavení aplikace → Evidence tržeb → Registrace** dej **Přidat**.
 2. Vyplň **Název** a vyber **Typ evidence** — *EET 2.0 (Česko)*.
 3. **Režim** nech zatím **Ověřovací** (viz níže).
-4. Nepovinně vyplň **Platnost od** a **Platnost do** a ulož.
+4. Vyplň **Platnost od** — den, od kterého se mají tržby evidovat. Doklad
+   vystavený dřív se neeviduje, ani když ho později opravíš nebo
+   stornuješ. **Platnost do** je nepovinná. Ulož.
 5. Na záložce **Evidenční jednotky** přidej jednotky: **Číslo jednotky**
    z DIS+ a **Název**, podle kterého ji poznáš.
 6. Zpátky na první záložce vyber **Výchozí evidenční jednotka** — použije
@@ -70,7 +72,7 @@ nový certifikát, ho nahraješ stejně — nahradí ten starý.
 | Režim | Co se děje |
 |---|---|
 | **Ověřovací** | Zprávy jdou správci daně jen „na zkoušku“ — nic se neeviduje a povinnost se tím neplní. Výchozí pro novou registraci |
-| **Ostrý** | Tržby se skutečně evidují. Přepni, až budeš mít vyzkoušeno |
+| **Ostrý** | Tržby se skutečně evidují. Přepni, až budeš mít vyzkoušeno. **Platnost od** nesmí být dřív než 1. 1. 2027 — dřív povinnost neplatí |
 | **Playground** | Zkušební prostředí správce daně se sdílenou testovací identitou. Tvůj certifikát se v něm nepoužije |
 
 Režim změníš ve formuláři registrace (u registrace **V pořádku** přes
@@ -104,6 +106,13 @@ s jiným EIČ. Pro druhého poplatníka založ vlastní registraci.
 **Číslo jednotky neodpovídá tvaru.** U EET 2.0 je to číslo z DIS+ bez
 úvodních nul, nejvýš devět číslic.
 
+**„Registrace v ostrém režimu může platit nejdříve od…“** Ostrý režim
+nejde zapnout s **Platností od** před 1. 1. 2027 ani bez ní. Vyzkoušet
+evidenci předem můžeš v režimu **Ověřovací** nebo **Playground**.
+
+**„Typ evidence … eviduje tržby v měně CZK“.** EET 2.0 jde použít jen ve
+zdroji dat, který účtuje v korunách.
+
 **Akce Ověřit spojení v detailu chybí.** Registrace nemá výchozí evidenční
 jednotku nebo certifikát, případně je v archivu.
 
@@ -113,6 +122,7 @@ i registrace **V pořádku**, která certifikát nemá vůbec.
 
 ## Souvisí
 
+- [Evidence tržeb — tržby z dokladů](trzby-z-dokladu.md) — co se s doklady děje po zapnutí
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — co z evidence tržeb zatím chybí
 - [Prodejka](../pokladna/prodejka.md)
 - [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md)

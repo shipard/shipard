@@ -380,13 +380,9 @@ ID modulu přímo odpovídá cestě v souborovém systému:
         "economy_docs_rows"
     ],
 
-    // Rozšíření tabulek jiných modulů
-    "extensions": [
-        {
-            "table": "base_persons_contacts",
-            "file": "extensions/ext-base-persons-contacts.jsonc"
-        }
-    ],
+    // Rozšíření tabulek jiných modulů — seznam názvů cílových tabulek;
+    // definice je v extensions/<tabulka>.jsonc
+    "extensions": ["base_persons_contacts"],
 
     // Konfigurační položky
     "config": [
@@ -620,6 +616,13 @@ i seznam se vykreslí bez něj. Jediné místo izolace je
 všechny typy dokladů). Jestli se rozšíření záznamu týká — typ dokladu,
 stav —, rozhoduje poskytovatel sám a vrátí prázdný výsledek (`[]`, u
 záložky `null`).
+
+Příklad výše je ilustrační (taby a štítky na dokladu přinese fáze 3
+evidence tržeb). První skutečná záložka z modulu je
+`Series\SeriesUnitFormTab` doplňku `economy.salesRegistration` — select
+evidenční jednotky ve formuláři číselné řady nad sloupcem z rozšíření
+`extensions/docs_core_number_series.jsonc`; lookup záložka z modulu nést
+nesmí, nabídku proto skládá z databáze sama.
 
 Co přesně každý druh smí vrátit a kde se výsledek přidá:
 [frontend.md](frontend.md) → Formát detail panelu (taby a štítky z modulů)
@@ -1005,7 +1008,29 @@ Sémantika událostí:
 
 Handler dědí z `AbstractDocumentEventHandler` (settery `setDb`/`setConfig`/
 `setDsConfig`, injektuje dispatcher). Víc handlerů na tabulku se volá
-v pořadí registrace modulů. Pozn.: cesta `DocRowsDocument::recomputeHeader`
+v pořadí registrace modulů.
+
+Na co handler narazí (zkušenost doplňku evidence tržeb, #171 fáze 2):
+
+- **Chyba z `beforeSave` není chyba pole.** `ValidationResult` se staví
+  dřív a handler k němu nemá přístup. `\DomainException` gateway převede
+  na 422 `DOMAIN_ERROR` a formulář ji ukáže jako hlášku nad poli; jakákoli
+  jiná výjimka je 500. Chybu u konkrétního pole umí jen `Document::validate()`
+  vlastníka tabulky.
+- **`beforeDelete` se pro hlavní záznam z aplikace nevolá.** Doklad se
+  „maže“ přechodem do stavu Smazáno a generické `DELETE` jde mimo gateway;
+  `deleteDocument` volá jen mazání řádku sub-tabulky. Kdo má smazání
+  zabránit, hlídá přechod stavu v `beforeSave` (`\DomainException`).
+- **`stateChanged` z `DocumentApplier` běží uvnitř jeho transakce** —
+  „po commitu“ platí jen pro uložení z formuláře. Zápis handleru do
+  databáze se s dokladem vrátí, vedlejší efekt mimo databázi ne; handler,
+  který posílá něco ven, to v otevřené transakci
+  (`NestedTransaction::isActive()`) odloží na úlohu cronu.
+- **Importní mód handler nevidí** — marker `_importNumber` je v tu chvíli
+  pryč. Doklad převzatý importem pozná podle trvalého sloupce hlavičky
+  `imported` (`docs/document-system.md` § 8b).
+- **`ServerConfig` handler nedostává** — sekci `server.json` si modul čte
+  sám (#178). Pozn.: cesta `DocRowsDocument::recomputeHeader`
 gateway obchází — z přepočtu řádků se eventy nevyvolávají (stav se tam nemění).
 
 ### Pole `keepOnReset`

@@ -116,6 +116,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | Stránka | Co v ní najdeš |
 |---------|----------------|
 | [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) | Jak zapnout doplněk Evidence tržeb (EET 2.0), založit registraci s evidenčními jednotkami, nahrát pokladní certifikát, zvolit režim a ověřit spojení se správcem daně. |
+| [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md) | Které doklady se evidují jako tržba, kdy a jak se tržba odesílá správci daně, co znamenají stavy tržby a upozornění, jak nastavit evidenční jednotku na číselné řadě a co udělá storno nebo oprava dokladu. |
 
 ### Účtárna
 

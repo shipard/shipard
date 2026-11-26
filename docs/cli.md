@@ -380,9 +380,9 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 
 | Slot | Kadence | Příkazy | Běží ve stavech | Modul |
 |------|---------|---------|-----------------|-------|
-| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep` | `active` | `core.mail` |
+| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep`, `sales-registration-run` (fronta evidence tržeb — jen zdroj dat se zapnutým doplňkem) | `active` | `core.mail`, `economy.salesRegistration` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
-| `five-minutes` | à 5 min | `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `economy.exchangeRates`, `core.alerts` |
+| `five-minutes` | à 5 min | `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `sales-registration-reconcile` (záchranná síť evidence tržeb — jen se zapnutým doplňkem), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `economy.exchangeRates`, `economy.salesRegistration`, `core.alerts` |
 | `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
@@ -1451,6 +1451,50 @@ Exit 0; 1 při chybě služby nebo sítě (běh skončí, další běhy hodinu
 | `--to=YYYY-MM-DD` | konec okna (výchozí a nejvýš dnešek); ruční mód jako `--from` |
 | `--type=<id>` | jen jeden typ lístku (`cz.cnb.daily`, `cz.cnb.other`) |
 | `--dry-run` | vypíše okno, per typ očekáváno / přítomno / chybí, varování a dotazy (pozastavené, nad limit, jen dnešek); žádná síť ani zápis |
+
+#### `sales-registration-run [--limit=N]`
+
+Modul: `economy.salesRegistration` (doplněk)
+
+Worker fronty evidence tržeb (#171 D7) — úloha cronu `minute`. Vrátí do
+fronty tržby, které zůstaly viset v odesílání déle než 10 minut (pád
+procesu), a pošle splatné tržby (`pending`, termín dalšího pokusu ≤ teď)
+od nejstaršího termínu. Po výpadku služby zbylé tržby téže registrace
+v běhu přeskočí. Kam zpráva jde, rozhoduje pojistka serveru
+(`salesRegistration.safety.mode` v `server.json`) a režim registrace.
+
+```bash
+shpd-ds sales-registration-run             # nejvýš 20 tržeb
+shpd-ds sales-registration-run --limit=100
+```
+
+Výpis: `Processed N: … confirmed, … verified, … dropped, … failed, … to
+retry; … skipped after an outage, … requeued from stale sending`.
+Neodeslaná tržba není chyba příkazu (hlásí ji upozornění
+`economy.salesregistration.sale_*`); exit 1 jen při chybě prostředí nebo
+neplatném `--limit`. Viz
+`modules/economy/salesRegistration/docs/sales-registration.md` § 13.
+
+#### `sales-registration-reconcile [--days=N] [--dry-run]`
+
+Modul: `economy.salesRegistration` (doplněk)
+
+Záchranná síť evidence tržeb (#171 D7) — úloha cronu `five-minutes`, před
+`alerts-run`. Doklady ve stavu V pořádku a Storno, jejichž stav se změnil
+v posledních `--days` dnech (výchozí 7), projde stejným rozdílovým výpočtem
+jako handler přechodu dokladu a založí tržby, které chybí. Tržba dostane
+čas přechodu dokladu, ne čas nálezu; odešle ji `sales-registration-run`.
+
+```bash
+shpd-ds sales-registration-reconcile --dry-run   # co by vzniklo, bez zápisu
+shpd-ds sales-registration-reconcile
+```
+
+Vypisuje jen doklady, u kterých se něco děje: `created` / `would create`
+s pořadovým číslem, částkou a časem tržby, `cannot be registered (důvod)`
+u dokladu, který spadá, ale tržbu založit nejde, a `busy` u dokladu, který
+právě zpracovává jiný proces. Exit 1 jen při chybě prostředí nebo
+neplatném `--days`. Viz specifikace doplňku § 14.
 
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 
