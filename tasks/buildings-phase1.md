@@ -221,6 +221,11 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
 - [ ] překryv míst ukáže varování, uložení nezastaví
 - [ ] detail ukazuje místa s proklikem, seznam má filtry druh a typ, žádné
       dolní taby
+- [ ] pole Místa ručně podle #176 D7 (první skutečné použití `multilookup`):
+      hledání, šipky / Enter, Esc zavře jen nabídku, Backspace v prázdném
+      vstupu odebere poslední štítek, vybraná místa se v nabídce
+      nenabízejí, jen ke čtení (V pořádku) bez křížků, zalamování na
+      telefonu, chyba z uložení u pole, dirty stav a Zrušit bez uložení
 - [ ] `disable` / `enable` ověřené naostro (D26)
 - [ ] nápověda, README modulu, `docs/features.md`, `**Stav:**`
 
