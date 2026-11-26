@@ -1,0 +1,33 @@
+{
+    // economy.salesRegistration.formTexts
+    //
+    // Texty prvků formuláře registrace (#150 D87) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku.
+    "texts": {
+        // Nápověda pod výběrem režimu (#171 D9, D10).
+        "registration.modeHint": {
+            "name": "Verification sends messages to the production service in verification mode — nothing is registered. Where messages really go also depends on the server safety switch.",
+            "name:cs": "Ověřovací režim posílá zprávy do produkce s příznakem ověření — nic se neeviduje. Kam zprávy skutečně jdou, řídí i pojistka serveru.",
+            "name:en": "Verification sends messages to the production service in verification mode — nothing is registered. Where messages really go also depends on the server safety switch."
+        },
+        // Nápověda pod výběrem výchozí evidenční jednotky.
+        "registration.defaultUnitHint": {
+            "name": "Used when the document does not say otherwise. Units are managed on the Registration units tab.",
+            "name:cs": "Použije se, když doklad neříká jinak. Jednotky se spravují na záložce Evidenční jednotky.",
+            "name:en": "Used when the document does not say otherwise. Units are managed on the Registration units tab."
+        },
+        // Sekce Certifikát — nápověda, odkud se údaje berou (#171 D11).
+        "registration.certificateHint": {
+            "name": "The certificate is uploaded with the Upload certificate action in the registration detail. The taxpayer identifier and validity are read from it.",
+            "name:cs": "Certifikát se nahrává akcí Nahrát certifikát v detailu registrace. Identifikátor poplatníka a platnost se berou z něj.",
+            "name:en": "The certificate is uploaded with the Upload certificate action in the registration detail. The taxpayer identifier and validity are read from it."
+        },
+        // Sekce Certifikát — prázdný stav.
+        "registration.noCertificate": {
+            "name": "No certificate has been uploaded yet.",
+            "name:cs": "Certifikát zatím není nahraný.",
+            "name:en": "No certificate has been uploaded yet."
+        }
+    }
+}

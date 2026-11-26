@@ -51,3 +51,59 @@ celá hodnota (`SalesRegistrationType::matches()`).
 
 Rozhraní engine nepředpokládá online potvrzení každé tržby — výsledek je
 obecný stav a kód potvrzení, data specifická pro typ jsou v doplňcích zprávy.
+
+## 3. Registrace a evidenční jednotky (D3, D10, D16, U3)
+
+### 3.1 Registrace — `economy_sales_registration_registrations`
+
+| Sloupec | Popis |
+|---|---|
+| `type` | id typu evidence z registru (`cz.eet2`). `varchar`, ne `enumString` — nabídka se skládá ze dvou cfgItemů; hodnotu hlídá `RegistrationDocument` |
+| `name` | název registrace |
+| `taxpayer_id` | obecný identifikátor poplatníka, význam podle typu (EET 2.0: EIČ). **Systémový** — plní ho jen nahrání certifikátu (CN certifikátu) |
+| `mode` | režim `production` / `verification` / `playground` (cfgItem `economy.salesRegistration.modes`), **výchozí `verification`** — nová registrace nic neeviduje |
+| `valid_from`, `valid_to` | platnost registrace |
+| `default_unit` | výchozí evidenční jednotka — musí patřit této registraci |
+| `cert_pem` | certifikát v PEM (veřejná část), systémový |
+| `cert_key` | soukromý klíč v PEM, `encrypted_text` — šifrovaný klíčem zdroje dat (`DsSecretCipher`), systémový a citlivý; heslo k `.p12` se neukládá |
+| `cert_valid_from`, `cert_valid_to`, `cert_serial`, `cert_uploaded_at`, `cert_uploaded_by` | údaje certifikátu a nahrání, systémové |
+| `notice` | poznámka |
+
+Stavy: `core.system.docStatesArchive`, nová registrace je **Koncept**.
+Registrace V pořádku je jen ke čtení (úprava přes V opravě), jednotky se
+s ní zamykají taky.
+
+**Bez `exchangeKey`.** Přirozený klíč je dvojice (typ, poplatník), kterou
+jedním sloupcem vyjádřit nejde, identifikátor je do nahrání certifikátu
+prázdný a registrace s certifikátem se mezi zdroji dat nepřenáší.
+
+**Pravidla `RegistrationDocument`** (uložení přichází i jako částečná data,
+pravidla se počítají nad uloženým řádkem doplněným o příchozí hodnoty):
+
+- typ je z registru; typ, který z registru zmizel (vypnutý modul země),
+  úpravu ostatních polí neblokuje, nově ho zvolit nejde;
+- po nahrání certifikátu typ nejde změnit — certifikát patří typu;
+- identifikátor poplatníka odpovídá masce typu;
+- výchozí jednotka patří této registraci;
+- **mezi živými registracemi** (Koncept, V pořádku, V opravě) je dvojice
+  (typ, poplatník) jen jednou. Archiv dvojici nést smí — proto to hlídá
+  dokument, ne unikátní index. Registrace různých typů (česká EET a později
+  evidence jiné země) žijí vedle sebe (D16).
+
+### 3.2 Evidenční jednotky — `economy_sales_registration_units`
+
+`registration`, `unit_id` (text — tvar říká maska typu, u EET 2.0 číslo
+z DIS+ 1 až 999999999), `name`. Unikátní index (`registration`, `unit_id`).
+Bez stavů; spravují se jen ze sub-tabulky ve formuláři registrace
+(`hideFromNavigation`). `UnitDocument` hlídá masku podle typu nadřízené
+registrace a duplicitu srozumitelnou hláškou. Smazání jednotky, která byla
+výchozí jednotkou, registraci výchozí jednotku odebere.
+
+### 3.3 UI
+
+Vlastní sekce Nastavení **Evidence tržeb** (`settingsSections`) s položkou
+Registrace. Formulář `RegistrationsForm`: typ, název, režim, platnost,
+výchozí jednotka (až u uložené registrace — nabízí její jednotky), poznámka;
+sekce Certifikát ukazuje údaje jen ke čtení (blok `properties`). Soukromý
+klíč formulář ani viewer nenačítají — viewer čte vyjmenované sloupce,
+`getEditableSensitiveColumns()` je prázdné.

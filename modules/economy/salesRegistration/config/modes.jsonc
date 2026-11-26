@@ -1,0 +1,17 @@
+{
+    // =========================================================================
+    // economy.salesRegistration.modes — režim registrace (#171 D10), sloupec
+    // `mode`. Konstanty RegistrationDocument::MODE_*.
+    //
+    //   - production   — ostrý: zprávy se evidují, odpovědí je potvrzení
+    //   - verification — ověřovací: zpráva jde do produkce s příznakem
+    //                    ověření, nic se neeviduje a povinnost se tím nesplní
+    //   - playground   — neprodukční prostředí se sdílenou testovací identitou
+    //
+    // Kam zpráva skutečně jde, rozhoduje ještě pojistka serveru (D9), která
+    // má přednost.
+    // =========================================================================
+    "production":   { "name": "Production", "name:cs": "Ostrý", "name:en": "Production" },
+    "verification": { "name": "Verification", "name:cs": "Ověřovací", "name:en": "Verification" },
+    "playground":   { "name": "Playground", "name:cs": "Playground", "name:en": "Playground" }
+}

@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Economy\SalesRegistration;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleKind;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Economy\SalesRegistration\RegistrationDocument;
+use Shipard\Module\Economy\SalesRegistration\RegistrationsForm;
+use Shipard\Module\Economy\SalesRegistration\RegistrationsViewer;
 use Shipard\Module\Economy\SalesRegistration\SalesRegistrationTypes;
+use Shipard\Module\Economy\SalesRegistration\UnitDocument;
 
 /**
  * Deklarace doplňku economy.salesRegistration nad skutečnými soubory
@@ -73,5 +78,115 @@ class SalesRegistrationModuleTest extends TestCase
             $this->assertTrue(class_exists((string) $class), "typ {$typeId}: třída engine {$class} neexistuje");
         }
         $this->addToAssertionCount(1);
+    }
+
+    public function testDeclaresTwoTablesWithUniqueIds(): void
+    {
+        $module = ModuleDefinition::fromArray(self::module());
+
+        $ids = [];
+        foreach ($module->tables as $table) {
+            $ids[$table] = TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/' . $table . '.jsonc'))->tableId;
+        }
+        $this->assertSame([RegistrationDocument::TABLE => 468, UnitDocument::TABLE => 469], $ids);
+
+        $seen = [];
+        foreach (glob(self::MODULES . '/*/*/tables/*.jsonc') as $file) {
+            $id = (int) (JsoncParser::parseFile($file)['tableId'] ?? 0);
+            $this->assertArrayNotHasKey($id, $seen, "tableId {$id}: {$file} i " . ($seen[$id] ?? ''));
+            $seen[$id] = $file;
+        }
+    }
+
+    public function testRegistrationColumnsKeepTheKeyEncryptedAndCertificateSystemOnly(): void
+    {
+        $raw = JsoncParser::parseFile(self::MODULE . '/tables/' . RegistrationDocument::TABLE . '.jsonc');
+        $columns = array_column($raw['columns'], null, 'id');
+
+        $this->assertSame('encrypted_text', $columns['cert_key']['type']);
+        $this->assertTrue($columns['cert_key']['sensitive']);
+        foreach (['taxpayer_id', 'cert_pem', 'cert_key', 'cert_valid_from', 'cert_valid_to', 'cert_serial', 'cert_uploaded_at', 'cert_uploaded_by'] as $column) {
+            $this->assertTrue($columns[$column]['system'] ?? false, "{$column}: plní jen nahrání certifikátu");
+            $this->assertTrue($columns[$column]['nullable'], $column);
+        }
+        foreach (['password', 'cert_password', 'passphrase'] as $column) {
+            $this->assertArrayNotHasKey($column, $columns, 'heslo k .p12 se neukládá (#171 D11)');
+        }
+
+        $this->assertSame('varchar', $columns['type']['type'], 'nabídka typů se skládá ze dvou cfgItemů — hlídá Document');
+        $this->assertSame(RegistrationDocument::MODES_CFG, $columns['mode']['cfgItem']);
+        $this->assertSame(RegistrationDocument::MODE_VERIFICATION, $columns['mode']['default'], 'nová registrace nic neeviduje');
+        $this->assertSame(UnitDocument::TABLE, $columns['default_unit']['reference']);
+        $this->assertSame(10, $columns['docState']['default']);
+
+        $def = TableDefinition::fromArray($raw);
+        $this->assertSame('core.system.docStatesArchive', $def->docStates?->cfgItem);
+        $this->assertArrayNotHasKey('exchangeKey', $raw, 'registrace s certifikátem se mezi zdroji dat nepřenáší');
+        foreach ($raw['indexes'] as $index) {
+            $this->assertNotSame('unique', $index['type'], 'unikátnost platí jen mezi živými registracemi — hlídá Document');
+        }
+    }
+
+    public function testModesConfigMatchesDocumentConstants(): void
+    {
+        $modes = JsoncParser::parseFile(self::MODULE . '/config/modes.jsonc');
+
+        $this->assertSame(RegistrationDocument::MODES, array_keys($modes));
+        foreach ($modes as $id => $mode) {
+            $this->assertLessThanOrEqual(12, strlen((string) $id), 'délka sloupce mode');
+            foreach (['name', 'name:cs', 'name:en'] as $key) {
+                $this->assertNotSame('', trim((string) ($mode[$key] ?? '')), "{$id}: {$key}");
+            }
+        }
+    }
+
+    public function testUnitsAreAHiddenChildWithUniqueNumberPerRegistration(): void
+    {
+        $raw = JsoncParser::parseFile(self::MODULE . '/tables/' . UnitDocument::TABLE . '.jsonc');
+        $columns = array_column($raw['columns'], null, 'id');
+
+        $this->assertTrue($raw['hideFromNavigation']);
+        $this->assertSame(RegistrationDocument::TABLE, $columns['registration']['reference']);
+        $this->assertSame('varchar', $columns['unit_id']['type'], 'tvar čísla říká maska typu, ne sloupec');
+        $this->assertSame('unique', $raw['indexes'][0]['type']);
+        $this->assertSame([['column' => 'registration'], ['column' => 'unit_id']], $raw['indexes'][0]['columns']);
+    }
+
+    public function testViewerLivesInItsOwnSettingsSection(): void
+    {
+        $module = ModuleDefinition::fromArray(self::module());
+        $raw = self::module();
+
+        $this->assertSame('salesRegistration', $raw['settingsSections'][0]['id']);
+        $this->assertSame('Evidence tržeb', $raw['settingsSections'][0]['name:cs']);
+        $this->assertSame(
+            [['viewer' => 'economy.salesRegistration.registrations', 'section' => 'salesRegistration', 'order' => 10]],
+            $raw['settingsItems'],
+        );
+
+        $viewer = $raw['viewers'][0];
+        $this->assertSame('economy.salesRegistration.registrations', $viewer['id']);
+        $this->assertSame(RegistrationDocument::TABLE, $viewer['table']);
+        $this->assertSame(RegistrationsViewer::class, $viewer['class']);
+        $this->assertArrayNotHasKey('navSection', $viewer, 'jen v Nastavení');
+        $this->assertCount(1, $module->settingsSections);
+
+        $sections = JsoncParser::parseFile(self::MODULES . '/install/base/config/settingsSections.jsonc');
+        $existing = array_column($sections['sections'] ?? $sections, 'id');
+        $this->assertNotContains('salesRegistration', $existing, 'shodné id sekce je chyba kompilace');
+    }
+
+    public function testFormsAndDocumentClassesAreRegistered(): void
+    {
+        $raw = self::module();
+
+        $this->assertSame(
+            [RegistrationDocument::TABLE => RegistrationDocument::class, UnitDocument::TABLE => UnitDocument::class],
+            array_column($raw['documentClasses'], 'class', 'table'),
+        );
+        $forms = array_column($raw['forms'], null, 'table');
+        $this->assertSame(RegistrationsForm::class, $forms[RegistrationDocument::TABLE]['class']);
+        $this->assertSame(RegistrationsForm::UNITS_FORM_ID, $forms[UnitDocument::TABLE]['id']);
+        $this->assertFileExists(self::MODULE . '/forms/' . UnitDocument::TABLE . '.jsonc');
     }
 }

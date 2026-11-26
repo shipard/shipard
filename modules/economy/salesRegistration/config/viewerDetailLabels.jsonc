@@ -1,0 +1,27 @@
+{
+    // economy.salesRegistration.viewerDetailLabels
+    //
+    // Texty RegistrationsViewer (Nastavení → Evidence tržeb). Sdílený tab
+    // „Přehled“ je v core.system.viewerDetailLabels; popisky položek jdou
+    // z definic tabulek doplňku. Holé `name` je anglická varianta a shoduje
+    // se s fallbackem v PHP znak po znaku.
+
+    "tabs": {
+        "units": { "name": "Registration units", "name:cs": "Evidenční jednotky", "name:en": "Registration units" }
+    },
+
+    // Texty seznamu a detailu — čte `TableViewer::detailText()`.
+    "texts": {
+        // Řádek seznamu: platnost certifikátu, nebo že chybí.
+        "rowCertificateTo": { "name": "Certificate until {date}", "name:cs": "Certifikát do {date}", "name:en": "Certificate until {date}" },
+        "rowNoCertificate": { "name": "no certificate", "name:cs": "bez certifikátu", "name:en": "no certificate" },
+        // Skupiny vlastností Přehledu.
+        "groupRegistration": { "name": "Registration", "name:cs": "Registrace", "name:en": "Registration" },
+        "groupCertificate": { "name": "Certificate", "name:cs": "Certifikát", "name:en": "Certificate" },
+        // Přehled bez certifikátu.
+        "certificate": { "name": "Certificate", "name:cs": "Certifikát", "name:en": "Certificate" },
+        "notUploaded": { "name": "not uploaded", "name:cs": "není nahraný", "name:en": "not uploaded" },
+        // Záložka Evidenční jednotky bez jednotek.
+        "noUnits": { "name": "The registration has no units yet.", "name:cs": "Registrace zatím nemá žádnou evidenční jednotku.", "name:en": "The registration has no units yet." }
+    }
+}

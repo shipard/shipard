@@ -1,0 +1,63 @@
+{
+    "tableId": 469,
+    "name": "Registration units",
+    "name:cs": "Evidenční jednotky",
+    "name:en": "Registration units",
+
+    // Evidenční jednotky registrace (#171 D3, U3) — u EET 2.0 číslo
+    // `id_jednotky` přidělené v DIS+. Spravují se jen z formuláře registrace
+    // (sub-tabulka), proto mimo navigaci.
+
+    "displayPattern": "{unit_id} {name}",
+    "hideFromNavigation": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "registration",
+            "name": "Registration",
+            "name:cs": "Registrace",
+            "name:en": "Registration",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_sales_registration_registrations"
+        },
+        {
+            // Označení jednotky u správce daně. Text — tvar říká maska typu
+            // evidence (EET 2.0: 1 až 999999999 bez úvodních nul).
+            "id": "unit_id",
+            "name": "Unit number",
+            "name:cs": "Číslo jednotky",
+            "name:en": "Unit number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_registration_unit_id",
+            "type": "unique",
+            "columns": [
+                {"column": "registration"},
+                {"column": "unit_id"}
+            ]
+        }
+    ]
+}

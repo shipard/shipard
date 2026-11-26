@@ -1,0 +1,251 @@
+{
+    "tableId": 468,
+    "name": "Sales registrations",
+    "name:cs": "Registrace k evidenci tržeb",
+    "name:en": "Sales registrations",
+
+    // Registrace k evidenci tržeb (#171 D3, D10, D16, U3): typ evidence,
+    // poplatník, režim, platnost a pokladní certifikát. Identifikátor
+    // poplatníka a údaje certifikátu jsou systémové — plní je jen akce
+    // „Nahrát certifikát“ z certifikátu (D11). Přirozený klíč `exchangeKey`
+    // tabulka záměrně nemá: dvojici (typ, poplatník) jedním sloupcem vyjádřit
+    // nejde a registrace s certifikátem se mezi zdroji dat nepřenáší.
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Registration",
+            "name:cs": "Registrace",
+            "name:en": "Registration"
+        },
+        {
+            "id": "certificate",
+            "name": "Certificate",
+            "name:cs": "Certifikát",
+            "name:en": "Certificate"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            // Typ evidence (`cz.eet2`) — id z registru SalesRegistrationTypes
+            // (data země × engine doplňku). Varchar, ne enumString: nabídka
+            // se skládá ze dvou cfgItemů; hodnotu hlídá RegistrationDocument.
+            "id": "type",
+            "name": "Registration type",
+            "name:cs": "Typ evidence",
+            "name:en": "Registration type",
+            "type": "varchar",
+            "length": 30,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            // Obecný identifikátor poplatníka (#171 D16) — význam podle typu
+            // (EET 2.0: EIČ = CN certifikátu). Systémový: plní ho nahrání
+            // certifikátu.
+            "id": "taxpayer_id",
+            "name": "Taxpayer identifier",
+            "name:cs": "Identifikátor poplatníka",
+            "name:en": "Taxpayer identifier",
+            "type": "varchar",
+            "length": 30,
+            "nullable": true,
+            "system": true,
+            "group": "identity"
+        },
+        {
+            // Režim registrace (#171 D10). Výchozí je ověřovací — nová
+            // registrace nic neeviduje, dokud ji někdo vědomě nepřepne.
+            "id": "mode",
+            "name": "Mode",
+            "name:cs": "Režim",
+            "name:en": "Mode",
+            "type": "enumString",
+            "length": 12,
+            "cfgItem": "economy.salesRegistration.modes",
+            "default": "verification",
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            // Výchozí evidenční jednotka — musí patřit této registraci.
+            "id": "default_unit",
+            "name": "Default registration unit",
+            "name:cs": "Výchozí evidenční jednotka",
+            "name:en": "Default registration unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_sales_registration_units",
+            "group": "identity"
+        },
+        {
+            "id": "notice",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- certificate (vše systémové — jen akce Nahrát certifikát) ---
+
+        {
+            "id": "cert_pem",
+            "name": "Certificate (PEM)",
+            "name:cs": "Certifikát (PEM)",
+            "name:en": "Certificate (PEM)",
+            "type": "text",
+            "nullable": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            // Soukromý klíč v PEM, šifrovaný klíčem zdroje dat
+            // (DsSecretCipher). Heslo k původnímu .p12 se neukládá.
+            "id": "cert_key",
+            "name": "Private key",
+            "name:cs": "Soukromý klíč",
+            "name:en": "Private key",
+            "type": "encrypted_text",
+            "nullable": true,
+            "sensitive": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            "id": "cert_valid_from",
+            "name": "Certificate valid from",
+            "name:cs": "Certifikát platí od",
+            "name:en": "Certificate valid from",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            "id": "cert_valid_to",
+            "name": "Certificate valid to",
+            "name:cs": "Certifikát platí do",
+            "name:en": "Certificate valid to",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            "id": "cert_serial",
+            "name": "Certificate serial number",
+            "name:cs": "Sériové číslo certifikátu",
+            "name:en": "Certificate serial number",
+            "type": "varchar",
+            "length": 80,
+            "nullable": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            "id": "cert_uploaded_at",
+            "name": "Certificate uploaded",
+            "name:cs": "Certifikát nahrán",
+            "name:en": "Certificate uploaded",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "certificate"
+        },
+        {
+            "id": "cert_uploaded_by",
+            "name": "Certificate uploaded by",
+            "name:cs": "Certifikát nahrál",
+            "name:en": "Certificate uploaded by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "system": true,
+            "group": "certificate"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            // Hledání registrace poplatníka daného typu. Záměrně ne unikátní:
+            // unikátnost platí jen mezi živými registracemi (archiv smí nést
+            // tutéž dvojici) a hlídá ji RegistrationDocument.
+            "id": "idx_type_taxpayer",
+            "type": "index",
+            "columns": [
+                {"column": "type"},
+                {"column": "taxpayer_id"}
+            ]
+        }
+    ]
+}

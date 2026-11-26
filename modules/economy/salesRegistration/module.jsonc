@@ -21,12 +21,82 @@
     // jeho země aktivní (SalesRegistrationTypes). Fáze 2 přidá docs.core.
     "dependencies": ["core.system"],
 
+    "tables": [
+        "economy_sales_registration_registrations",
+        "economy_sales_registration_units"
+    ],
+
+    "documentClasses": [
+        {
+            "table": "economy_sales_registration_registrations",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\RegistrationDocument"
+        },
+        {
+            "table": "economy_sales_registration_units",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\UnitDocument"
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "economy_sales_registration_registrations",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\RegistrationsForm"
+        },
+        {
+            // Evidenční jednotka — dialog sub-tabulky ve formuláři registrace.
+            "table": "economy_sales_registration_units",
+            "id": "economy.salesRegistration.units"
+        }
+    ],
+
+    // Vlastní sekce Nastavení (#170 D13) — ConfigCompiler ji připojí
+    // k sekcím instalačního modulu.
+    "settingsSections": [
+        {
+            "id": "salesRegistration",
+            "name": "Sales registration",
+            "name:cs": "Evidence tržeb",
+            "name:en": "Sales registration",
+            "icon": "cash-register",
+            "order": 18
+        }
+    ],
+
+    "settingsItems": [
+        { "viewer": "economy.salesRegistration.registrations", "section": "salesRegistration", "order": 10 }
+    ],
+
+    "viewers": [
+        {
+            "id": "economy.salesRegistration.registrations",
+            "name": "Registrations",
+            "name:cs": "Registrace",
+            "name:en": "Registrations",
+            "icon": "cash-register",
+            "table": "economy_sales_registration_registrations",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\RegistrationsViewer"
+        }
+    ],
+
     "config": [
         {
             // Typ evidence → třída engine (#171 D17). Klíč = id typu z modulu
             // země; země je první část id (`cz.eet2` → world.cz).
             "id": "economy.salesRegistration.engines",
             "file": "config/engines.jsonc"
+        },
+        {
+            // Režim registrace (sloupec `mode`, #171 D10).
+            "id": "economy.salesRegistration.modes",
+            "file": "config/modes.jsonc"
+        },
+        {
+            "id": "economy.salesRegistration.viewerDetailLabels",
+            "file": "config/viewerDetailLabels.jsonc"
+        },
+        {
+            "id": "economy.salesRegistration.formTexts",
+            "file": "config/formTexts.jsonc"
         }
     ]
 }

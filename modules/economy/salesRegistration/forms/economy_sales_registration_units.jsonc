@@ -1,0 +1,35 @@
+{
+    "title": "Evidenční jednotka",
+    "title:cs": "Evidenční jednotka",
+    "title:en": "Registration unit",
+    "titleNew": "Nová evidenční jednotka",
+    "titleNew:cs": "Nová evidenční jednotka",
+    "titleNew:en": "New registration unit",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Jednotka",
+            "label:cs": "Jednotka",
+            "label:en": "Unit",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {
+                                    "type": "input",
+                                    "column": "unit_id",
+                                    "required": true,
+                                    "hint": "The unit number assigned by the tax authority.",
+                                    "hint:cs": "Číslo jednotky přidělené správcem daně (u EET 2.0 v portálu DIS+).",
+                                    "hint:en": "The unit number assigned by the tax authority."
+                                },
+                                {"type": "input", "column": "name"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
