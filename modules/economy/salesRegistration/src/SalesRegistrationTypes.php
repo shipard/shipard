@@ -85,6 +85,18 @@ final class SalesRegistrationTypes
             $rules[] = $rule;
         }
 
+        // Kde doklad smí nést příznak Kontaktní platba (D8b, U14) — položky
+        // jako pravidla, ale jen nad hlavičkou: do evidence jde vždy celá
+        // částka dokladu. Vadná položka vyřadí celý typ stejně jako pravidlo.
+        $contactPayment = [];
+        foreach (is_array($entry['contactPayment'] ?? null) ? $entry['contactPayment'] : [] as $rawEntry) {
+            $contactEntry = SaleRule::fromArray($rawEntry);
+            if ($contactEntry === null || $contactEntry->isRowRule() || $contactEntry->cashDir !== null) {
+                return null;
+            }
+            $contactPayment[] = $contactEntry;
+        }
+
         $validFrom = $entry['validFrom'] ?? null;
         $label = is_array($entry['taxpayerId'] ?? null) ? ($entry['taxpayerId']['label'] ?? null) : null;
         $timeZone = $entry['timeZone'] ?? null;
@@ -107,6 +119,7 @@ final class SalesRegistrationTypes
             timeZone: is_string($timeZone) && $timeZone !== '' ? $timeZone : null,
             amountPattern: self::pattern($entry['amount'] ?? null),
             cashRegisterIdHint: is_string($registerHint) && $registerHint !== '' ? $registerHint : null,
+            contactPayment: $contactPayment,
         );
     }
 

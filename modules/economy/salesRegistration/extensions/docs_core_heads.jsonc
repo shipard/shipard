@@ -1,0 +1,61 @@
+{
+    // Extension z economy.salesRegistration na hlavičky dokladů (#171 D8b,
+    // U13, U21): Kontaktní platba — faktura, která do evidence tržeb nespadá
+    // pravidlem typu (úhrada Převodem), ale zákazník ji zaplatil na místě
+    // (QR, karta na terminálu). Příznak popisuje, jak se platilo; způsob
+    // úhrady ani zaúčtování nemění.
+    //
+    // contact_payment            — příznak. Ve formuláři (Koncept, V opravě)
+    //   ho edituje záložka Evidence tržeb (ContactPayment\ContactPaymentFormTab),
+    //   na dokladu V pořádku akce Kontaktní platba / Zrušit kontaktní platbu.
+    //   Kde ho doklad smí nést, říkají data typu evidence (`contactPayment`,
+    //   U14) a hlídá ContactPayment\ContactPaymentSaveHandler.
+    // contact_payment_at         — čas platby, jak ho uživatel zadal: čas
+    //   v zóně místa tržby (`timeZone` typu, U23), bez zóny. Prázdný = čas
+    //   přechodu dokladu do V pořádku (U16).
+    // contact_payment_changed_at — kdy se příznak nebo čas naposledy změnil
+    //   (U21); systémový, v zóně serveru jako `doc_state_changed_at`. Čas
+    //   záporné tržby po zrušení akcí a druhé okno záchranné sítě.
+    //
+    // Výměnný formát sloupce nenese (U20).
+
+    "table": "docs_core_heads",
+    "columns": [
+        {
+            "id": "contact_payment",
+            "name": "Contact payment",
+            "name:cs": "Kontaktní platba",
+            "name:en": "Contact payment",
+            "type": "boolean",
+            "default": 0
+        },
+        {
+            "id": "contact_payment_at",
+            "name": "Payment time",
+            "name:cs": "Čas platby",
+            "name:en": "Payment time",
+            "type": "datetime",
+            "nullable": true
+        },
+        {
+            "id": "contact_payment_changed_at",
+            "name": "Contact payment changed at",
+            "name:cs": "Kontaktní platba změněna",
+            "name:en": "Contact payment changed at",
+            "type": "datetime",
+            "nullable": true,
+            "system": true
+        }
+    ],
+
+    // Okno záchranné sítě podle změny příznaku (U21).
+    "indexes": [
+        {
+            "id": "idx_contact_payment_changed",
+            "type": "index",
+            "columns": [
+                {"column": "contact_payment_changed_at"}
+            ]
+        }
+    ]
+}

@@ -18,6 +18,7 @@ final readonly class SalesRegistrationType
     /**
      * @param array<string, string> $environments název prostředí → adresa služby
      * @param list<SaleRule>        $rules        kdy doklad do evidence spadá (D8a, D23); prázdné = nikdy
+     * @param list<SaleRule>        $contactPayment kde doklad smí nést příznak Kontaktní platba (D8b, U14)
      */
     public function __construct(
         public string $id,
@@ -36,6 +37,7 @@ final readonly class SalesRegistrationType
         public ?string $timeZone = null,
         public ?string $amountPattern = null,
         public ?string $cashRegisterIdHint = null,
+        public array $contactPayment = [],
     ) {
     }
 
@@ -64,6 +66,40 @@ final readonly class SalesRegistrationType
         $docTypes = [];
         foreach ($this->rules as $rule) {
             foreach ($rule->docTypes as $docType) {
+                $docTypes[$docType] = true;
+            }
+        }
+        return array_keys($docTypes);
+    }
+
+    /**
+     * Smí doklad s touto hlavičkou nést příznak Kontaktní platba (D8b, U14)?
+     * Jen tam, kde nespadá už pravidlem — pravidlo má přednost.
+     */
+    public function allowsContactPayment(string $docType, int $paymentMethod, int $cashDir = 0): bool
+    {
+        if ($this->ruleFor($docType, $paymentMethod, $cashDir) !== null) {
+            return false;
+        }
+        foreach ($this->contactPayment as $entry) {
+            if ($entry->matchesHead($docType, $paymentMethod, $cashDir)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Typy dokladů, které příznak Kontaktní platba nést smějí — záložka
+     * formuláře a předvýběr záchranné sítě.
+     *
+     * @return list<string>
+     */
+    public function contactPaymentDocTypes(): array
+    {
+        $docTypes = [];
+        foreach ($this->contactPayment as $entry) {
+            foreach ($entry->docTypes as $docType) {
                 $docTypes[$docType] = true;
             }
         }

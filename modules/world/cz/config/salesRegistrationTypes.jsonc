@@ -37,6 +37,12 @@
     //                        řádků s těmito pohyby (`sale.*` = každý pohyb
     //                        začínající `sale.`); bez něj celá částka dokladu.
     //     Nový způsob úhrady (QR) = úprava těchto dat, ne kódu.
+    //   - `contactPayment` — kde doklad smí nést příznak Kontaktní platba
+    //     (#171 D8b, U14): doklad, který pravidlem nespadá, ale zákazník ho
+    //     zaplatil na místě. Položky jako u `rules`, jen `docTypes`
+    //     a `paymentMethods`; do evidence jde vždy celá částka dokladu.
+    //     Pravidlo má přednost — dvojice typ × způsob úhrady nesmí být
+    //     v `rules` i tady.
     // =========================================================================
 
     "cz.eet2": {
@@ -87,6 +93,20 @@
                 "cashDir": 1,
                 "rowOperations": ["sale.*", "payment.receivable", "advance.received"]
             }
+        ],
+
+        "contactPayment": [
+            // Faktura vydaná Převodem (1), kterou zákazník zaplatil na místě
+            // (QR kód, karta na terminálu). Hotově a Kartou spadá pravidlem.
+            { "docTypes": ["invno"], "paymentMethods": [1] },
+
+            // Zálohová faktura vydaná — pravidlo pro ni není, takže příznak
+            // i při úhradě Kartou (2).
+            { "docTypes": ["invpo"], "paymentMethods": [1, 2] }
+
+            // ZÁMĚRNĚ chybí: Platební bránou (5) — platba přes internet není
+            // kontaktní (#171 D15); Zápočtem (4) — peníze se nepředávají;
+            // Dobírkou (3) — platbu přijímá dopravce, ne poplatník.
         ]
     }
 }

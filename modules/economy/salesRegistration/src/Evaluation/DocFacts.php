@@ -17,6 +17,9 @@ final readonly class DocFacts
     /**
      * @param list<array{operation: ?string, cents: int}> $rows běžné řádky dokladu: pohyb a částka
      *        s DPH v domácí měně (haléře); textové řádky tu nejsou
+     * @param bool    $contactPayment          příznak Kontaktní platba (D8b)
+     * @param ?string $contactPaymentAt        čas platby, jak ho uživatel zadal — v zóně místa tržby (U23)
+     * @param ?string $contactPaymentChangedAt kdy se příznak naposledy změnil, v zóně serveru (U21)
      */
     public function __construct(
         public int $id,
@@ -35,6 +38,9 @@ final readonly class DocFacts
         public ?int $seriesUnit,
         public ?string $stateChangedAt,
         public array $rows = [],
+        public bool $contactPayment = false,
+        public ?string $contactPaymentAt = null,
+        public ?string $contactPaymentChangedAt = null,
     ) {
     }
 
@@ -75,6 +81,38 @@ final readonly class DocFacts
             seriesUnit: $unit > 0 ? $unit : null,
             stateChangedAt: self::dateTime($head['doc_state_changed_at'] ?? null),
             rows: $facts,
+            contactPayment: !empty($head['contact_payment']),
+            contactPaymentAt: self::dateTime($head['contact_payment_at'] ?? null),
+            contactPaymentChangedAt: self::dateTime($head['contact_payment_changed_at'] ?? null),
+        );
+    }
+
+    /**
+     * Týž doklad s příznakem Kontaktní platba a časem platby — vyhodnocení
+     * nanečisto, než akce příznak zapíše.
+     */
+    public function withContactPayment(?string $paidAt): self
+    {
+        return new self(
+            id: $this->id,
+            docType: $this->docType,
+            docState: $this->docState,
+            docNumber: $this->docNumber,
+            issueDate: $this->issueDate,
+            paymentMethod: $this->paymentMethod,
+            cashDir: $this->cashDir,
+            totalCents: $this->totalCents,
+            homeCurrency: $this->homeCurrency,
+            imported: $this->imported,
+            sourceKind: $this->sourceKind,
+            country: $this->country,
+            seriesCode: $this->seriesCode,
+            seriesUnit: $this->seriesUnit,
+            stateChangedAt: $this->stateChangedAt,
+            rows: $this->rows,
+            contactPayment: true,
+            contactPaymentAt: self::dateTime($paidAt),
+            contactPaymentChangedAt: $this->contactPaymentChangedAt,
         );
     }
 

@@ -161,6 +161,160 @@ class DocSaleEvaluatorTest extends TestCase
         $this->assertSame(50000, $this->evaluate($doc)->cents, 'všechny nenulové řádky vyhovují → částka dokladu se zaokrouhlením');
     }
 
+    // ── Kontaktní platba (D8b, U14, U15) ────────────────────────────────────
+
+    /** @param array<string, mixed> $head */
+    private function invoice(array $head = []): DocFacts
+    {
+        return $this->doc(
+            $head + ['doc_type' => 'invno', 'payment_method' => 1, 'total_amount_dom' => '2420.00', 'contact_payment' => 1],
+            series: ['code' => 'invno'],
+        );
+    }
+
+    public function testInvoiceByTransferFallsOnlyWithTheContactPaymentFlag(): void
+    {
+        $without = $this->evaluate($this->invoice(['contact_payment' => 0]));
+        $this->assertFalse($without->applicable);
+        $this->assertSame(DocEvaluation::REASON_NO_RULE, $without->reason);
+
+        $with = $this->evaluate($this->invoice(['contact_payment_at' => '2027-02-10 10:15:00']));
+        $this->assertTrue($with->applicable);
+        $this->assertSame(242000, $with->cents, 'vždy celá částka dokladu');
+        $this->assertSame(DocEvaluation::SOURCE_CONTACT_PAYMENT, $with->source);
+        $this->assertSame('invno', $with->cashRegisterId);
+    }
+
+    public function testProformaFallsWithTheFlagByTransferAndByCard(): void
+    {
+        foreach ([1, 2] as $method) {
+            $result = $this->evaluate($this->invoice(['doc_type' => 'invpo', 'payment_method' => $method]));
+            $this->assertTrue($result->applicable, (string) $method);
+            $this->assertSame(DocEvaluation::SOURCE_CONTACT_PAYMENT, $result->source);
+        }
+        // Bez příznaku zálohová faktura nespadá nikdy — pravidlo pro ni není.
+        $this->assertSame(
+            DocEvaluation::REASON_NO_RULE,
+            $this->evaluate($this->invoice(['doc_type' => 'invpo', 'payment_method' => 2, 'contact_payment' => 0]))->reason,
+        );
+    }
+
+    /** U14: brána, zápočet a dobírka příznak nenesou — ani kdyby v datech zůstal. */
+    public function testFlagIsIgnoredWhereTheTypeDataDoNotAllowIt(): void
+    {
+        foreach ([3 => 'dobírkou', 4 => 'zápočtem', 5 => 'platební bránou'] as $method => $label) {
+            foreach (['invno', 'invpo'] as $docType) {
+                $result = $this->evaluate($this->invoice(['doc_type' => $docType, 'payment_method' => $method]));
+                $this->assertFalse($result->applicable, "{$docType} {$label}");
+                $this->assertSame(DocEvaluation::REASON_NO_RULE, $result->reason, "{$docType} {$label}");
+            }
+        }
+        foreach (['cashreg', 'cash', 'invni', 'cmnbkp'] as $docType) {
+            $this->assertNotSame(
+                DocEvaluation::SOURCE_CONTACT_PAYMENT,
+                $this->evaluate($this->invoice(['doc_type' => $docType]))->source,
+                $docType,
+            );
+        }
+    }
+
+    public function testRuleHasPriorityOverTheFlag(): void
+    {
+        // Faktura Kartou spadá pravidlem; příznak na tom nic nemění.
+        $result = $this->evaluate($this->invoice(['payment_method' => 2]));
+
+        $this->assertTrue($result->applicable);
+        $this->assertSame(DocEvaluation::SOURCE_RULE, $result->source);
+    }
+
+    /** U15: rozhoduje čas platby, ne datum vystavení dokladu. */
+    public function testDocumentIssuedBeforeTheRegistrationFallsWhenPaidWithinIt(): void
+    {
+        $doc = $this->invoice(['issue_date' => '2026-12-15', 'contact_payment_at' => '2027-01-05 14:30:00']);
+
+        $result = $this->evaluate($doc, soldAt: '2026-12-15 08:00:00');
+
+        $this->assertTrue($result->applicable, 'přechod dokladu byl před registrací, platba v ní');
+        $this->assertSame(242000, $result->cents);
+    }
+
+    public function testPaymentOutsideTheRegistrationDoesNotFall(): void
+    {
+        // Zaplaceno ještě před začátkem evidence — i když doklad přešel až v ní.
+        $before = $this->evaluate(
+            $this->invoice(['contact_payment_at' => '2026-12-31 23:50:00']),
+            soldAt: '2027-01-02 09:00:00',
+        );
+        $this->assertFalse($before->applicable);
+        $this->assertFalse($before->unregistrable);
+        $this->assertSame(DocEvaluation::REASON_PAYMENT_OUTSIDE_REGISTRATION, $before->reason);
+
+        $after = $this->evaluate(
+            $this->invoice(['contact_payment_at' => '2027-07-01 10:00:00']),
+            [$this->registration(['validTo' => '2027-06-30'])],
+        );
+        $this->assertSame(DocEvaluation::REASON_PAYMENT_OUTSIDE_REGISTRATION, $after->reason);
+    }
+
+    /** U16: příznak bez času bere čas přechodu dokladu. */
+    public function testFlagWithoutTimeUsesTheTransitionTime(): void
+    {
+        $this->assertTrue($this->evaluate($this->invoice(), soldAt: '2027-01-05 10:00:00')->applicable);
+        $this->assertSame(
+            DocEvaluation::REASON_PAYMENT_OUTSIDE_REGISTRATION,
+            $this->evaluate($this->invoice(), soldAt: '2026-12-20 10:00:00')->reason,
+        );
+    }
+
+    /** U23: čas platby je už v zóně místa tržby — datum se z něj bere, jak je. */
+    public function testPaymentTimeIsNotShiftedByTheServerZone(): void
+    {
+        // 1. 1. 2027 00:10 v Praze; ve světovém čase by to byl ještě 31. prosinec.
+        $this->assertTrue($this->evaluate($this->invoice(['contact_payment_at' => '2027-01-01 00:10:00']))->applicable);
+    }
+
+    /** Faktura s odpočtem zálohy: částka dokladu je částka k úhradě. */
+    public function testInvoiceWithAdvanceDeductionFallsWithTheAmountToPay(): void
+    {
+        $result = $this->evaluate($this->invoice(['total_amount_dom' => '1420.00']));
+
+        $this->assertTrue($result->applicable);
+        $this->assertSame(142000, $result->cents);
+    }
+
+    public function testPinnedRegistrationKeepsTheContactPaymentDocument(): void
+    {
+        $evaluator = new DocSaleEvaluator();
+        $registrations = [$this->registration(['validTo' => '2027-03-31'])];
+        $soldAt = new \DateTimeImmutable('2027-06-01 10:00:00', new \DateTimeZone('UTC'));
+
+        // Oprava po skončení registrace: doklad zůstává u registrace své tržby.
+        $kept = $evaluator->evaluate($this->invoice(['contact_payment_at' => '2027-02-10 10:00:00']), $registrations, $soldAt, 1);
+        $this->assertTrue($kept->applicable);
+        $this->assertSame(DocEvaluation::SOURCE_CONTACT_PAYMENT, $kept->source);
+
+        // Příznak zrušený → doklad už nespadá, rozdíl vyrovná záporná tržba.
+        $cancelled = $evaluator->evaluate($this->invoice(['contact_payment' => 0]), $registrations, $soldAt, 1);
+        $this->assertFalse($cancelled->applicable);
+        $this->assertFalse($cancelled->unregistrable);
+    }
+
+    public function testImportedAndUnconfirmedDocumentIgnoresTheFlag(): void
+    {
+        $this->assertSame(DocEvaluation::REASON_IMPORTED, $this->evaluate($this->invoice(['imported' => 1]))->reason);
+        $this->assertSame(DocEvaluation::REASON_STATE, $this->evaluate($this->invoice(['docState' => 10]))->reason);
+        $this->assertSame(DocEvaluation::REASON_CANCELLED, $this->evaluate($this->invoice(['docState' => 30]))->reason);
+    }
+
+    public function testWithContactPaymentEvaluatesTheDocumentAsIfFlagged(): void
+    {
+        $doc = $this->invoice(['contact_payment' => 0])->withContactPayment('2027-02-10T10:15');
+
+        $this->assertTrue($doc->contactPayment);
+        $this->assertSame('2027-02-10 10:15', $doc->contactPaymentAt);
+        $this->assertTrue($this->evaluate($doc)->applicable);
+    }
+
     // ── Co nespadá ──────────────────────────────────────────────────────────
 
     public function testOtherPaymentMethodsDoNotFall(): void

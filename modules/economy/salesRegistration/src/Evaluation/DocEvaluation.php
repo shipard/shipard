@@ -8,7 +8,8 @@ namespace Shipard\Module\Economy\SalesRegistration\Evaluation;
  * Výsledek vyhodnocení dokladu (#171 fáze 2), tři stavy:
  *
  *  - **nespadá** — do evidence nejde nic (částka, která do evidence spadá, je 0);
- *  - **spadá** — částka, registrace, jednotka a označení pokladny;
+ *  - **spadá** — částka, registrace, jednotka, označení pokladny a čím
+ *    (`source`: pravidlem typu, nebo kontaktní platbou — D8b);
  *  - **spadá, ale nejde založit** (U9) — chybí nastavení; tržba nevznikne,
  *    upozornění, po opravě ji dorovná záchranná síť.
  *
@@ -25,6 +26,8 @@ final readonly class DocEvaluation
     public const string REASON_BEFORE_REGISTRATION = 'beforeRegistration';
     public const string REASON_NO_MATCHING_ROWS = 'noMatchingRows';
     public const string REASON_ZERO_AMOUNT = 'zeroAmount';
+    /** Kontaktní platba: v čase platby neplatila žádná registrace (U15). */
+    public const string REASON_PAYMENT_OUTSIDE_REGISTRATION = 'paymentOutsideRegistration';
 
     // Spadá, ale nejde založit
     public const string REASON_MULTIPLE_REGISTRATIONS = 'multipleRegistrations';
@@ -37,6 +40,10 @@ final readonly class DocEvaluation
     public const string REASON_SERIAL_NUMBER = 'serialNumber';
     public const string REASON_AMOUNT = 'amount';
 
+    // Čím doklad spadá
+    public const string SOURCE_RULE = 'rule';
+    public const string SOURCE_CONTACT_PAYMENT = 'contactPayment';
+
     private function __construct(
         public bool $applicable,
         public bool $unregistrable,
@@ -46,6 +53,7 @@ final readonly class DocEvaluation
         public ?int $unit = null,
         public ?string $unitId = null,
         public ?string $cashRegisterId = null,
+        public ?string $source = null,
     ) {
     }
 
@@ -65,7 +73,8 @@ final readonly class DocEvaluation
         int $unit,
         string $unitId,
         string $cashRegisterId,
+        string $source = self::SOURCE_RULE,
     ): self {
-        return new self(true, false, '', $cents, $registration, $unit, $unitId, $cashRegisterId);
+        return new self(true, false, '', $cents, $registration, $unit, $unitId, $cashRegisterId, $source);
     }
 }

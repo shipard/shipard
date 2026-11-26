@@ -32,6 +32,7 @@ class DocFactsLoader
         'id', 'doc_type', 'docState', 'doc_number', 'issue_date', 'payment_method', 'cash_dir',
         'total_amount_dom', 'home_currency', 'imported', 'source_kind', 'vat_registration',
         'number_series', 'doc_state_changed_at',
+        'contact_payment', 'contact_payment_at', 'contact_payment_changed_at',
     ];
 
     /** @var list<RegistrationFacts>|null */

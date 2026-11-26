@@ -127,6 +127,46 @@ class SalesRegistrationTypesDataTest extends TestCase
         $this->assertTrue(SalesRegistrationType::isUsablePattern($this->types()['cz.eet2']['amount']['pattern']));
     }
 
+    /**
+     * Kde doklad smí nést příznak Kontaktní platba (#171 D8b, U14): jen
+     * existující typy dokladů a způsoby úhrady, nikdy dvojice, která spadá
+     * už pravidlem, a nikdy Dobírkou (3), Zápočtem (4) ani Platební bránou (5).
+     */
+    public function testEet2ContactPaymentCoversOnlyDocumentsWithoutARule(): void
+    {
+        $docsCore = self::MODULE . '/../../docs/core/config/';
+        $docTypes = JsoncParser::parseFile($docsCore . 'docTypes.jsonc');
+        $paymentMethods = JsoncParser::parseFile($docsCore . 'paymentMethods.jsonc');
+
+        $type = $this->types()['cz.eet2'];
+        $entries = $type['contactPayment'] ?? null;
+        $this->assertIsArray($entries);
+        $this->assertNotEmpty($entries);
+
+        $allowed = [];
+        foreach ($entries as $i => $entry) {
+            $this->assertSame([], array_diff(array_keys($entry), ['docTypes', 'paymentMethods']), "položka {$i}: neznámý klíč");
+            $this->assertNotEmpty($entry['paymentMethods'] ?? [], "položka {$i}: způsoby úhrady jsou povinné");
+            foreach ($entry['docTypes'] as $docType) {
+                $this->assertArrayHasKey($docType, $docTypes, "položka {$i}: typ dokladu {$docType}");
+                foreach ($entry['paymentMethods'] as $method) {
+                    $this->assertArrayHasKey((string) $method, $paymentMethods, "položka {$i}: způsob úhrady {$method}");
+                    $this->assertNotContains($method, [3, 4, 5], "položka {$i}: dobírka, zápočet a brána kontaktní platbou nejsou");
+                    $allowed[$docType][] = $method;
+
+                    foreach ($type['rules'] as $rule) {
+                        $byRule = in_array($docType, $rule['docTypes'], true)
+                            && (!isset($rule['paymentMethods']) || in_array($method, $rule['paymentMethods'], true));
+                        $this->assertFalse($byRule, "{$docType} × {$method} spadá už pravidlem");
+                    }
+                }
+            }
+        }
+
+        // U14: faktura vydaná Převodem; zálohová faktura vydaná Převodem nebo Kartou.
+        $this->assertSame(['invno' => [1], 'invpo' => [1, 2]], $allowed);
+    }
+
     /** Masky z XSD rozhraní v4 — hodnoty na hraně. */
     public function testEet2MasksFollowTheSchema(): void
     {

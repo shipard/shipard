@@ -26,15 +26,20 @@ use Shipard\Module\Economy\SalesRegistration\SalesRegistrationType;
  *  5. jednotka z číselné řady, jinak výchozí jednotka registrace; označení
  *     pokladny = kód řady; obojí přes masky typu.
  *
- * Kontaktní platba (fáze 3, D8b) přidá další zdroj v kroku 3–4: doklad,
- * který pravidlo typu nemá, ale nese příznak platby na místě, půjde celou
- * částkou — viz {@see self::matchingRegistrations()}.
+ * Kontaktní platba (D8b, U14, U15) je druhý zdroj v kroku 3–4: doklad,
+ * který pravidlo typu nemá, ale nese příznak platby na místě a data typu mu
+ * ho dovolují (`contactPayment`), jde celou částkou dokladu. Platnost
+ * registrace se pak posuzuje k **času platby** a datum vystavení dokladu
+ * nerozhoduje — platba je nová skutečnost v době evidence, i u dokladu
+ * vystaveného dřív. Pravidlo má přednost: doklad, který spadá pravidlem,
+ * příznak ignoruje.
  */
 final class DocSaleEvaluator
 {
     /**
      * @param list<RegistrationFacts> $registrations      registrace ve stavu V pořádku
-     * @param \DateTimeInterface      $soldAt             čas tržby (čas přechodu dokladu)
+     * @param \DateTimeInterface      $soldAt             čas přechodu dokladu (čas tržby podle D20);
+     *        kontaktní platba bere svůj čas platby z dokladu a tenhle jen bez něj (U16)
      * @param int|null                $pinnedRegistration registrace dosavadních tržeb dokladu: doklad,
      *        který už tržbu má, zůstává u své registrace — platnost k času tržby ani D8d se znovu
      *        neposuzují (oprava dokladu po skončení registrace by jinak poslala storno platné tržby)
@@ -64,7 +69,7 @@ final class DocSaleEvaluator
                 // Registrace dosavadních tržeb už není V pořádku — rozdíl nejde spočítat.
                 return DocEvaluation::unregistrable(DocEvaluation::REASON_REGISTRATION_GONE);
             }
-            $matching = $pinned[0]->type->ruleFor($doc->docType, $doc->paymentMethod, $doc->cashDir) !== null ? $pinned : [];
+            $matching = $this->source($doc, $pinned[0]->type) !== null ? $pinned : [];
             $reason = DocEvaluation::REASON_NO_RULE;
         } else {
             [$matching, $reason] = $this->matchingRegistrations($doc, $registrations, $soldAt);
@@ -78,6 +83,7 @@ final class DocSaleEvaluator
         $registration = $matching[0];
         $type = $registration->type;
 
+        $source = (string) $this->source($doc, $type);
         $cents = $this->amount($doc, $type);
         if ($cents === null) {
             return DocEvaluation::notApplicable(DocEvaluation::REASON_NO_MATCHING_ROWS);
@@ -109,7 +115,7 @@ final class DocSaleEvaluator
             return DocEvaluation::unregistrable(DocEvaluation::REASON_CASH_REGISTER_ID, $registration);
         }
 
-        return DocEvaluation::applicable($cents, $registration, $unit, $unitId, $cashRegisterId);
+        return DocEvaluation::applicable($cents, $registration, $unit, $unitId, $cashRegisterId, $source);
     }
 
     /**
@@ -131,9 +137,9 @@ final class DocSaleEvaluator
     /**
      * Registrace, pod které doklad spadá, a důvod, proč žádná.
      *
-     * Místo pro Kontaktní platbu (fáze 3, D8b): příznak na hlavičce nahradí
-     * podmínku „typ má pro hlavičku pravidlo“ a D8d se pro akci na dokladu
-     * V pořádku neuplatní (nová platba v době evidence).
+     * Kontaktní platba (D8b, U15): příznak na hlavičce nahrazuje podmínku
+     * „typ má pro hlavičku pravidlo“; platnost registrace se bere k času
+     * platby a D8d podle data vystavení se neuplatní.
      *
      * @param list<RegistrationFacts> $registrations
      * @return array{0: list<RegistrationFacts>, 1: string}
@@ -147,11 +153,23 @@ final class DocSaleEvaluator
             if ($type->country !== $doc->country) {
                 continue;
             }
+            $source = $this->source($doc, $type);
             $soldOn = \DateTimeImmutable::createFromInterface($soldAt)->setTimezone($type->saleTimeZone())->format('Y-m-d');
+            if ($source === DocEvaluation::SOURCE_CONTACT_PAYMENT) {
+                // U15: rozhoduje čas platby (už v zóně místa tržby, U23);
+                // bez něj čas přechodu dokladu (U16).
+                $paidOn = $doc->contactPaymentAt !== null ? substr($doc->contactPaymentAt, 0, 10) : $soldOn;
+                if (!$registration->isValidOn($paidOn)) {
+                    $reason = DocEvaluation::REASON_PAYMENT_OUTSIDE_REGISTRATION;
+                    continue;
+                }
+                $matching[] = $registration;
+                continue;
+            }
             if (!$registration->isValidOn($soldOn)) {
                 continue;
             }
-            if ($type->ruleFor($doc->docType, $doc->paymentMethod, $doc->cashDir) === null) {
+            if ($source === null) {
                 $reason = DocEvaluation::REASON_NO_RULE;
                 continue;
             }
@@ -166,12 +184,29 @@ final class DocSaleEvaluator
         return [$matching, $reason];
     }
 
+    /**
+     * Čím doklad pod typ spadá: pravidlem (má přednost), kontaktní platbou
+     * (příznak + data typu, U14), nebo ničím (null).
+     */
+    private function source(DocFacts $doc, SalesRegistrationType $type): ?string
+    {
+        if ($type->ruleFor($doc->docType, $doc->paymentMethod, $doc->cashDir) !== null) {
+            return DocEvaluation::SOURCE_RULE;
+        }
+        if ($doc->contactPayment && $type->allowsContactPayment($doc->docType, $doc->paymentMethod, $doc->cashDir)) {
+            return DocEvaluation::SOURCE_CONTACT_PAYMENT;
+        }
+        return null;
+    }
+
     /** Částka v haléřích, která do evidence spadá; null = pravidlu nad řádky nevyhovuje žádný řádek. */
     private function amount(DocFacts $doc, SalesRegistrationType $type): ?int
     {
         $rule = $type->ruleFor($doc->docType, $doc->paymentMethod, $doc->cashDir);
         if ($rule === null) {
-            return null;
+            // Kontaktní platba — vždy celá částka dokladu (D8b); u faktury
+            // s odpočtem zálohy je to částka k úhradě.
+            return $this->source($doc, $type) === DocEvaluation::SOURCE_CONTACT_PAYMENT ? $doc->totalCents : null;
         }
         if (!$rule->isRowRule()) {
             return $doc->totalCents;

@@ -188,6 +188,20 @@
         "resend.failed": { "name": "The service rejected the sale: {error}", "name:cs": "Služba tržbu odmítla: {error}", "name:en": "The service rejected the sale: {error}" },
         "resend.retry": { "name": "The sale could not be sent now; the next attempt is scheduled for {next}. See the Attempts tab for the reason.", "name:cs": "Tržbu teď odeslat nešlo; další pokus je naplánovaný na {next}. Důvod je v záložce Pokusy.", "name:en": "The sale could not be sent now; the next attempt is scheduled for {next}. See the Attempts tab for the reason." },
 
+        // --- Kontaktní platba (#171 D8b, U14, U16, U17, U22) ---
+        "contactPayment.errorTime": { "name": "The payment time is not a valid date and time.", "name:cs": "Čas platby není platné datum a čas.", "name:en": "The payment time is not a valid date and time." },
+        "contactPayment.errorNoRegistration": {
+            "name": "Contact payment cannot be set — there is no confirmed sales registration.",
+            "name:cs": "Kontaktní platbu nejde nastavit — žádná registrace k evidenci tržeb není V pořádku.",
+            "name:en": "Contact payment cannot be set — there is no confirmed sales registration."
+        },
+        "contactPayment.errorNotAllowed": {
+            "name": "Contact payment cannot be set for this document and payment method. It is meant for an invoice paid by bank transfer that the customer paid on the spot; a document paid in cash or by card is registered automatically, and payment gateway, set-off and cash on delivery are not contact payments.",
+            "name:cs": "Kontaktní platbu u tohoto dokladu a způsobu úhrady nastavit nejde. Je určená pro fakturu s úhradou Převodem, kterou zákazník zaplatil na místě; doklad placený hotově nebo kartou se eviduje sám a platební brána, zápočet ani dobírka kontaktní platbou nejsou.",
+            "name:en": "Contact payment cannot be set for this document and payment method. It is meant for an invoice paid by bank transfer that the customer paid on the spot; a document paid in cash or by card is registered automatically, and payment gateway, set-off and cash on delivery are not contact payments."
+        },
+        "contactPayment.errorFuture": { "name": "The payment time must not be in the future.", "name:cs": "Čas platby nesmí být v budoucnu.", "name:en": "The payment time must not be in the future." },
+
         // --- Upozornění na tržby ve frontě a na doklady, které nejde zaevidovat (#171 D13, D25, U9) ---
         "alert.openSales": { "name": "Open sales registration", "name:cs": "Otevřít evidenci tržeb", "name:en": "Open sales registration" },
         "alert.unconfirmedTitle": { "name": "Sales waiting for confirmation: {count} ({name})", "name:cs": "Tržby čekají na potvrzení: {count} ({name})", "name:en": "Sales waiting for confirmation: {count} ({name})" },

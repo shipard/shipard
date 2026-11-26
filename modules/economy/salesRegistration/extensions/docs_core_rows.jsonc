@@ -1,0 +1,19 @@
+{
+    // Extension z economy.salesRegistration na řádky dokladů (#171 D8c, U25):
+    // jen index. Varování akce Kontaktní platba hledá pokladní doklad, který
+    // fakturu už uhradil — řádek úhrady se stejným variabilním symbolem
+    // (ContactPayment\CashPaymentLookup). Počítá se při otevření detailu
+    // každé faktury, která akci nabízí; bez indexu by to byl průchod všech
+    // řádků dokladů.
+
+    "table": "docs_core_rows",
+    "indexes": [
+        {
+            "id": "idx_salesreg_payment_reference",
+            "type": "index",
+            "columns": [
+                {"column": "payment_reference"}
+            ]
+        }
+    ]
+}

@@ -44,7 +44,10 @@
     // Evidenční jednotka na číselné řadě (#171 D4, D21) — pokladní zařízení
     // = řada. Sloupec přidává extension, edituje ho záložka formuláře řady
     // a kód řady proti masce typu hlídá handler při uložení řady.
-    "extensions": ["docs_core_number_series"],
+    //
+    // Kontaktní platba na hlavičce dokladu (#171 D8b, U13, U21) — příznak,
+    // čas platby a čas změny; na řádcích jen index pro varování D8c (U25).
+    "extensions": ["docs_core_number_series", "docs_core_heads", "docs_core_rows"],
 
     "formTabs": [
         {
@@ -60,6 +63,14 @@
             "table": "docs_core_heads",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Sales\\DocsHeadsSalesHandler",
             "events": ["beforeSave", "stateChanged", "beforeDelete"]
+        },
+        {
+            // Kontaktní platba při uložení dokladu (#171 U22): příznak jen
+            // tam, kde ho data typu dovolují, čas platby ne v budoucnu,
+            // změna nastaví čas změny.
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\ContactPayment\\ContactPaymentSaveHandler",
+            "events": ["beforeSave"]
         },
         {
             "table": "docs_core_number_series",
