@@ -173,6 +173,7 @@ canonical dokumentu; pro doklady ručně pořízené přes UI zůstává NULL
 | `source_kind` | enumString(40), nullable, cfgItem `docs.core.sourceKinds` | `aiExtraction` / `isdoc` / `peppolUbl` / `manual` / `api` / `workOrder` / `correctiveDoc` / `import.oldShipard` / `import.flexibee` / `import.pohoda` |
 | `source_message` | int, nullable, ref → `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty (reverse lookup z dokladu → původ). Plní applier ze server-injektovaného `source.message` při apply návrhu. |
 | `source_extracted_at` | datetime, nullable | Časový bod extrakce / importu |
+| `imported` | boolean, default 0, not null | Doklad vznikl v importním módu (`applyOptions.importNumber` — migrace, datové sady). Nastaví `DocDocument::markImported` jen při vzniku dokladu, pozdější úprava ho nemění a hodnota z payloadu se nebere. Trvalá náhrada markeru `_importNumber`, který handlery událostí nevidí; `source_kind` import spolehlivě neříká (#171 U11) |
 | `author` | int, nullable, ref → `core_system_users` | Autor dokladu — „Vystavil“ na tisku (#93). Není `system`: edituje se v tabu Nastavení. Výchozí hodnotu při vzniku určuje `DocAuthorResolver` (`docs/document-system.md` → Autor dokladu). Doklady nemají `created_by`. |
 
 Vazba je obousměrná (D6 z `tasks/mail-message-centric.md`): forward lookup

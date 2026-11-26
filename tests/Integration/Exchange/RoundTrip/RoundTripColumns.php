@@ -38,6 +38,7 @@ final class RoundTripColumns
             'source_ref'           => 'původ dokladu — případy matice ho nenesou (doklad B by se jinak nezaložil, apply by vrátil doklad A)',
             'source_message'       => 'původ dokladu',
             'source_extracted_at'  => 'původ dokladu',
+            'imported'             => 'původ dokladu — doklad B vzniká z exportu v importním módu (importNumber), doklad A ve formuláři (#171 U11)',
         ],
         self::ROWS => [
             'id'       => 'identita záznamu',

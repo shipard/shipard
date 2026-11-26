@@ -904,6 +904,24 @@ abstract class DocDocument extends Document
         return is_array($data['_importNumber'] ?? null);
     }
 
+    /**
+     * Trvalý příznak dokladu převzatého importem (`imported`, #171 U11).
+     * Marker `_importNumber` žije jen do beforeSave — handlery událostí ani
+     * pozdější kontroly ho nevidí, proto se importní mód při vzniku dokladu
+     * zapíše do sloupce. Nastavuje se jen při insertu; update hodnotu
+     * nemění, takže převzatý doklad zůstává převzatý i po opravě mimo
+     * importní mód a doklad pořízený v aplikaci se úpravou v importním módu
+     * převzatým nestane. Hodnotu z payloadu nebere nikdy (sloupec je
+     * systémový) — mimo import zůstává klíč nepřítomný a platí výchozí 0.
+     */
+    private function markImported(array &$data, ?array $originalData): void
+    {
+        unset($data['imported']);
+        if ($originalData === null && $this->importMode) {
+            $data['imported'] = 1;
+        }
+    }
+
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         // Import mode marker — virtual field, must be consumed + removed before
@@ -916,6 +934,7 @@ abstract class DocDocument extends Document
         unset($data[DocRowOperationRules::SYSTEM_OPERATIONS_KEY]);
         // Reset per save — the instance may be reused across documents.
         $this->importMode = is_array($importNumber);
+        $this->markImported($data, $originalData);
 
         // Dobový snapshot partnera — druhé virtuální pole importu; stejně
         // jako `_importNumber` nesmí dojít do SQL. Mimo import mód se

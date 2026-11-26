@@ -178,4 +178,73 @@ class DocDocumentImportNumberTest extends TestCase
         $this->assertSame('2024-0042', $data['doc_number']);
         $this->assertSame(42, $data['sequence_number']);
     }
+
+    // ── Trvalý příznak převzatého dokladu (`imported`, #171 U11) ────────────
+
+    /** Benigní spojení pro beforeSave bez řádků. */
+    private function benignDb(): Connection
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(
+            fn (string $sql): ?Row => str_contains($sql, 'reset_scope')
+                ? new Row(['reset_scope' => 'fiscal_year'])
+                : null,
+        );
+        return $db;
+    }
+
+    /** @return array<string, mixed> */
+    private function headPayload(array $extra = []): array
+    {
+        return $extra + [
+            'docState'        => 40,
+            'number_series'   => 1,
+            'issue_date'      => '2024-06-01',
+            'accounting_date' => '2024-06-01',
+            'rows'            => [],
+        ];
+    }
+
+    public function testNewDocumentInImportModeIsMarkedImported(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($this->benignDb());
+
+        $data = $this->headPayload(['_importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]]);
+        $doc->beforeSavePub($data, null);
+
+        $this->assertSame(1, $data['imported']);
+    }
+
+    public function testNewDocumentOutsideImportModeLeavesTheDefault(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($this->benignDb());
+
+        // Hodnota z payloadu se nebere — klíč do INSERTu nejde, platí výchozí 0.
+        $data = $this->headPayload(['docState' => 10, 'imported' => 1]);
+        $doc->beforeSavePub($data, null);
+
+        $this->assertArrayNotHasKey('imported', $data);
+    }
+
+    public function testUpdateNeverChangesTheFlag(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($this->benignDb());
+        $original = $this->headPayload(['id' => 5, 'docState' => 80, 'doc_number' => '2024-0042']);
+
+        // Úprava převzatého dokladu mimo importní mód příznak nesmaže …
+        $data = $this->headPayload(['id' => 5, 'imported' => 0]);
+        $doc->beforeSavePub($data, $original + ['imported' => 1]);
+        $this->assertArrayNotHasKey('imported', $data);
+
+        // … a úprava vlastního dokladu v importním módu ho nenastaví.
+        $data = $this->headPayload([
+            'id'            => 5,
+            '_importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42],
+        ]);
+        $doc->beforeSavePub($data, $original + ['imported' => 0]);
+        $this->assertArrayNotHasKey('imported', $data);
+    }
 }

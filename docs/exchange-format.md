@@ -1911,6 +1911,7 @@ odkaz.
 | cílový stav | smí být **V opravě** (`targetDocState: 80`) — parkovací cíl migrace a výslovná volba volajícího; mimo import chyba `target_state_80_requires_import`, přes exchange jinak dosažitelný není |
 | sazba k datu | kód DPH bez sazby k datu sazby řádku (`vat_rate_missing`) je chyba vždy, nejen při potvrzení |
 | doplňky dokladu | ruční osoba pro saldokonto se nepřepisuje; varování zaokrouhlení se nehlásí |
+| příznak převzatého dokladu | nový doklad dostane trvalý příznak `imported` na hlavičce (ve formátu pole nemá). Pozdější úprava ho nemění — handlery a kontroly, které na převzatou historii reagovat nemají (evidence tržeb), doklad vynechají i po opravě nebo stornu. `source.kind` k tomu neslouží: pokyn ho nést nemusí |
 
 **Co importní mód nemění:**
 

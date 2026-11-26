@@ -873,6 +873,21 @@ API volání: saveDocument({customer_id: 42, rows: [...]})
 └─ 9. return DocumentResult::ok(data)
 ```
 
+**Co handler `stateChanged` nevidí a s čím musí počítat** (#171 U11):
+
+- **Importní mód.** Marker `_importNumber` odstraní `DocDocument::beforeSave()`
+  dřív, než běží handlery, a přechod `0 → 40` má import stejný jako
+  „Vystavit a uzavřít“. Doklad převzatý importem pozná handler podle
+  trvalého sloupce hlavičky `imported` (nastaví ho `DocDocument` při vzniku
+  dokladu v importním módu, pozdější úprava ho nemění). `source_kind` k tomu
+  neslouží — pokyn ho nést nemusí.
+- **Otevřená transakce.** `DocumentApplier` ukládá přes gateway bez
+  vlastní transakce, takže krok 8b běží **uvnitř** transakce applieru
+  a doklad se ještě může vrátit (např. `totals_check_failed`). Zápis
+  handleru do databáze se vrátí s ním; vedlejší efekt mimo databázi
+  (odeslání zprávy) ne. Handler, který něco posílá ven, to v otevřené
+  transakci (`NestedTransaction::isActive()`) odloží na úlohu cronu.
+
 ### Kdo plní `created_by`
 
 Auditní sloupec `created_by` (→ `core_system_users`, `system: true`) plní

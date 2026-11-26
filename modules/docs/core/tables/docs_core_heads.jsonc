@@ -812,6 +812,25 @@
             "system": true,
             "group": "lineage"
         },
+        // Doklad vznikl v importním módu (`applyOptions.importNumber` —
+        // migrace, datové sady). Trvalý údaj: marker `_importNumber` odstraní
+        // DocDocument::beforeSave() dřív, než běží handlery, a `source_kind`
+        // import spolehlivě neříká (pokyn bez bloku `source` ukládá NULL).
+        // Nastaví se jen při vzniku dokladu, pozdější úprava ho nemění —
+        // převzatý doklad zůstává převzatý i po opravě nebo stornu. Čtou ho
+        // handlery a kontroly, které na převzatou historii reagovat nemají
+        // (evidence tržeb, #171 U11).
+        {
+            "id": "imported",
+            "name": "Imported",
+            "name:cs": "Převzatý importem",
+            "name:en": "Imported",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "system": true,
+            "group": "lineage"
+        },
 
         // Autor dokladu — „Vystavil“ na tisku (#93 D1/D2). Uživatel, který
         // doklad založil; výchozí hodnotu při vzniku dokladu určuje
