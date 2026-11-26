@@ -6,7 +6,7 @@ namespace Shipard\Module\Economy\SalesRegistration\Checks;
 
 use Shipard\Core\Alerts\AlertCheck;
 use Shipard\Core\Alerts\AlertFinding;
-use Shipard\Module\Economy\SalesRegistration\Evaluation\DocEvaluation;
+use Shipard\Module\Economy\SalesRegistration\Evaluation\ReasonTexts;
 use Shipard\Module\Economy\SalesRegistration\Sales\ReconcileScanner;
 use Shipard\Module\Economy\SalesRegistration\Sales\SyncResult;
 use Shipard\Module\Economy\SalesRegistration\Texts;
@@ -42,7 +42,7 @@ class DocUnregistrableCheck extends AlertCheck
             $findings[] = new AlertFinding(
                 findingKey: (string) $docId,
                 title: $t->t('alert.unregistrableTitle', 'Document {number} cannot be registered as a sale', ['number' => $number]),
-                message: $this->reasonText((string) $result->reason, $t) . ' ' . $t->t(
+                message: ReasonTexts::of($this->config)->text((string) $result->reason) . ' ' . $t->t(
                     'alert.unregistrableFix',
                     'Once the settings are fixed, the sale is created automatically with the original time.',
                 ),
@@ -60,22 +60,6 @@ class DocUnregistrableCheck extends AlertCheck
             );
         }
         return $findings;
-    }
-
-    private function reasonText(string $reason, Texts $t): string
-    {
-        return match ($reason) {
-            DocEvaluation::REASON_MULTIPLE_REGISTRATIONS => $t->t('alert.reasonMultipleRegistrations', 'More than one sales registration is valid for the document — only one may be valid at a time for a country.'),
-            DocEvaluation::REASON_REGISTRATION_GONE => $t->t('alert.reasonRegistrationGone', 'The registration under which the document was registered is no longer confirmed.'),
-            DocEvaluation::REASON_NO_UNIT => $t->t('alert.reasonNoUnit', 'Neither the number series of the document nor the registration has a registration unit — set the default unit of the registration or a unit on the number series.'),
-            DocEvaluation::REASON_FOREIGN_UNIT => $t->t('alert.reasonForeignUnit', 'The registration unit set on the number series belongs to a different registration.'),
-            DocEvaluation::REASON_UNIT_ID => $t->t('alert.reasonUnitId', 'The number of the registration unit does not have the form the registration type prescribes.'),
-            DocEvaluation::REASON_CASH_REGISTER_ID => $t->t('alert.reasonCashRegisterId', 'The code of the number series cannot be used as a cash register identifier — change the code of the series.'),
-            DocEvaluation::REASON_SERIAL_NUMBER => $t->t('alert.reasonSerialNumber', 'The document number is too long or contains characters that the serial number of a sale does not allow.'),
-            DocEvaluation::REASON_AMOUNT => $t->t('alert.reasonAmount', 'The amount is outside the range the sales registration service accepts.'),
-            DocEvaluation::REASON_CURRENCY => $t->t('alert.reasonCurrency', 'The home currency of the document differs from the currency of the registration type.'),
-            default => $t->t('alert.reasonOther', 'The sale cannot be created ({reason}).', ['reason' => $reason]),
-        };
     }
 
     /**

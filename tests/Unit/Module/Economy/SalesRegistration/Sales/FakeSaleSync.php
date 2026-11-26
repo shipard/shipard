@@ -16,7 +16,7 @@ use Shipard\Module\Economy\SalesRegistration\SalesRegistrationType;
  * SaleSync nad pamětí místo databáze: doklady, registrace a tržby drží
  * v polích, zámek a duplicitu na unikátním indexu umí nasimulovat.
  */
-final class FakeSaleSync extends SaleSync
+class FakeSaleSync extends SaleSync
 {
     /** @var array<int, DocFacts> */
     public array $docs = [];

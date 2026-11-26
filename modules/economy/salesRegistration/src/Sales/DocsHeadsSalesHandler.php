@@ -120,7 +120,8 @@ class DocsHeadsSalesHandler extends AbstractDocumentEventHandler
 
     /**
      * Čerstvě založenou tržbu hned zkusí odeslat (D7) — stejnou cestou jako
-     * cron. Dvě výjimky, kdy ji nechá cronu (do minuty):
+     * cron a jako akce Kontaktní platba ({@see ImmediateSend}). Dvě výjimky,
+     * kdy ji nechá cronu (do minuty):
      *
      *  - **otevřená transakce**: handler z applieru běží před jeho commitem
      *    a doklad se ještě může vrátit (kontrolní součet) — zpráva by šla
@@ -137,14 +138,7 @@ class DocsHeadsSalesHandler extends AbstractDocumentEventHandler
         if ($queue === null) {
             return;
         }
-        if ($result->registration !== null && $queue->circuitOpen($result->registration)) {
-            ErrorLogger::info('sales registration: sale left to the queue (service outage)', [
-                'sale'         => $result->saleId,
-                'registration' => $result->registration,
-            ]);
-            return;
-        }
-        $queue->attempt($result->saleId);
+        (new ImmediateSend($queue))->attempt($result);
     }
 
     /** Běží handler uvnitř cizí transakce (applier)? Přepsatelné v testech. */

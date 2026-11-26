@@ -53,6 +53,13 @@
         {
             "table": "docs_core_number_series",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Series\\SeriesUnitFormTab"
+        },
+        {
+            // Zaškrtávátko Kontaktní platba a čas platby ve formuláři faktury
+            // vydané a zálohové faktury vydané (#171 U16) — u kterých typů,
+            // říkají data typu evidence.
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\ContactPayment\\ContactPaymentFormTab"
         }
     ],
 
@@ -175,6 +182,22 @@
             "table": "economy_sales_registration_sales",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\ResendSaleAction",
             "order": 100
+        },
+        {
+            // Kontaktní platba na dokladu V pořádku (#171 D8b, U17): dialog
+            // s časem platby, příznak bez přechodu stavu, hned tržba. Jako
+            // Odeslat znovu není jen pro správce.
+            "id": "contactPayment",
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\ContactPaymentAction",
+            "order": 200
+        },
+        {
+            // Zrušení jen s potvrzením — tržbu vyrovná záporná tržba.
+            "id": "cancelContactPayment",
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\CancelContactPaymentAction",
+            "order": 210
         }
     ],
 

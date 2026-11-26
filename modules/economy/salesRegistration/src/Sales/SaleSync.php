@@ -114,6 +114,24 @@ class SaleSync
         }
     }
 
+    /**
+     * Vyhodnocení dokladu tak, jak ho vidí rozdílový výpočet — doklad
+     * s tržbou zůstává u její registrace (D22). Nic nezapisuje ani nezamyká;
+     * čte ho záložka detailu, akce Kontaktní platba (nanečisto, než příznak
+     * zapíše) a varování D8c.
+     */
+    public function evaluation(DocFacts $doc, ?\DateTimeImmutable $now = null): DocEvaluation
+    {
+        $sales = $this->salesOf($doc->id);
+        $last = $sales !== [] ? $sales[array_key_last($sales)] : null;
+        return $this->evaluator->evaluate(
+            $doc,
+            $this->registrations(),
+            $this->transitionAt($doc, $now ?? new \DateTimeImmutable()),
+            $last !== null ? (int) $last['registration'] : null,
+        );
+    }
+
     /** Jeden výpočet rozdílu; null = duplicita na unikátním indexu, přepočítat. */
     private function difference(DocFacts $doc, \DateTimeImmutable $now, bool $dryRun): ?SyncResult
     {
