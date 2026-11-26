@@ -140,6 +140,11 @@
             // Tvar {období} v jazycích dokumentů (D12, Q6) — PeriodLabel.
             "id": "economy.periodicInvoicing.periodTexts",
             "file": "config/periodTexts.jsonc"
+        },
+        {
+            // Texty záložky Fakturace a akcí záznamu (D8) — InvoicingTexts.
+            "id": "economy.periodicInvoicing.viewerLabels",
+            "file": "config/viewerLabels.jsonc"
         }
     ]
 }

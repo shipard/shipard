@@ -679,7 +679,7 @@ class DocsHeadsViewer extends TableViewer
         return is_array($decoded) && $decoded !== [] ? $decoded : null;
     }
 
-    /** Viewer dokladu podle typu pro odkaz open_detail (jako WorkOrdersViewer::DOC_TYPE_VIEWERS). */
+    /** Viewer dokladu podle typu pro odkaz open_detail (jako InvoiceDocViewers periodické fakturace). */
     private const DOC_TYPE_VIEWERS = [
         'invno' => 'docs.invoicesOut.heads',
         'invpo' => 'docs.proformasOut.heads',

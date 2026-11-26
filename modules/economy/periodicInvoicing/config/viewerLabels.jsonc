@@ -1,0 +1,39 @@
+{
+    // economy.periodicInvoicing.viewerLabels — texty záložky Fakturace
+    // (Viewer\InvoicingDetailTab) a akcí záznamu (Action\*), společné všem
+    // zdrojům fakturace (#175 D8). Plochý katalog `{<klíč>: {name}}`; holé
+    // `name` = anglická varianta = fallback v PHP znak po znaku. Čte
+    // Viewer\InvoicingTexts.
+
+    // --- záložka Fakturace ---
+    "tab.invoicing":          { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "group.invoicing":        { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "label.nextDue":          { "name": "Next period due",    "name:cs": "Příští splatné období", "name:en": "Next period due" },
+    "label.periodicity":      { "name": "Periodicity",        "name:cs": "Periodicita",        "name:en": "Periodicity" },
+    "label.invoiceFrom":      { "name": "Invoice from",       "name:cs": "Fakturovat od",      "name:en": "Invoice from" },
+    "label.invoiceTiming":    { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "label.invoiceDocType":   { "name": "Document type",      "name:cs": "Typ dokladu",        "name:en": "Document type" },
+    "heading.periods":        { "name": "Periods",            "name:cs": "Období",             "name:en": "Periods" },
+    "column.period":          { "name": "Period",             "name:cs": "Období",             "name:en": "Period" },
+    "column.state":           { "name": "State",              "name:cs": "Stav",               "name:en": "State" },
+    "column.document":        { "name": "Document",           "name:cs": "Doklad",             "name:en": "Document" },
+    "column.amount":          { "name": "Amount",             "name:cs": "Částka",             "name:en": "Amount" },
+    "column.message":         { "name": "Message",            "name:cs": "Zpráva",             "name:en": "Message" },
+    "text.draft":             { "name": "draft",              "name:cs": "koncept",            "name:en": "draft" },
+    "text.noPeriods":         { "name": "No period has been issued yet.", "name:cs": "Zatím nebylo vystaveno žádné období.", "name:en": "No period has been issued yet." },
+    "text.noNextDue":         { "name": "none — past the end date", "name:cs": "žádné — po datu ukončení", "name:en": "none — past the end date" },
+
+    // --- akce záznamu: popisky, dialogy a výsledky ---
+    "action.issueDue":        { "name": "Issue due periods",  "name:cs": "Vystavit dlužná období", "name:en": "Issue due periods" },
+    "action.regenerate":      { "name": "Regenerate",         "name:cs": "Přegenerovat",       "name:en": "Regenerate" },
+    "action.restore":         { "name": "Restore",            "name:cs": "Obnovit",            "name:en": "Restore" },
+    "dialog.regenerate":      { "name": "Regenerate draft",   "name:cs": "Přegenerovat koncept", "name:en": "Regenerate draft" },
+    "dialog.restore":         { "name": "Restore period",     "name:cs": "Obnovit období",     "name:en": "Restore period" },
+    "field.period":           { "name": "Period",             "name:cs": "Období",             "name:en": "Period" },
+    "notice.regenerate":      { "name": "Manual edits of the draft will be lost.", "name:cs": "Ruční úpravy konceptu se ztratí.", "name:en": "Manual edits of the draft will be lost." },
+    "result.issued":          { "name": "Periods issued: {issued}, failed: {failed}.", "name:cs": "Vystaveno období: {issued}, selhalo: {failed}.", "name:en": "Periods issued: {issued}, failed: {failed}." },
+    "result.regenerated":     { "name": "The draft was regenerated.", "name:cs": "Koncept byl přegenerován.", "name:en": "The draft was regenerated." },
+    "result.restored":        { "name": "The period was restored — a new draft was issued.", "name:cs": "Období bylo obnoveno — vznikl nový koncept.", "name:en": "The period was restored — a new draft was issued." },
+    "result.notIssued":       { "name": "The period was not issued.", "name:cs": "Období se nevystavilo.", "name:en": "The period was not issued." },
+    "error.periodRequired":   { "name": "Choose a period.",   "name:cs": "Vyber období.",       "name:en": "Choose a period." }
+}

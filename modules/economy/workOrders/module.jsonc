@@ -24,6 +24,16 @@
         {"id": "workOrders", "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderInvoicingSource"}
     ],
 
+    // Akce záložky Fakturace (#175 D8) — akce záznamu (#172) se společnými
+    // třídami enginu periodické fakturace, deklarované nad tabulkou zakázek;
+    // zdroj si akce najde podle tabulky. Globální id
+    // economy.workOrders.issueDue / .regenerate / .restore.
+    "recordActions": [
+        {"id": "issueDue",   "table": "economy_work_orders_heads", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\IssueDueAction",   "order": 100},
+        {"id": "regenerate", "table": "economy_work_orders_heads", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RegenerateAction", "order": 110},
+        {"id": "restore",    "table": "economy_work_orders_heads", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RestoreAction",    "order": 120}
+    ],
+
     // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
     // v src/Command/. `work-orders-invoice-run` je alias
     // `periodic-invoicing-run --source=workOrders` na jedno vydání (#175 D6);
