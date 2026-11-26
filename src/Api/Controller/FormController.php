@@ -943,6 +943,12 @@ class FormController
         // Sáhne se jen na sloupec, který form dopočítal jako celek (#74).
         $outData = $this->flattenStructuredColumns($result->data, $def, $config, $tableForm, $isNew);
 
+        // Prvek `multilookup`, který přepočet do formuláře teprve přidal
+        // (#176): klient jeho seznam nemá, takže se doplní z databáze —
+        // jinak by první výběr při uložení smazal vazby, které uživatel
+        // neviděl. Seznam, který klient poslal, se nemění.
+        $outData = $this->withMultiLookupValues($formDefinition, $table, $def, $outData, $tables, $db, onlyMissing: true);
+
         $dataResolved = $this->buildDataResolved(
             $formDefinition, $outData, $lookupRegistry, $db, $config, $tables,
         );
@@ -1528,6 +1534,9 @@ class FormController
      * má `[]`, ledaže seznam už v datech je (výchozí hodnoty formuláře).
      * Chybná deklarace prvku je `\LogicException` z `MultiLookupBinding`.
      *
+     * `$onlyMissing` (přepočet): klíč, který v datech je, se nechá být —
+     * nese neuložený stav z klienta.
+     *
      * @param array<string, mixed> $data
      * @param array<string, TableDefinition> $tables
      * @return array<string, mixed>
@@ -1539,10 +1548,14 @@ class FormController
         array $data,
         array $tables,
         DataSourceConnection $db,
+        bool $onlyMissing = false,
     ): array {
         $parentId = (int) ($data['id'] ?? 0);
         foreach ($this->collectLookupElements($formDef) as $element) {
             if ($element->type !== 'multilookup') {
+                continue;
+            }
+            if ($onlyMissing && array_key_exists((string) $element->column, $data)) {
                 continue;
             }
             $binding = MultiLookupBinding::forElement($element, $table, $def, $tables);

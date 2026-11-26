@@ -320,6 +320,24 @@ final class FormControllerMultiLookupTest extends TestCase
         $this->assertSame([], $payload['dataResolved']['targets'], 'seznam přichází vždy celý, i prázdný');
     }
 
+    /** Prvek, který přepočet do formuláře teprve přidal: klient seznam nemá, doplní se z databáze. */
+    public function testRecalculateLoadsListOfElementThatJustAppeared(): void
+    {
+        $payload = $this->recalculate(['id' => 7, 'name' => 'Parent', 'kind' => 'a']);
+
+        $this->assertNotNull($this->targetsElement($payload));
+        $this->assertSame([3, 1, 2], $payload['data']['targets']);
+        $this->assertSame(['Gamma', 'Alpha', 'Beta'], array_column($payload['dataResolved']['targets'], 'primary'));
+    }
+
+    public function testRecalculateOfNewRecordWithoutListGetsEmptyList(): void
+    {
+        $payload = $this->recalculate(['name' => 'New', 'kind' => 'a']);
+
+        $this->assertSame([], $payload['data']['targets']);
+        $this->assertSame([], $this->queries);
+    }
+
     // ── uložení ─────────────────────────────────────────────────────────────
 
     public function testSaveConvertsListToChildRows(): void
