@@ -132,7 +132,7 @@ Agendy, které většina firem nepoužije — nejsou součástí základní inst
 a zapínají se ve zdroji dat, kde je chtějí (`docs/modules.md` §9, #170).
 
 - [ ] Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace
-- [ ] Evidence tržeb (EET 2.0) — odeslání tržeb z dokladů s kontaktní platbou správci daně; ne pokladní systém (#171). Hotovo: registrace a certifikát, tržby z prodejek, pokladních dokladů a faktur placených hotově nebo kartou, opakování a upozornění. Zbývá Kontaktní platba na faktuře a tržba na dokladu (fáze 3)
+- [x] Evidence tržeb (EET 2.0) — odeslání tržeb z dokladů s kontaktní platbou správci daně; ne pokladní systém (#171): registrace a certifikát, tržby z prodejek, pokladních dokladů a faktur placených hotově nebo kartou, Kontaktní platba na faktuře placené na místě (QR, karta), opakování a upozornění, tržba a její stav na dokladu. Ověřeno proti playgroundu, v produkci zatím ne
 - [ ] Správa počítačové sítě
 
 ---

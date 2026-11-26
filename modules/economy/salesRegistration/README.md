@@ -14,9 +14,13 @@ registrace, certifikát, pojistka serveru, odeslání zprávy, Ověřit spojení
 a upozornění na certifikát. Fáze 2 (`tasks/sales-registration-phase2.md`)
 přidala tržby z dokladů: rozdílové zasílání při přechodu dokladu, frontu
 s opakováním, záchrannou síť, agendu Evidence tržeb a upozornění na tržby.
-Fáze 3 (Kontaktní platba, záložka a štítek na dokladu) teprve přijde.
+Fáze 3 (`tasks/sales-registration-phase3.md`) přidala Kontaktní platbu —
+fakturu Převodem zaplacenou na místě (příznak ve formuláři, akce na dokladu
+V pořádku) — a evidenci tržeb přímo na dokladu (záložka a štítek v detailu,
+štítek „EET“ v seznamu).
 Návod pro uživatele: [registrace a certifikát](../../../help/evidence-trzeb/registrace-a-certifikat.md),
-[tržby z dokladů](../../../help/evidence-trzeb/trzby-z-dokladu.md).
+[tržby z dokladů](../../../help/evidence-trzeb/trzby-z-dokladu.md),
+[kontaktní platba](../../../help/evidence-trzeb/kontaktni-platba.md).
 
 Data typu evidence nedeklaruje tento modul, ale modul země
 (`world.cz.salesRegistrationTypes`, typ `cz.eet2`: platnost, měna, adresy
@@ -43,8 +47,27 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 | `economy_sales_registration_sales` | Tržby: doklad a pořadí tržby dokladu, registrace, jednotka, označení pokladny, pořadové číslo, čas, částka; stav fronty a kód potvrzení. Zakládá jen doplněk (`systemManaged`) |
 | `economy_sales_registration_attempts` | Pokusy o odeslání tržby: UUID, čas, výsledek, kódy, varování, `transactionId`, těla zpráv tam i zpět |
 
-Rozšíření cizí tabulky: `docs_core_number_series.sales_registration_unit`
-— evidenční jednotka řady ([extensions/](extensions/docs_core_number_series.jsonc)).
+Rozšíření cizích tabulek ([extensions/](extensions/)):
+
+- `docs_core_number_series.sales_registration_unit` — evidenční jednotka řady;
+- `docs_core_heads.contact_payment`, `contact_payment_at`,
+  `contact_payment_changed_at` — Kontaktní platba: příznak, čas platby
+  (v zóně místa tržby) a systémový čas změny;
+- `docs_core_rows` — jen index `payment_reference` pro varování, že fakturu
+  už hradí pokladní doklad.
+
+## Body rozšíření dokladů
+
+Všechno, co doplněk přidává k dokladům, jde přes body rozšíření cizí
+tabulky (`docs_core_heads`) — zdroj dat bez doplňku z toho nemá nic:
+
+| Bod | Třída | Co dělá |
+|---|---|---|
+| `formTabs` | `ContactPayment/ContactPaymentFormTab` | záložka Evidence tržeb ve formuláři faktury vydané a zálohové faktury vydané |
+| `recordActions` | `Actions/ContactPaymentAction`, `Actions/CancelContactPaymentAction` | Kontaktní platba a její zrušení na dokladu V pořádku |
+| `detailExtensions` | `Docs/DocSalesDetailExtension` | záložka Evidence tržeb a štítek stavu v detailu dokladu |
+| `rowDecorators` | `Docs/DocSalesRowDecorator` | štítek „EET“ v seznamu dokladů |
+| `documentEventHandlers` | `Sales/DocsHeadsSalesHandler`, `ContactPayment/ContactPaymentSaveHandler` | tržby při přechodu dokladu; kontroly příznaku při uložení |
 
 ## Třídy
 
@@ -92,6 +115,21 @@ Rozšíření cizí tabulky: `docs_core_number_series.sales_registration_unit`
   `SaleOutcome` stav tržby podle výsledku, `SaleState`
 - `SalesViewer` — Prodej → Evidence tržeb
 - `Actions/ResendSaleAction` — akce záznamu „Odeslat znovu“
+- `ContactPayment/ContactPaymentPolicy` — kde se Kontaktní platba nabízí
+  (data typu `contactPayment` registrací V pořádku);
+  `ContactPayment/PaymentTime` — čas platby a jeho zóna;
+  `ContactPayment/ContactPaymentSaveHandler` — kontroly při uložení;
+  `ContactPayment/ContactPaymentFormTab` — záložka formuláře;
+  `ContactPayment/ContactPaymentService` (+ `ContactPaymentOutcome`) —
+  nastavení a zrušení na dokladu V pořádku;
+  `ContactPayment/CashPaymentLookup` — fakturu už hradí pokladní doklad
+- `Actions/ContactPaymentAction`, `Actions/CancelContactPaymentAction`
+  (společný základ `ContactPaymentActionBase`) — akce záznamu nad dokladem
+- `Sales/ImmediateSend` — okamžitý pokus o odeslání s jističem, sdílí ho
+  handler dokladů i akce
+- `Docs/DocSalesDetailExtension`, `Docs/DocSalesRowDecorator`,
+  `Docs/DocSales` — evidence tržeb v detailu a seznamu dokladů
+- `Evaluation/ReasonTexts` — důvody vyhodnocení slovy
 - `Checks/SaleUnconfirmedCheck`, `SaleOverdueCheck`, `SaleFailedCheck`
   (společný základ `SaleCheck`), `DocUnregistrableCheck` — upozornění na
   tržby

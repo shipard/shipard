@@ -256,17 +256,22 @@ místa nejsou. Místa ze starého Shipardu se zatím nepřevádějí.
 ## Evidence tržeb
 
 Doplněk **Evidence tržeb** (EET 2.0, povinná od 1. 1. 2027) eviduje tržby
-z prodejek, pokladních dokladů a faktur placených hotově nebo kartou —
-viz [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md)
+z prodejek, pokladních dokladů a faktur placených hotově nebo kartou
+a z faktur označených kontaktní platbou — viz
+[Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md),
+[Kontaktní platba](evidence-trzeb/kontaktni-platba.md)
 a [Registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md).
 
-**Kontaktní platbu na dokladu neoznačíš.** Fakturu placenou převodem,
-kterou zákazník zaplatil na místě QR kódem nebo kartou, zatím jako tržbu
-zaevidovat nejde — pole ani akce k tomu nejsou. Stejně tak zálohovou
-fakturu.
+**Kód potvrzení není na tisku.** Stav tržby a konec kódu potvrzení vidíš
+v detailu dokladu a celý kód v agendě **Evidence tržeb**; na vytištěný
+doklad se nedostane.
 
-**Na dokladu tržbu nevidíš.** Stav tržby ani kód potvrzení není v detailu
-dokladu, v seznamu dokladů ani na tisku — jen v agendě **Evidence tržeb**.
+**Kontaktní platbu neoznačíš přes API ani importem.** Příznak jde nastavit
+jen v aplikaci — ve formuláři faktury nebo akcí **Kontaktní platba**.
+Doklad založený přes API ji nenese.
+
+**Kontaktní platba je vždy celá částka dokladu.** Částečnou platbu na místě
+(část kartou, zbytek převodem) jako tržbu zaevidovat nejde.
 
 **Tržby ze starého Shipardu se nepřevádějí.** Doklad převzatý importem do
 evidence nevstoupí, ani když ho později stornuješ.

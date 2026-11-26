@@ -132,7 +132,7 @@ class ContactPaymentActionsTest extends TestCase
     /** @param array<string, mixed> $sale */
     private function created(array $sale = []): SyncResult
     {
-        return SyncResult::created(10, 1, $sale + ['registration' => 1, 'serial_number' => 'FV1270001', 'amount' => '2420.00'], SyncResult::TIME_PAYMENT);
+        return SyncResult::created(10, 1, $sale + ['registration' => 1, 'serial_number' => 'FV1270001', 'amount' => '2420.00', 'currency' => 'czk'], SyncResult::TIME_PAYMENT);
     }
 
     private function attempt(string $state, SendResult $result, ?string $next = null): AttemptResult
@@ -237,7 +237,7 @@ class ContactPaymentActionsTest extends TestCase
 
         $this->assertSame([['set', 10, '2027-02-12 08:50:00']], $service->calls);
         $this->assertSame('success', $result->level);
-        $this->assertSame('Tržba FV1270001 na 2420.00 byla zaevidována a potvrzena.', $result->message);
+        $this->assertSame('Tržba FV1270001 na 2 420,00 CZK byla zaevidována a potvrzena.', $result->message);
     }
 
     public function testResultTellsWhatHappenedToTheSale(): void
@@ -303,14 +303,14 @@ class ContactPaymentActionsTest extends TestCase
 
     public function testCancellationSettlesTheSale(): void
     {
-        $settled = SyncResult::created(10, 2, ['registration' => 1, 'serial_number' => 'FV1270001-2', 'amount' => '-2420.00'], SyncResult::TIME_FLAG_CHANGE);
+        $settled = SyncResult::created(10, 2, ['registration' => 1, 'serial_number' => 'FV1270001-2', 'amount' => '-2420.00', 'currency' => 'czk'], SyncResult::TIME_FLAG_CHANGE);
         $service = $this->service(ContactPaymentOutcome::written($settled, $this->attempt(SaleState::CONFIRMED, ScriptedSender::confirmed())));
 
         $result = $this->cancelAction($service)->execute(self::TABLE, $this->invoice(['contact_payment' => 1]), new RecordActionInput([], []), $this->context());
 
         $this->assertSame([['cancel', 10]], $service->calls);
         $this->assertSame('success', $result->level);
-        $this->assertSame('Tržba FV1270001-2 na -2420.00 byla zaevidována a potvrzena.', $result->message);
+        $this->assertSame('Tržba FV1270001-2 na -2 420,00 CZK byla zaevidována a potvrzena.', $result->message);
 
         $this->expectException(RecordActionValidationException::class);
         $this->cancelAction($this->service(ContactPaymentOutcome::refused(ContactPaymentOutcome::REFUSAL_CONFLICT)))

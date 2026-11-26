@@ -99,7 +99,7 @@ je zapíná správce.
 
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
-| **Evidence tržeb** | Evidence tržeb (EET 2.0, povinná od 1. 1. 2027): prodejka, pokladní doklad a faktura placená hotově nebo kartou se po potvrzení samy odešlou správci daně jako tržba, storno a oprava pošlou rozdíl; nepotvrzené tržby se posílají znovu a upozorní na ně Dashboard. Po zapnutí doplňku je v sekci **Prodej → Evidence tržeb**, registrace, evidenční jednotky a pokladní certifikát v **Nastavení aplikace → Evidence tržeb** | [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md), [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) |
+| **Evidence tržeb** | Evidence tržeb (EET 2.0, povinná od 1. 1. 2027): prodejka, pokladní doklad a faktura placená hotově nebo kartou se po potvrzení samy odešlou správci daně jako tržba, storno a oprava pošlou rozdíl; nepotvrzené tržby se posílají znovu a upozorní na ně Dashboard. Fakturu vystavenou převodem, kterou zákazník zaplatil na místě (QR kód, karta), zaeviduješ akcí **Kontaktní platba**; tržbu a její stav vidíš přímo na dokladu (záložka **Evidence tržeb**, štítek **EET** v seznamu). Po zapnutí doplňku je v sekci **Prodej → Evidence tržeb**, registrace, evidenční jednotky a pokladní certifikát v **Nastavení aplikace → Evidence tržeb** | [Evidence tržeb — tržby z dokladů](evidence-trzeb/trzby-z-dokladu.md), [Evidence tržeb — kontaktní platba](evidence-trzeb/kontaktni-platba.md), [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) |
 
 ---
 

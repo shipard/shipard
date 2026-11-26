@@ -2,12 +2,14 @@
 
 Doplněk `economy.salesRegistration` (#171). Tento dokument popisuje, **jak je
 to udělané**; návod pro uživatele je v `help/`, zadání v
-`tasks/sales-registration-phase1.md` a `tasks/sales-registration-phase2.md`.
+`tasks/sales-registration-phase1.md`, `tasks/sales-registration-phase2.md`
+a `tasks/sales-registration-phase3.md`.
 
 Kapitoly 2–9 popisují základ z fáze 1 (typ, registrace, certifikát,
 pojistka, engine), kapitoly 10–16 tržby z dokladů z fáze 2 (data,
 vyhodnocení dokladu, rozdílové zasílání, fronta, záchranná síť, agenda,
-upozornění).
+upozornění), kapitoly 17–18 fázi 3 (Kontaktní platba, evidence tržeb na
+dokladu).
 
 ## 1. Rozsah
 
@@ -19,11 +21,11 @@ registrací různých typů v jednom zdroji dat (#171 D16).
 |---|---|---|
 | 1 | typ evidence, registrace a evidenční jednotky, certifikát, pojistka serveru, engine, Ověřit spojení, upozornění na certifikát | hotovo 2026-11-26 (`tasks/sales-registration-phase1.md`) |
 | 2 | tržby a pokusy, napojení na doklady, fronta s opakováním, záchranná síť, agenda Evidence tržeb, upozornění na tržby | hotovo 2026-11-26 (`tasks/sales-registration-phase2.md`) |
-| 3 | Kontaktní platba, záložka a štítky na dokladu | — |
+| 3 | Kontaktní platba (příznak na faktuře, záložka formuláře, akce na dokladu V pořádku), záložka a štítky evidence na dokladu | hotovo 2026-11-26 (`tasks/sales-registration-phase3.md`) |
 
-Mimo rozsah (#171 D14): `urceno_cerp_zuct` / `cerp_zuct`, pověřující
-poplatník, automatická obnova certifikátu, potvrzovací kód na tisku, další
-země.
+Mimo rozsah (#171 D14, U20): `urceno_cerp_zuct` / `cerp_zuct`, pověřující
+poplatník, automatická obnova certifikátu, potvrzovací kód na tisku,
+kontaktní platba přes API a výměnný formát, další země.
 
 ## 2. Typ evidence (D2, D17)
 
@@ -372,6 +374,22 @@ Fáze 2 k tomu přidala:
   a odeslání nechá cronu (§ 13.4). Obecný bod „po commitu vnější transakce“
   jádro nemá.
 
+Fáze 3 k tomu přidala:
+
+- **Záložka formuláře z modulu nemá přepočet ani převod hodnot** — čas
+  platby se ukládá tak, jak ho pole dá (čas bez zóny), a zónu mu dává až
+  doplněk (§ 17.2). Chybu u pole záložka vrátit neumí; kontroly při uložení
+  končí hláškou nad formulářem (§ 17.3).
+- **Formulář dokladu nemá pole editovatelná ve stavu V pořádku** — seznam
+  takových sloupců patří formuláři tabulky a modul do něj nepřidává.
+  Kontaktní platbu na dokladu V pořádku proto nastavuje akce záznamu, ne
+  záložka (§ 17.4).
+- **Dekorátor řádků dostává jen sloupce, které viewer vybral** — sloupce
+  z extension mezi nimi nejsou; štítek si stav tržeb čte sám jedním
+  dotazem (§ 18.3).
+- **Akce záznamu se v detailu bez přihlášeného uživatele nevypisují** —
+  ověření proti skutečné databázi jde jen skriptem v procesu (§ 17.6).
+
 ## 9. Co není ověřené
 
 - **Produkce.** Knihovna i doplněk jsou ověřené jen proti playgroundu —
@@ -409,6 +427,18 @@ Z fáze 2:
   vznikl až teď, výchozí 0). Záchranná síť je vidí jen v okně 7 dní od
   importu a D8d je vyřadí, pokud jsou vystavené před začátkem registrace —
   ostrá registrace dřív než 1. 1. 2027 začít nesmí.
+
+Z fáze 3:
+
+- **Zóna prohlížeče.** Čas kontaktní platby se chápe jako čas v zóně místa
+  tržby (§ 17.2). Uživatel s prohlížečem v jiné zóně než je místo tržby
+  dostane v dialogu výchozí „teď“ ve své zóně — čas tržby by byl posunutý.
+- **Dialog a záložka v prohlížeči.** Akce i záložka jsou ověřené proti
+  skutečné databázi a playgroundu (skript v procesu, HTTP), ne proklikem.
+- **Index na řádcích dokladů.** Varování D8c hledá přes index
+  `idx_salesreg_payment_reference`, který přidává extension doplňku; na
+  zdroji dat se statisíci řádků ho `ds-upgrade` teprve vytvoří a změřený
+  tam není.
 
 ## 10. Data tržeb (D4, D5, D21)
 
@@ -538,8 +568,15 @@ Důvody „nejde založit“ (U9): `multipleRegistrations`, `registrationGone`,
 `currency`, `noUnit`, `foreignUnit`, `unitId`, `cashRegisterId`,
 `serialNumber`, `amount`.
 
-Kontaktní platba (fáze 3, D8b) přidá další zdroj v kroku 3–4; místo je
-označené v `DocSaleEvaluator::matchingRegistrations()`.
+**Kontaktní platba** (D8b, U14, U15) je druhý zdroj v kroku 3–4: doklad,
+který pravidlo typu nemá, ale nese příznak a data typu mu ho dovolují
+(§ 17.1), spadá celou částkou dokladu. Platnost registrace se pak posuzuje
+k **času platby** a D8d podle data vystavení se neuplatní — viz § 17.2.
+`DocEvaluation::$source` říká, čím doklad spadá (`rule` / `contactPayment`).
+
+Doklad, kterého se evidence netýká (typ a úhrada bez pravidla i bez
+příznaku), má důvod `noRule` bez ohledu na platnost registrace — platnost
+se posuzuje až u dokladu, který by spadnout mohl.
 
 ## 12. Tržby z dokladů — rozdílové zasílání (D6, D20, U7, U12)
 
@@ -547,8 +584,8 @@ označené v `DocSaleEvaluator::matchingRegistrations()`.
 
 `Sales\SaleSync::sync(docId)`: částka podle vyhodnocení − součet **všech**
 tržeb dokladu (bez ohledu na stav); nenulový rozdíl = nová tržba `pending`
-s `sold_at` = `doc_state_changed_at` dokladu (D20) a pořadím `n` = poslední
-+ 1. Storno dá zápornou tržbu `-2`, oprava rozdíl, oprava beze změny částky
+s `sold_at` = `doc_state_changed_at` dokladu (D20; kontaktní platba má čas
+vlastní, § 17.5) a pořadím `n` = poslední + 1. Storno dá zápornou tržbu `-2`, oprava rozdíl, oprava beze změny částky
 nic; součet tržeb dokladu = částka, která do evidence spadá. Koncept
 a V opravě se nevyhodnocují.
 
@@ -660,10 +697,19 @@ stavu 40 a 30 se změnou stavu v okně projde týmž `SaleSync::sync()`. Tržba
 dostane čas přechodu dokladu, ne čas nálezu, a pošle ji nejbližší běh
 fronty.
 
-Předvýběr v SQL (index `idx_doc_state_changed`): bez importovaných, typ
-dokladu z pravidel registrací V pořádku nebo doklad, který už tržbu má,
-a **bez dokladů s tržbou založenou po posledním přechodu** — u těch je
-rozdíl hotový. `--dry-run` vypíše, co by vzniklo.
+Okno má **dvě hrany** (U21): změna stavu dokladu, nebo změna příznaku
+Kontaktní platba (`contact_payment_changed_at`). Akce Kontaktní platba stav
+dokladu nemění — faktura s přechodem starším než okno by jinak bez tržby
+zůstala, kdyby okamžité založení spadlo. V SQL je to sjednocení dvou
+rozsahů, každý nad svým indexem (`idx_doc_state_changed`,
+`idx_contact_payment_changed`).
+
+Předvýběr: bez importovaných; typ dokladu z pravidel registrací V pořádku,
+doklad s příznakem Kontaktní platba, nebo doklad, který už tržbu má;
+a **bez dokladů s tržbou založenou po poslední změně** (stavu i příznaku) —
+u těch je rozdíl hotový. `--dry-run` vypíše, co by vzniklo, a u tržby
+s časem z kontaktní platby to řekne (`contact payment` /
+`contact payment changed`).
 
 ## 15. Agenda a akce (D25, U12)
 
@@ -694,3 +740,181 @@ Stáří se měří od času tržby. První tři dávají **jeden nález na regi
 s počtem a nejstarší tržbou (`Checks\SaleCheck`) — výpadek služby nedá
 stovky upozornění. `doc_unregistrable` je průchod záchranné sítě nanečisto,
 nález na doklad, nejvýš 30. `dropped` a `verified` upozornění nedávají.
+
+## 17. Kontaktní platba (D8b, D8c, D8d, U13–U17, U21–U25)
+
+Faktura vystavená s úhradou Převodem do evidence pravidlem nespadá. Zaplatí-li
+ji zákazník na místě (QR kód, karta na terminálu), rozhoduje **skutečnost**:
+příznak na hlavičce říká, jak se platilo, a evidence z něj odvodí tržbu celou
+částkou dokladu. Způsob úhrady ani zaúčtování se nemění.
+
+### 17.1 Data (U13, U14, U21)
+
+Extension `docs_core_heads` (jen zdroj dat s doplňkem):
+
+| Sloupec | Význam |
+|---|---|
+| `contact_payment` | příznak (boolean, výchozí 0) |
+| `contact_payment_at` | čas platby, jak ho uživatel zadal — čas v zóně místa tržby, bez zóny (§ 17.2); prázdný = čas přechodu do V pořádku (U16) |
+| `contact_payment_changed_at` | kdy se příznak nebo čas naposledy změnil; systémový, v zóně serveru jako `doc_state_changed_at` (U21) |
+
+Výměnný formát sloupce nenese (U20). Matice round-tripu je porovnává jen na
+zdroji dat s doplňkem a shoda drží, protože doplněk do dokladu bez příznaku
+nic nezapisuje.
+
+**Kde doklad smí příznak nést** říkají data typu evidence, klíč
+`contactPayment` (položky `{docTypes, paymentMethods}` jako u `rules`, jen nad
+hlavičkou): `cz.eet2` — faktura vydaná Převodem (1); zálohová faktura vydaná
+Převodem (1) nebo Kartou (2). Chybí Platební bránou (5, D15), Zápočtem (4)
+a Dobírkou (3). Dvojice, která spadá už pravidlem, příznak nést nesmí —
+pravidlo má přednost (`SalesRegistrationType::allowsContactPayment()`).
+Hlídá `SalesRegistrationTypesDataTest`. U pokladního dokladu se příznak
+nenabízí (příjem spadá pravidlem nad řádky).
+
+Jediné čtení pro kód je `ContactPayment\ContactPaymentPolicy` (nad
+registracemi V pořádku): bez registrace se příznak nenabízí vůbec. Čte ji
+handler uložení, záložka formuláře, akce i detail dokladu.
+
+### 17.2 Čas platby a jeho zóna (U23)
+
+Pole formuláře i dialog akce jsou `datetime-local` — dávají čas **bez zóny**,
+hodiny na zdi v místě tržby. `contact_payment_at` proto drží čas v zóně místa
+tržby (`timeZone` typu, `Europe/Prague`), tak jak byl zadán; ostatní časy
+evidence jsou v zóně serveru. Převod dělá jen `ContactPayment\PaymentTime`:
+do `sold_at` jde okamžik platby v zóně serveru, do zprávy ho fronta převede
+zpět do zóny místa tržby. Na serveru ve světovém čase by jinak platba zadaná
+ve 14:30 šla do zprávy jako 15:30 — v budoucnu.
+
+Čas v budoucnu se odmítá; pár minut napřed (`FUTURE_TOLERANCE`, 5 min —
+hodiny prohlížeče) projde a zapíše se „teď“.
+
+### 17.3 Kontroly při uložení (U22)
+
+`ContactPayment\ContactPaymentSaveHandler` (`beforeSave` na `docs_core_heads`,
+`\DomainException` → 422 s hláškou nad formulářem):
+
+- příznak jen u typů a úhrad podle § 17.1 — i když se u dokladu s příznakem
+  změní způsob úhrady nebo typ;
+- čas platby musí být čitelný a ne v budoucnu;
+- vypnutý příznak čas platby nedrží;
+- změna příznaku nebo času nastaví `contact_payment_changed_at`; při uložení,
+  které zároveň mění stav dokladu, je to čas tohoto přechodu
+  (`DocDocument::beforeSave()` běží před handlery) — tržba pak vzniká
+  přechodem, ne změnou příznaku.
+
+Příznak bez času je v pořádku. Doklad bez příznaku handler nechává být:
+nezapíše nic, registrace nečte.
+
+### 17.4 Formulář a akce (U16, U17)
+
+- **Záložka Evidence tržeb** (`ContactPayment\ContactPaymentFormTab`,
+  `formTabs`): zaškrtávátko, čas platby a nápověda. Vzniká u typů dokladů
+  z `contactPayment` registrací V pořádku (faktura vydaná, zálohová faktura
+  vydaná); způsob úhrady neposuzuje — uživatel ho ve formuláři teprve volí
+  a hlídá ho uložení. V Konceptu a V opravě se pole editují, tržba vzniká
+  přechodem do V pořádku.
+- **Akce Kontaktní platba** (`Actions\ContactPaymentAction`, `recordActions`,
+  bez `admin`) na dokladu V pořádku bez příznaku, kde ho data typu dovolují:
+  dialog s časem platby (výchozí teď) a s varováním D8c. Provedení je
+  `ContactPayment\ContactPaymentService::set()`:
+  1. vyhodnocení nanečisto (`SaleSync::evaluation()` nad dokladem
+     s příznakem) — doklad, který by nespadl (platba mimo platnost
+     registrace, nulová částka), příznak nedostane a chyba jde k poli času;
+     „nejde založit“ se naopak zapíše, tržbu po opravě nastavení dorovná síť;
+  2. **podmíněný zápis** tří sloupců (`WHERE docState = 40 AND
+     contact_payment = 0`) přímo — bez přechodu stavu, bez hooků jádra, bez
+     ohledu na zámek dokladu nebo podaného období DPH (obsah ani zaúčtování
+     se nemění). Nula zapsaných řádků = doklad se mezitím změnil, tedy ani
+     dvojí kliknutí druhou tržbu nezaloží;
+  3. `SaleSync::sync()` a okamžitý pokus (`Sales\ImmediateSend` — týž, který
+     volá handler dokladů, s jističem U6).
+  Výsledek akce říká, co se stalo: potvrzeno / ověřeno / čeká ve frontě /
+  zastavila pojistka / služba odmítla / nejde založit a proč.
+- **Akce Zrušit kontaktní platbu** (`Actions\CancelContactPaymentAction`):
+  na dokladu V pořádku s příznakem, jen s potvrzením. Zápis
+  (`contact_payment = 0`, čas `NULL`, čas změny) a stejný výpočet — rozdíl
+  vyrovná záporná tržba. V Konceptu a V opravě se příznak ruší zaškrtávátkem.
+
+Spadne-li cokoli po zápisu příznaku, akce vrátí „tržba vznikne sama“
+a dorovná ji záchranná síť (§ 14).
+
+**Varování D8c** (`ContactPayment\CashPaymentLookup`): hradí-li fakturu už
+doklad V pořádku, který do evidence spadá, kontaktní platba by tržbu
+zaevidovala podruhé. Vazbu řádek úhrady nenese odkazem; páruje se klíčem
+saldokonta čistě nad daty dokladů — řádek `payment.receivable` nebo
+`advance.received` se stejným `payment_reference` a specifickým symbolem,
+`partner` řádku = `partner_balance` faktury (jinak `partner`), shodná měna.
+„Spadá“ = doklad už tržbu má, nebo ho tak vyhodnotí rozdílový výpočet.
+Hledání jde přes index `idx_salesreg_payment_reference` na `docs_core_rows`,
+který přidává extension doplňku (U25) — počítá se při otevření detailu každé
+faktury, která akci nabízí.
+
+### 17.5 Čas tržby (U13, U21, U24)
+
+O čase rozhoduje **jediné místo**, `SaleSync::saleTime()`, a jen z dat dokladu
+a toho, zda už tržbu má — handler, akce i záchranná síť tak dojdou ke
+stejnému času:
+
+1. tržba kontaktní platby, která je **první tržbou** dokladu, nebo vzniká
+   **změnou příznaku po posledním přechodu** (`contact_payment_changed_at >
+   doc_state_changed_at` — akce na dokladu V pořádku, i opětovné nastavení
+   po zrušení, U24) → čas platby; bez něj čas přechodu (U16);
+2. jiná tržba po změně příznaku (zrušení akcí) → `contact_payment_changed_at`
+   — přechod stavu tam není;
+3. jinak čas přechodu dokladu (D20) — storno a oprava dokladu s příznakem
+   nesou dál čas přechodu (U13).
+
+`SyncResult::$timeBasis` říká, z čeho čas je (`transition` /
+`contactPayment` / `contactPaymentChange`).
+
+### 17.6 Ověření
+
+Testy: `DocSaleEvaluatorTest` (příznak, přednost pravidla, U15, faktura
+s odpočtem zálohy), `SaleSyncTest` (všechny větve času, zóna),
+`ContactPaymentSaveHandlerTest`, `ContactPaymentServiceTest`,
+`ContactPaymentActionsTest`, `ContactPaymentFormTabTest`,
+`CashPaymentLookupTest`; integrační `ContactPaymentTest` nad skutečnou
+databází (akce a zrušení, příznak v Konceptu, odmítnuté úhrady, doklad před
+registrací, záchranná síť, D8c) — ven nic neposílá. Akce chtějí přihlášení,
+živě proti playgroundu se ověřují skriptem v procesu s `RecordActionContext`.
+
+## 18. Evidence tržeb na dokladu (D13, U18, U19)
+
+Vše přes body rozšíření cizí tabulky — viewer ani formulář dokladů se kvůli
+doplňku nemění a na zdroji dat bez doplňku z toho není nic
+(`DocumentsWithoutAddonTest` nad skutečným stromem modulů).
+
+### 18.1 Záložka detailu
+
+`Docs\DocSalesDetailExtension` (`detailExtensions`): záložka **Evidence
+tržeb** u dokladů, které do evidence spadají, mají tržbu, nebo se jich týká
+kontaktní platba (nabízejí akci, nesou příznak).
+
+- **Vyhodnocení** — totéž, které dělá rozdílový výpočet
+  (`SaleSync::evaluation()`, doklad s tržbou zůstává u její registrace):
+  spadá a jakou částkou, čím (typem a úhradou / kontaktní platbou), jednotka
+  a pokladní zařízení; nespadá a proč; nejde založit a proč. Důvody slovy
+  z `Evaluation\ReasonTexts` (sdílí je upozornění a výsledek akce).
+- **Kontaktní platba** — příznak a čas platby; u dokladu, který akci
+  nabízí, hláška, jak ho označit.
+- **Tržby dokladu** — pořadové číslo (odkaz `open_detail` do agendy
+  `economy.salesRegistration.sales`), čas, částka, stav (potvrzení
+  z playgroundu označené „test“), konec kódu potvrzení, počet pokusů;
+  odmítnutá tržba zvýrazněná, u víc tržeb součtový řádek.
+
+Řádky dokladu se čtou jen u typů s pravidlem nad řádky (`DocFactsLoader`).
+
+### 18.2 Štítek v hlavičce detailu
+
+Stav evidence dokladu = **nejhorší stav jeho tržeb** (`SaleState::worst()`:
+`failed` > `pending` / `sending` > `dropped` > `confirmed` / `verified`),
+popisek „EET: {stav}“ (playground „EET test: {stav}“), styl ze sady stavů
+tržby. Doklad bez tržby štítek nemá.
+
+### 18.3 Štítek v seznamu dokladů
+
+`Docs\DocSalesRowDecorator` (`rowDecorators`): span „EET“ (playground „EET
+test“) jen u dokladů s tržbou, třída podle nejhoršího stavu (`danger` /
+`warning` / `muted` / `success`). Stavy tržeb celé stránky řádků čte jedním
+dotazem (`Docs\DocSales::statesOf()`); vyhodnocení ani řádky dokladů nečte.
+

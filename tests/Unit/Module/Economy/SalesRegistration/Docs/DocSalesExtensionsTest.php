@@ -159,7 +159,7 @@ class DocSalesExtensionsTest extends TestCase
         $this->assertSame(
             [
                 'Vyhodnocení / Evidence tržeb'     => 'Spadá — 1 234,50 CZK',
-                'Vyhodnocení / Čím spadá'          => 'typem dokladu a způsobem úhrady',
+                'Vyhodnocení / Čím spadá'          => 'typem dokladu a způsobem platby',
                 'Vyhodnocení / Evidenční jednotka' => '181',
                 'Vyhodnocení / Pokladní zařízení'  => 'cashreg-P1',
             ],
@@ -231,7 +231,7 @@ class DocSalesExtensionsTest extends TestCase
         $this->assertSame(
             [
                 'Vyhodnocení / Evidence tržeb'       => 'Nespadá',
-                'Vyhodnocení / Důvod'                => 'Typ dokladu a způsob úhrady do evidence tržeb nespadají.',
+                'Vyhodnocení / Důvod'                => 'Typ dokladu a způsob platby do evidence tržeb nespadají.',
                 'Kontaktní platba / Kontaktní platba' => 'Ne',
             ],
             $this->properties($content),

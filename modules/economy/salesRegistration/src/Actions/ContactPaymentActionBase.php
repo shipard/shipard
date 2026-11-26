@@ -12,6 +12,7 @@ use Shipard\Module\Economy\SalesRegistration\ContactPayment\ContactPaymentOutcom
 use Shipard\Module\Economy\SalesRegistration\ContactPayment\ContactPaymentPolicy;
 use Shipard\Module\Economy\SalesRegistration\ContactPayment\ContactPaymentService;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFactsLoader;
+use Shipard\Module\Economy\SalesRegistration\Evaluation\Money;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\ReasonTexts;
 use Shipard\Module\Economy\SalesRegistration\Queue\SaleState;
 use Shipard\Module\Economy\SalesRegistration\Safety\SalesRegistrationServerConfig;
@@ -62,7 +63,10 @@ abstract class ContactPaymentActionBase implements RecordAction
             ));
         }
 
-        $params = ['number' => (string) ($sync->sale['serial_number'] ?? ''), 'amount' => (string) ($sync->sale['amount'] ?? '')];
+        $params = [
+            'number' => (string) ($sync->sale['serial_number'] ?? ''),
+            'amount' => Money::display(Money::cents($sync->sale['amount'] ?? 0), (string) ($sync->sale['currency'] ?? ''), $context->language),
+        ];
         $attempt = $outcome->attempt;
         if ($attempt === null) {
             return RecordActionResult::info($t->t(

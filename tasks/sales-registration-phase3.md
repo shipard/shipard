@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 3: Kontaktní platba, záložka a štítek na dokladu (#171)
 
-**Stav:** naplánováno — rozhodnutí #171 D8b, D8c, D8d, D13 a upřesnění U13–U22 (schválená 2026-11-26), připraveno k implementaci
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v pěti commitech (#171 D8b–D8d, D13, U13–U25), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči, zápis U23–U25 do #171 a nasazení
 
 > Task pro Claude Code (4–5 commitů). Design: issue #171 (D8b–D8d, D13)
 > a komentář s U13–U20. Staví na fázi 2 (`tasks/sales-registration-phase2.md`
@@ -191,33 +191,159 @@ zbytečného odkladu po zjištění chyby.
 
 ## Hotovo když
 
-- [ ] faktura vydaná Převodem V pořádku → akce Kontaktní platba → tržba
+- [x] faktura vydaná Převodem V pořádku → akce Kontaktní platba → tržba
       s časem platby z dialogu, odeslaná (playground na `8yft-3`)
-- [ ] zrušení → záporná tržba s časem zrušení; součet tržeb dokladu 0
-- [ ] příznak ve formuláři v Konceptu (s časem i bez) → po přechodu do
+- [x] zrušení → záporná tržba s časem zrušení; součet tržeb dokladu 0
+- [x] příznak ve formuláři v Konceptu (s časem i bez) → po přechodu do
       V pořádku tržba s časem platby, resp. časem přechodu
-- [ ] zálohová faktura vydaná Kartou s příznakem → tržba; faktura vydaná
+- [x] zálohová faktura vydaná Kartou s příznakem → tržba; faktura vydaná
       Kartou příznak nenabízí (spadá pravidlem); brána, zápočet a dobírka
       příznak odmítnou (chyba při uložení)
-- [ ] doklad vystavený před `valid_from` registrace + kontaktní platba
+- [x] doklad vystavený před `valid_from` registrace + kontaktní platba
       v době platnosti → tržba (U15)
-- [ ] varování D8c v dialogu u faktury uhrazené pokladním dokladem, který
+- [x] varování D8c v dialogu u faktury uhrazené pokladním dokladem, který
       do evidence spadá
-- [ ] záchranná síť dorovná chybějící tržbu po akci i na dokladu
+- [x] záchranná síť dorovná chybějící tržbu po akci i na dokladu
       s přechodem starším než 7 dní (U21), se stejným časem
-- [ ] záložka Evidence tržeb v detailu dokladu (vyhodnocení + tržby),
+- [x] záložka Evidence tržeb v detailu dokladu (vyhodnocení + tržby),
       štítek v hlavičce, štítek v seznamu dokladů
-- [ ] zdroj dat bez doplňku: formulář, detail ani seznam dokladů se
+- [x] zdroj dat bez doplňku: formulář, detail ani seznam dokladů se
       nemění, nic nepadá
-- [ ] dokumentace, nápověda, README, roadmapa a features
-- [ ] cílené testy doplňku zelené, celá sada PHPUnit lokálně zelená
+- [x] dokumentace, nápověda, README, roadmapa a features
+- [x] cílené testy doplňku zelené, celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-26 v pěti commitech na `stable`, nepushnuto:
+
+| Commit | Obsah |
+|---|---|
+| `128afb31` | data a vyhodnocení: sloupce hlavičky, `contactPayment` v datech typu, evaluátor, kontroly při uložení |
+| `deec55c4` | čas tržby na jednom místě, okno záchranné sítě podle změny příznaku |
+| `b5e7038b` | záložka formuláře, akce Kontaktní platba a Zrušit kontaktní platbu, varování D8c |
+| `fc09ca21` | záložka a štítek v detailu dokladu, štítek „EET“ v seznamu |
+| (tento) | integrační test, dokumentace, nápověda, stav tasku |
+
+Specifikace: `modules/economy/salesRegistration/docs/sales-registration.md`
+§ 17 (Kontaktní platba) a § 18 (evidence na dokladu). Změna jádra ani
+frontendu nebyla potřeba; co body rozšíření neumějí, je ve specifikaci § 8
+(k doplnění do #178).
+
+### Upřesnění přijatá s plánem implementace (2026-11-26) — zapsat do #171
+
+- **U23 — zóna času platby.** Pole formuláře i dialog akce jsou
+  `datetime-local`, dávají čas bez zóny. `contact_payment_at` proto drží čas
+  **v zóně místa tržby** (`timeZone` typu), tak jak ho uživatel zadal;
+  do zóny serveru (`sold_at`) ho převádí jen `ContactPayment\PaymentTime`.
+  Vývojový server běží ve světovém čase — bez toho by platba zadaná
+  v 18:56 šla do zprávy jako 19:56, v budoucnu. Čas v budoucnu se odmítá
+  s tolerancí 5 minut na hodiny prohlížeče (zapíše se „teď“).
+  `contact_payment_changed_at` je v zóně serveru.
+- **U24 — čas tržby při opětovném nastavení příznaku akcí** (po zrušení,
+  nebo u dokladu, který už dřív tržby měl): čas platby z dialogu, ne čas
+  změny příznaku — je to nová platba. Zadání § 2 doslova říkalo „čas změny“;
+  liší se jen tento okrajový případ. Pravidlo: tržba kontaktní platby nese
+  čas platby, když je první tržbou dokladu **nebo** se příznak změnil po
+  posledním přechodu; zrušení akcí nese čas změny; jinak čas přechodu.
+- **U25 — index `payment_reference` na `docs_core_rows`** z extension
+  doplňku: varování D8c se počítá při otevření detailu každé faktury, která
+  akci nabízí; bez indexu by to byl průchod všech řádků dokladů.
+- **Zrušit kontaktní platbu jen na dokladu V pořádku.** V Konceptu
+  a V opravě se příznak ruší zaškrtávátkem a tržbu vyrovná až přechod.
+
+### Rozhodnutí při implementaci a odchylky od zadání
+
+- **Záložka formuláře se řídí typem dokladu, ne způsobem úhrady.** Uživatel
+  způsob úhrady ve formuláři teprve volí a záložka z modulu se bez přepočtu
+  nepřekresluje; příznak u úhrady, která ho nést nesmí, odmítne uložení
+  (hláška nad formulářem — chybu k poli handler `beforeSave` vrátit neumí).
+- **Kontroly při uložení jsou ve vlastním handleru**
+  (`ContactPaymentSaveHandler`), ne v `DocsHeadsSalesHandler`. Doklad bez
+  příznaku nechává být — nic nezapíše a registrace nečte; kontroluje jen
+  při změně příznaku, času, typu nebo způsobu úhrady.
+- **Při uložení s přechodem stavu je čas změny příznaku = čas přechodu.**
+  `DocDocument::beforeSave()` běží před handlery; kdyby se časy lišily
+  o vteřinu, rozdílový výpočet by změnu ve formuláři považoval za akci po
+  přechodu.
+- **Akce nejdřív vyhodnotí nanečisto.** Doklad, který by ani s příznakem
+  nespadl (platba mimo platnost registrace, nulová částka), příznak
+  nedostane a chyba jde k poli času; „nejde založit“ (chybí jednotka,
+  kód řady) se zapíše a tržbu po opravě dorovná záchranná síť.
+- **Podmíněný zápis** (`WHERE docState = 40 AND contact_payment = …`) místo
+  zámku: dvojí kliknutí ani souběh s přechodem dokladu druhou tržbu
+  nezaloží.
+- **Okamžité odeslání je vyjmuté z handleru** do `Sales\ImmediateSend` —
+  jistič platí stejně pro přechod dokladu i pro akce.
+- **Varování D8c bere i řádek `advance.received`** (zálohová faktura
+  zaplacená hotově), nejen `payment.receivable`. „Do evidence spadá“ =
+  doklad už tržbu má, nebo ho tak vyhodnotí rozdílový výpočet. Páruje se
+  klíčem saldokonta nad `docs_core_*` (variabilní a specifický symbol,
+  osoba pro saldokonto, měna) — bez závislosti na `economy.accbal`.
+- **Okno záchranné sítě je sjednocení dvou rozsahů**, ne `OR` — optimalizátor
+  by `OR` přes dva sloupce řešil průchodem celé tabulky (ověřeno `EXPLAIN`
+  na `8yft-3`: oba rozsahy jdou přes svůj index).
+- **Důvod „nespadá“ u dokladu bez pravidla je `noRule`** bez ohledu na
+  platnost registrace (dřív `noRegistration`, když doklad přešel před
+  začátkem registrace) — v záložce detailu to u faktury Převodem dávalo
+  zavádějící text. Chování výpočtu se nemění.
+- **Záložka detailu se ukazuje i dokladu s příznakem mimo V pořádku**
+  (koncept se zaškrtnutou kontaktní platbou) — zadání jmenuje doklady, které
+  spadají, mají tržbu nebo akci nabízejí.
+- **Štítek** má text „EET“ / „EET test“ z katalogu textů a třídu podle
+  nejhoršího stavu; stav `verified` má stejnou váhu jako `confirmed`.
+- **`total_amount_dom` faktury s odpočtem zálohy je částka k úhradě** —
+  ověřeno v kódu (`DocDocument::sumTotals()`, řádky odpočtu jsou záporné
+  a pohledávka se účtuje z téže částky); demo data takovou fakturu nemají,
+  pokrývá to test vyhodnocení.
+- **Matice round-tripu výjimku nepotřebuje.** Sloupce doplňku porovnává jen
+  na zdroji dat s doplňkem a doplněk do dokladu bez příznaku nic nezapisuje,
+  takže obě strany mají výchozí hodnoty.
+- **Texty**: pole dokladu se jmenuje **Způsob platby** — české texty
+  doplňku se toho drží. Důvody vyhodnocení jsou jednou v
+  `Evaluation\ReasonTexts` (upozornění, výsledek akce, záložka detailu).
+- **Dokumentace jádra**: do `docs/table-definitions.md` přibyl chybějící
+  popis atributu sloupce `system`.
+
+### Ověření
+
+- **Testy**: celá jednotková sada zelená; nové testy doplňku — vyhodnocení
+  (příznak, přednost pravidla, U15, odpočet zálohy), čas tržby (všechny
+  větve, zóna), handler uložení, služba, obě akce, záložka formuláře,
+  hledání úhrady, záložka detailu a štítky, test nad skutečným stromem
+  modulů „zdroj dat bez doplňku se nemění“.
+- **Integrační** `tests/Integration/SalesRegistration/ContactPaymentTest`
+  nad `8yft-3` (7 testů, ven nic neposílá): akce → tržba s časem platby,
+  zrušení → záporná tržba s časem zrušení a součet 0, příznak v Konceptu
+  s časem i bez, zálohová faktura Kartou, odmítnuté způsoby úhrady, čas
+  v budoucnu, doklad vystavený před začátkem registrace, záchranná síť na
+  dokladu s přechodem starším než 7 dní se stejným časem, varování D8c.
+  Stávající `SalesFromDocumentsTest` a `ViewerDetailContractTest` tamtéž
+  prošly.
+- **Živě proti playgroundu** (skript v procesu s `RecordActionContext`,
+  pojistka `playground` ze `server.json`): faktura Převodem V pořádku →
+  **Kontaktní platba** s časem o sedm minut zpět → tržba `confirmed`, kód
+  končí `-ff`, v XML `dat_trzby` zadaný čas s `+01:00` (server v UTC);
+  **Zrušit kontaktní platbu** → druhá tržba `…-2` se zápornou částkou
+  `confirmed`, součet 0, doklad pořád V pořádku.
+- **Přes HTTP na `8yft-3`**: záložka ve formuláři konceptu faktury, záložka
+  a štítek v detailu prodejek a faktur, štítky „EET“ / „EET test“ v seznamu
+  prodejek; na zdroji dat bez doplňku (`blkm-i`) formulář, detail ani
+  definice hlavičky nic z toho nemají.
+- Hodnotu `datetime` posílá formulář prohlížeči ve tvaru s „T“, který pole
+  `datetime-local` bere; samotné vykreslení záložky a dialogu v prohlížeči
+  ověřené není.
+- Akce přes HTTP ověřené nejsou — endpoint akcí chce přihlášení.
+
+### Stav zdrojů dat po ověření
+
+- `8yft-3` a `bgse-r`: po `ds-upgrade` (sloupce kontaktní platby, indexy).
+  Na `8yft-3` zůstala faktura „Ověření kontaktní platby (playground)“
+  se dvěma tržbami (kontaktní platba a její zrušení) — data pro proklik.
+- Ostatní zdroje dat `ds-upgrade` nepotřebují (doplněk tam není).
 
 ### Zbývá
 
 - Ruční proklik v prohlížeči (člověk): akce Kontaktní platba a zrušení,
   záložka formuláře, záložka detailu, štítky.
+- Zapsat U23–U25 do #171 a body ze specifikace § 8 (fáze 3) do #178.
 - Nasazení: `ds-upgrade` zdrojů dat s doplňkem.

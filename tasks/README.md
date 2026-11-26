@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 496 tasků: **naplánováno** 8 · **částečně** 25 · **zrušeno** 1 · **hotovo** 462.
+Celkem 496 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -32,7 +32,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
 | `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
 | `native-frontend-bridge.md` | naplánováno | rozhodnutí #177 D6, D10, D21, D22, D29, D32, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
-| `sales-registration-phase3.md` | naplánováno | rozhodnutí #171 D8b, D8c, D8d, D13 a upřesnění U13–U22 (schválená 2026-11-26), připraveno k implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -55,6 +54,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `prints-phase3.md` | částečně | kód, dokumentace a nápověda hotové 2026-10-05 (#90 D46–D52; podklad loga z D46 po prokliku zrušen); ověřeno na ukázkovém zdroji včetně ručního prokliku nastavení a výsledného tisku, `ds-upgrade` jen tam; zbývá nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90 |
 | `prints-phase4.md` | částečně | implementace hotová (7 commitů); zbývá ověření skutečného odeslání přes SMTP (dev server nemá relay), ruční proklik dialogu a náhledů PDF, `ds-upgrade` zdrojů dat při nasazení a revize `sk` / `de` textů e-mailu (`tasks/prints-languages.md`) |
 | `sales-registration-phase2.md` | částečně | kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu a ručním proklikem 2026-11-26, úpravy po prokliku hotové 2026-11-26 (`tasks/sales-registration-phase2-fixes.md`); zbývá nasazení |
+| `sales-registration-phase3.md` | částečně | kód, testy a dokumentace hotové 2026-11-26 v pěti commitech (#171 D8b–D8d, D13, U13–U25), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči, zápis U23–U25 do #171 a nasazení |
 | `testing-clean-server.md` | částečně | kód a docs hotové 2026-10-27 (#146 D1–D9); nálezy z běhu 1 na Macu N3, N5–N10 opravené 2026-10-28 (N7 = D10 `bcmath`), N4 až po běhu na QEMU; `php8.5-bcmath` na testovacím serveru doinstalovaný 2026-10-28; zbývá ruční ověření 1–4 na AVF i QEMU, časy do § 22 a výsledek do #146 |
 | `testing-phase3.md` | částečně | implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); snímek spolku schválený 2026-10-15 po #122 (kontrola 5 `ok` u všech tří sad); zbývá alfa |
 | `vat-reverse-charge-subjects.md` | částečně | kód, korpus, schválené snímky sad a ověření na dev zdroji hotové 2026-11-12 (8 commitů); nezávislé ověření a legislativní ověření číselníku 2026-11-12, výsledek v #89; zbývá kontrola XML s kódem `4a` na portálu, `ai-eval` po změně promptu a kontrola stavu předmětů 11–21 k 1. 1. 2027 (prosinec 2026) |

@@ -1480,10 +1480,12 @@ neplatném `--limit`. Viz
 Modul: `economy.salesRegistration` (doplněk)
 
 Záchranná síť evidence tržeb (#171 D7) — úloha cronu `five-minutes`, před
-`alerts-run`. Doklady ve stavu V pořádku a Storno, jejichž stav se změnil
-v posledních `--days` dnech (výchozí 7), projde stejným rozdílovým výpočtem
-jako handler přechodu dokladu a založí tržby, které chybí. Tržba dostane
-čas přechodu dokladu, ne čas nálezu; odešle ji `sales-registration-run`.
+`alerts-run`. Doklady ve stavu V pořádku a Storno, jejichž stav — nebo
+příznak Kontaktní platba (#171 U21) — se změnil v posledních `--days` dnech
+(výchozí 7), projde stejným rozdílovým výpočtem jako handler přechodu
+dokladu a založí tržby, které chybí. Tržba dostane čas přechodu dokladu
+(u kontaktní platby čas platby, po jejím zrušení čas změny příznaku), ne čas
+nálezu; odešle ji `sales-registration-run`.
 
 ```bash
 shpd-ds sales-registration-reconcile --dry-run   # co by vzniklo, bez zápisu
@@ -1491,7 +1493,8 @@ shpd-ds sales-registration-reconcile
 ```
 
 Vypisuje jen doklady, u kterých se něco děje: `created` / `would create`
-s pořadovým číslem, částkou a časem tržby, `cannot be registered (důvod)`
+s pořadovým číslem, částkou a časem tržby (s poznámkou `contact payment` /
+`contact payment changed`, je-li čas z kontaktní platby), `cannot be registered (důvod)`
 u dokladu, který spadá, ale tržbu založit nejde, a `busy` u dokladu, který
 právě zpracovává jiný proces. Exit 1 jen při chybě prostředí nebo
 neplatném `--days`. Viz specifikace doplňku § 14.

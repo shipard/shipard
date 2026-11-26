@@ -218,7 +218,7 @@ s vlastní issue, ne na míru jednomu doplňku.
 | Doplněk | Stav |
 |---|---|
 | Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace | první doplněk (#170); stojí na obecném číselníku míst v jádru (#169) |
-| Evidence tržeb (EET 2.0, povinná od 1. 1. 2027) — `economy.salesRegistration` | fáze 1 a 2 hotové 2026-11-26 (#171): typ evidence, registrace, certifikát, pojistka serveru, odeslání zprávy, Ověřit spojení; tržby z prodejek, pokladních dokladů a faktur placených hotově nebo kartou (rozdílové zasílání, storno a oprava), fronta s opakováním, záchranná síť, agenda Evidence tržeb a upozornění — ověřeno proti playgroundu. Zbývá fáze 3 (Kontaktní platba, záložka a štítek na dokladu) a ověření v produkci. Potřebné před přechodem zákazníků s kontaktními platbami |
+| Evidence tržeb (EET 2.0, povinná od 1. 1. 2027) — `economy.salesRegistration` | fáze 1–3 hotové 2026-11-26 (#171): typ evidence, registrace, certifikát, pojistka serveru, odeslání zprávy, Ověřit spojení; tržby z prodejek, pokladních dokladů a faktur placených hotově nebo kartou (rozdílové zasílání, storno a oprava), fronta s opakováním, záchranná síť, agenda Evidence tržeb a upozornění; Kontaktní platba (faktura Převodem zaplacená na místě — formulář i akce na dokladu V pořádku), záložka a štítky evidence na dokladu — ověřeno proti playgroundu. Zbývá ruční proklik fáze 3 a ověření v produkci; mimo rozsah kontaktní platba přes API a kód potvrzení na tisku (U20) |
 | Správa počítačové sítě | bez návrhu |
 
 ---

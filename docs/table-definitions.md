@@ -383,6 +383,7 @@ třída tabulky (`validate()` / `beforeDelete()`).
 | `collation` | string | Ne | Ne | Collation pro tento sloupec (přetíží globální nastavení DB) — název collation (`utf8mb4_bin`), jen u textových typů `varchar` / `text` / `mediumtext` / `longtext`; viz Znaková sada a collation |
 | `reference` | string | Ne | Ne | ID cílové tabulky pro referenční vazbu (jen pro UI, žádná DB constraint) |
 | `sensitive` | bool | Ne | Ne | Citlivý sloupec — nikdy neopustí server (viz níže). Výchozí: `false` |
+| `system` | bool | Ne | Ne | Systémový sloupec — plní ho kód, ne uživatel: formulář ho nevykreslí (ani záložka z modulu, `formTabs`), zápis z formuláře a generického CRUD ho zahodí a u nového záznamu se pro něj nedosazuje výchozí hodnota. `TableGateway` ho nefiltruje — zapisuje ho Document třída, handler nebo přímý dotaz. Výchozí: `false` |
 | `schema` | string | Ne | Ne | Jen pro typ `json`: cfgItem se schématem strukturovaného pole (viz § 6 a [structured-fields.md](structured-fields.md)) |
 
 ### Speciální pole pro primární klíč

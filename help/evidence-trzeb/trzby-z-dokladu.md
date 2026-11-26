@@ -2,7 +2,7 @@
 title: Evidence tržeb — tržby z dokladů
 summary: Které doklady se evidují jako tržba, kdy a jak se tržba odesílá správci daně, co znamenají stavy tržby a upozornění, jak nastavit evidenční jednotku na číselné řadě a co udělá storno nebo oprava dokladu.
 keywords: [evidence tržeb, evidenci tržeb, EET, EET 2.0, tržba, tržby, tržbu, tržeb, odeslání tržby, odeslat tržbu, tržba se neodeslala, přerušený pokus, přerušeno, nepotvrzená tržba, potvrzení tržby, kód potvrzení, potvrzovací kód, POK, pořadové číslo tržby, odeslat znovu, tržba selhala, tržba čeká na odeslání, zahozeno, pojistka serveru, kontaktní platba, platba hotově, platba kartou, platební brána, platební bránou, prodejka, prodejky, pokladní doklad, faktura hotově, faktura kartou, storno tržby, stornovat doklad, oprava dokladu, záporná tržba, evidenční jednotka na řadě, číselná řada, kód řady, označení pokladny, pokladní zařízení, doklad nejde zaevidovat, doklad nejde smazat, 48 hodin, lhůta evidence]
-related: [evidence-trzeb/registrace-a-certifikat.md, pokladna/prodejka.md, pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, co-dnes-nejde.md]
+related: [evidence-trzeb/registrace-a-certifikat.md, evidence-trzeb/kontaktni-platba.md, pokladna/prodejka.md, pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, co-dnes-nejde.md]
 modules: [economy.salesRegistration]
 ---
 
@@ -34,6 +34,11 @@ Neevidují se doklady placené **Převodem**, **Dobírkou**, **Zápočtem**
 a **Platební bránou**, pokladní doklad **Výdej** a u pokladního příjmu
 řádky **Příjem z převodu peněz** a **Účetní položka**.
 
+Fakturu vystavenou **Převodem**, kterou zákazník zaplatil na místě (QR
+kódem, kartou na terminálu), zaeviduješ akcí **Kontaktní platba** — viz
+[Kontaktní platba](kontaktni-platba.md). Stejně tak zálohovou fakturu
+vydanou.
+
 **Kartou** znamená terminál na místě. Platbu kartou přes internet (e-shop,
 platební odkaz) zapiš způsobem platby **Platební bránou** — to není
 kontaktní platba a do evidence nepatří. Víc v
@@ -51,6 +56,10 @@ kontaktní platba a do evidence nepatří. Víc v
 
 Tržby najdeš v sekci **Prodej → Evidence tržeb**. V detailu tržby je
 záložka **Pokusy** se vším, co se s ní dělo, a tlačítko **Otevřít doklad**.
+
+Tržbu vidíš i přímo na dokladu: v detailu je záložka **Evidence tržeb**
+(jestli doklad do evidence spadá a jeho tržby) a štítek se stavem, v seznamu
+dokladů štítek **EET**. Víc v [Kontaktní platba](kontaktni-platba.md).
 
 **Stavy tržby**
 
@@ -132,7 +141,9 @@ tržby posílají.
 
 **Doklad vystavený před začátkem registrace tržbu nedostane** — ani když
 ho později opravíš nebo stornuješ. Totéž platí pro doklady převzaté
-importem ze starého systému.
+importem ze starého systému. Výjimkou je
+[kontaktní platba](kontaktni-platba.md): tam rozhoduje, kdy zákazník
+zaplatil, ne kdy byla faktura vystavená.
 
 **Záložka Evidence tržeb u řady chybí.** Žádná registrace **V pořádku**
 nemá evidenční jednotku.
@@ -143,6 +154,7 @@ ne hned při uložení.
 ## Souvisí
 
 - [Evidence tržeb — registrace a certifikát](registrace-a-certifikat.md)
+- [Evidence tržeb — kontaktní platba](kontaktni-platba.md)
 - [Prodejka](../pokladna/prodejka.md)
 - [Pokladní doklad](../pokladna/pokladni-doklad.md)
 - [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md)
