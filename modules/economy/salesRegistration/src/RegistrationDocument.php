@@ -90,6 +90,42 @@ class RegistrationDocument extends Document
             $result->addError('valid_to', 'Platnost do nesmí být dříve než platnost od.', 'invalid_range');
         }
 
+        // Začátek povinnosti (#171 U8): doklad vystavený před `valid_from`
+        // do evidence nevstoupí (D8d). Ostrý režim proto nesmí začínat dřív,
+        // než povinnost typu platí — a bez data by začínal „odjakživa“.
+        // Ověřovací režim a playground dřív začít smí, aby šla evidence
+        // vyzkoušet předem.
+        if ($mode === self::MODE_PRODUCTION && $type?->validFrom !== null
+            && ($validFrom === '' || $validFrom < $type->validFrom)
+        ) {
+            $result->addError(
+                'valid_from',
+                sprintf(
+                    'Registrace v ostrém režimu může platit nejdříve od %s — dřív povinnost evidence (%s) neplatí.',
+                    $type->validFrom,
+                    $type->name,
+                ),
+                'before_type_valid_from',
+            );
+        }
+
+        // Částka tržby jde ve zprávě v měně typu a bere se z částky dokladu
+        // v domácí měně (#171 D18) — zdroj dat s jinou domácí měnou by posílal
+        // částky v cizí měně jako koruny.
+        $homeCurrency = $type !== null ? $this->homeCurrency() : '';
+        if ($type !== null && $homeCurrency !== $type->currency) {
+            $result->addError(
+                ValidationError::FIELD_FORM,
+                sprintf(
+                    'Typ evidence %s eviduje tržby v měně %s, domácí měna tohoto zdroje dat je %s.',
+                    $type->name,
+                    strtoupper($type->currency),
+                    strtoupper($homeCurrency),
+                ),
+                'home_currency_mismatch',
+            );
+        }
+
         $defaultUnit = (int) ($effective('default_unit') ?? 0);
         if ($defaultUnit > 0 && ($id === null || $this->unitRegistration($defaultUnit) !== $id)) {
             $result->addError(
@@ -145,6 +181,13 @@ class RegistrationDocument extends Document
     protected function types(): SalesRegistrationTypes
     {
         return SalesRegistrationTypes::fromConfig($this->config);
+    }
+
+    /** Domácí měna zdroje dat (nastavení `economy.homeCurrency`, jako u dokladů); přepsatelné v testech. */
+    protected function homeCurrency(): string
+    {
+        $value = $this->settings?->get('economy.homeCurrency');
+        return is_string($value) && $value !== '' ? strtolower($value) : 'czk';
     }
 
     /** Uložený řádek registrace, null = nová (přepsatelné v testech). */

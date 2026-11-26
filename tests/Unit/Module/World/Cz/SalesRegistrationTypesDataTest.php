@@ -80,6 +80,53 @@ class SalesRegistrationTypesDataTest extends TestCase
         );
     }
 
+    /**
+     * Pravidla, kdy doklad do evidence spadá (#171 D8a, D23), míří jen na
+     * existující typy dokladů, způsoby úhrady, směry a pohyby řádků —
+     * překlep v datech by znamenal neodeslané tržby.
+     */
+    public function testEet2RulesReferToExistingDocTypesMethodsAndOperations(): void
+    {
+        $docsCore = self::MODULE . '/../../docs/core/config/';
+        $docTypes = JsoncParser::parseFile($docsCore . 'docTypes.jsonc');
+        $paymentMethods = JsoncParser::parseFile($docsCore . 'paymentMethods.jsonc');
+        $cashDirections = JsoncParser::parseFile($docsCore . 'cashDirections.jsonc');
+        $operations = array_keys(JsoncParser::parseFile($docsCore . 'rowOperations.jsonc'));
+
+        $rules = $this->types()['cz.eet2']['rules'] ?? null;
+        $this->assertIsArray($rules);
+        $this->assertNotEmpty($rules);
+
+        foreach ($rules as $i => $rule) {
+            $this->assertSame([], array_diff(array_keys($rule), ['docTypes', 'paymentMethods', 'cashDir', 'rowOperations']), "pravidlo {$i}: neznámý klíč");
+            foreach ($rule['docTypes'] as $docType) {
+                $this->assertArrayHasKey($docType, $docTypes, "pravidlo {$i}: typ dokladu {$docType}");
+            }
+            foreach ($rule['paymentMethods'] ?? [] as $method) {
+                $this->assertArrayHasKey((string) $method, $paymentMethods, "pravidlo {$i}: způsob úhrady {$method}");
+            }
+            if (array_key_exists('cashDir', $rule)) {
+                $this->assertArrayHasKey((string) $rule['cashDir'], $cashDirections, "pravidlo {$i}: směr");
+            }
+            foreach ($rule['rowOperations'] ?? [] as $pattern) {
+                $matching = array_filter(
+                    $operations,
+                    static fn(string $operation): bool => str_ends_with($pattern, '.*')
+                        ? str_starts_with($operation, substr($pattern, 0, -1))
+                        : $operation === $pattern,
+                );
+                $this->assertNotEmpty($matching, "pravidlo {$i}: pohybu {$pattern} neodpovídá žádná operace");
+            }
+        }
+
+        // D15: Platební bránou (5) do evidence nespadá; převod a účetní zápis taky ne.
+        $this->assertSame([0, 2], $rules[0]['paymentMethods']);
+        $this->assertNotContains('transfer.in', $rules[1]['rowOperations']);
+        $this->assertNotContains('acc.entry', $rules[1]['rowOperations']);
+        $this->assertSame('Europe/Prague', $this->types()['cz.eet2']['timeZone']);
+        $this->assertTrue(SalesRegistrationType::isUsablePattern($this->types()['cz.eet2']['amount']['pattern']));
+    }
+
     /** Masky z XSD rozhraní v4 — hodnoty na hraně. */
     public function testEet2MasksFollowTheSchema(): void
     {

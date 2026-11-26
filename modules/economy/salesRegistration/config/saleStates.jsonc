@@ -1,0 +1,21 @@
+{
+    // =========================================================================
+    // economy.salesRegistration.saleStates — stav tržby ve frontě (#171 U5),
+    // sloupec `state` tabulky economy_sales_registration_sales. Konstanty
+    // Queue\SaleState.
+    //
+    //   pending ──claim──▶ sending ──▶ confirmed  (potvrzeno, povinnost splněna)
+    //      ▲                  │   ├──▶ verified   (ověřovací režim; konečný)
+    //      │                  │   ├──▶ dropped    (pojistka serveru; konečný)
+    //      │                  │   └──▶ failed     (odmítnuto / neplatná zpráva)
+    //      └── backoff ───────┘                      └─ Odeslat znovu → pending
+    //
+    // `stateStyle` = styl řádku a štítku ve vieweru (třídy docState_*).
+    // =========================================================================
+    "pending":   { "name": "Pending",   "name:cs": "Čeká na odeslání", "name:en": "Pending",   "stateStyle": "edit" },
+    "sending":   { "name": "Sending",   "name:cs": "Odesílá se",       "name:en": "Sending",   "stateStyle": "edit" },
+    "confirmed": { "name": "Confirmed", "name:cs": "Potvrzeno",        "name:en": "Confirmed", "stateStyle": "done" },
+    "verified":  { "name": "Verified",  "name:cs": "Ověřeno",          "name:en": "Verified",  "stateStyle": "archive" },
+    "dropped":   { "name": "Dropped",   "name:cs": "Zahozeno",         "name:en": "Dropped",   "stateStyle": "archive" },
+    "failed":    { "name": "Failed",    "name:cs": "Selhalo",          "name:en": "Failed",    "stateStyle": "cancelled" }
+}

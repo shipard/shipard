@@ -1,0 +1,231 @@
+{
+    "tableId": 471,
+    "name": "Sale sending attempts",
+    "name:cs": "Pokusy o odeslání tržby",
+    "name:en": "Sale sending attempts",
+
+    // Pokus o odeslání tržby (#171 D5, fáze 2) — jedna datová zpráva. Řádek
+    // vzniká PŘED odesláním (UUID, čas, stav sending) a po odpovědi se
+    // doplní; pád procesu uprostřed tak zanechá stopu, že zpráva odejít
+    // mohla. Opakování je nový řádek s novým UUID.
+    //
+    // Těla zpráv (podepsané XML tam i zpět) tu zůstávají pro dohledání —
+    // v detailu tržby ani v logu nejsou. Záznamy zakládá jen doplněk.
+
+    "displayPattern": "{uuid}",
+    "hideFromNavigation": true,
+    "systemManaged": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "sale",
+            "name": "Sale",
+            "name:cs": "Tržba",
+            "name:en": "Sale",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_sales_registration_sales",
+            "system": true
+        },
+        {
+            "id": "uuid",
+            "name": "Message UUID",
+            "name:cs": "UUID zprávy",
+            "name:en": "Message UUID",
+            "type": "varchar",
+            "length": 36,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "started_at",
+            "name": "Started at",
+            "name:cs": "Čas pokusu",
+            "name:en": "Started at",
+            "type": "datetime",
+            "nullable": false,
+            "system": true
+        },
+        {
+            // První zaslání = tržba ještě nemá pokus, který zprávu skutečně
+            // odeslal (`sent`). Pokusy zastavené pojistkou nebo problémem
+            // na naší straně se nepočítají.
+            "id": "first_sending",
+            "name": "First sending",
+            "name:cs": "První zaslání",
+            "name:en": "First sending",
+            "type": "boolean",
+            "default": 1,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "verification",
+            "name": "Verification mode",
+            "name:cs": "Ověřovací mód",
+            "name:en": "Verification mode",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "environment",
+            "name": "Environment",
+            "name:cs": "Prostředí",
+            "name:en": "Environment",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "test_identity",
+            "name": "Test identity",
+            "name:cs": "Testovací identita",
+            "name:en": "Test identity",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "system": true
+        },
+        {
+            // sending (zapsáno před odesláním) nebo výsledek enginu
+            // (SendStatus): confirmed / verified / rejected / retryLater /
+            // unknown / dropped.
+            "id": "status",
+            "name": "Result",
+            "name:cs": "Výsledek",
+            "name:en": "Result",
+            "type": "enumString",
+            "length": 12,
+            "cfgItem": "economy.salesRegistration.attemptStatuses",
+            "default": "sending",
+            "nullable": false,
+            "system": true
+        },
+        {
+            // Zpráva opustila server (odpověď přišla, nebo nepřišla a zpráva
+            // odejít mohla).
+            "id": "sent",
+            "name": "Sent",
+            "name:cs": "Odesláno",
+            "name:en": "Sent",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "problem",
+            "name": "Problem",
+            "name:cs": "Problém",
+            "name:en": "Problem",
+            "type": "varchar",
+            "length": 30,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "error_code",
+            "name": "Error code",
+            "name:cs": "Kód chyby",
+            "name:en": "Error code",
+            "type": "int",
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "error_text",
+            "name": "Error text",
+            "name:cs": "Text chyby",
+            "name:en": "Error text",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "warnings",
+            "name": "Warnings",
+            "name:cs": "Varování",
+            "name:en": "Warnings",
+            "type": "json",
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "confirmation_code",
+            "name": "Confirmation code",
+            "name:cs": "Kód potvrzení",
+            "name:en": "Confirmation code",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "transaction_id",
+            "name": "Transaction ID",
+            "name:cs": "ID transakce",
+            "name:en": "Transaction ID",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "request_body",
+            "name": "Request",
+            "name:cs": "Zpráva",
+            "name:en": "Request",
+            "type": "mediumtext",
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "response_body",
+            "name": "Response",
+            "name:cs": "Odpověď",
+            "name:en": "Response",
+            "type": "mediumtext",
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "duration_ms",
+            "name": "Duration (ms)",
+            "name:cs": "Doba (ms)",
+            "name:en": "Duration (ms)",
+            "type": "int",
+            "nullable": true,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_sale",
+            "type": "index",
+            "columns": [{"column": "sale"}]
+        },
+        {
+            "id": "unq_uuid",
+            "type": "unique",
+            "columns": [{"column": "uuid"}]
+        },
+        {
+            // Jistič (U6): poslední pokusy podle času.
+            "id": "idx_started_at",
+            "type": "index",
+            "columns": [{"column": "started_at"}]
+        }
+    ]
+}

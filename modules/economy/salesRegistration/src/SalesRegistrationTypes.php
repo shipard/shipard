@@ -73,8 +73,22 @@ final class SalesRegistrationTypes
             return null;
         }
 
+        // Pravidla, kdy doklad do evidence spadá (D8a, D23). Typ bez pravidel
+        // nic z dokladů neeviduje; vadné pravidlo vyřadí celý typ — tiše
+        // vynechané pravidlo by znamenalo neodeslané tržby.
+        $rules = [];
+        foreach (is_array($entry['rules'] ?? null) ? $entry['rules'] : [] as $rawRule) {
+            $rule = SaleRule::fromArray($rawRule);
+            if ($rule === null) {
+                return null;
+            }
+            $rules[] = $rule;
+        }
+
         $validFrom = $entry['validFrom'] ?? null;
         $label = is_array($entry['taxpayerId'] ?? null) ? ($entry['taxpayerId']['label'] ?? null) : null;
+        $timeZone = $entry['timeZone'] ?? null;
+        $registerHint = is_array($entry['cashRegisterId'] ?? null) ? ($entry['cashRegisterId']['hint'] ?? null) : null;
 
         return new SalesRegistrationType(
             id: $id,
@@ -89,6 +103,10 @@ final class SalesRegistrationTypes
             cashRegisterIdPattern: self::pattern($entry['cashRegisterId'] ?? null),
             serialNumberPattern: self::pattern($entry['serialNumber'] ?? null),
             engineClass: $engineClass,
+            rules: $rules,
+            timeZone: is_string($timeZone) && $timeZone !== '' ? $timeZone : null,
+            amountPattern: self::pattern($entry['amount'] ?? null),
+            cashRegisterIdHint: is_string($registerHint) && $registerHint !== '' ? $registerHint : null,
         );
     }
 

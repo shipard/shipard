@@ -17,6 +17,7 @@ final readonly class SalesRegistrationType
 
     /**
      * @param array<string, string> $environments název prostředí → adresa služby
+     * @param list<SaleRule>        $rules        kdy doklad do evidence spadá (D8a, D23); prázdné = nikdy
      */
     public function __construct(
         public string $id,
@@ -31,7 +32,64 @@ final readonly class SalesRegistrationType
         public ?string $cashRegisterIdPattern,
         public ?string $serialNumberPattern,
         public string $engineClass,
+        public array $rules = [],
+        public ?string $timeZone = null,
+        public ?string $amountPattern = null,
+        public ?string $cashRegisterIdHint = null,
     ) {
+    }
+
+    /**
+     * První pravidlo, které se dokladu s touto hlavičkou týká, nebo null —
+     * doklad do evidence automaticky nespadá.
+     */
+    public function ruleFor(string $docType, int $paymentMethod, int $cashDir): ?SaleRule
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule->matchesHead($docType, $paymentMethod, $cashDir)) {
+                return $rule;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Typy dokladů, kterých se některé pravidlo týká — předvýběr dokladů
+     * pro záchrannou síť.
+     *
+     * @return list<string>
+     */
+    public function ruleDocTypes(): array
+    {
+        $docTypes = [];
+        foreach ($this->rules as $rule) {
+            foreach ($rule->docTypes as $docType) {
+                $docTypes[$docType] = true;
+            }
+        }
+        return array_keys($docTypes);
+    }
+
+    /**
+     * Časová zóna místa tržby (U10) — v ní jde čas tržby do zprávy. Typ bez
+     * zóny (nebo s neznámou) bere zónu serveru.
+     */
+    public function saleTimeZone(): \DateTimeZone
+    {
+        if ($this->timeZone !== null) {
+            try {
+                return new \DateTimeZone($this->timeZone);
+            } catch (\Throwable) {
+                // neznámá zóna v datech typu — zóna serveru
+            }
+        }
+        return new \DateTimeZone(date_default_timezone_get());
+    }
+
+    /** Částka jako desetinný řetězec (`123.40`, `-0.50`); typ bez masky ji neomezuje. */
+    public function isValidAmount(string $value): bool
+    {
+        return $this->amountPattern === null || self::matches($this->amountPattern, $value);
     }
 
     /** Adresa služby prostředí, nebo null, když ho typ nemá. */

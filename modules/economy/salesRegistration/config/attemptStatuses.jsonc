@@ -1,0 +1,14 @@
+{
+    // =========================================================================
+    // economy.salesRegistration.attemptStatuses — výsledek pokusu o odeslání
+    // (#171 D5), sloupec `status` tabulky economy_sales_registration_attempts.
+    // `sending` = zapsáno před odesláním; ostatní jsou hodnoty Engine\SendStatus.
+    // =========================================================================
+    "sending":    { "name": "Sending",          "name:cs": "Odesílá se",        "name:en": "Sending" },
+    "confirmed":  { "name": "Confirmed",        "name:cs": "Potvrzeno",         "name:en": "Confirmed" },
+    "verified":   { "name": "Verified",         "name:cs": "Ověřeno",           "name:en": "Verified" },
+    "rejected":   { "name": "Rejected",         "name:cs": "Odmítnuto",         "name:en": "Rejected" },
+    "retryLater": { "name": "Service unavailable", "name:cs": "Služba nedostupná", "name:en": "Service unavailable" },
+    "unknown":    { "name": "No clear answer",  "name:cs": "Nejasná odpověď",   "name:en": "No clear answer" },
+    "dropped":    { "name": "Dropped",          "name:cs": "Zahozeno",          "name:en": "Dropped" }
+}

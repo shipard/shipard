@@ -145,6 +145,25 @@
         "verify.untrusted": { "name": "The response of the service cannot be trusted ({where}): {text}", "name:cs": "Odpovědi služby nelze věřit ({where}): {text}", "name:en": "The response of the service cannot be trusted ({where}): {text}" },
         "verify.noResponse": { "name": "No valid response from the service ({where}): {text}", "name:cs": "Služba neodpověděla platnou odpovědí ({where}): {text}", "name:en": "No valid response from the service ({where}): {text}" },
 
+        // --- Evidenční jednotka na číselné řadě (#171 D21) ---
+        "series.tab": { "name": "Sales registration", "name:cs": "Evidence tržeb", "name:en": "Sales registration" },
+        "series.unitHint": {
+            "name": "Sales of documents in this series are registered under this unit. Left empty, the default unit of the registration applies. The series code is sent as the cash register identifier.",
+            "name:cs": "Tržby dokladů této řady se evidují pod touto jednotkou. Bez výběru platí výchozí jednotka registrace. Kód řady se posílá jako označení pokladního zařízení.",
+            "name:en": "Sales of documents in this series are registered under this unit. Left empty, the default unit of the registration applies. The series code is sent as the cash register identifier."
+        },
+        "series.unitUnknown": { "name": "The selected registration unit does not exist.", "name:cs": "Vybraná evidenční jednotka neexistuje.", "name:en": "The selected registration unit does not exist." },
+        "series.codeRequired": {
+            "name": "A series with a registration unit needs a code — it is sent as the cash register identifier.",
+            "name:cs": "Řada s evidenční jednotkou musí mít kód — posílá se jako označení pokladního zařízení.",
+            "name:en": "A series with a registration unit needs a code — it is sent as the cash register identifier."
+        },
+        "series.codeInvalid": {
+            "name": "The series code \"{code}\" cannot be used as a cash register identifier of {type}{hint}. Change the code or remove the registration unit.",
+            "name:cs": "Kód řady „{code}“ nejde použít jako označení pokladního zařízení evidence {type}{hint}. Změňte kód, nebo odeberte evidenční jednotku.",
+            "name:en": "The series code \"{code}\" cannot be used as a cash register identifier of {type}{hint}. Change the code or remove the registration unit."
+        },
+
         // --- Upozornění na certifikát (#171 D13) ---
         "alert.open": { "name": "Open registrations", "name:cs": "Otevřít registrace", "name:en": "Open registrations" },
         "alert.missingTitle": { "name": "Sales registration {name} has no certificate", "name:cs": "Registrace k evidenci tržeb {name} nemá certifikát", "name:en": "Sales registration {name} has no certificate" },

@@ -44,7 +44,11 @@ class SalesRegistrationModuleTest extends TestCase
 
         $this->assertSame('economy.salesRegistration', $module->id);
         $this->assertSame(ModuleKind::Addon, $module->kind);
-        $this->assertSame(['core.system'], $module->dependencies, 'typ se nabízí podle aktivního modulu země, ne přes závislost');
+        $this->assertSame(
+            ['core.system', 'docs.core'],
+            $module->dependencies,
+            'typ se nabízí podle aktivního modulu země, ne přes závislost; docs.core kvůli dokladům a číselné řadě (fáze 2)',
+        );
     }
 
     public function testIsNotPartOfTheBaseInstallation(): void
@@ -89,7 +93,7 @@ class SalesRegistrationModuleTest extends TestCase
         $this->assertSame(['cz.eet2' => Eet2Engine::class], $engines);
     }
 
-    public function testDeclaresTwoTablesWithUniqueIds(): void
+    public function testDeclaresTablesWithUniqueIds(): void
     {
         $module = ModuleDefinition::fromArray(self::module());
 
@@ -97,7 +101,15 @@ class SalesRegistrationModuleTest extends TestCase
         foreach ($module->tables as $table) {
             $ids[$table] = TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/' . $table . '.jsonc'))->tableId;
         }
-        $this->assertSame([RegistrationDocument::TABLE => 468, UnitDocument::TABLE => 469], $ids);
+        $this->assertSame(
+            [
+                RegistrationDocument::TABLE            => 468,
+                UnitDocument::TABLE                    => 469,
+                'economy_sales_registration_sales'    => 470,
+                'economy_sales_registration_attempts' => 471,
+            ],
+            $ids,
+        );
 
         $seen = [];
         foreach (glob(self::MODULES . '/*/*/tables/*.jsonc') as $file) {

@@ -18,12 +18,35 @@
     "kind": "addon",
 
     // Záměrně bez závislosti na world.cz: typ se nabízí jen tam, kde je modul
-    // jeho země aktivní (SalesRegistrationTypes). Fáze 2 přidá docs.core.
-    "dependencies": ["core.system"],
+    // jeho země aktivní (SalesRegistrationTypes). docs.core od fáze 2 —
+    // tržby vznikají z dokladů a evidenční jednotka žije na číselné řadě.
+    "dependencies": ["core.system", "docs.core"],
 
     "tables": [
         "economy_sales_registration_registrations",
-        "economy_sales_registration_units"
+        "economy_sales_registration_units",
+        "economy_sales_registration_sales",
+        "economy_sales_registration_attempts"
+    ],
+
+    // Evidenční jednotka na číselné řadě (#171 D4, D21) — pokladní zařízení
+    // = řada. Sloupec přidává extension, edituje ho záložka formuláře řady
+    // a kód řady proti masce typu hlídá handler při uložení řady.
+    "extensions": ["docs_core_number_series"],
+
+    "formTabs": [
+        {
+            "table": "docs_core_number_series",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Series\\SeriesUnitFormTab"
+        }
+    ],
+
+    "documentEventHandlers": [
+        {
+            "table": "docs_core_number_series",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Series\\SeriesUnitHandler",
+            "events": ["beforeSave"]
+        }
     ],
 
     "documentClasses": [
@@ -115,6 +138,16 @@
             // Režim registrace (sloupec `mode`, #171 D10).
             "id": "economy.salesRegistration.modes",
             "file": "config/modes.jsonc"
+        },
+        {
+            // Stav tržby ve frontě (sloupec `state`, #171 U5).
+            "id": "economy.salesRegistration.saleStates",
+            "file": "config/saleStates.jsonc"
+        },
+        {
+            // Výsledek pokusu o odeslání (sloupec `status`, #171 D5).
+            "id": "economy.salesRegistration.attemptStatuses",
+            "file": "config/attemptStatuses.jsonc"
         },
         {
             "id": "economy.salesRegistration.viewerDetailLabels",

@@ -22,7 +22,21 @@
     //   - `taxpayerId` / `unitId` / `cashRegisterId` / `serialNumber` — masky
     //     polí datové zprávy podle XSD rozhraní v4 (regulární výraz bez
     //     oddělovačů; kontroluje se celá hodnota). `label` = jak se
-    //     identifikátoru poplatníka v zemi říká.
+    //     identifikátoru poplatníka v zemi říká, `hint` u pokladny = popis
+    //     masky pro hlášku ve formuláři číselné řady.
+    //   - `amount` — maska částky (desetinný řetězec, `CastkaType` v XSD):
+    //     dvě desetinná místa, nejvýš osm číslic před čárkou, bez „-0.00“.
+    //   - `timeZone` — časová zóna místa tržby; v ní jde čas tržby do zprávy
+    //     (#171 U10).
+    //   - `rules` — kdy doklad do evidence spadá (#171 D8a, D23). První
+    //     pravidlo, které se hlavičky dokladu týká, rozhodne:
+    //       `docTypes`       typy dokladů (docs.core.docTypes),
+    //       `paymentMethods` způsoby úhrady (docs.core.paymentMethods),
+    //       `cashDir`        směr pokladního dokladu (1 = příjem),
+    //       `rowOperations`  pravidlo nad řádky — do evidence jde jen součet
+    //                        řádků s těmito pohyby (`sale.*` = každý pohyb
+    //                        začínající `sale.`); bez něj celá částka dokladu.
+    //     Nový způsob úhrady (QR) = úprava těchto dat, ne kódu.
     // =========================================================================
 
     "cz.eet2": {
@@ -43,7 +57,36 @@
             "pattern": "^CZ[0-9]{8,10}$"
         },
         "unitId": { "pattern": "^[1-9][0-9]{0,8}$" },
-        "cashRegisterId": { "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,20}$" },
-        "serialNumber": { "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,25}$" }
+        "cashRegisterId": {
+            "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,20}$",
+            "hint": "at most 20 characters: letters without diacritics, digits, space and . , : ; / # - _",
+            "hint:cs": "nejvýš 20 znaků: písmena bez diakritiky, číslice, mezera a . , : ; / # - _",
+            "hint:en": "at most 20 characters: letters without diacritics, digits, space and . , : ; / # - _"
+        },
+        "serialNumber": { "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,25}$" },
+        "amount": { "pattern": "^((0|-?[1-9][0-9]{0,7})\\.[0-9]{2}|-0\\.(0[1-9]|[1-9][0-9]))$" },
+        "timeZone": "Europe/Prague",
+
+        "rules": [
+            // Prodejka a faktura vydaná placená hotově (0) nebo kartou (2) —
+            // celá částka dokladu. Faktura hotově se účtuje rovnou na
+            // pokladnu (#59 D8), nevzniká pohledávka, kterou by ještě hradil
+            // pokladní doklad. Kartou = terminál na místě; platba kartou přes
+            // internet se zapisuje způsobem úhrady Platební bránou (5), který
+            // tu ZÁMĚRNĚ chybí — není to kontaktní platba (#171 D15).
+            { "docTypes": ["cashreg", "invno"], "paymentMethods": [0, 2] },
+
+            // Pokladní doklad příjem — jen řádky, které jsou tržbou: prodej,
+            // úhrada pohledávky a přijatá záloha. Mimo evidenci zůstává
+            // `transfer.in` (převod peněz mezi vlastními pokladnami a účty —
+            // peníze od zákazníka nepřišly) a `acc.entry` (obecný účetní
+            // zápis: vklad, půjčka, oprava — o tržbě nic neříká), stejně jako
+            // každý jiný pohyb, který tu není vyjmenovaný.
+            {
+                "docTypes": ["cash"],
+                "cashDir": 1,
+                "rowOperations": ["sale.*", "payment.receivable", "advance.received"]
+            }
+        ]
     }
 }

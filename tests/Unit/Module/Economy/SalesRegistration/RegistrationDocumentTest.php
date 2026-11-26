@@ -51,6 +51,13 @@ class RegistrationDocumentTest extends TestCase
                 ));
             }
 
+            public string $homeCurrency = 'czk';
+
+            protected function homeCurrency(): string
+            {
+                return $this->homeCurrency;
+            }
+
             /** @return array{old: int, new: int}|null */
             public function transitionAfterSave(array $data, ?array $original): ?array
             {
@@ -99,9 +106,56 @@ class RegistrationDocumentTest extends TestCase
 
         $this->assertSame([], $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2']), 'bez režimu platí výchozí ověřovací');
         foreach (RegistrationDocument::MODES as $mode) {
-            $this->assertSame([], $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2', 'mode' => $mode]));
+            $this->assertSame(
+                [],
+                $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2', 'mode' => $mode, 'valid_from' => '2027-01-01']),
+            );
         }
         $this->assertSame(['mode:invalid'], $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2', 'mode' => 'live']));
+    }
+
+    /** #171 U8: ostrý režim nezačíná před začátkem povinnosti typu; ostatní režimy smí. */
+    public function testProductionModeCannotStartBeforeTheTypeIsInForce(): void
+    {
+        $doc = $this->doc();
+        $base = ['name' => 'a', 'type' => 'cz.eet2'];
+        $production = $base + ['mode' => RegistrationDocument::MODE_PRODUCTION];
+
+        $this->assertSame(['valid_from:before_type_valid_from'], $this->codes($doc, $production), 'bez data by ostrý režim platil odjakživa');
+        $this->assertSame(['valid_from:before_type_valid_from'], $this->codes($doc, $production + ['valid_from' => '2026-12-31']));
+        $this->assertSame([], $this->codes($doc, $production + ['valid_from' => '2027-01-01']));
+        $this->assertSame([], $this->codes($doc, $production + ['valid_from' => '2027-06-15']));
+
+        foreach ([RegistrationDocument::MODE_VERIFICATION, RegistrationDocument::MODE_PLAYGROUND] as $mode) {
+            $this->assertSame([], $this->codes($doc, $base + ['mode' => $mode]), $mode);
+            $this->assertSame([], $this->codes($doc, $base + ['mode' => $mode, 'valid_from' => '2026-11-01']), $mode);
+        }
+    }
+
+    public function testSwitchingAStoredRegistrationToProductionChecksItsStoredDate(): void
+    {
+        $stored = ['id' => 7, 'name' => 'a', 'type' => 'cz.eet2', 'mode' => 'playground', 'valid_from' => '2026-11-01', 'docState' => 40];
+
+        $this->assertSame(
+            ['valid_from:before_type_valid_from'],
+            $this->codes($this->doc($stored), ['id' => 7, 'mode' => RegistrationDocument::MODE_PRODUCTION]),
+        );
+        $this->assertSame(
+            [],
+            $this->codes($this->doc($stored), ['id' => 7, 'mode' => RegistrationDocument::MODE_PRODUCTION, 'valid_from' => '2027-01-01']),
+        );
+    }
+
+    /** #171 D18: částka jde ve zprávě v měně typu a bere se z domácí měny zdroje dat. */
+    public function testTypeRequiresItsCurrencyAsTheHomeCurrency(): void
+    {
+        $doc = $this->doc();
+        $doc->homeCurrency = 'eur';
+
+        $this->assertSame(['_form:home_currency_mismatch'], $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2']));
+
+        $doc->homeCurrency = 'czk';
+        $this->assertSame([], $this->codes($doc, ['name' => 'a', 'type' => 'cz.eet2']));
     }
 
     public function testTaxpayerIdFollowsTheMaskOfTheType(): void

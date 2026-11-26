@@ -1,0 +1,316 @@
+{
+    "tableId": 470,
+    "name": "Registered sales",
+    "name:cs": "Evidované tržby",
+    "name:en": "Registered sales",
+
+    // Tržba k evidenci (#171 D5, fáze 2) — závazek poslat správci daně jednu
+    // zprávu s pevnými daty. Vzniká z přechodu dokladu rozdílovým výpočtem
+    // (D6): doklad může mít víc tržeb (první, storno, rozdíl po opravě),
+    // pořadí drží `doc_sequence`.
+    //
+    // Data tržby se po vzniku nemění; mění se jen stav fronty. Každé odeslání
+    // je řádek v economy_sales_registration_attempts (opakování = nový pokus
+    // s novým UUID). Záznamy zakládá a ruší jen doplněk — generické CRUD
+    // odmítne POST i DELETE a sloupce jsou systémové.
+
+    "displayPattern": "{serial_number}",
+    "systemManaged": true,
+
+    "columnGroups": [
+        { "id": "sale",  "name": "Sale",  "name:cs": "Tržba",  "name:en": "Sale" },
+        { "id": "queue", "name": "Queue", "name:cs": "Fronta", "name:en": "Queue" }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // ── Pevná data tržby ────────────────────────────────────────────────
+        {
+            "id": "doc_head",
+            "name": "Document",
+            "name:cs": "Doklad",
+            "name:en": "Document",
+            "type": "int",
+            "nullable": false,
+            "reference": "docs_core_heads",
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Pořadí tržby dokladu: 1 = první, 2 = storno nebo rozdíl po
+            // opravě, … S dokladem unikátní (U7) — dva souběžné výpočty
+            // rozdílu tak nevytvoří dvě tržby.
+            "id": "doc_sequence",
+            "name": "Sale sequence",
+            "name:cs": "Pořadí tržby dokladu",
+            "name:en": "Sale sequence",
+            "type": "int",
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            "id": "registration",
+            "name": "Registration",
+            "name:cs": "Registrace",
+            "name:en": "Registration",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_sales_registration_registrations",
+            "system": true,
+            "group": "sale"
+        },
+        {
+            "id": "unit",
+            "name": "Registration unit",
+            "name:cs": "Evidenční jednotka",
+            "name:en": "Registration unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_sales_registration_units",
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Označení jednotky v době vzniku tržby — do zprávy jde tahle
+            // hodnota, i kdyby se jednotka později přejmenovala nebo zanikla.
+            "id": "unit_id",
+            "name": "Unit number",
+            "name:cs": "Číslo jednotky",
+            "name:en": "Unit number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Označení pokladního zařízení = kód číselné řady dokladu (D4).
+            "id": "cash_register_id",
+            "name": "Cash register",
+            "name:cs": "Pokladní zařízení",
+            "name:en": "Cash register",
+            "type": "varchar",
+            "length": 40,
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Pořadové číslo tržby (D19): číslo dokladu, další tržby téhož
+            // dokladu s příponou -2, -3, …
+            "id": "serial_number",
+            "name": "Serial number",
+            "name:cs": "Pořadové číslo",
+            "name:en": "Serial number",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Čas tržby (D20) = čas přechodu dokladu, ve stejné zóně jako
+            // doc_state_changed_at dokladu (zóna PHP); do zóny místa tržby
+            // ho převádí až odeslání. Opakování ho drží.
+            "id": "sold_at",
+            "name": "Sale time",
+            "name:cs": "Čas tržby",
+            "name:en": "Sale time",
+            "type": "datetime",
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            // Částka se znaménkem v měně evidence (D18); storno je záporné.
+            "id": "amount",
+            "name": "Amount",
+            "name:cs": "Částka",
+            "name:en": "Amount",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 2,
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            "id": "currency",
+            "name": "Currency",
+            "name:cs": "Měna",
+            "name:en": "Currency",
+            "type": "varchar",
+            "length": 3,
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+        {
+            "id": "created",
+            "name": "Created",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created",
+            "type": "datetime",
+            "nullable": false,
+            "system": true,
+            "group": "sale"
+        },
+
+        // ── Stav fronty (U5) ────────────────────────────────────────────────
+        {
+            "id": "state",
+            "name": "State",
+            "name:cs": "Stav",
+            "name:en": "State",
+            "type": "enumString",
+            "length": 12,
+            "cfgItem": "economy.salesRegistration.saleStates",
+            "default": "pending",
+            "nullable": false,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            "id": "attempt_count",
+            "name": "Attempts",
+            "name:cs": "Počet pokusů",
+            "name:en": "Attempts",
+            "type": "int",
+            "default": 0,
+            "nullable": false,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            "id": "next_attempt",
+            "name": "Next attempt",
+            "name:cs": "Další pokus",
+            "name:en": "Next attempt",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            // Zámek odesílatele (D24): čas, kdy si tržbu vzal proces do
+            // stavu sending. Starší než 10 minut = pád procesu, tržba se
+            // vrací na pending.
+            "id": "claimed_at",
+            "name": "Claimed at",
+            "name:cs": "Zamčeno",
+            "name:en": "Claimed at",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            "id": "confirmation_code",
+            "name": "Confirmation code",
+            "name:cs": "Kód potvrzení",
+            "name:en": "Confirmation code",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            "id": "confirmed_at",
+            "name": "Confirmed at",
+            "name:cs": "Potvrzeno",
+            "name:en": "Confirmed at",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            // Prostředí posledního výsledku (production / playground).
+            "id": "environment",
+            "name": "Environment",
+            "name:cs": "Prostředí",
+            "name:en": "Environment",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            // Potvrzení z playgroundu nebo pod testovací identitou —
+            // povinnost nesplňuje.
+            "id": "test",
+            "name": "Test confirmation",
+            "name:cs": "Testovací potvrzení",
+            "name:en": "Test confirmation",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            // Problém posledního pokusu, který zprávu vůbec neodeslal
+            // (SendResult::PROBLEM_*).
+            "id": "last_problem",
+            "name": "Last problem",
+            "name:cs": "Poslední problém",
+            "name:en": "Last problem",
+            "type": "varchar",
+            "length": 30,
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        },
+        {
+            "id": "last_error",
+            "name": "Last error",
+            "name:cs": "Poslední chyba",
+            "name:en": "Last error",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true,
+            "system": true,
+            "group": "queue"
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_doc_sequence",
+            "type": "unique",
+            "columns": [
+                {"column": "doc_head"},
+                {"column": "doc_sequence"}
+            ]
+        },
+        {
+            // Fronta: splatné tržby a obnova zaseknutých.
+            "id": "idx_state_next_attempt",
+            "type": "index",
+            "columns": [
+                {"column": "state"},
+                {"column": "next_attempt"}
+            ]
+        },
+        {
+            "id": "idx_registration",
+            "type": "index",
+            "columns": [{"column": "registration"}]
+        },
+        {
+            "id": "idx_sold_at",
+            "type": "index",
+            "columns": [{"column": "sold_at"}]
+        }
+    ]
+}

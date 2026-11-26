@@ -1,0 +1,26 @@
+{
+    // Extension z economy.salesRegistration na číselné řady dokladů (#171 D4,
+    // D21): pokladní zařízení evidence tržeb = číselná řada.
+    //
+    // sales_registration_unit — evidenční jednotka, pod kterou se evidují
+    //   tržby dokladů této řady. Prázdné = výchozí jednotka registrace.
+    //   Označení pokladního zařízení ve zprávě (`id_pokl`) je kód řady
+    //   (`code`); musí projít maskou typu evidence, což při přiřazení
+    //   jednotky i při změně kódu hlídá Series\SeriesUnitHandler.
+    //
+    // Sloupec není systémový — edituje ho záložka formuláře řady
+    // (Series\SeriesUnitFormTab, bod rozšíření `formTabs`).
+
+    "table": "docs_core_number_series",
+    "columns": [
+        {
+            "id": "sales_registration_unit",
+            "name": "Registration unit",
+            "name:cs": "Evidenční jednotka",
+            "name:en": "Registration unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_sales_registration_units"
+        }
+    ]
+}
