@@ -410,6 +410,7 @@ Shortcut když nepotřebuješ vlastní labely:
 | `multiselect(col, options: ...)` | json — výběr více hodnot z cfgItem číselníku, hodnota = list; Document dělá `json_encode` v `beforeSave()` |
 | `separator(label: ...)` | — |
 | `lookup(col, table: ...)` | FK na velkou tabulku (viz reference kap. 22) |
+| `multiLookup(klíč, table: ...)` | víc záznamů z velké tabulky — ukládá se do child tabulky rodiče (recept 22, reference §4.7b) |
 | `content(blocks: [...])`, `component(name: ...)` | obsah jen ke čtení z bloků detailu (nápověda `hint`, text, hláška, vlastnosti — texty přes `formText()`) / pojmenovaná Svelte komponenta. HTML se neposílá — `html()` zanikl (#150 D82) |
 
 ```php
@@ -574,9 +575,74 @@ obě berou z téhož pravidla (`DocHeadDefaults::vatMode()` /
 
 ---
 
+## 22. Výběr více záznamů z tabulky — `multilookup`
+
+Smlouva pokrývá víc míst, úkol víc osob: vazba M:N, kterou má uživatel
+vyplnit rovnou v hlavičce, ne dialogem na každý řádek. Tři kroky.
+
+**1. Child tabulka vazby** — cizí klíč na rodiče, odkaz na cílovou tabulku
+(`reference`), nepovinně `order_pos`:
+
+```jsonc
+// tables/buildings_contracts_places.jsonc
+{"id": "contract",  "type": "int", "nullable": false, "reference": "buildings_contracts_contracts"},
+{"id": "place",     "type": "int", "nullable": false, "reference": "base_places_places"},
+{"id": "order_pos", "type": "smallint", "default": 0}
+```
+
+**2. Rodič ji deklaruje** v `childTables` — `dataKey` je klíč, pod kterým
+se s vazbami pracuje ve formuláři i v Document třídě:
+
+```jsonc
+"childTables": [
+    {"table": "buildings_contracts_places", "foreignKey": "contract", "dataKey": "places"}
+]
+```
+
+**3. Prvek ve formuláři** — `column` = `dataKey`:
+
+```php
+->col()
+    ->multiLookup(
+        'places',
+        table: 'base_places_places',
+        filter: $allowedTypes !== '' ? ['types' => $allowedTypes] : null,
+        label: 'Místa',
+        placeholder: 'Hledat místo…',
+    )
+```
+
+```json
+{"type": "multilookup", "column": "places", "label": "Místa",
+ "lookup": {"table": "base_places_places"}}
+```
+
+Hodnota ve formuláři je seznam id (`[12, 7]`), o převod na řádky a zpět se
+stará jádro. Cílová tabulka musí mít `TableLookup` (`lookups`
+v `module.jsonc`) — tentýž jako pro `lookup`.
+
+- **Filtr podle jiného pole** (druh smlouvy → povolené typy míst): pole
+  dostane `triggers: 'reload'`, formulář filtr přestaví v
+  `buildFormDefinition()`. Už vybrané záznamy, které novému filtru
+  nevyhovují, formulář nemaže — ohlásí je validace Document třídy.
+- **Validace v Document třídě**: `validate()` dostane pod `places` řádky
+  `[{id?, place, order_pos}]`; chybu dej na cestu `places.<index>.place` —
+  ukáže se u pole. Povinnost (aspoň jedno místo) je také věc dokumentu,
+  `required: true` jen přidá hvězdičku.
+- **Další sloupce vazby** (poznámka, platnost) prvek nespravuje: nový řádek
+  dostane výchozí hodnoty, existující se nemění. Když je má uživatel
+  editovat, přidej vedle sub-tabulku (recept 10).
+- **Dva odkazy na stejnou tabulku** v child tabulce (místo a fakturační
+  místo): odkazový sloupec řekni výslovně — `refColumn: 'place'`.
+- **Seznam v `buildFormDefinition()`** je v datech až při přepočtu, ne při
+  prvním načtení (reference §4.7b → Načtení).
+
+---
+
 # Časté chyby
 
-- **`lookup` v `inline`** — vyhodí `InvalidArgumentException` v konstruktoru `FormElement`. Inline povoluje jen `input` a `select`. Pro lookup udělej vlastní řádku v sloupci.
+- **`lookup` v `inline`** — vyhodí `InvalidArgumentException` v konstruktoru `FormElement`. Inline povoluje jen `input` a `select`. Pro lookup udělej vlastní řádku v sloupci. Totéž platí pro `multilookup`.
+- **`multilookup` nad klíčem, který rodič nemá v `childTables`** — `LogicException` při načtení formuláře a selhání `FormContractTest`. `column` prvku je `dataKey` child tabulky, ne sloupec.
 - **JSONC zápis vs. wire formát** — v JSONC piš `camelCase` (`titleNew`, `inputType`, `foreignKey`, `formId`, `tableId`, `readOnly`). Loader převede na `snake_case` pro frontend.
 - **Šířka labelu** — synchronizuje se per-sloupec (CSS Grid `fit-content(40%) minmax(0, 1fr)` — nejvýš 40 % sloupce, delší popisek se zalomí), **ne** napříč celou sekcí. Dva vedlejší sloupce v jedné sekci mohou mít různě široké label-dráhy. To je záměr.
 - **`separator` `hidden`** — nenastavuj ručně. `autoHideSeparators` v `TabBuilder::build()` ho skryje, pokud jsou všechny elementy za ním ve stejném sloupci skryté.

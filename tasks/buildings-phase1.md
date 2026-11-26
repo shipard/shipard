@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** naplánováno — design #174 D16–D27 schválen 2026-11-26; čeká na `tasks/form-multilookup.md` (#176)
+**Stav:** naplánováno — design #174 D16–D27 schválen 2026-11-26; předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
 
 > Task pro Claude Code (4 commity). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez

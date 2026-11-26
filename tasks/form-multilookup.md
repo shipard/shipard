@@ -1,6 +1,6 @@
 # Formulář — výběr více záznamů z tabulky, prvek `multilookup` (#176 D1–D10)
 
-**Stav:** částečně — backend (prvek, `MultiLookupBinding`, `FormController`, fixture modul, testy) a frontend (`MultiLookupInput`, chyby pole, dirty stav; ověřeno v prohlížeči nad fixture modulem na jednorázovém zdroji dat) hotové 2026-11-26; zbývá dokumentace (commit 3)
+**Stav:** hotovo — 2026-11-26 (4 commity: backend, oprava přepočtu, frontend, dokumentace); ověřeno testy, integračně nad dočasnými tabulkami a v prohlížeči nad fixture modulem na jednorázovém zdroji dat; první skutečné použití je pole Místa na smlouvě (`tasks/buildings-phase1.md`)
 
 > Task pro Claude Code (3 commity). Design: issue #176. Fáze 0 doplňku
 > Budovy (#174 D6, D11) — první skutečné použití bude pole Místa na
@@ -152,16 +152,41 @@
 
 ## Hotovo když
 
-- [ ] prvek `multilookup` jde zapsat v PHP builderu i v JSONC a chybná
+- [x] prvek `multilookup` jde zapsat v PHP builderu i v JSONC a chybná
       deklarace skončí srozumitelnou chybou v testu nad stromem
-- [ ] formulář fixture modulu načte, přepočítá a uloží vazby; změna pořadí
+      (`FormContractTest` — JSONC i PHP formuláře, fixture modul)
+- [x] formulář fixture modulu načte, přepočítá a uloží vazby; změna pořadí
       ani odebrání nemění id ostatních řádků, sloupec navíc zůstane
-- [ ] duplicita a neplatná hodnota = 422 na poli, chyba Document třídy
-      s cestou `<column>.N.<sloupec>` se ukáže u pole
-- [ ] v prohlížeči (fixture nebo dočasně Místa na libovolném formuláři
-      volného zdroje dat — nekommitovat) funguje hledání, klávesnice podle
-      D7, jen ke čtení, telefon, dirty stav a Zrušit bez uložení
-- [ ] dokumentace podle commitu 3, `**Stav:**` aktualizovaný
+      (`FormControllerMultiLookupTest`, integrační `FormMultiLookupSaveTest`)
+- [x] duplicita a neplatná hodnota = 422 na poli, chyba Document třídy
+      s cestou `<column>.N.<sloupec>` se ukáže u pole (v prohlížeči ověřeno
+      podvrženou odpovědí — fixture nemá Document třídu s validací)
+- [x] v prohlížeči (fixture modul dočasně zapnutý na jednorázovém zdroji
+      dat, nekomitováno) funguje hledání, klávesnice podle D7, jen ke čtení,
+      telefon, dirty stav a Zrušit bez uložení
+- [x] dokumentace podle commitu 3, `**Stav:**` aktualizovaný
+
+## Odchylky a doplnění proti zadání
+
+- **Mockup** z #176 nebyl k dispozici — vzhled a chování podle textu D7
+  a stylů `MultiselectInput` / `LookupInput`. Po výběru zůstává nabídka
+  otevřená (další záznam jde vybrat hned), nabídku otevře i klik do vstupu.
+- **Definice formuláře při `meta`** se staví dřív, než je v datech seznam
+  (prvky říká až definice); PHP formulář ho vidí při přepočtu. Zapsáno
+  v `docs/edit-forms.md` §4.7b → Načtení.
+- **Přepočet doplní seznam prvku, který do formuláře teprve přidal** —
+  jinak by první výběr při uložení smazal vazby, které uživatel neviděl.
+- **Read-only stav dokumentu**: klíč mimo `editable_columns` odmítne
+  stávající kontrola (422 `DOCUMENT_READONLY`), prvek `readOnly` klíč tiše
+  zahodí.
+- **Texty chyb** jsou v `core.system.formDefaults` (`multiLookupInvalid`,
+  `multiLookupDuplicate`) — po nasazení `ds-upgrade`, do té doby anglicky.
+- **Detekce neuložených změn** porovnává podle obsahu a pořadí všechny
+  seznamy, tedy i `multiselect`; prázdný seznam = nevyplněno.
+- **Limit hledání**: vybrané záznamy se skrývají až u klienta, pole proto
+  žádá o tolik položek navíc (strop endpointu 50).
+- **Fixture formulář** má i JSONC variantu; `kind` je výběr, aby šel
+  přepočet vyvolat v prohlížeči.
 
 ## Pasti
 

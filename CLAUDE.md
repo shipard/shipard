@@ -37,7 +37,7 @@ správce do `docs/operations/`; specifikace zůstávají v kořeni `docs/`.
 | `docs/document-system.md` | Dokumentový systém — Document třídy, hooky, validace, TableGateway, child tabulky, DocumentRegistry, **zámek záznamu** (`documentLockProviders`, §16), kdo plní `created_by` a **autor dokladu** (`DocAuthorResolver`, §13) |
 | `docs/alerts.md` | Systém upozornění — JSONC `alertChecks`, PHP `AlertCheck`, `AlertReconciler`, snooze/dismiss, CLI `alerts-run`; `AlertCheck` dostává volitelný 4. parametr `?DataSourceConfig` (země zdroje dat pro `world.<země>.*`, #121 task B) |
 | `docs/frontend.md` | Frontend architektura — Svelte 5, komponenty, ikony (Font Awesome), API komunikace |
-| `docs/edit-forms.md` | Editační formuláře — FormDefinition, taby, sekce, sloupce, `TableForm`, JSONC formy, recalculate, doc states, **Sub-tabulky** (sekce 15: endpoint `/subtable`, `renderSubtable()`, read-only, ConfirmDialog), **HeaderInfo + živý pruh `live_summary`** (sekce 21), **Lookup pole** (sekce 22) |
+| `docs/edit-forms.md` | Editační formuláře — FormDefinition, taby, sekce, sloupce, `TableForm`, JSONC formy, recalculate, doc states, **Sub-tabulky** (sekce 15: endpoint `/subtable`, `renderSubtable()`, read-only, ConfirmDialog), **HeaderInfo + živý pruh `live_summary`** (sekce 21), **Lookup pole** (sekce 22), **výběr více záznamů `multilookup`** (§4.7b) |
 | `docs/edit-forms-cookbook.md` | Editační formuláře — cookbook s izolovanými vzory pro psaní forem (JSONC i PHP `TableBuilder`); rychlý úvod, sekce/sloupce/inline/separator recepty, časté chyby. Pro hluboký referenční materiál viz `edit-forms.md`. |
 | `docs/operations/secrets.md` | Per-DS šifrování `encrypted_text` sloupců — `DsSecretCipher`, klíčový soubor, rotace, health check, threat model; **tajemství konfigurace zdroje dat** v `secrets/` (§5, #126 B1): `db.password`, `mail-relay.password`, `oidc-<id>.client-secret` — `DataSourceSecrets` + sloty, migrace krokem 0 `ds-upgrade` (`DataSourceSecretsMigrator`, odebírá z `main.json` podle `id` a hodnoty), `shpd-ds ds-secret`, sekce `doctor`; hodnota, která zůstala v `main.json`, se ignoruje a `doctor` ji hlásí chybou (B2) |
 | `docs/migration-guide.md` | Backup a přenos DS na jiný server — tarball, DB dump, perms, ověření |
@@ -355,6 +355,19 @@ na jednom místě, ostatní na něj odkazují):
 - Lookup pole podporují inline **edit** (tužka u vybrané hodnoty) a **create** („+ Vytvořit nový“ v dropdownu) přes vnořený `FormDialog`. Opt-in přes `editForm`/`createForm` flagy v lookup definici. Přidaný `editTriggers` flag (default false) ovládá, zda edit detailů triggerne recalculate v rodiči — zapíná se tam, kde edit propisuje data zpět do rodiče (položka → řádek). U Partnera vypnutý, jinak by edit detailů vynuloval adresu/banku přes destruktivní cascade.
 - Flag `createDefaults` (opt-in): „+ Vytvořit nový“ se předvyplní podle formuláře, ze kterého se zakládá — `TableLookup::createDefaults($parentRow, $parentHead)` + `POST /_ui/lookup/{table}/create-defaults`; data rodičů bere `LookupInput` ze Svelte contextu `form/formContext.js` (vzor `AssetsLookup` — karta majetku z řádku faktury).
 - `lookup` element **nelze** umístit do `inline` skupiny.
+- **`multilookup`** (#176, `tasks/form-multilookup.md`): víc záznamů
+  z velké tabulky — vazba M:N. Hodnota ve formuláři je seznam id, úložiště
+  **child tabulka** rodiče z `childTables` (`column` prvku = její
+  `dataKey`), ne JSON sloupec. Vazbu (odkazový sloupec podle `reference`,
+  jinak `refColumn`; pořadí `order_pos`) odvozuje `MultiLookupBinding`,
+  převod seznam ↔ řádky dělá `FormController` a klíč při uložení pustí jen
+  podle prvků aktuální definice formuláře — formulář bez prvku vazby
+  nesmaže (chybějící klíč ≠ prázdný seznam). `dataResolved[column]` je
+  seznam položek, vždy celý. Ostatní sloupce vazby prvek nespravuje (jejich
+  úprava = sub-tabulka); úprava ani založení záznamu z pole není. Hledá
+  týmž `TableLookup` jako `lookup`. `TabBuilder::multiLookup()`, frontend
+  `MultiLookupInput.svelte`; deklaraci hlídá `FormContractTest`.
+  Viz `docs/edit-forms.md` §4.7b a cookbook recept 22.
 - Detailně viz `docs/edit-forms.md` kapitola 22.
 
 ### Editační formuláře — obsah jen ke čtení (`content`, ne HTML)
