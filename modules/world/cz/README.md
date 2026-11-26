@@ -21,6 +21,7 @@ První konzument: **profil podatele** na registraci k DPH
 | `world.cz.taxOfficeBranches` | [config/taxOfficeBranches.jsonc](config/taxOfficeBranches.jsonc) | Územní pracoviště (201) — atribut `c_pracufo`, `office` = nadřízený úřad |
 | `world.cz.epoCountries` | [config/epoCountries.jsonc](config/epoCountries.jsonc) | Země podle daňového portálu — atribut `stat` v podání |
 | `world.cz.exchangeRateLists` | [config/exchangeRateLists.jsonc](config/exchangeRateLists.jsonc) | Typy kurzovních lístků ČNB (denní devizový trh, měsíční ostatní měny) — pořadí = priorita dohledání, `maxAgeDays` = nejvyšší stáří denního lístku (#121 D1, U1); čte `economy.exchangeRates` |
+| `world.cz.salesRegistrationTypes` | [config/salesRegistrationTypes.jsonc](config/salesRegistrationTypes.jsonc) | Typy evidence tržeb — `cz.eet2` (EET 2.0): platnost od, měna, adresy prostředí, masky polí datové zprávy (#171 D2, D17); čte doplněk `economy.salesRegistration`, který k typu přiřazuje engine |
 
 ## Principy
 

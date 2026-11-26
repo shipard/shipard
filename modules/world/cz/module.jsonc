@@ -17,5 +17,7 @@
         {"id": "world.cz.epoCountries", "file": "config/epoCountries.jsonc"},
         // Typy kurzovních lístků ČNB (#121 D1) — čte economy.exchangeRates.
         {"id": "world.cz.exchangeRateLists", "file": "config/exchangeRateLists.jsonc"},
+        // Typy evidence tržeb (#171 D2, D17) — čte doplněk economy.salesRegistration.
+        {"id": "world.cz.salesRegistrationTypes", "file": "config/salesRegistrationTypes.jsonc"},
     ],
 }

@@ -1,0 +1,49 @@
+{
+    // =========================================================================
+    // world.cz.salesRegistrationTypes — typy evidence tržeb pro Česko (#171 D2,
+    // D17). Čte doplněk economy.salesRegistration (SalesRegistrationTypes).
+    //
+    // Klíč = id typu (sloupec `type` registrace), tečková notace začínající
+    // zemí. Tady jsou jen DATA typu — třídu, která protokol umí (engine),
+    // přiřazuje k typu doplněk (`economy.salesRegistration.engines`), aby
+    // modul jádra nejmenoval třídu doplňku (#170 D6). Typ bez enginu se
+    // v registraci nenabízí.
+    //
+    //   - `validFrom` — odkdy povinnost platí; doklad před tímto datem do
+    //     evidence nevstoupí (fáze 2, #171 D8d).
+    //   - `currency` — měna částky v datové zprávě (malými, jako
+    //     world.base.currencies). Slučitelnost s měnou dokladu řeší doklady
+    //     (#171 O1), ne tento číselník.
+    //   - `environments` — adresy služby. `production` podle dokumentu
+    //     „Přístupové a provozní informace — produkce“ (eet.gov.cz, verze 1.2
+    //     z 11. 11. 2026), `playground` = neprodukční prostředí pro vývojáře
+    //     (potvrzení odtud není platné). Kam zpráva skutečně jde, rozhoduje
+    //     pojistka serveru a režim registrace v doplňku.
+    //   - `taxpayerId` / `unitId` / `cashRegisterId` / `serialNumber` — masky
+    //     polí datové zprávy podle XSD rozhraní v4 (regulární výraz bez
+    //     oddělovačů; kontroluje se celá hodnota). `label` = jak se
+    //     identifikátoru poplatníka v zemi říká.
+    // =========================================================================
+
+    "cz.eet2": {
+        "name": "EET 2.0 (Czech Republic)",
+        "name:cs": "EET 2.0 (Česko)",
+        "name:en": "EET 2.0 (Czech Republic)",
+        "country": "cz",
+        "validFrom": "2027-01-01",
+        "currency": "czk",
+        "environments": {
+            "production": { "url": "https://trzbyeet.gov.cz/eet/services/EETServiceSOAP/v4" },
+            "playground": { "url": "https://pg.trzbyeet.gov.cz/eet/services/EETServiceSOAP/v4" }
+        },
+        "taxpayerId": {
+            "label": "EIC",
+            "label:cs": "EIČ",
+            "label:en": "EIC",
+            "pattern": "^CZ[0-9]{8,10}$"
+        },
+        "unitId": { "pattern": "^[1-9][0-9]{0,8}$" },
+        "cashRegisterId": { "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,20}$" },
+        "serialNumber": { "pattern": "^[0-9a-zA-Z.,:;/#\\-_ ]{1,25}$" }
+    }
+}

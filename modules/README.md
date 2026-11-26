@@ -139,6 +139,8 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 
 ## Doplňky
 
-Zatím žádný doplněk.
+| Modul | Název | Popis |
+|-------|-------|-------|
+| [`economy.salesRegistration`](economy/salesRegistration/README.md) | Evidence tržeb | Evidence tržeb u správce daně (česká EET 2.0): registrace, evidenční jednotky, pokladní certifikát, pojistka serveru a odesílání zpráv |
 
 <!-- MODULY:END -->

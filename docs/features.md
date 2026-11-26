@@ -132,6 +132,7 @@ Agendy, které většina firem nepoužije — nejsou součástí základní inst
 a zapínají se ve zdroji dat, kde je chtějí (`docs/modules.md` §9, #170).
 
 - [ ] Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace
+- [ ] Evidence tržeb (EET 2.0) — odeslání tržeb z dokladů s kontaktní platbou správci daně; ne pokladní systém (#171)
 - [ ] Správa počítačové sítě
 
 ---

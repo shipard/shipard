@@ -1,0 +1,13 @@
+{
+    // =========================================================================
+    // economy.salesRegistration.engines — typ evidence → třída, která protokol
+    // typu umí (#171 D17). Data typu (adresy, masky, platnost) deklaruje modul
+    // země v `world.<země>.salesRegistrationTypes`; země je první část id typu.
+    //
+    // Typ, který tu není, se v registraci nenabízí — a naopak: záznam bez dat
+    // typu (modul země není ve zdroji dat aktivní) se ignoruje. Skládá
+    // SalesRegistrationTypes.
+    //
+    // Engine `cz.eet2` (EET 2.0) přibude s odesíláním zpráv.
+    // =========================================================================
+}

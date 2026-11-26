@@ -1,0 +1,32 @@
+{
+    // Evidence tržeb (#171) — doplněk: registrace k evidenci tržeb, evidenční
+    // jednotky, pokladní certifikát, pojistka serveru a odesílání zpráv.
+    // Data typu evidence deklaruje modul země (world.cz.salesRegistrationTypes,
+    // typ cz.eet2 = EET 2.0); třídu, která protokol země umí, přiřazuje tento
+    // doplněk (economy.salesRegistration.engines) — #171 D2, D17.
+    // Specifikace: docs/sales-registration.md u modulu.
+    "id": "economy.salesRegistration",
+    "name": "Sales registration",
+    "name:cs": "Evidence tržeb",
+    "name:en": "Sales registration",
+    "description": "Registration of sales with the tax authority (Czech EET 2.0): registrations, registration units, cash register certificate, server safety switch and message sending",
+    "description:cs": "Evidence tržeb u správce daně (česká EET 2.0): registrace, evidenční jednotky, pokladní certifikát, pojistka serveru a odesílání zpráv",
+    "description:en": "Registration of sales with the tax authority (Czech EET 2.0): registrations, registration units, cash register certificate, server safety switch and message sending",
+
+    // Doplněk (#170): mimo install.base, zapíná se ve zdroji dat přes
+    // `shpd-ds ds-module enable economy.salesRegistration`.
+    "kind": "addon",
+
+    // Záměrně bez závislosti na world.cz: typ se nabízí jen tam, kde je modul
+    // jeho země aktivní (SalesRegistrationTypes). Fáze 2 přidá docs.core.
+    "dependencies": ["core.system"],
+
+    "config": [
+        {
+            // Typ evidence → třída engine (#171 D17). Klíč = id typu z modulu
+            // země; země je první část id (`cz.eet2` → world.cz).
+            "id": "economy.salesRegistration.engines",
+            "file": "config/engines.jsonc"
+        }
+    ]
+}
