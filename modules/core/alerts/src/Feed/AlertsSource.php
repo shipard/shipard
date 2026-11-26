@@ -61,6 +61,9 @@ final class AlertsSource implements FeedSource
     /** Nad tolik aktivních alertů jednoho checku → jedna skupinová karta. */
     private const int GROUP_THRESHOLD = 3;
 
+    /** Sekce navigace z kontextu nálezu (`context.navSection`). */
+    private const NAV_SECTION_SQL = "JSON_VALUE(`context`, '$.navSection')";
+
     /** Katalog textů karet (`config/feedTexts.jsonc`). */
     private const FEED_TEXTS_CFG_ITEM = 'core.alerts.feedTexts';
 
@@ -94,10 +97,14 @@ final class AlertsSource implements FeedSource
 
         // Fáze 1 — agregát per check. Malý výsledek (počet checků, ne alertů),
         // bez LIMITu → skupinové karty mají pravdivý počet i nad pojistným
-        // limitem zdroje.
+        // limitem zdroje. `nav_*` = sekce z kontextu nálezů (#175 U4):
+        // skupinová karta ji převezme, jen když ji nesou všechny alerty
+        // checku a shodují se v ní.
         $groups = $ctx->db->fetchAll(
             'SELECT `check_id`, COUNT(*) AS `cnt`, MAX(`severity`) AS `max_severity`,'
-            . ' MAX(`last_seen_at`) AS `last_at`, MAX(`first_seen_at`) AS `first_at`'
+            . ' MAX(`last_seen_at`) AS `last_at`, MAX(`first_seen_at`) AS `first_at`,'
+            . ' COUNT(' . self::NAV_SECTION_SQL . ') AS `nav_cnt`,'
+            . ' MIN(' . self::NAV_SECTION_SQL . ') AS `nav_min`, MAX(' . self::NAV_SECTION_SQL . ') AS `nav_max`'
             . ' FROM `' . self::TABLE . '`'
             . ' WHERE `alert_state` = %i'
             . ' GROUP BY `check_id`',
@@ -122,7 +129,7 @@ final class AlertsSource implements FeedSource
         // per sekce. Reálně ≤ GROUP_THRESHOLD řádků per check.
         if ($individualCheckIds !== []) {
             $rows = $ctx->db->fetchAll(
-                'SELECT `id`, `check_id`, `title`, `message`, `severity`, `actions`,'
+                'SELECT `id`, `check_id`, `title`, `message`, `severity`, `actions`, `context`,'
                 . ' `first_seen_at`, `last_seen_at`'
                 . ' FROM `' . self::TABLE . '`'
                 . ' WHERE `alert_state` = %i AND `check_id` IN %in'
@@ -163,9 +170,12 @@ final class AlertsSource implements FeedSource
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,
-            // Atribuce pro badge sekcí (Fáze 3) — per check z module.jsonc;
-            // bez registry / bez pole null = karta se do badge nepočítá.
-            'navSection' => $this->registry?->get($checkId)?->navSection,
+            // Atribuce pro badge sekcí (Fáze 3): sekce z kontextu nálezu
+            // (`context.navSection` — check společný víc agendám, #175 U4)
+            // má přednost před sekcí checku z module.jsonc; bez obojího
+            // null = karta se do badge nepočítá.
+            'navSection' => self::contextNavSection($row['context'] ?? null)
+                ?? $this->registry?->get($checkId)?->navSection,
             'title'      => (string) ($row['title'] ?? ''),
             'subtitle'   => $subtitle,
             'timestamp'  => $this->toAtom($row['last_seen_at'] ?? null) ?? $this->toAtom($row['first_seen_at'] ?? null),
@@ -203,7 +213,7 @@ final class AlertsSource implements FeedSource
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,
-            'navSection' => $this->registry?->get($checkId)?->navSection,
+            'navSection' => self::groupNavSection($g) ?? $this->registry?->get($checkId)?->navSection,
             'title'      => $title,
             'subtitle'   => $texts->t('group.subtitle', '{n} alerts', ['n' => $count]),
             'timestamp'  => $this->toAtom($g['last_at'] ?? null) ?? $this->toAtom($g['first_at'] ?? null),
@@ -221,6 +231,29 @@ final class AlertsSource implements FeedSource
                 'primary' => true,
             ]],
         ];
+    }
+
+    /** `context.navSection` nálezu; kontext bez klíče nebo nečitelný = null. */
+    private static function contextNavSection(mixed $raw): ?string
+    {
+        $context = is_string($raw) ? json_decode($raw, true) : (is_array($raw) ? $raw : null);
+        $section = is_array($context) ? ($context['navSection'] ?? null) : null;
+        return is_string($section) && $section !== '' ? $section : null;
+    }
+
+    /**
+     * Sekce skupinové karty z nálezů: jen když ji nese každý alert checku
+     * a všechny se shodují (jinak rozhoduje sekce checku).
+     *
+     * @param array<string,mixed> $g agregátní řádek fáze 1
+     */
+    private static function groupNavSection(array $g): ?string
+    {
+        $section = $g['nav_min'] ?? null;
+        if (!is_string($section) || $section === '' || $section !== ($g['nav_max'] ?? null)) {
+            return null;
+        }
+        return (int) ($g['nav_cnt'] ?? 0) === (int) ($g['cnt'] ?? -1) ? $section : null;
     }
 
     /**

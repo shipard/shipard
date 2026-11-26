@@ -88,6 +88,10 @@ class WorkOrderInvoicingSourceTest extends TestCase
         $this->assertArrayHasKey($source->viewerId(), $viewers);
         $this->assertSame($viewers[$source->viewerId()]['navSection'], $source->navSection());
 
+        // Předmět nálezu upozornění = tableId tabulky zakázek z její definice.
+        $heads = JsoncParser::parseFile(self::MODULE . '/tables/economy_work_orders_heads.jsonc');
+        $this->assertSame($heads['tableId'], $source->tableId());
+
         // Tabulka období má sloupec záznamu, na který se evidence ptá.
         $periods = JsoncParser::parseFile(self::MODULE . '/tables/economy_work_orders_periods.jsonc');
         $this->assertContains($source->periodsRecordColumn(), array_column($periods['columns'], 'id'));

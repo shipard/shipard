@@ -93,6 +93,11 @@ class RegistryTestSource extends AbstractPeriodicInvoicingSource
         return 'test_registry_heads';
     }
 
+    public function tableId(): int
+    {
+        return 9001;
+    }
+
     public function periodsTable(): string
     {
         return 'test_registry_periods';

@@ -2,23 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Shipard\Module\Economy\WorkOrders\Checks;
+namespace Shipard\Module\Economy\PeriodicInvoicing\Checks;
 
 use Shipard\Core\Alerts\AlertCheck;
 use Shipard\Core\Alerts\AlertFinding;
 use Shipard\Module\Docs\Core\DocsHeadsViewer;
 use Shipard\Module\Economy\PeriodicInvoicing\InvoiceBuilder;
-use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
+use Shipard\Module\Economy\PeriodicInvoicing\Viewer\InvoiceDocViewers;
 
 /**
  * Koncepty z periodické fakturace ke kontrole (tasks §6): **jeden**
  * souhrnný nález „N konceptů … ke kontrole“ — ne karta na doklad (zdroj
  * s ≈95 fakturami měsíčně by zahltil feed). Akce otevře viewer faktur
  * (a zálohových faktur, jsou-li) s filtrem zdroje Periodická fakturace.
- * Bez konceptů žádný nález → alert se uzavře.
+ * Bez konceptů žádný nález → alert se uzavře. Jeden nález pro všechny
+ * zdroje fakturace (#175 D6).
  */
 class InvoicesToReviewCheck extends AlertCheck
 {
+    use UsesInvoicingSources;
+
     public const FINDING_KEY = 'summary';
 
     public function run(): array
@@ -35,7 +38,7 @@ class InvoicesToReviewCheck extends AlertCheck
             if ($count <= 0) {
                 continue;
             }
-            $viewerId = WorkOrdersViewer::DOC_TYPE_VIEWERS[$docType] ?? WorkOrdersViewer::DOCUMENTS_VIEWER;
+            $viewerId = InvoiceDocViewers::viewerFor((string) $docType);
             $actions[] = [
                 'id'      => 'open_' . $docType,
                 'label'   => $this->viewerLabel($docType, $count, $isCs),
@@ -58,8 +61,25 @@ class InvoicesToReviewCheck extends AlertCheck
                 : 'The periodic invoicing run issued invoice drafts — review and confirm them, or delete them: a deleted draft stops its period.',
             severity: 'info',
             actions: $actions,
-            context: ['total' => $total, 'byDocType' => $counts],
+            context: ['total' => $total, 'byDocType' => $counts] + $this->navSectionContext(),
         )];
+    }
+
+    /**
+     * Sekce badge souhrnného nálezu: doklady všech zdrojů nesou týž druh
+     * zdroje dokladu (#175 D7), nález proto patří sekci jen tehdy, když se
+     * na ní všechny registrované zdroje shodnou.
+     *
+     * @return array{navSection?: string}
+     */
+    private function navSectionContext(): array
+    {
+        $sections = [];
+        foreach ($this->sources()->all() as $source) {
+            $sections[(string) $source->navSection()] = true;
+        }
+        $section = count($sections) === 1 ? (string) array_key_first($sections) : '';
+        return $section !== '' ? ['navSection' => $section] : [];
     }
 
     /**

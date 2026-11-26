@@ -35,6 +35,9 @@ interface PeriodicInvoicingSource
     /** Tabulka záznamů zdroje (nad ní zdroj deklaruje akce záznamu). */
     public function table(): string;
 
+    /** Stabilní `tableId` tabulky záznamů — předmět nálezu upozornění. */
+    public function tableId(): int;
+
     /** Tabulka evidence období zdroje. */
     public function periodsTable(): string;
 

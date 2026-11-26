@@ -76,6 +76,7 @@ final class AlertsSourceTest extends TestCase
         int $maxSeverity,
         ?string $lastAt = '2026-06-28 12:00:00',
         ?string $firstAt = '2026-06-01 08:00:00',
+        ?array $nav = null,
     ): array {
         return [
             'check_id'     => $checkId,
@@ -83,11 +84,15 @@ final class AlertsSourceTest extends TestCase
             'max_severity' => $maxSeverity,
             'last_at'      => $lastAt,
             'first_at'     => $firstAt,
+            // Agregát `context.navSection` nálezů: [počet, min, max].
+            'nav_cnt'      => $nav[0] ?? 0,
+            'nav_min'      => $nav[1] ?? null,
+            'nav_max'      => $nav[2] ?? null,
         ];
     }
 
     /** @return array<string,mixed> */
-    private function alertRow(int $severity, int $id = 1, ?array $actions = null): array
+    private function alertRow(int $severity, int $id = 1, ?array $actions = null, ?array $context = null): array
     {
         return [
             'id'            => $id,
@@ -96,6 +101,7 @@ final class AlertsSourceTest extends TestCase
             'message'       => 'Založ vlastní Osobu.',
             'severity'      => $severity,
             'actions'       => $actions === null ? null : json_encode($actions),
+            'context'       => $context === null ? null : json_encode($context),
             'first_seen_at' => '2026-06-01 08:00:00',
             'last_seen_at'  => '2026-06-28 12:00:00',
         ];
@@ -320,6 +326,83 @@ final class AlertsSourceTest extends TestCase
         // Skupinová karta (check nad prahem).
         $group = $src->collectCards($this->context([$this->groupRow('base.persons.missing_own_person', 4, 20)]))[0];
         $this->assertSame('accounting', $group['navSection']);
+    }
+
+    public function testNavSectionFromFindingContextWinsOverTheCheck(): void
+    {
+        // Check společný víc agendám (#175 U4): sekci nese nález.
+        $registry = new AlertCheckRegistry([ModuleDefinition::fromArray([
+            'id'          => 'base.persons',
+            'name'        => 'Persons',
+            'alertChecks' => [[
+                'id'         => 'base.persons.missing_own_person',
+                'name'       => 'X',
+                'class'      => 'X',
+                'interval'   => '1h',
+                'navSection' => 'accounting',
+            ]],
+        ])], 'cs');
+        $src = new AlertsSource($registry);
+
+        $row = $this->alertRow(20, context: ['periods' => ['2026-10-01'], 'navSection' => 'workOrders']);
+        $this->assertSame('workOrders', $src->collectCards($this->singleAlertContext($row))[0]['navSection']);
+
+        // Kontext bez klíče, prázdný nebo nečitelný → sekce checku.
+        foreach ([['periods' => []], ['navSection' => ''], ['navSection' => 5]] as $context) {
+            $row = $this->alertRow(20, context: $context);
+            $this->assertSame('accounting', $src->collectCards($this->singleAlertContext($row))[0]['navSection']);
+        }
+        $row = $this->alertRow(20);
+        $row['context'] = '{broken';
+        $this->assertSame('accounting', $src->collectCards($this->singleAlertContext($row))[0]['navSection']);
+
+        // Bez registru i bez sekce checku rozhoduje jen nález.
+        $row = $this->alertRow(20, context: ['navSection' => 'workOrders']);
+        $this->assertSame('workOrders', (new AlertsSource())->collectCards($this->singleAlertContext($row))[0]['navSection']);
+    }
+
+    public function testGroupCardTakesContextSectionOnlyWhenAllAlertsAgree(): void
+    {
+        $registry = new AlertCheckRegistry([ModuleDefinition::fromArray([
+            'id'          => 'base.persons',
+            'name'        => 'Persons',
+            'alertChecks' => [[
+                'id'         => 'base.persons.missing_own_person',
+                'name'       => 'X',
+                'class'      => 'X',
+                'interval'   => '1h',
+                'navSection' => 'accounting',
+            ]],
+        ])], 'cs');
+        $src = new AlertsSource($registry);
+        $section = fn(?array $nav): ?string => $src->collectCards($this->context(
+            [$this->groupRow('base.persons.missing_own_person', 4, 20, nav: $nav)],
+        ))[0]['navSection'];
+
+        $this->assertSame('workOrders', $section([4, 'workOrders', 'workOrders']), 'všechny nálezy v téže sekci');
+        $this->assertSame('accounting', $section([4, 'buildings', 'workOrders']), 'nálezy dvou sekcí → sekce checku');
+        $this->assertSame('accounting', $section([3, 'workOrders', 'workOrders']), 'jeden nález sekci nenese');
+        $this->assertSame('accounting', $section(null));
+        $this->assertNull((new AlertsSource())->collectCards($this->context(
+            [$this->groupRow('base.persons.missing_own_person', 4, 20, nav: [4, 'buildings', 'workOrders'])],
+        ))[0]['navSection']);
+    }
+
+    public function testQueriesReadTheFindingContext(): void
+    {
+        $sqls = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(function (mixed ...$args) use (&$sqls): array {
+            $sqls[] = (string) $args[0];
+            return str_contains((string) $args[0], 'GROUP BY')
+                ? [$this->groupRow('base.persons.missing_own_person', 1, 20)]
+                : [$this->alertRow(20)];
+        });
+        (new AlertsSource())->collectCards(new FeedContext($db, ShippedFeedTexts::config('cs'), 'cs', 30));
+
+        $this->assertStringContainsString("COUNT(JSON_VALUE(`context`, '$.navSection')) AS `nav_cnt`", $sqls[0]);
+        $this->assertStringContainsString("MIN(JSON_VALUE(`context`, '$.navSection')) AS `nav_min`", $sqls[0]);
+        $this->assertStringContainsString('`actions`, `context`,', $sqls[1]);
     }
 
     public function testNavSectionNullWithoutRegistryOrField(): void

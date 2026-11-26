@@ -48,6 +48,43 @@ class PeriodicInvoicingModuleTest extends TestCase
         }
     }
 
+    public function testRunCommandCronAlertsAndSettingsLiveInTheModule(): void
+    {
+        $raw = JsoncParser::parseFile(self::MODULE . '/module.jsonc');
+        $module = ModuleDefinition::fromArray($raw);
+
+        $this->assertSame(
+            [['command' => 'periodic-invoicing-run', 'slot' => 'daily', 'order' => 600, 'states' => ['active']]],
+            $module->cronJobs,
+        );
+        $this->assertGreaterThan(ModuleDefinition::CRON_JOB_DEFAULT_ORDER, $module->cronJobs[0]['order'], 'běh až po vat-periods-ensure');
+
+        // Id checků malými písmeny; check sekci nemá — nese ji nález (U4).
+        $this->assertSame(
+            [
+                'economy.periodicinvoicing.invoices_to_review',
+                'economy.periodicinvoicing.period_failed',
+                'economy.periodicinvoicing.catchup_blocked',
+                'economy.periodicinvoicing.period_waiting',
+            ],
+            array_column($raw['alertChecks'], 'id'),
+        );
+        foreach ($raw['alertChecks'] as $check) {
+            $this->assertArrayNotHasKey('navSection', $check, $check['id']);
+            $this->assertTrue(class_exists($check['class']), $check['class']);
+        }
+
+        // Stránka nastavení v sekci Účetnictví (U5), klíč pod id modulu.
+        $this->assertSame([['page' => 'periodicInvoicing', 'section' => 'accounting', 'order' => 80]], $raw['settingsItems']);
+        $this->assertSame(['periodicInvoicing'], array_column($raw['settingsPages'], 'id'));
+        $this->assertSame(
+            [\Shipard\Module\Economy\PeriodicInvoicing\Checks\PeriodWaitingCheck::SETTING_WAIT_DAYS],
+            array_column($raw['settingsPages'][0]['fields'], 'id'),
+        );
+        $sections = array_column(JsoncParser::parseFile(self::MODULES . '/install/base/config/settingsSections.jsonc')['sections'], 'id');
+        $this->assertContains('accounting', $sections);
+    }
+
     public function testEngineSourcesDoNotNameASource(): void
     {
         // Jádro o zdroji neví (#175 Pasti): žádný odkaz na třídy ani tabulky

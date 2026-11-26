@@ -128,7 +128,7 @@ class ExchangeRatesModuleTest extends TestCase
         $this->assertArrayHasKey('description:cs', $check);
 
         // Id kontroly smí mít jen malá písmena (AlertCheckDefinition) — modul s camelCase id
-        // proto používá `economy.exchangerates.*` jako `economy.workorders.*`; neplatné id by
+        // proto používá `economy.exchangerates.*` jako `economy.periodicinvoicing.*`; neplatné id by
         // shodilo celý registr upozornění zdroje dat.
         $registry = new AlertCheckRegistry([ModuleDefinition::fromArray(self::module())], 'cs');
         $definition = $registry->get('economy.exchangerates.list_missing');

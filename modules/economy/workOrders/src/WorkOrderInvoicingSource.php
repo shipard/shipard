@@ -22,6 +22,8 @@ use Shipard\Module\Economy\PeriodicInvoicing\Source\AbstractPeriodicInvoicingSou
 class WorkOrderInvoicingSource extends AbstractPeriodicInvoicingSource
 {
     public const ID = 'workOrders';
+    /** Stabilní tableId `economy_work_orders_heads` (hlídá test proti definici tabulky). */
+    public const TABLE_ID = 460;
     public const PERIODS_TABLE = 'economy_work_orders_periods';
     public const PERIODS_RECORD_COLUMN = 'work_order';
     public const NAV_SECTION = 'workOrders';
@@ -37,6 +39,11 @@ class WorkOrderInvoicingSource extends AbstractPeriodicInvoicingSource
     public function table(): string
     {
         return WorkOrderDocument::TABLE;
+    }
+
+    public function tableId(): int
+    {
+        return self::TABLE_ID;
     }
 
     public function periodsTable(): string

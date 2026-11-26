@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Shipard\Module\Economy\WorkOrders\Checks;
+namespace Shipard\Module\Economy\PeriodicInvoicing\Checks;
 
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 
 /**
- * Období čeká na podklady (D10): per zakázka — `waiting` období čekající
- * déle než lhůta (`economy.workOrders.contributorWaitDays`, výchozí 10)
+ * Období čeká na podklady (D10): per záznam zdroje — `waiting` období
+ * čekající déle než lhůta (`economy.periodicInvoicing.contributorWaitDays`,
+ * výchozí 10)
  * nebo s výsledkem `edited` (podklady jsou, ale koncept byl ručně upraven
  * — běh ho nepřegeneruje, udělá to akce Přegenerovat).
  */
 class PeriodWaitingCheck extends PeriodCheckBase
 {
-    public const SETTING_WAIT_DAYS = 'economy.workOrders.contributorWaitDays';
+    public const SETTING_WAIT_DAYS = 'economy.periodicInvoicing.contributorWaitDays';
     public const DEFAULT_WAIT_DAYS = 10;
 
     public function run(): array
@@ -23,8 +24,8 @@ class PeriodWaitingCheck extends PeriodCheckBase
         $isCs = $this->language === 'cs';
         $limit = (new \DateTimeImmutable($this->today()))->modify('-' . $this->waitDays() . ' days')->format('Y-m-d 00:00:00');
         $findings = [];
-        foreach ($this->byWorkOrder($this->periods([PeriodRepository::STATE_WAITING], [PeriodRepository::RESULT_EDITED], $limit)) as $workOrderId => $periods) {
-            $label = self::workOrderLabel($periods[0]);
+        foreach ($this->recordsWithPeriods([PeriodRepository::STATE_WAITING], [PeriodRepository::RESULT_EDITED], $limit) as $group) {
+            $periods = $group['periods'];
             $edited = array_values(array_filter($periods, static fn(array $p): bool => (string) ($p['result'] ?? '') === PeriodRepository::RESULT_EDITED));
             $overdue = array_values(array_filter($periods, static fn(array $p): bool => (string) ($p['result'] ?? '') !== PeriodRepository::RESULT_EDITED));
             $parts = [];
@@ -41,14 +42,10 @@ class PeriodWaitingCheck extends PeriodCheckBase
                     : "input is ready but the draft was edited manually — use Regenerate: {$list}";
             }
             $findings[] = $this->finding(
-                $workOrderId,
-                $periods,
-                $isCs
-                    ? "Zakázka {$label}: období čeká na podklady"
-                    : "Work order {$label}: period waiting for input",
+                $group,
+                $isCs ? 'období čeká na podklady' : 'period waiting for input',
                 self::capitalize(implode('; ', $parts)),
                 'warning',
-                $isCs,
             );
         }
         return $findings;

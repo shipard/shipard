@@ -36,6 +36,7 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessRulesProvisioner;
 use Shipard\Module\Core\Units\UnitsProvisioner;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\NumberSeriesCodeBackfill;
+use Shipard\Module\Economy\WorkOrders\Upgrade\LegacyInvoicingAlertsCleanup;
 use Shipard\Module\Docs\Core\NumberSeriesProvisioner;
 use Shipard\Module\Economy\Accbal\BalancesProvisioner;
 use Shipard\Module\Economy\Accbal\ClearingInfrastructureProvisioner;
@@ -452,6 +453,11 @@ class DsUpgradeCommand extends Command
         // z doby před zavedením sloupce a řádkům z importu přes generické
         // CRUD. Idempotentní — druhý běh nic nenajde.
         $this->backfillRecordCodes($resolvedModules, $dsConnection, $output);
+
+        // Osiřelé alerty po přejmenování checků periodické fakturace (#175):
+        // `economy.workorders.*` už žádný check nevrací a reconciler je sám
+        // neuzavře. BEZPODMÍNEČNĚ jako doplnění kódů; idempotentní.
+        $this->closeLegacyInvoicingAlerts($resolvedModules, $dsConnection, $output);
 
         $secretsWarnings = DsSecretCipher::healthCheck($dsConfig);
         foreach ($secretsWarnings as $warning) {
@@ -1356,6 +1362,29 @@ class DsUpgradeCommand extends Command
             if ($count > 0) {
                 $output->writeln(sprintf('  [FILL]   %s — filled: %d', $label, $count));
             }
+        }
+    }
+
+    /**
+     * Uzavře otevřené alerty se starým id checků periodické fakturace
+     * (`economy.workorders.*`, #175) — viz komentář u volání v execute().
+     * Řádek výpisu jen když se něco uzavřelo.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function closeLegacyInvoicingAlerts(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        if (!$this->isModuleActive($resolvedModules, 'core.alerts')
+            || !$this->isModuleActive($resolvedModules, 'economy.workOrders')
+        ) {
+            return;
+        }
+        $resolved = (new LegacyInvoicingAlertsCleanup($dsConnection->getDibiConnection()))->run();
+        if ($resolved > 0) {
+            $output->writeln(sprintf('  [FIX]    legacy periodic invoicing alerts (economy.workorders.*) — resolved: %d', $resolved));
         }
     }
 

@@ -134,7 +134,7 @@ class CronCommandTest extends TestCase
         ],
         'two-minutes'  => [],
         'five-minutes' => ['exchange-rates-download', 'sales-registration-reconcile', 'alerts-run'],
-        'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
+        'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'periodic-invoicing-run'],
         'weekly'       => ['alerts-prune'],
     ];
 
@@ -214,8 +214,8 @@ class CronCommandTest extends TestCase
             'economy/vat'        => ['economy.vat', ['core.system'], [
                 ['command' => 'vat-periods-ensure', 'slot' => 'daily'],
             ]],
-            'economy/workOrders' => ['economy.workOrders', ['core.system'], [
-                ['command' => 'work-orders-invoice-run', 'slot' => 'daily'],
+            'economy/periodicInvoicing' => ['economy.periodicInvoicing', ['core.system'], [
+                ['command' => 'periodic-invoicing-run', 'slot' => 'daily', 'order' => 600],
             ]],
             'economy/exchangeRates' => ['economy.exchangeRates', ['core.system'], [
                 ['command' => 'exchange-rates-download', 'slot' => 'five-minutes'],
@@ -225,7 +225,7 @@ class CronCommandTest extends TestCase
                 ['command' => 'sales-registration-reconcile', 'slot' => 'five-minutes'],
             ]],
             'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts'], []],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.periodicInvoicing', 'economy.exchangeRates', 'economy.salesRegistration'], []],
         ];
         foreach ($defs as $path => [$id, $deps, $cronJobs]) {
             mkdir($root . '/' . $path, 0755, true);
@@ -365,7 +365,7 @@ class CronCommandTest extends TestCase
         $exit = $tester->execute(['--slot' => 'daily']);
 
         $this->assertSame(0, $exit);
-        // server job ds-state-check + 2 DS × (mail-idempotency-prune, vat-periods-ensure, work-orders-invoice-run)
+        // server job ds-state-check + 2 DS × (mail-idempotency-prune, vat-periods-ensure, periodic-invoicing-run)
         $this->assertCount(7, $cmd->callLog);
 
         $hb = $this->readHeartbeat('daily');
@@ -416,7 +416,7 @@ class CronCommandTest extends TestCase
             ['ds' => '(server)', 'job' => 'ds-state-check'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-idempotency-prune'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'vat-periods-ensure'],
-            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'work-orders-invoice-run'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'periodic-invoicing-run'],
         ], $cmd->callLog);
         $this->assertSame(1, $this->readHeartbeat('daily')['dsCount']);
     }
@@ -783,7 +783,7 @@ class CronCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('· mail-idempotency-prune: skipped (module core.mail not active)', $display);
         $this->assertStringContainsString('· vat-periods-ensure: skipped (module economy.vat not active)', $display);
-        $this->assertStringContainsString('· work-orders-invoice-run: skipped (module economy.workOrders not active)', $display);
+        $this->assertStringContainsString('· periodic-invoicing-run: skipped (module economy.periodicInvoicing not active)', $display);
     }
 
     public function testJobsForModulesKeepsJobsOfActiveModules(): void
@@ -883,7 +883,7 @@ class CronCommandTest extends TestCase
         $this->assertSame([
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-idempotency-prune'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'vat-periods-ensure'],
-            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'work-orders-invoice-run'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'periodic-invoicing-run'],
         ], $cmd->callLog);
 
         [$cmd, $tester] = $this->makeTester();

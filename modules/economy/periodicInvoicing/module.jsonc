@@ -16,6 +16,110 @@
 
     "dependencies": ["core.system", "core.alerts", "core.units", "base.persons", "economy.codebooks", "docs.core", "core.exchange"],
 
+    // Příkazy shpd-ds (#172 D2) — třídy v src/Command/.
+    "commands": [
+        "Shipard\\Module\\Economy\\PeriodicInvoicing\\Command\\PeriodicInvoicingRunCommand"
+    ],
+
+    // Úloha cronu (#172 D6, #175 D6): jeden denní běh pro všechny zdroje
+    // fakturace. `order` nad výchozí hodnotou drží běh za `vat-periods-ensure`
+    // (economy.vat) — doklad vzniká až do založených období DPH, jako před
+    // přesunem úlohy ze Zakázek.
+    "cronJobs": [
+        {"command": "periodic-invoicing-run", "slot": "daily", "order": 600}
+    ],
+
+    // Nastavení → Účetnictví → Periodická fakturace (fáze 2 D10, #175 U5):
+    // lhůta čekání na podklady přispěvatele, po které se hlásí upozornění.
+    // Společná pro všechny zdroje fakturace.
+    "settingsItems": [
+        { "page": "periodicInvoicing", "section": "accounting", "order": 80 }
+    ],
+
+    "settingsPages": [
+        {
+            "id": "periodicInvoicing",
+            "name": "Periodic invoicing",
+            "name:cs": "Periodická fakturace",
+            "name:en": "Periodic invoicing",
+            "icon": "invoice",
+            "fields": [
+                {
+                    "id": "economy.periodicInvoicing.contributorWaitDays",
+                    "type": "text",
+                    "name": "Waiting for input (days)",
+                    "name:cs": "Čekání na podklady (dny)",
+                    "name:en": "Waiting for input (days)",
+                    "hint": "Empty = 10. A period waiting for contributor input longer than this raises an alert.",
+                    "hint:cs": "Prázdné = 10. Období, které čeká na podklady přispěvatele déle, ohlásí upozornění.",
+                    "hint:en": "Empty = 10. A period waiting for contributor input longer than this raises an alert.",
+                    "maxLength": 3
+                }
+            ]
+        }
+    ],
+
+    // Upozornění periodické fakturace (fáze 2 §6, #175 D6) — jednou pro
+    // všechny zdroje: jeden souhrnný nález konceptů ke kontrole, per záznam
+    // zdroje selhání období, pojistka dohánění a čekání na podklady. Id
+    // checku musí být malými písmeny (AlertCheckDefinition), proto
+    // `periodicinvoicing`, ne id modulu. Check nemá `navSection` — sekci
+    // badge nese nález v `context.navSection` (sekce vieweru zdroje, U4).
+    "alertChecks": [
+        {
+            "id": "economy.periodicinvoicing.invoices_to_review",
+            "name": "Periodic invoicing drafts to review",
+            "name:cs": "Koncepty z periodické fakturace ke kontrole",
+            "name:en": "Periodic invoicing drafts to review",
+            "description": "One summary finding: drafts issued by periodic invoicing waiting for review.",
+            "description:cs": "Jeden souhrnný nález: koncepty vystavené periodickou fakturací čekají na kontrolu.",
+            "description:en": "One summary finding: drafts issued by periodic invoicing waiting for review.",
+            "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Checks\\InvoicesToReviewCheck",
+            "severity": "info",
+            "interval": "1h",
+            "tags": ["periodicInvoicing", "documents"]
+        },
+        {
+            "id": "economy.periodicinvoicing.period_failed",
+            "name": "Periodic invoicing period failed",
+            "name:cs": "Období periodické fakturace se nepodařilo vystavit",
+            "name:en": "Periodic invoicing period failed",
+            "description": "Per record of an invoicing source: periods the run could not issue (error, no valid row, missing series).",
+            "description:cs": "Per záznam zdroje fakturace: období, která běh nevystavil (chyba, žádný platný řádek, chybějící řada).",
+            "description:en": "Per record of an invoicing source: periods the run could not issue (error, no valid row, missing series).",
+            "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Checks\\PeriodFailedCheck",
+            "severity": "warning",
+            "interval": "1h",
+            "tags": ["periodicInvoicing"]
+        },
+        {
+            "id": "economy.periodicinvoicing.catchup_blocked",
+            "name": "Periodic invoicing catch-up blocked",
+            "name:cs": "Periodická fakturace čeká na vystavení dlužných období",
+            "name:en": "Periodic invoicing catch-up blocked",
+            "description": "Per record of an invoicing source: more than three due periods — the run stops, use Issue due periods.",
+            "description:cs": "Per záznam zdroje fakturace: víc než tři dlužná období — běh je nevystaví, použij Vystavit dlužná období.",
+            "description:en": "Per record of an invoicing source: more than three due periods — the run stops, use Issue due periods.",
+            "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Checks\\CatchupBlockedCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "tags": ["periodicInvoicing"]
+        },
+        {
+            "id": "economy.periodicinvoicing.period_waiting",
+            "name": "Periodic invoicing period waiting for input",
+            "name:cs": "Období periodické fakturace čeká na podklady",
+            "name:en": "Periodic invoicing period waiting for input",
+            "description": "Per record of an invoicing source: periods waiting for contributor input longer than the limit, or with input ready but a manually edited draft.",
+            "description:cs": "Per záznam zdroje fakturace: období čekající na podklady déle než lhůta, nebo s podklady a ručně upraveným konceptem.",
+            "description:en": "Per record of an invoicing source: periods waiting for contributor input longer than the limit, or with input ready but a manually edited draft.",
+            "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Checks\\PeriodWaitingCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "tags": ["periodicInvoicing"]
+        }
+    ],
+
     "config": [
         {
             // Periodicita fakturace (D2, Q3) — PeriodCalendar.

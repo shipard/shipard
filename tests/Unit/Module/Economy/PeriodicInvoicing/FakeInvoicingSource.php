@@ -33,6 +33,7 @@ class FakeInvoicingSource implements PeriodicInvoicingSource
         private readonly string $noun = 'Zakázka',
         private readonly string $openLabel = 'Otevřít zakázku',
         private readonly ?\Closure $dimensions = null,
+        private readonly int $tableId = 460,
     ) {
     }
 
@@ -44,6 +45,11 @@ class FakeInvoicingSource implements PeriodicInvoicingSource
     public function table(): string
     {
         return $this->table;
+    }
+
+    public function tableId(): int
+    {
+        return $this->tableId;
     }
 
     public function periodsTable(): string
