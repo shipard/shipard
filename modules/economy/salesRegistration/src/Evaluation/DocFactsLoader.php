@@ -37,6 +37,9 @@ class DocFactsLoader
     /** @var list<RegistrationFacts>|null */
     private ?array $registrations = null;
 
+    /** @var array<string, true>|null typy dokladů s pravidlem nad řádky */
+    private ?array $rowRuleDocTypes = null;
+
     /** @var array<int, string> id registrace DPH → země */
     private array $vatCountries = [];
 
@@ -59,11 +62,15 @@ class DocFactsLoader
     /** @param array<string, mixed> $head řádek hlavičky se sloupci {@see self::HEAD_COLUMNS} */
     public function fromHead(array $head): DocFacts
     {
-        $rows = $this->db->fetchAll(
-            'SELECT [operation], [vat_total_dom] FROM %n WHERE [doc_head] = %i AND [row_kind] = 1 ORDER BY [order_pos], [id]',
-            self::ROWS,
-            (int) $head['id'],
-        );
+        // Řádky jen pro typy dokladů, které některý typ evidence posuzuje
+        // po řádcích (pokladní doklad) — ostatním stačí hlavička.
+        $rows = $this->needsRows((string) ($head['doc_type'] ?? ''))
+            ? $this->db->fetchAll(
+                'SELECT [operation], [vat_total_dom] FROM %n WHERE [doc_head] = %i AND [row_kind] = 1 ORDER BY [order_pos], [id]',
+                self::ROWS,
+                (int) $head['id'],
+            )
+            : [];
         return DocFacts::fromRows(
             $head,
             array_map(static fn($row): array => iterator_to_array($row), $rows),
@@ -112,6 +119,21 @@ class DocFactsLoader
             );
         }
         return $this->registrations = $registrations;
+    }
+
+    private function needsRows(string $docType): bool
+    {
+        if ($this->rowRuleDocTypes === null) {
+            $this->rowRuleDocTypes = [];
+            foreach ($this->registrations() as $registration) {
+                foreach ($registration->type->rules as $rule) {
+                    if ($rule->isRowRule()) {
+                        $this->rowRuleDocTypes += array_fill_keys($rule->docTypes, true);
+                    }
+                }
+            }
+        }
+        return isset($this->rowRuleDocTypes[$docType]);
     }
 
     /** @return array<string, mixed>|null */

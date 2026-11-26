@@ -1,13 +1,16 @@
 {
     // economy.salesRegistration.viewerDetailLabels
     //
-    // Texty RegistrationsViewer (Nastavení → Evidence tržeb). Sdílený tab
+    // Texty RegistrationsViewer (Nastavení → Evidence tržeb) a SalesViewer
+    // (Prodej → Evidence tržeb, klíče `sale*`, `attempt*`, `env*`,
+    // `problem*`). Sdílený tab
     // „Přehled“ je v core.system.viewerDetailLabels; popisky položek jdou
     // z definic tabulek doplňku. Holé `name` je anglická varianta a shoduje
     // se s fallbackem v PHP znak po znaku.
 
     "tabs": {
-        "units": { "name": "Registration units", "name:cs": "Evidenční jednotky", "name:en": "Registration units" }
+        "units": { "name": "Registration units", "name:cs": "Evidenční jednotky", "name:en": "Registration units" },
+        "attempts": { "name": "Attempts", "name:cs": "Pokusy", "name:en": "Attempts" }
     },
 
     // Texty seznamu a detailu — čte `TableViewer::detailText()`.
@@ -22,6 +25,40 @@
         "certificate": { "name": "Certificate", "name:cs": "Certifikát", "name:en": "Certificate" },
         "notUploaded": { "name": "not uploaded", "name:cs": "není nahraný", "name:en": "not uploaded" },
         // Záložka Evidenční jednotky bez jednotek.
-        "noUnits": { "name": "The registration has no units yet.", "name:cs": "Registrace zatím nemá žádnou evidenční jednotku.", "name:en": "The registration has no units yet." }
+        "noUnits": { "name": "The registration has no units yet.", "name:cs": "Registrace zatím nemá žádnou evidenční jednotku.", "name:en": "The registration has no units yet." },
+
+        // --- Agenda Evidence tržeb (SalesViewer, #171 D25) ---
+        // Řádek seznamu: štítek testovacího potvrzení a konec kódu potvrzení.
+        "saleTest": { "name": "test", "name:cs": "test", "name:en": "test" },
+        "saleRowCode": { "name": "code …{code}", "name:cs": "kód …{code}", "name:en": "code …{code}" },
+        // Filtry.
+        "saleFilterOpen": { "name": "Not settled", "name:cs": "Nevyřízené", "name:en": "Not settled" },
+        "saleFilterPeriod": { "name": "Period", "name:cs": "Období", "name:en": "Period" },
+        // Detail: štítek, skupiny Přehledu, akce, prázdná záložka.
+        "saleTestBadge": { "name": "Test confirmation", "name:cs": "Testovací potvrzení", "name:en": "Test confirmation" },
+        "saleGroupSale": { "name": "Sale", "name:cs": "Tržba", "name:en": "Sale" },
+        "saleGroupSending": { "name": "Sending", "name:cs": "Odeslání", "name:en": "Sending" },
+        "saleOpenDocument": { "name": "Open document", "name:cs": "Otevřít doklad", "name:en": "Open document" },
+        "saleNoAttempts": { "name": "The sale has not been sent yet.", "name:cs": "Tržba se zatím neodesílala.", "name:en": "The sale has not been sent yet." },
+        // Záložka Pokusy.
+        "attemptVerification": { "name": "verification mode", "name:cs": "ověřovací mód", "name:en": "verification mode" },
+        "attemptRepeated": { "name": "repeated sending", "name:cs": "opakované zaslání", "name:en": "repeated sending" },
+        "attemptTestIdentity": { "name": "test identity", "name:cs": "testovací identita", "name:en": "test identity" },
+        "attemptErrorCode": { "name": "code {code}", "name:cs": "kód {code}", "name:en": "code {code}" },
+        "attemptWarnings": { "name": "warnings: {list}", "name:cs": "varování: {list}", "name:en": "warnings: {list}" },
+        "attemptDetail": { "name": "Codes and warnings", "name:cs": "Kódy a varování", "name:en": "Codes and warnings" },
+        // Prostředí.
+        "envProduction": { "name": "production", "name:cs": "produkce", "name:en": "production" },
+        "envPlayground": { "name": "playground", "name:cs": "playground", "name:en": "playground" },
+        // Problém, kvůli kterému zpráva vůbec neodešla (SendResult::PROBLEM_*).
+        "problemSafety": { "name": "stopped by the server safety switch", "name:cs": "zastaveno pojistkou serveru", "name:en": "stopped by the server safety switch" },
+        "problemNoCertificate": { "name": "the registration has no certificate", "name:cs": "registrace nemá certifikát", "name:en": "the registration has no certificate" },
+        "problemKey": { "name": "the private key cannot be used", "name:cs": "soukromý klíč nejde použít", "name:en": "the private key cannot be used" },
+        "problemNoTestIdentity": { "name": "the test identity is missing", "name:cs": "chybí testovací identita", "name:en": "the test identity is missing" },
+        "problemType": { "name": "unknown registration type", "name:cs": "neznámý typ evidence", "name:en": "unknown registration type" },
+        "problemEnvironment": { "name": "the registration type has no such environment", "name:cs": "typ evidence takové prostředí nemá", "name:en": "the registration type has no such environment" },
+        "problemMessage": { "name": "the message is not valid", "name:cs": "zpráva není platná", "name:en": "the message is not valid" },
+        "problemRegistration": { "name": "the registration is not confirmed", "name:cs": "registrace není V pořádku", "name:en": "the registration is not confirmed" },
+        "problemInternal": { "name": "internal error", "name:cs": "interní chyba", "name:en": "internal error" }
     }
 }

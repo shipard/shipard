@@ -117,6 +117,19 @@
             "icon": "cash-register",
             "table": "economy_sales_registration_registrations",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\RegistrationsViewer"
+        },
+        {
+            // Agenda Evidence tržeb (#171 D25, U12) — tržby z dokladů a stav
+            // jejich odeslání, v sekci Prodej za prodejkami.
+            "id": "economy.salesRegistration.sales",
+            "name": "Sales registration",
+            "name:cs": "Evidence tržeb",
+            "name:en": "Sales registration",
+            "icon": "filing",
+            "table": "economy_sales_registration_sales",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\SalesViewer",
+            "navSection": "sales",
+            "navOrder": 25
         }
     ],
 
@@ -143,6 +156,14 @@
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\VerifyConnectionAction",
             "admin": true,
             "order": 110
+        },
+        {
+            // Odeslat znovu nad tržbou (#171 U12) — není jen pro správce:
+            // smí ji každý, kdo pracuje s doklady.
+            "id": "resend",
+            "table": "economy_sales_registration_sales",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\ResendSaleAction",
+            "order": 100
         }
     ],
 
@@ -187,6 +208,66 @@
     // V pořádku v době jejich platnosti. Id malými písmeny (pravidlo
     // AlertCheckDefinition), jako economy.exchangerates.*.
     "alertChecks": [
+        {
+            // Tržba čeká na potvrzení déle než hodinu (#171 D13) — jeden
+            // nález na registraci; po 48 hodinách ji přebírá sale_overdue.
+            "id": "economy.salesregistration.sale_unconfirmed",
+            "name": "Sales waiting for confirmation",
+            "name:cs": "Tržby čekají na potvrzení",
+            "name:en": "Sales waiting for confirmation",
+            "description": "Sales that have been waiting to be confirmed by the sales registration service for more than an hour.",
+            "description:cs": "Tržby, které čekají na potvrzení službou evidence tržeb déle než hodinu.",
+            "description:en": "Sales that have been waiting to be confirmed by the sales registration service for more than an hour.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\SaleUnconfirmedCheck",
+            "severity": "warning",
+            "interval": "15m",
+            "navSection": "sales",
+            "tags": ["salesRegistration"]
+        },
+        {
+            "id": "economy.salesregistration.sale_overdue",
+            "name": "Sales not registered within 48 hours",
+            "name:cs": "Tržby nezaevidované do 48 hodin",
+            "name:en": "Sales not registered within 48 hours",
+            "description": "Sales still not confirmed 48 hours after the sale; sending continues.",
+            "description:cs": "Tržby, které nejsou potvrzené ani 48 hodin po tržbě; odesílání pokračuje.",
+            "description:en": "Sales still not confirmed 48 hours after the sale; sending continues.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\SaleOverdueCheck",
+            "severity": "error",
+            "interval": "5m",
+            "navSection": "sales",
+            "tags": ["salesRegistration"]
+        },
+        {
+            "id": "economy.salesregistration.sale_failed",
+            "name": "Sales rejected by the service",
+            "name:cs": "Tržby odmítnuté službou",
+            "name:en": "Sales rejected by the service",
+            "description": "Sales rejected by the sales registration service; they wait for Send again.",
+            "description:cs": "Tržby, které služba evidence tržeb odmítla; čekají na Odeslat znovu.",
+            "description:en": "Sales rejected by the sales registration service; they wait for Send again.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\SaleFailedCheck",
+            "severity": "error",
+            "interval": "5m",
+            "navSection": "sales",
+            "tags": ["salesRegistration"]
+        },
+        {
+            // Doklad spadá do evidence, ale tržbu založit nejde (#171 U9) —
+            // stejné vyhodnocení jako záchranná síť, okno 7 dní.
+            "id": "economy.salesregistration.doc_unregistrable",
+            "name": "Documents that cannot be registered as sales",
+            "name:cs": "Doklady, které nejde zaevidovat jako tržbu",
+            "name:en": "Documents that cannot be registered as sales",
+            "description": "Documents that fall under sales registration but the sale cannot be created because of missing settings.",
+            "description:cs": "Doklady, které do evidence tržeb spadají, ale tržbu nejde založit kvůli chybějícímu nastavení.",
+            "description:en": "Documents that fall under sales registration but the sale cannot be created because of missing settings.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\DocUnregistrableCheck",
+            "severity": "error",
+            "interval": "1h",
+            "navSection": "sales",
+            "tags": ["salesRegistration"]
+        },
         {
             "id": "economy.salesregistration.cert_expiring",
             "name": "Sales registration certificate expires soon",

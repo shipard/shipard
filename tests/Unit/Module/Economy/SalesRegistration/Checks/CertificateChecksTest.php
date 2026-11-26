@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Economy\SalesRegistration\Checks;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Alerts\AlertCheck;
 use Shipard\Core\Alerts\AlertCheckRegistry;
 use Shipard\Core\Alerts\AlertFinding;
 use Shipard\Core\Database\DataSourceConnection;
@@ -195,9 +196,13 @@ class CertificateChecksTest extends TestCase
     {
         $raw = JsoncParser::parseFile(__DIR__ . '/../../../../../../modules/economy/salesRegistration/module.jsonc');
         // Definice modulu deklarace přijme (tvar id, závažnost, interval hlídá AlertCheckDefinition).
-        $this->assertCount(3, ModuleDefinition::fromArray($raw)->alertChecks);
+        $this->assertCount(7, ModuleDefinition::fromArray($raw)->alertChecks);
         $checks = [];
         foreach ($raw['alertChecks'] as $definition) {
+            $this->assertTrue(is_subclass_of($definition['class'], AlertCheck::class), $definition['id']);
+            if (!str_contains($definition['id'], '.cert_')) {
+                continue; // upozornění na tržby hlídá SaleChecksTest
+            }
             $checks[$definition['id']] = [$definition['class'], $definition['severity']];
             $this->assertTrue(is_subclass_of($definition['class'], CertificateCheck::class), $definition['id']);
             $this->assertMatchesRegularExpression('/^[a-z][a-z0-9_.]*$/', $definition['id']);

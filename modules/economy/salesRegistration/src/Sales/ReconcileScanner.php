@@ -21,7 +21,8 @@ use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFactsLoader;
  *
  * Předvýběr v SQL: typy dokladů z pravidel registrací V pořádku a k tomu
  * doklady, které už tržbu mají (vyrovnání po zániku registrace). Importované
- * doklady vynechává rovnou.
+ * doklady vynechává rovnou, stejně jako doklady s tržbou založenou po
+ * posledním přechodu — u těch je rozdíl hotový.
  */
 class ReconcileScanner
 {
@@ -79,11 +80,15 @@ class ReconcileScanner
             'SELECT h.[id] FROM %n h'
             . ' WHERE h.[docState] IN %in AND h.[doc_state_changed_at] >= %s AND h.[imported] = 0'
             . ' AND (h.[doc_type] IN %in OR EXISTS (SELECT 1 FROM %n s WHERE s.[doc_head] = h.[id]))'
+            // Tržba založená po posledním přechodu = rozdíl k tomu přechodu
+            // je spočítaný; takový doklad už síť znovu nevyhodnocuje.
+            . ' AND NOT EXISTS (SELECT 1 FROM %n d WHERE d.[doc_head] = h.[id] AND d.[created] >= h.[doc_state_changed_at])'
             . ' ORDER BY h.[id]',
             DocFactsLoader::HEADS,
             self::STATES,
             $since->format('Y-m-d H:i:s'),
             $docTypes !== [] ? array_keys($docTypes) : [''],
+            SaleSync::TABLE,
             SaleSync::TABLE,
         );
         return array_map(static fn($row): int => (int) $row['id'], $rows);

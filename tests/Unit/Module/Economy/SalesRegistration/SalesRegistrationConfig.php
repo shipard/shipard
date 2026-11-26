@@ -36,6 +36,8 @@ trait SalesRegistrationConfig
             'economy.salesRegistration.engines'            => ['cz.eet2' => self::TEST_ENGINE],
             'world.cz.salesRegistrationTypes'              => self::repoJsonc('modules/world/cz/config/salesRegistrationTypes.jsonc'),
             'economy.salesRegistration.modes'              => self::repoJsonc($module . 'modes.jsonc'),
+            'economy.salesRegistration.saleStates'         => self::repoJsonc($module . 'saleStates.jsonc'),
+            'economy.salesRegistration.attemptStatuses'    => self::repoJsonc($module . 'attemptStatuses.jsonc'),
             'economy.salesRegistration.viewerDetailLabels' => self::repoJsonc($module . 'viewerDetailLabels.jsonc'),
             'economy.salesRegistration.formTexts'          => self::repoJsonc($module . 'formTexts.jsonc'),
             'economy.salesRegistration.texts'              => self::repoJsonc($module . 'texts.jsonc'),
