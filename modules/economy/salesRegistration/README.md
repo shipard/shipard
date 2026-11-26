@@ -45,6 +45,14 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
   u registrace jen jednou
 - `RegistrationsForm` — formulář registrace se sub-tabulkou jednotek
 - `RegistrationsViewer` — Nastavení → Evidence tržeb → Registrace
+- `Certificate/Pkcs12Importer` — `.p12` + heslo → klíč a certifikát v PEM
+  s ověřenou identitou; `Certificate/LegacyPkcs12Reader` — záložní
+  `openssl pkcs12 -legacy` pro zastaralou šifru, heslo jen na stdin
+- `Certificate/KeyFiles` — dočasné soubory klíče v privátním adresáři
+  zdroje dat `tmp/`, smazané ve `finally`
+- `Actions/UploadCertificateAction` — akce záznamu „Nahrát certifikát“
+  (jen správce)
+- `Texts` — texty akcí a hlášek z katalogu `economy.salesRegistration.texts`
 
 ## Konfigurace
 
@@ -54,6 +62,7 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 | `economy.salesRegistration.modes` | [config/modes.jsonc](config/modes.jsonc) | Režim registrace: ostrý / ověřovací / playground |
 | `economy.salesRegistration.viewerDetailLabels` | [config/viewerDetailLabels.jsonc](config/viewerDetailLabels.jsonc) | Texty vieweru |
 | `economy.salesRegistration.formTexts` | [config/formTexts.jsonc](config/formTexts.jsonc) | Texty prvků formuláře |
+| `economy.salesRegistration.texts` | [config/texts.jsonc](config/texts.jsonc) | Texty akcí záznamu a jejich hlášek |
 
 Doplněk deklaruje vlastní sekci Nastavení **Evidence tržeb**
 (`settingsSections`, #170 D13).

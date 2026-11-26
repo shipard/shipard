@@ -39,6 +39,7 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/opt/shipard/data-sources/<id>/secrets/` | shipard-user | shipard-user | `0700` | striktní |
 | `/opt/shipard/data-sources/<id>/secrets/secrets.key` | shipard-user | shipard-user | `0600` | encryption key pro `encrypted_text` |
 | `/opt/shipard/data-sources/<id>/secrets/db.password`, `mail-relay.password`, `oidc-<id>.client-secret` | shipard-user | shipard-user | `0600` | tajemství konfigurace zdroje dat ([secrets.md](secrets.md) §5, #126 B1); hlídá rekurzivní kontrola `secrets/` |
+| `/opt/shipard/data-sources/<id>/tmp/` | shipard-user | shipard-user | `0700` | (volitelné — zakládá první zapisovatel) privátní dočasné soubory: krátce žijící tajemství, která knihovna umí číst jen ze souboru (dešifrovaný pokladní klíč doplňku Evidence tržeb, #171 U1). Obsah nejvýš `0600`, nic v něm nemá přežít požadavek — nikdy systémový `/tmp` |
 | `/opt/shipard/data-sources/<id>/att/` | shipard-user | shipard-user | `0750` | uploady |
 | `/opt/shipard/data-sources/<id>/branding/` | shipard-user | shipard-user | `0750` | loga, avatary |
 | `/opt/shipard/data-sources/<id>/cache/` | shipard-user | shipard-user | `0750` | |
@@ -112,6 +113,11 @@ srovná `fix-permissions`.
 Výjimkou je `cache/twig/`, kterou si zakládá knihovna Twig sama s módem
 podle umask; leží pod `cache/` (`0750`), takže se do ní nikdo další
 nedostane.
+
+Druhou výjimkou je privátní adresář `tmp/`: zakládá se s `0700` a soubory
+v něm s `0600` (zapisovatel si na dobu vzniku souboru nastaví umask `0077`).
+Při založení pod rootem dostane vlastníka zdroje dat
+(`FileOwnership::matchTo()`), jinak by do něj PHP-FPM příště nezapsal.
 
 ### Soubory zapisované pod rootem
 

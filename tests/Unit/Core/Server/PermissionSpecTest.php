@@ -108,4 +108,24 @@ class PermissionSpecTest extends TestCase
         $this->assertTrue($entry['optional'] ?? false, 'DS bez state.json je active — soubor nesmí být povinný');
         $this->assertArrayNotHasKey('recurse', $entry);
     }
+
+    public function testDataSourceEntriesIncludePrivateTemporaryDirectory(): void
+    {
+        // Privátní dočasné soubory zdroje dat (dešifrovaný klíč předávaný
+        // knihovně, která čte jen ze souboru — #171 U1): jen vlastník,
+        // obsah nejvýš 0600, doctor i fix-permissions hlídají rekurzivně.
+        $dsDir = '/opt/shipard/data-sources/aaaa-bbbb-cccc-dddd';
+        $byPath = array_column((new PermissionSpec('shipard'))->getDataSourceEntries($dsDir), null, 'path');
+
+        $entry = $byPath[$dsDir . '/tmp'] ?? null;
+        $this->assertNotNull($entry);
+        $this->assertSame('dir', $entry['type']);
+        $this->assertSame('user', $entry['owner']);
+        $this->assertSame('user', $entry['group']);
+        $this->assertSame(0700, $entry['mode']);
+        $this->assertSame(0600, $entry['contentsMaxMode'] ?? null);
+        $this->assertTrue($entry['recurse'] ?? false);
+        $this->assertTrue($entry['optional'] ?? false, 'adresář zakládá až první zapisovatel');
+        $this->assertSame($byPath[$dsDir . '/secrets']['mode'], $entry['mode'], 'stejně striktní jako secrets/');
+    }
 }

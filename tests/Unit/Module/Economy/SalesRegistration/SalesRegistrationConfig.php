@@ -38,6 +38,7 @@ trait SalesRegistrationConfig
             'economy.salesRegistration.modes'              => self::repoJsonc($module . 'modes.jsonc'),
             'economy.salesRegistration.viewerDetailLabels' => self::repoJsonc($module . 'viewerDetailLabels.jsonc'),
             'economy.salesRegistration.formTexts'          => self::repoJsonc($module . 'formTexts.jsonc'),
+            'economy.salesRegistration.texts'              => self::repoJsonc($module . 'texts.jsonc'),
             'core.system.viewerDetailLabels'               => self::repoJsonc('modules/core/system/config/viewerDetailLabels.jsonc'),
             'core.system.docStatesArchive'                 => self::repoJsonc('modules/core/system/config/docStatesArchive.jsonc'),
         ];

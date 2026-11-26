@@ -107,3 +107,53 @@ výchozí jednotka (až u uložené registrace — nabízí její jednotky), poz
 sekce Certifikát ukazuje údaje jen ke čtení (blok `properties`). Soukromý
 klíč formulář ani viewer nenačítají — viewer čte vyjmenované sloupce,
 `getEditableSensitiveColumns()` je prázdné.
+
+## 4. Certifikát (D11, U1)
+
+### 4.1 Nahrání
+
+Akce záznamu **Nahrát certifikát** (`recordActions` → `uploadCertificate`,
+`admin: true`) nad registrací v živém stavu. Dialog: soubor (`.p12` / `.pfx`,
+nejvýš 64 KiB — `accept` hlídá jen prohlížeč, obsah ověřuje import), heslo
+a upozornění, co se stane. Postup `UploadCertificateAction`:
+
+1. `Pkcs12Importer::import()` — `openssl_pkcs12_read`. Selže-li jinak než na
+   hesle (typicky zastaralá šifra RC2-40, kterou mají `.p12` playgroundu
+   a kterou OpenSSL 3 bez legacy provideru odmítá), zkusí se
+   `LegacyPkcs12Reader`: `openssl pkcs12 -legacy -nodes -clcerts -in <soubor>
+   -passin stdin` přes `proc_open`. **Heslo jde jen na stdin** — nikdy do
+   argumentů, proměnných prostředí ani logu; prostředí podprocesu je pevné,
+   binárka se hledá přes `UpdateEnvironment::findTool()`.
+2. Kontroly: klíč patří k certifikátu, CN odpovídá masce identifikátoru typu,
+   certifikát právě platí.
+3. Registrace s jiným vyplněným identifikátorem certifikát odmítne.
+4. Zápis přes `TableGateway` (platí pravidla `RegistrationDocument`):
+   `cert_pem`, `cert_key` = `DsSecretCipher::forConfig()->encrypt(klíč v PEM)`,
+   `taxpayer_id` = CN, platnost, sériové číslo, kdy a kdo nahrál. Nový
+   certifikát přepíše starý (obnova po roce).
+
+Heslo se neukládá ani neloguje. Nešifrovaný klíč žije jen v paměti mezi
+převodem a zašifrováním. Do logu jde jen registrace, typ, identifikátor
+a konec platnosti.
+
+Chyby rozlišuje `CertificateImportException::$kind` a akce je vrací jako
+chybu pole (422): špatné heslo (pole hesla), soubor není certifikát, klíč
+nepatří k certifikátu, nejde o certifikát daného typu (CN mimo masku),
+vypršel / ještě neplatí, jiný poplatník; chybějící `openssl` u zastaralé
+šifry je chyba formuláře.
+
+Šifra produkčních `.p12` z CA EET zatím není ověřená — obě cesty fungují,
+takže na ní nezáleží.
+
+### 4.2 Klíč při odeslání
+
+Knihovna EET čte klíč jen ze souboru. `KeyFiles::with()` proto dešifrovaný
+klíč a certifikát zapíše do privátního adresáře zdroje dat `tmp/` (adresář
+`0700`, soubory `0600` vytvořené pod umask `0077` — nikdy systémový `/tmp`),
+zavolá předanou funkci s cestami a soubory smaže ve `finally`, i po výjimce.
+Soubor žije jen po dobu načtení klíče. Po tvrdém pádu procesu by soubor
+zůstal, proto každé použití nejdřív uklidí vlastní soubory starší 10 minut.
+
+Adresář `tmp/` je v kontraktu práv (`PermissionSpec::getDataSourceEntries()`,
+`docs/operations/permissions.md`); při založení pod rootem dostane vlastníka
+zdroje dat. Adresář přístupný skupině nebo ostatním se nepoužije.

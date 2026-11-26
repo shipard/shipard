@@ -75,6 +75,10 @@ final class PermissionSpec
             ['path' => $dsDir . '/config/configuration',      'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
             ['path' => $dsDir . '/secrets',                   'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0700, 'optional' => true, 'recurse' => true, 'contentsMaxMode' => 0600],
             ['path' => $dsDir . '/secrets/secrets.key',       'type' => 'file', 'owner' => 'user', 'group' => 'user', 'mode' => 0600, 'optional' => true],
+            // Privátní dočasné soubory zdroje dat — krátce žijící tajemství
+            // (dešifrovaný klíč předávaný knihovně, která čte jen ze souboru).
+            // Zakládá ho až první zapisovatel; nic v něm nemá přežít požadavek.
+            ['path' => $dsDir . '/tmp',                       'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0700, 'optional' => true, 'recurse' => true, 'contentsMaxMode' => 0600],
             ['path' => $dsDir . '/att',                       'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
             ['path' => $dsDir . '/branding',                  'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
             ['path' => $dsDir . '/cache',                     'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],

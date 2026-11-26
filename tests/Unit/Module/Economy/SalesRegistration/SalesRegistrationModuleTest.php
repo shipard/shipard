@@ -8,6 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleKind;
+use Shipard\Core\RecordAction\RecordAction;
+use Shipard\Module\Economy\SalesRegistration\Actions\UploadCertificateAction;
+use Shipard\Module\Economy\SalesRegistration\Certificate\KeyFiles;
+use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\SalesRegistration\RegistrationDocument;
 use Shipard\Module\Economy\SalesRegistration\RegistrationsForm;
@@ -188,5 +192,27 @@ class SalesRegistrationModuleTest extends TestCase
         $this->assertSame(RegistrationsForm::class, $forms[RegistrationDocument::TABLE]['class']);
         $this->assertSame(RegistrationsForm::UNITS_FORM_ID, $forms[UnitDocument::TABLE]['id']);
         $this->assertFileExists(self::MODULE . '/forms/' . UnitDocument::TABLE . '.jsonc');
+    }
+
+    public function testRecordActionsBelongToTheRegistrationTable(): void
+    {
+        $actions = array_column(self::module()['recordActions'] ?? [], null, 'id');
+
+        $upload = $actions['uploadCertificate'] ?? null;
+        $this->assertNotNull($upload);
+        $this->assertSame(RegistrationDocument::TABLE, $upload['table']);
+        $this->assertSame(UploadCertificateAction::class, $upload['class']);
+        $this->assertTrue($upload['admin'], 'certifikát mění identitu, pod kterou se podepisuje — jen správce');
+        foreach ($actions as $id => $action) {
+            $this->assertTrue(is_subclass_of($action['class'], RecordAction::class), (string) $id);
+        }
+    }
+
+    public function testKeyFilesDirectoryIsCoveredByThePermissionContract(): void
+    {
+        $dsDir = '/opt/shipard/data-sources/aaaa-bbbb-cccc-dddd';
+        $paths = array_column((new PermissionSpec('shipard'))->getDataSourceEntries($dsDir), 'path');
+
+        $this->assertContains((new KeyFiles($dsDir))->directory(), $paths, 'doctor a fix-permissions adresář hlídají');
     }
 }

@@ -1,0 +1,79 @@
+{
+    // economy.salesRegistration.texts
+    //
+    // Texty doplňku mimo viewer a formulář — akce záznamu a jejich hlášky.
+    // Čte `Texts::t()` ze sekce `texts`. Holé `name` je anglická varianta
+    // a shoduje se s fallbackem v PHP znak po znaku (hlídá
+    // SalesRegistrationTextsTest). Parametry `{param}` se nahrazují prostě,
+    // bez skloňování.
+    "texts": {
+        // --- Akce Nahrát certifikát (#171 D11) ---
+        "upload.label": { "name": "Upload certificate", "name:cs": "Nahrát certifikát", "name:en": "Upload certificate" },
+        "upload.title": { "name": "Upload certificate", "name:cs": "Nahrát certifikát", "name:en": "Upload certificate" },
+        "upload.notice": {
+            "name": "The private key is stored encrypted, the password is not stored. The taxpayer identifier and validity are read from the certificate.",
+            "name:cs": "Soukromý klíč se uloží šifrovaně, heslo se neukládá. Identifikátor poplatníka a platnost se převezmou z certifikátu.",
+            "name:en": "The private key is stored encrypted, the password is not stored. The taxpayer identifier and validity are read from the certificate."
+        },
+        "upload.noticeReplace": {
+            "name": "The new certificate replaces the current one. The private key is stored encrypted, the password is not stored.",
+            "name:cs": "Nový certifikát nahradí dosavadní. Soukromý klíč se uloží šifrovaně, heslo se neukládá.",
+            "name:en": "The new certificate replaces the current one. The private key is stored encrypted, the password is not stored."
+        },
+        "upload.file": { "name": "Certificate file (.p12)", "name:cs": "Soubor certifikátu (.p12)", "name:en": "Certificate file (.p12)" },
+        "upload.password": { "name": "Certificate password", "name:cs": "Heslo k certifikátu", "name:en": "Certificate password" },
+        "upload.submit": { "name": "Upload", "name:cs": "Nahrát", "name:en": "Upload" },
+        "upload.done": {
+            "name": "Certificate uploaded — {label} {taxpayerId}, valid until {validTo}.",
+            "name:cs": "Certifikát nahrán — {label} {taxpayerId}, platnost do {validTo}.",
+            "name:en": "Certificate uploaded — {label} {taxpayerId}, valid until {validTo}."
+        },
+        "upload.errorType": {
+            "name": "The registration type is not available in this data source.",
+            "name:cs": "Typ evidence této registrace není ve zdroji dat dostupný.",
+            "name:en": "The registration type is not available in this data source."
+        },
+        "upload.errorNoFile": { "name": "Choose the certificate file.", "name:cs": "Vyberte soubor certifikátu.", "name:en": "Choose the certificate file." },
+        "upload.errorStore": { "name": "The certificate cannot be stored.", "name:cs": "Certifikát se nepodařilo uložit.", "name:en": "The certificate cannot be stored." },
+        "upload.errorPassword": {
+            "name": "The password does not open the certificate file.",
+            "name:cs": "Heslo k souboru certifikátu nesouhlasí.",
+            "name:en": "The password does not open the certificate file."
+        },
+        "upload.errorNotCertificate": {
+            "name": "The file is not a certificate with a private key (.p12).",
+            "name:cs": "Soubor není certifikát se soukromým klíčem (.p12).",
+            "name:en": "The file is not a certificate with a private key (.p12)."
+        },
+        "upload.errorExpired": {
+            "name": "The certificate has expired ({validTo}). Issue a new one and upload it.",
+            "name:cs": "Certifikát už vypršel ({validTo}). Vystavte nový a nahrajte ho.",
+            "name:en": "The certificate has expired ({validTo}). Issue a new one and upload it."
+        },
+        "upload.errorNotYetValid": {
+            "name": "The certificate is not valid yet (from {validFrom}).",
+            "name:cs": "Certifikát ještě neplatí (až od {validFrom}).",
+            "name:en": "The certificate is not valid yet (from {validFrom})."
+        },
+        "upload.errorNotForType": {
+            "name": "This is not a certificate for {type}: its name “{commonName}” is not a valid {label}.",
+            "name:cs": "Nejde o certifikát pro {type}: jeho jméno „{commonName}“ není platné {label}.",
+            "name:en": "This is not a certificate for {type}: its name “{commonName}” is not a valid {label}."
+        },
+        "upload.errorKeyMismatch": {
+            "name": "The private key in the file does not belong to the certificate.",
+            "name:cs": "Soukromý klíč v souboru nepatří k certifikátu.",
+            "name:en": "The private key in the file does not belong to the certificate."
+        },
+        "upload.errorLegacy": {
+            "name": "The file uses an outdated cipher that this server cannot convert — the openssl program is missing. Contact the administrator.",
+            "name:cs": "Soubor používá zastaralou šifru, kterou tento server neumí převést — chybí program openssl. Obraťte se na správce.",
+            "name:en": "The file uses an outdated cipher that this server cannot convert — the openssl program is missing. Contact the administrator."
+        },
+        "upload.errorOtherTaxpayer": {
+            "name": "The certificate belongs to another taxpayer ({certificate}) than this registration ({registration}).",
+            "name:cs": "Certifikát patří jinému poplatníkovi ({certificate}) než tato registrace ({registration}).",
+            "name:en": "The certificate belongs to another taxpayer ({certificate}) than this registration ({registration})."
+        }
+    }
+}

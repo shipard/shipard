@@ -78,6 +78,18 @@
         }
     ],
 
+    // Akce záznamu s obsluhou v doplňku (#172 D12–D15). Nahrání certifikátu
+    // jen pro správce — mění identitu, pod kterou se zprávy podepisují.
+    "recordActions": [
+        {
+            "id": "uploadCertificate",
+            "table": "economy_sales_registration_registrations",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\UploadCertificateAction",
+            "admin": true,
+            "order": 100
+        }
+    ],
+
     "config": [
         {
             // Typ evidence → třída engine (#171 D17). Klíč = id typu z modulu
@@ -97,6 +109,11 @@
         {
             "id": "economy.salesRegistration.formTexts",
             "file": "config/formTexts.jsonc"
+        },
+        {
+            // Texty akcí záznamu a jejich hlášek.
+            "id": "economy.salesRegistration.texts",
+            "file": "config/texts.jsonc"
         }
     ]
 }
