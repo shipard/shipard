@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Module\Economy\SalesRegistration\RegistrationsViewer;
+use Shipard\Module\Economy\SalesRegistration\Safety\SalesRegistrationServerConfig;
 
 /**
  * Viewer Registrace (Nastavení → Evidence tržeb): řádek s typem, režimem
@@ -45,7 +46,7 @@ class RegistrationsViewerTest extends TestCase
      * @param list<array> $calls
      * @param list<array<string, mixed>> $units
      */
-    private function viewer(array &$calls, ?array $record = null, array $units = []): RegistrationsViewer
+    private function viewer(array &$calls, ?array $record = null, array $units = [], string $safetyMode = 'drop'): RegistrationsViewer
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(function (...$args) use (&$calls, $units): array {
@@ -58,7 +59,15 @@ class RegistrationsViewerTest extends TestCase
         });
         $db->method('fetchSingle')->willReturn('Jana Nováková');
 
-        $viewer = new RegistrationsViewer($db, self::TABLE);
+        $viewer = new class($db, self::TABLE) extends RegistrationsViewer {
+            public ?SalesRegistrationServerConfig $testSafety = null;
+
+            protected function safety(): SalesRegistrationServerConfig
+            {
+                return $this->testSafety ?? parent::safety();
+            }
+        };
+        $viewer->testSafety = SalesRegistrationServerConfig::ofMode($safetyMode);
         $viewer->setConfig($this->salesRegistrationConfig());
         $viewer->setLanguage('cs');
         $viewer->setTables([
@@ -110,7 +119,10 @@ class RegistrationsViewerTest extends TestCase
         $this->assertStringNotContainsString('cert_key', (string) $calls[0][0], 'detail klíč nenačítá');
         $this->assertSame(['overview', 'units'], array_column($detail['tabs'], 'id'));
 
-        [$registration, $certificate] = $detail['tabs'][0]['content']['groups'];
+        $overview = $detail['tabs'][0]['content'];
+        $this->assertSame('composite', $overview['type']);
+        $this->assertSame(['notice', 'properties'], array_column($overview['blocks'], 'type'));
+        [$registration, $certificate] = $overview['blocks'][1]['groups'];
         $this->assertSame('Registrace', $registration['title']);
         $this->assertSame(
             [
@@ -162,7 +174,7 @@ class RegistrationsViewerTest extends TestCase
 
         $this->assertSame(
             [['label' => 'Certifikát', 'value' => 'není nahraný']],
-            $detail['tabs'][0]['content']['groups'][1]['items'],
+            $detail['tabs'][0]['content']['blocks'][1]['groups'][1]['items'],
         );
         $this->assertSame(
             ['type' => 'empty', 'text' => 'Registrace zatím nemá žádnou evidenční jednotku.'],
@@ -174,5 +186,32 @@ class RegistrationsViewerTest extends TestCase
     {
         $calls = [];
         $this->assertSame(['tabs' => []], $this->viewer($calls)->renderDetail(99));
+    }
+
+    /** @return array<string, mixed> hláška „kam zprávy jdou“ z Přehledu */
+    private function routeNotice(string $safetyMode, string $registrationMode): array
+    {
+        $calls = [];
+        $detail = $this->viewer($calls, ['mode' => $registrationMode] + self::RECORD, [], $safetyMode)->renderDetail(7);
+        return $detail['tabs'][0]['content']['blocks'][0];
+    }
+
+    public function testOverviewSaysWhereMessagesReallyGo(): void
+    {
+        $dropped = $this->routeNotice('drop', 'production');
+        $this->assertSame('notice', $dropped['type']);
+        $this->assertSame('warning', $dropped['tone']);
+        $this->assertSame('Zprávy se neodesílají', $dropped['title']);
+        $this->assertStringContainsString('Pojistka serveru je v režimu drop', $dropped['text']);
+
+        $playground = $this->routeNotice('playground', 'production');
+        $this->assertSame('info', $playground['tone']);
+        $this->assertSame('Zprávy jdou na playground', $playground['title']);
+        $this->assertStringContainsString('CZ00000019', $playground['text'], 'jmenuje testovací identitu, ne EIČ registrace');
+        $this->assertStringContainsString('nikdy s certifikátem této registrace', $playground['text']);
+
+        $this->assertSame('Zprávy jdou do produkce v ověřovacím módu', $this->routeNotice('off', 'verification')['title']);
+        $this->assertSame('Zprávy jdou do produkce', $this->routeNotice('off', 'production')['title']);
+        $this->assertSame('Zprávy jdou na playground', $this->routeNotice('off', 'playground')['title']);
     }
 }

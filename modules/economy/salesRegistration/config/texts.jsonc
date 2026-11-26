@@ -74,6 +74,52 @@
             "name": "The certificate belongs to another taxpayer ({certificate}) than this registration ({registration}).",
             "name:cs": "Certifikát patří jinému poplatníkovi ({certificate}) než tato registrace ({registration}).",
             "name:en": "The certificate belongs to another taxpayer ({certificate}) than this registration ({registration})."
+                },
+
+        // --- Kam zprávy jdou (pojistka serveru × režim registrace, #171 D9) ---
+        "route.droppedTitle": { "name": "Messages are not sent", "name:cs": "Zprávy se neodesílají", "name:en": "Messages are not sent" },
+        "route.dropDefault": {
+            "name": "Server safety switch: this server is not marked as production and has no salesRegistration section in server.json — nothing is sent.",
+            "name:cs": "Pojistka serveru: server není označený jako produkční a v server.json nemá sekci salesRegistration — nic se neodešle.",
+            "name:en": "Server safety switch: this server is not marked as production and has no salesRegistration section in server.json — nothing is sent."
+        },
+        "route.dropInvalid": {
+            "name": "Server safety switch: the salesRegistration section in server.json is invalid ({problem}) — nothing is sent.",
+            "name:cs": "Pojistka serveru: sekce salesRegistration v server.json je chybná ({problem}) — nic se neodešle.",
+            "name:en": "Server safety switch: the salesRegistration section in server.json is invalid ({problem}) — nothing is sent."
+        },
+        "route.dropConfigured": {
+            "name": "Server safety switch is set to drop — nothing is sent.",
+            "name:cs": "Pojistka serveru je v režimu drop — nic se neodešle.",
+            "name:en": "Server safety switch is set to drop — nothing is sent."
+        },
+        "route.dropUnknownMode": {
+            "name": "The registration has an unknown mode — nothing is sent.",
+            "name:cs": "Registrace má neznámý režim — nic se neodešle.",
+            "name:en": "The registration has an unknown mode — nothing is sent."
+        },
+        "route.playgroundTitle": { "name": "Messages go to the playground", "name:cs": "Zprávy jdou na playground", "name:en": "Messages go to the playground" },
+        "route.playground": {
+            "name": "Messages go to the non-production environment under the shared test identity {taxpayerId}, never under the certificate of this registration. Nothing is registered.",
+            "name:cs": "Zprávy jdou do neprodukčního prostředí pod sdílenou testovací identitou {taxpayerId}, nikdy s certifikátem této registrace. Nic se neeviduje.",
+            "name:en": "Messages go to the non-production environment under the shared test identity {taxpayerId}, never under the certificate of this registration. Nothing is registered."
+        },
+        "route.playgroundNoIdentity": {
+            "name": "Messages should go to the non-production environment, but this registration type has no test identity — nothing can be sent.",
+            "name:cs": "Zprávy by měly jít do neprodukčního prostředí, ale typ evidence nemá testovací identitu — nic odeslat nejde.",
+            "name:en": "Messages should go to the non-production environment, but this registration type has no test identity — nothing can be sent."
+        },
+        "route.verificationTitle": { "name": "Messages go to production in verification mode", "name:cs": "Zprávy jdou do produkce v ověřovacím módu", "name:en": "Messages go to production in verification mode" },
+        "route.verification": {
+            "name": "Messages are signed with the certificate of this registration and sent to the production service in verification mode. Nothing is registered and the obligation is not fulfilled.",
+            "name:cs": "Zprávy se podepisují certifikátem této registrace a jdou do produkce v ověřovacím módu. Nic se neeviduje a evidenční povinnost se tím neplní.",
+            "name:en": "Messages are signed with the certificate of this registration and sent to the production service in verification mode. Nothing is registered and the obligation is not fulfilled."
+        },
+        "route.productionTitle": { "name": "Messages go to production", "name:cs": "Zprávy jdou do produkce", "name:en": "Messages go to production" },
+        "route.production": {
+            "name": "Messages are signed with the certificate of this registration and registered with the tax authority.",
+            "name:cs": "Zprávy se podepisují certifikátem této registrace a evidují se u správce daně.",
+            "name:en": "Messages are signed with the certificate of this registration and registered with the tax authority."
         }
     }
 }

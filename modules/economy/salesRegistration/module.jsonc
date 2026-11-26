@@ -78,6 +78,12 @@
         }
     ],
 
+    // Sekce server.json, kterou čte jen tento doplněk (#172 D7, #171 D9):
+    // pojistka `salesRegistration.safety.mode` — off / playground / drop.
+    "serverConfig": [
+        {"key": "salesRegistration", "class": "Shipard\\Module\\Economy\\SalesRegistration\\Safety\\SalesRegistrationServerConfig"}
+    ],
+
     // Akce záznamu s obsluhou v doplňku (#172 D12–D15). Nahrání certifikátu
     // jen pro správce — mění identitu, pod kterou se zprávy podepisují.
     "recordActions": [

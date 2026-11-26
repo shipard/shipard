@@ -157,3 +157,66 @@ zůstal, proto každé použití nejdřív uklidí vlastní soubory starší 10 
 Adresář `tmp/` je v kontraktu práv (`PermissionSpec::getDataSourceEntries()`,
 `docs/operations/permissions.md`); při založení pod rootem dostane vlastníka
 zdroje dat. Adresář přístupný skupině nebo ostatním se nepoužije.
+
+## 5. Pojistka serveru a kam zpráva jde (D9, D10, U2)
+
+### 5.1 Pojistka
+
+Sekce `salesRegistration` v `/etc/shipard/server.json` (deklaruje doplněk
+polem `serverConfig`, čte `SalesRegistrationServerConfig`), klíč
+`safety.mode`:
+
+| Režim | Chování |
+|---|---|
+| `off` | rozhoduje režim registrace |
+| `playground` | všechno jde na neprodukční prostředí se sdílenou testovací identitou — certifikát zdroje dat ven nejde nikdy |
+| `drop` | nic se neodešle |
+
+Výchozí stavy po vzoru `mail.safety`: sekce chybí a server je `production`
+→ `off`; sekce chybí a jiný režim serveru → `drop`; chybná hodnota → `drop`
+s popisem problému (`source: invalid`). Třída **nikdy nevyhazuje** —
+nečitelný `server.json` je taky `drop`. Pojistka je věc serveru, zdroj dat ji
+nepřepíše. Smysl: kopie ostrých dat na dev nebo testovacím serveru nesmí
+poslat tržbu správci daně pod certifikátem zákazníka.
+
+`doctor` ani `/_app/info` režim pojistky zatím neukazují — pro sekce modulů
+tam není bod rozšíření (#171 D13, mimo fázi 1). Režim je vidět v detailu
+každé registrace.
+
+### 5.2 Kam zpráva jde
+
+Jedna funkce, `MessageRouteResolver::resolve(pojistka, režim registrace,
+zpráva žádá ověření)`:
+
+| Pojistka | Režim registrace | Prostředí | Identita | Ověřovací mód |
+|----------|------------------|-----------|----------|---------------|
+| `off` | `production` | produkce | certifikát registrace | podle zprávy |
+| `off` | `verification` | produkce | certifikát registrace | vždy |
+| `off` | `playground` | playground | testovací | podle zprávy |
+| `playground` | jakýkoli | playground | testovací | podle režimu |
+| `drop` | jakýkoli | nic se neodešle | — | — |
+
+Ověřovací mód má jedno pravidlo: zpráva ho žádá (Ověřit spojení), nebo je
+registrace v ověřovacím režimu. Registrace s neznámým režimem se neposílá
+(`dropped`). Výsledek `MessageRoute` nese u `dropped` důvod (`configured` /
+`default` / `invalid` / `unknownMode`) a popis problému konfigurace.
+
+`MessageRouteText::describe()` říká trasu slovy — hláška nad Přehledem
+v detailu registrace (blok `notice`, u `drop` tón `warning`) a později
+výsledek akcí. Viewer `ServerConfig` nedostává, pojistku si načte
+`SalesRegistrationServerConfig::forServer()` sama.
+
+### 5.3 Testovací identita
+
+S testovací identitou jde ve zprávě **EIČ testovacího certifikátu**, ne
+identifikátor registrace — jinak služba vrací varování 1 (EIČ zprávy ≠ EIČ
+certifikátu). Klíč a certifikát `CZ00000019` jsou v
+`resources/playground/` (`PlaygroundIdentity`); pocházejí z veřejného balíku
+finanční správy pro vývojáře, proto smí být v repozitáři — zdroj, převod,
+platnost (do 14. 5. 2027) a postup obnovy jsou v tamním README. Obsah
+dokumentu „Přístupové a provozní informace — playground“ (TLP:AMBER) do
+repozitáře nepatří.
+
+`PlaygroundIdentityTest::testCertificateIsValidForAtLeast30Days` začne padat
+30 dní před koncem platnosti certifikátu — signál k obnově. Tentýž test
+hlídá, že v doplňku není žádný jiný soukromý klíč.

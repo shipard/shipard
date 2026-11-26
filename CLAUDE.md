@@ -151,7 +151,9 @@ Formát hlavičky stránky a šablona: `docs/help-authoring.md`.
   `ServerConfig` nepatří. Kolize cest a klíče jádra hlídá
   `ModuleServerConfigRules` nad stromem. Dnes: `exchangeRates`
   (`economy.exchangeRates`), `registry.persons` (`base.persons`),
-  `ai.analysis` (`core.mail`). Viz `docs/modules.md` kap. 5
+  `ai.analysis` (`core.mail`), `salesRegistration` (doplněk
+  `economy.salesRegistration` — pojistka evidence tržeb). Viz
+  `docs/modules.md` kap. 5
 - Data sources: `/opt/shipard/data-sources/{id}/config/main.json` (práva 0600)
   — **bez tajemství** (#126 D1–D5): heslo k databázi, heslo relay pošty
   a `clientSecret` OIDC providerů žijí v `secrets/` jako `db.password`,

@@ -53,6 +53,12 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 - `Actions/UploadCertificateAction` — akce záznamu „Nahrát certifikát“
   (jen správce)
 - `Texts` — texty akcí a hlášek z katalogu `economy.salesRegistration.texts`
+- `Safety/SalesRegistrationServerConfig` — pojistka serveru, sekce
+  `salesRegistration` v `server.json` (níže)
+- `Safety/MessageRouteResolver` → `MessageRoute` — jediné místo, které
+  rozhoduje, kam zpráva jde; `Safety/MessageRouteText` totéž slovy
+- `Safety/PlaygroundIdentity` — sdílená testovací identita playgroundu
+  z [resources/playground/](resources/playground/README.md)
 
 ## Konfigurace
 
@@ -66,3 +72,17 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 
 Doplněk deklaruje vlastní sekci Nastavení **Evidence tržeb**
 (`settingsSections`, #170 D13).
+
+## Konfigurace serveru
+
+Doplněk deklaruje sekci `salesRegistration` v `/etc/shipard/server.json`
+(`serverConfig` v `module.jsonc`, [docs/modules.md](../../../docs/modules.md) kap. 5).
+Čte ji [SalesRegistrationServerConfig.php](src/Safety/SalesRegistrationServerConfig.php):
+
+| Klíč | Výchozí | Popis |
+|---|---|---|
+| `salesRegistration.safety.mode` | produkční server `off`, jinak `drop` | Pojistka serveru: `off` = rozhoduje režim registrace, `playground` = všechno na neprodukční prostředí se sdílenou testovací identitou (nikdy s certifikátem zdroje dat), `drop` = nic neodejde. Chybná hodnota = `drop`. Zdroj dat ji nepřepíše ([docs/sales-registration.md](docs/sales-registration.md) §5) |
+
+```json
+"salesRegistration": { "safety": { "mode": "playground" } }
+```

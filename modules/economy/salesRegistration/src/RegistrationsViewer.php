@@ -6,6 +6,9 @@ namespace Shipard\Module\Economy\SalesRegistration;
 
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Module\Economy\SalesRegistration\Safety\MessageRouteResolver;
+use Shipard\Module\Economy\SalesRegistration\Safety\MessageRouteText;
+use Shipard\Module\Economy\SalesRegistration\Safety\SalesRegistrationServerConfig;
 
 /**
  * Registrace k evidenci tržeb (Nastavení → Evidence tržeb, #171 D3).
@@ -147,8 +150,29 @@ class RegistrationsViewer extends TableViewer
             ['title' => $this->text('groupRegistration', 'Registration'), 'items' => $registration],
             ['title' => $this->text('groupCertificate', 'Certificate'), 'items' => $certificate],
         ]);
+        // Nad vlastnostmi: kam zprávy této registrace skutečně jdou (#171 D9).
+        $overview['content'] = ['type' => 'composite', 'blocks' => [$this->routeNotice($record, $type), $overview['content']]];
 
         return [$overview, $this->unitsTab($units)];
+    }
+
+    /**
+     * Hláška „kam zprávy jdou“ podle pojistky serveru a režimu registrace.
+     *
+     * @param array<string, mixed> $record
+     * @return array<string, mixed>
+     */
+    private function routeNotice(array $record, ?SalesRegistrationType $type): array
+    {
+        $route = MessageRouteResolver::resolve($this->safety(), (string) ($record['mode'] ?? ''));
+
+        return ['type' => 'notice'] + MessageRouteText::describe($route, $type, Texts::of($this->config));
+    }
+
+    /** Pojistka serveru — viewer `ServerConfig` nedostává, načte si ho sama (přepsatelné v testech). */
+    protected function safety(): SalesRegistrationServerConfig
+    {
+        return SalesRegistrationServerConfig::forServer();
     }
 
     /**
