@@ -28,6 +28,7 @@ final readonly class DocEvaluation
 
     // Spadá, ale nejde založit
     public const string REASON_MULTIPLE_REGISTRATIONS = 'multipleRegistrations';
+    public const string REASON_REGISTRATION_GONE = 'registrationGone';
     public const string REASON_CURRENCY = 'currency';
     public const string REASON_NO_UNIT = 'noUnit';
     public const string REASON_FOREIGN_UNIT = 'foreignUnit';

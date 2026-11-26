@@ -164,6 +164,18 @@
             "name:en": "The series code \"{code}\" cannot be used as a cash register identifier of {type}{hint}. Change the code or remove the registration unit."
         },
 
+        // --- Doklad s tržbou (#171 U12) ---
+        "doc.trashWithSale": {
+            "name": "The document has a sale registered with the tax authority and cannot be deleted. Cancel it instead — the cancellation registers a negative sale.",
+            "name:cs": "Doklad má tržbu v evidenci tržeb a nejde smazat. Stornujte ho — storno zaeviduje zápornou tržbu.",
+            "name:en": "The document has a sale registered with the tax authority and cannot be deleted. Cancel it instead — the cancellation registers a negative sale."
+        },
+        "doc.deleteWithSale": {
+            "name": "The document has a sale registered with the tax authority and cannot be deleted.",
+            "name:cs": "Doklad má tržbu v evidenci tržeb a nejde smazat.",
+            "name:en": "The document has a sale registered with the tax authority and cannot be deleted."
+        },
+
         // --- Upozornění na certifikát (#171 D13) ---
         "alert.open": { "name": "Open registrations", "name:cs": "Otevřít registrace", "name:en": "Open registrations" },
         "alert.missingTitle": { "name": "Sales registration {name} has no certificate", "name:cs": "Registrace k evidenci tržeb {name} nemá certifikát", "name:en": "Sales registration {name} has no certificate" },

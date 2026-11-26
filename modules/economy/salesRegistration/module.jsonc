@@ -41,7 +41,14 @@
         }
     ],
 
+    // Tržby z dokladů (#171 D6, D7, U12): přechod do V pořádku nebo Storno
+    // spustí rozdílový výpočet; doklad s tržbou nejde přesunout do koše.
     "documentEventHandlers": [
+        {
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Sales\\DocsHeadsSalesHandler",
+            "events": ["beforeSave", "stateChanged", "beforeDelete"]
+        },
         {
             "table": "docs_core_number_series",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Series\\SeriesUnitHandler",

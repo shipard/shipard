@@ -33,11 +33,18 @@ use Shipard\Module\Economy\SalesRegistration\SalesRegistrationType;
 final class DocSaleEvaluator
 {
     /**
-     * @param list<RegistrationFacts> $registrations registrace ve stavu V pořádku
-     * @param \DateTimeInterface      $soldAt        čas tržby (čas přechodu dokladu)
+     * @param list<RegistrationFacts> $registrations      registrace ve stavu V pořádku
+     * @param \DateTimeInterface      $soldAt             čas tržby (čas přechodu dokladu)
+     * @param int|null                $pinnedRegistration registrace dosavadních tržeb dokladu: doklad,
+     *        který už tržbu má, zůstává u své registrace — platnost k času tržby ani D8d se znovu
+     *        neposuzují (oprava dokladu po skončení registrace by jinak poslala storno platné tržby)
      */
-    public function evaluate(DocFacts $doc, array $registrations, \DateTimeInterface $soldAt): DocEvaluation
-    {
+    public function evaluate(
+        DocFacts $doc,
+        array $registrations,
+        \DateTimeInterface $soldAt,
+        ?int $pinnedRegistration = null,
+    ): DocEvaluation {
         if ($doc->isImported()) {
             return DocEvaluation::notApplicable(DocEvaluation::REASON_IMPORTED);
         }
@@ -48,7 +55,20 @@ final class DocSaleEvaluator
             return DocEvaluation::notApplicable(DocEvaluation::REASON_STATE);
         }
 
-        [$matching, $reason] = $this->matchingRegistrations($doc, $registrations, $soldAt);
+        if ($pinnedRegistration !== null) {
+            $pinned = array_values(array_filter(
+                $registrations,
+                static fn(RegistrationFacts $registration): bool => $registration->id === $pinnedRegistration,
+            ));
+            if ($pinned === []) {
+                // Registrace dosavadních tržeb už není V pořádku — rozdíl nejde spočítat.
+                return DocEvaluation::unregistrable(DocEvaluation::REASON_REGISTRATION_GONE);
+            }
+            $matching = $pinned[0]->type->ruleFor($doc->docType, $doc->paymentMethod, $doc->cashDir) !== null ? $pinned : [];
+            $reason = DocEvaluation::REASON_NO_RULE;
+        } else {
+            [$matching, $reason] = $this->matchingRegistrations($doc, $registrations, $soldAt);
+        }
         if ($matching === []) {
             return DocEvaluation::notApplicable($reason);
         }
