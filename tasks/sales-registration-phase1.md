@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 1: základ doplňku, registrace, certifikát, odeslání (#171)
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v šesti commitech (#171 D1–D3, D9–D12, D16, D17, U1–U4), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči (dialog Nahrát certifikát, Ověřit spojení) na dev serveru s `"safety": {"mode": "playground"}` v `server.json`
+**Stav:** hotovo — kód, testy a dokumentace hotové 2026-11-26 v šesti commitech (#171 D1–D3, D9–D12, D16, D17, U1–U4), ověřeno živě proti playgroundu a ručním proklikem 2026-11-26; chybějící body rozšíření v #178
 
 > Task pro Claude Code (6 commitů). Design: issue #171 (EET 2.0). Staví na
 > bodech rozšíření z #172 (doplňky, `serverConfig`, `recordActions`,
@@ -285,10 +285,9 @@ Commit 6 (`docs(sales-registration): upozornění, nápověda a specifikace fáz
 - [x] dočasný soubor klíče po odeslání neexistuje ani po výjimce
 - [x] tabulka „kam zpráva jde“ pokrytá testem; na dev serveru bez sekce
       `salesRegistration` se nic neodešle (`drop`)
-- [ ] s `"safety": {"mode": "playground"}` na dev serveru vrátí Ověřit
-      spojení úspěch z playgroundu (ověřeno ručně, výsledek v poznámkách)
-      — **zbývá na člověku**: zápis do `/etc/shipard/server.json` chce
-      sudo. Stejná cesta je ověřená mimo prohlížeč (poznámky § Ověření)
+- [x] s `"safety": {"mode": "playground"}` na dev serveru vrátí Ověřit
+      spojení úspěch z playgroundu (ověřeno ručně 2026-11-26, poznámky
+      § Ruční proklik)
 - [x] engine převádí výsledky a výjimky podle kroku 5 (testy nad fixturami)
 - [x] test platnosti testovacích certifikátů v repozitáři
 - [x] upozornění na certifikát, nápověda, README a specifikace u modulu,
@@ -391,13 +390,18 @@ Obnova: README v `resources/playground/` a u fixtur.
   `economy.salesregistration.cert_expiring` pro registraci s certifikátem
   končícím do 30 dnů.
 
-### Zbývá
+### Ruční proklik
 
-- Ruční proklik v prohlížeči s přihlášeným správcem: dialog Nahrát
-  certifikát (první skutečné pole `file` akce záznamu) a Ověřit spojení se
-  skutečným `"salesRegistration": {"safety": {"mode": "playground"}}`
-  v `/etc/shipard/server.json`.
-- Chybějící body rozšíření pro samostatné issue (specifikace § 8): pojistka
-  v `doctor` / `/_app/info`, `ServerConfig` pro viewer, `modules:` v `help/`,
-  podproces se stdin, zapnutí doplňku z aplikace.
-- Na `bgse-r` zůstala zkušební registrace s jednotkou a jedním upozorněním.
+2026-11-26 na dev serveru s přihlášeným správcem, všechny čtyři body
+prošly: bez sekce pojistky zpráva zahozená, se skutečným
+`"salesRegistration": {"safety": {"mode": "playground"}}`
+v `/etc/shipard/server.json` dialog Nahrát certifikát (první skutečné pole
+`file` akce záznamu) a Ověřit spojení úspěšně (playground, 40 a 123 ms).
+Log serveru: akce záznamu i odeslání zapsané s id, typem, stavem,
+prostředím, kódy a dobou — bez klíče, hesla a těl zpráv.
+
+### Navazuje
+
+- Chybějící body rozšíření (specifikace § 8) — issue #178.
+- Na `bgse-r` zůstala zkušební registrace s jednotkou; využije ji fáze 2
+  (`tasks/sales-registration-phase2.md`).
