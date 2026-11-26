@@ -9,6 +9,8 @@ use Dibi\UniqueConstraintViolationException;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\NestedTransaction;
+use Shipard\Module\Economy\SalesRegistration\ContactPayment\PaymentTime;
+use Shipard\Module\Economy\SalesRegistration\Evaluation\DocEvaluation;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFacts;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFactsLoader;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocSaleEvaluator;
@@ -36,10 +38,13 @@ use Shipard\Module\Economy\SalesRegistration\SalesRegistrationTypes;
  *    jiný proces, přepočítá se.
  *
  * Čas tržby je `doc_state_changed_at` dokladu (D20) — záchranná síť tak
- * tržbě dá čas přechodu, ne čas, kdy ji našla. Doklad, který už tržbu má,
+ * tržbě dá čas přechodu, ne čas, kdy ji našla. Kontaktní platba (U13, U21,
+ * U24) má čas vlastní; rozhoduje se o něm na jediném místě
+ * ({@see self::saleTime()}) a jen z dat dokladu a jeho tržeb, takže handler,
+ * akce i záchranná síť dojdou ke stejnému času. Doklad, který už tržbu má,
  * zůstává u její registrace; vyrovnávací tržba dokladu, který do evidence už
- * nespadá (storno, změna způsobu úhrady), bere registraci, jednotku
- * a označení pokladny z poslední tržby.
+ * nespadá (storno, změna způsobu úhrady, zrušená kontaktní platba), bere
+ * registraci, jednotku a označení pokladny z poslední tržby.
  */
 class SaleSync
 {
@@ -83,7 +88,7 @@ class SaleSync
             return SyncResult::none($docId);
         }
         if (!$this->hasSales($docId)) {
-            $evaluation = $this->evaluator->evaluate($doc, $this->registrations(), $this->soldAt($doc, $now));
+            $evaluation = $this->evaluator->evaluate($doc, $this->registrations(), $this->transitionAt($doc, $now));
             if (!$evaluation->applicable && !$evaluation->unregistrable) {
                 return SyncResult::none($docId);
             }
@@ -120,12 +125,11 @@ class SaleSync
 
         $sales = $this->salesOf($doc->id);
         $last = $sales !== [] ? $sales[array_key_last($sales)] : null;
-        $soldAt = $this->soldAt($doc, $now);
 
         $evaluation = $this->evaluator->evaluate(
             $doc,
             $this->registrations(),
-            $soldAt,
+            $this->transitionAt($doc, $now),
             $last !== null ? (int) $last['registration'] : null,
         );
         // Storno vyhodnocení rozhodne dřív, než přijde na registraci —
@@ -174,6 +178,7 @@ class SaleSync
             }
         }
 
+        [$soldAt, $timeBasis] = $this->saleTime($doc, $evaluation, $last === null, $now);
         $stamp = $now->format('Y-m-d H:i:s');
         $data = [
             'doc_head'      => $doc->id,
@@ -188,7 +193,7 @@ class SaleSync
             'next_attempt'  => $stamp,
         ];
         if ($dryRun) {
-            return SyncResult::wouldCreate($doc->id, $data);
+            return SyncResult::wouldCreate($doc->id, $data, $timeBasis);
         }
 
         try {
@@ -196,22 +201,61 @@ class SaleSync
         } catch (UniqueConstraintViolationException) {
             return null;
         }
-        return SyncResult::created($doc->id, $saleId, $data);
+        return SyncResult::created($doc->id, $saleId, $data, $timeBasis);
     }
 
     /**
-     * Čas tržby (D20) = čas přechodu dokladu, v zóně serveru (v ní se
+     * Čas nové tržby a z čeho je odvozený — **jediné místo rozhodnutí**
+     * (U13, U21, U24), čistě z dat dokladu a toho, zda už tržbu má:
+     *
+     *  1. tržba kontaktní platby, která je první tržbou dokladu, nebo vzniká
+     *     změnou příznaku po posledním přechodu (akce na dokladu V pořádku)
+     *     → čas platby `contact_payment_at`; bez něj čas přechodu (U16);
+     *  2. jiná tržba po změně příznaku (zrušení kontaktní platby akcí)
+     *     → `contact_payment_changed_at` — přechod stavu tam není;
+     *  3. jinak čas přechodu dokladu (D20) — storno a oprava dokladu
+     *     s příznakem nesou dál čas přechodu.
+     *
+     * @return array{0: \DateTimeImmutable, 1: string} čas v zóně serveru a jeho původ (`SyncResult::TIME_*`)
+     */
+    private function saleTime(DocFacts $doc, DocEvaluation $evaluation, bool $firstSale, \DateTimeImmutable $now): array
+    {
+        $transition = $this->transitionAt($doc, $now);
+        $flagChange = $this->serverTime($doc->contactPaymentChangedAt);
+        $changedAfterTransition = $flagChange !== null
+            && ($doc->stateChangedAt === null || $flagChange > $transition);
+
+        $byContactPayment = $evaluation->applicable && $evaluation->source === DocEvaluation::SOURCE_CONTACT_PAYMENT;
+        if ($byContactPayment && ($firstSale || $changedAfterTransition)) {
+            $paidAt = PaymentTime::inServerZone($doc->contactPaymentAt, $evaluation->registration->type->saleTimeZone());
+            if ($paidAt !== null) {
+                return [$paidAt, SyncResult::TIME_PAYMENT];
+            }
+        }
+        if ($changedAfterTransition) {
+            return [$flagChange, SyncResult::TIME_FLAG_CHANGE];
+        }
+        return [$transition, SyncResult::TIME_TRANSITION];
+    }
+
+    /**
+     * Čas přechodu dokladu (D20), v zóně serveru (v ní se
      * `doc_state_changed_at` ukládá). Doklad bez času (starší data) bere „teď“.
      */
-    private function soldAt(DocFacts $doc, \DateTimeImmutable $now): \DateTimeImmutable
+    private function transitionAt(DocFacts $doc, \DateTimeImmutable $now): \DateTimeImmutable
     {
-        if ($doc->stateChangedAt === null) {
-            return $now;
+        return $this->serverTime($doc->stateChangedAt) ?? $now;
+    }
+
+    private function serverTime(?string $stored): ?\DateTimeImmutable
+    {
+        if ($stored === null) {
+            return null;
         }
         try {
-            return new \DateTimeImmutable($doc->stateChangedAt, new \DateTimeZone(date_default_timezone_get()));
+            return new \DateTimeImmutable($stored, new \DateTimeZone(date_default_timezone_get()));
         } catch (\Throwable) {
-            return $now;
+            return null;
         }
     }
 

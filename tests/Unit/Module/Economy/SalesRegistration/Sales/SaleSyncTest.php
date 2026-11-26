@@ -24,6 +24,20 @@ class SaleSyncTest extends TestCase
 
     private const NOW = '2027-02-12 08:00:00';
 
+    private string $zone = '';
+
+    /** Časy dokladu jsou v zóně serveru; testy ji drží na světovém čase (jako vývojový server). */
+    protected function setUp(): void
+    {
+        $this->zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+    }
+
+    protected function tearDown(): void
+    {
+        date_default_timezone_set($this->zone);
+    }
+
     private function type(): SalesRegistrationType
     {
         return SalesRegistrationTypes::fromConfig($this->salesRegistrationConfig())->get('cz.eet2');
@@ -256,6 +270,174 @@ class SaleSyncTest extends TestCase
         $result = $this->syncDoc($sync);
         $this->assertSame(SyncResult::UNREGISTRABLE, $result->status, 's příponou -2 už ne');
         $this->assertSame(DocEvaluation::REASON_SERIAL_NUMBER, $result->reason);
+    }
+
+    // ── Kontaktní platba: čas tržby (U13, U16, U21, U23, U24) ───────────────
+
+    /** @param array<string, mixed> $head */
+    private function invoice(array $head = []): DocFacts
+    {
+        return $this->doc(
+            $head + [
+                'doc_type' => 'invno', 'doc_number' => 'FV1270001', 'payment_method' => 1,
+                'total_amount_dom' => '2420.00', 'contact_payment' => 1,
+            ],
+            ['code' => 'invno'],
+        );
+    }
+
+    /** Příznak z formuláře v Konceptu: první tržba nese čas platby (zóna místa tržby → zóna serveru). */
+    public function testFirstSaleOfAContactPaymentCarriesThePaymentTime(): void
+    {
+        $sync = $this->sync();
+        $sync->docs[10] = $this->invoice([
+            'contact_payment_at'         => '2027-02-10 10:15:00', // v Praze
+            'contact_payment_changed_at' => '2027-02-10 09:20:00', // před přechodem
+            'doc_state_changed_at'       => '2027-02-10 09:30:00',
+        ]);
+
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::CREATED, $result->status);
+        $this->assertSame(SyncResult::TIME_PAYMENT, $result->timeBasis);
+        $this->assertSame('2027-02-10 09:15:00', $sync->sales[0]['sold_at'], '10:15 v Praze = 09:15 na hodinách serveru');
+        $this->assertSame('2420.00', $sync->sales[0]['amount']);
+        $this->assertSame('FV1270001', $sync->sales[0]['serial_number']);
+    }
+
+    /** U16: příznak bez času platby = čas přechodu do V pořádku. */
+    public function testContactPaymentWithoutTimeUsesTheTransitionTime(): void
+    {
+        $sync = $this->sync();
+        $sync->docs[10] = $this->invoice(['contact_payment_changed_at' => '2027-02-10 09:20:00']);
+
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::TIME_TRANSITION, $result->timeBasis);
+        $this->assertSame('2027-02-10 09:30:00', $sync->sales[0]['sold_at']);
+    }
+
+    /** U17, U21: akce na dokladu V pořádku — a záchranná síť dojde ke stejnému času. */
+    public function testActionOnAConfirmedDocumentAndTheSafetyNetAgreeOnTheTime(): void
+    {
+        $doc = $this->invoice([
+            'issue_date'                 => '2027-01-20',
+            'doc_state_changed_at'       => '2027-01-20 09:00:00',   // dávno před oknem sítě
+            'contact_payment_at'         => '2027-02-12 08:50:00',   // v Praze
+            'contact_payment_changed_at' => '2027-02-12 07:59:00',
+        ]);
+
+        $byAction = $this->sync();
+        $byAction->docs[10] = $doc;
+        $this->syncDoc($byAction);
+
+        $byNet = $this->sync();
+        $byNet->docs[10] = $doc;
+        $later = $byNet->sync(10, new \DateTimeImmutable('2027-02-12 08:05:00'));
+
+        $this->assertSame('2027-02-12 07:50:00', $byAction->sales[0]['sold_at']);
+        $this->assertSame($byAction->sales[0]['sold_at'], $byNet->sales[0]['sold_at']);
+        $this->assertSame(SyncResult::TIME_PAYMENT, $later->timeBasis);
+        $this->assertSame('2027-02-12 08:05:00', $byNet->sales[0]['created']);
+    }
+
+    /** U17, U21: zrušení akcí = záporná tržba s časem změny příznaku; součet tržeb 0. */
+    public function testCancellingByActionCreatesANegativeSaleAtTheFlagChange(): void
+    {
+        $sync = $this->sync();
+        $sync->docs[10] = $this->invoice([
+            'doc_state_changed_at'       => '2027-01-20 09:00:00',
+            'contact_payment_at'         => '2027-02-11 14:30:00',
+            'contact_payment_changed_at' => '2027-02-11 13:31:00',
+        ]);
+        $this->syncDoc($sync);
+
+        $sync->docs[10] = $this->invoice([
+            'doc_state_changed_at'       => '2027-01-20 09:00:00',
+            'contact_payment'            => 0,
+            'contact_payment_at'         => null,
+            'contact_payment_changed_at' => '2027-02-12 07:45:00',
+        ]);
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::CREATED, $result->status);
+        $this->assertSame(SyncResult::TIME_FLAG_CHANGE, $result->timeBasis);
+        $this->assertSame(['2420.00', '-2420.00'], $this->amounts($sync));
+        $this->assertSame('2027-02-12 07:45:00', $sync->sales[1]['sold_at'], 'čas zrušení, ne čas přechodu dokladu');
+        $this->assertSame('FV1270001-2', $sync->sales[1]['serial_number']);
+        $this->assertSame(SyncResult::NONE, $this->syncDoc($sync)->status);
+    }
+
+    /** U24: znovu nastavený příznak je nová platba — čas platby z dialogu. */
+    public function testSettingTheFlagAgainCarriesTheNewPaymentTime(): void
+    {
+        $sync = $this->sync();
+        $base = ['doc_state_changed_at' => '2027-01-20 09:00:00'];
+        $sync->docs[10] = $this->invoice($base + ['contact_payment_at' => '2027-02-10 10:00:00', 'contact_payment_changed_at' => '2027-02-10 09:01:00']);
+        $this->syncDoc($sync);
+        $sync->docs[10] = $this->invoice($base + ['contact_payment' => 0, 'contact_payment_changed_at' => '2027-02-11 09:00:00']);
+        $this->syncDoc($sync);
+
+        $sync->docs[10] = $this->invoice($base + ['contact_payment_at' => '2027-02-12 08:40:00', 'contact_payment_changed_at' => '2027-02-12 07:50:00']);
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::TIME_PAYMENT, $result->timeBasis);
+        $this->assertSame(['2420.00', '-2420.00', '2420.00'], $this->amounts($sync));
+        $this->assertSame('2027-02-12 07:40:00', $sync->sales[2]['sold_at']);
+        $this->assertSame('FV1270001-3', $sync->sales[2]['serial_number']);
+    }
+
+    /** U13: oprava a storno dokladu s kontaktní platbou nesou dál čas přechodu. */
+    public function testCorrectionAndCancellationOfAContactPaymentDocumentUseTheTransitionTime(): void
+    {
+        $sync = $this->sync();
+        $flag = ['contact_payment_at' => '2027-02-10 10:15:00', 'contact_payment_changed_at' => '2027-02-10 09:20:00'];
+        $sync->docs[10] = $this->invoice($flag);
+        $this->syncDoc($sync);
+
+        $sync->docs[10] = $this->invoice($flag + ['total_amount_dom' => '2000.00', 'doc_state_changed_at' => '2027-02-11 15:00:00']);
+        $correction = $this->syncDoc($sync);
+        $this->assertSame(SyncResult::TIME_TRANSITION, $correction->timeBasis);
+        $this->assertSame('-420.00', $sync->sales[1]['amount']);
+        $this->assertSame('2027-02-11 15:00:00', $sync->sales[1]['sold_at']);
+
+        $sync->docs[10] = $this->invoice($flag + ['docState' => 30, 'doc_state_changed_at' => '2027-02-11 16:00:00']);
+        $storno = $this->syncDoc($sync);
+        $this->assertSame(SyncResult::TIME_TRANSITION, $storno->timeBasis);
+        $this->assertSame('2027-02-11 16:00:00', $sync->sales[2]['sold_at']);
+        $this->assertSame(['2420.00', '-420.00', '-2000.00'], $this->amounts($sync));
+    }
+
+    /** Příznak zrušený ve formuláři V opravě: záporná tržba vzniká přechodem, s jeho časem. */
+    public function testFlagClearedInTheFormIsSettledByTheTransition(): void
+    {
+        $sync = $this->sync();
+        $sync->docs[10] = $this->invoice(['contact_payment_at' => '2027-02-10 10:15:00', 'contact_payment_changed_at' => '2027-02-10 09:20:00']);
+        $this->syncDoc($sync);
+
+        $sync->docs[10] = $this->invoice([
+            'contact_payment' => 0,
+            'contact_payment_changed_at' => '2027-02-11 15:00:00',
+            'doc_state_changed_at'       => '2027-02-11 15:00:00',
+        ]);
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::TIME_TRANSITION, $result->timeBasis);
+        $this->assertSame('2027-02-11 15:00:00', $sync->sales[1]['sold_at']);
+    }
+
+    /** Doklad, který spadá pravidlem, se o příznak a jeho časy nezajímá. */
+    public function testRuleBasedDocumentIgnoresContactPaymentTimes(): void
+    {
+        $sync = $this->sync();
+        $sync->docs[10] = $this->doc([
+            'contact_payment' => 1, 'contact_payment_at' => '2027-02-10 08:00:00', 'contact_payment_changed_at' => '2027-02-10 09:00:00',
+        ]);
+
+        $result = $this->syncDoc($sync);
+
+        $this->assertSame(SyncResult::TIME_TRANSITION, $result->timeBasis);
+        $this->assertSame('2027-02-10 09:30:00', $sync->sales[0]['sold_at']);
     }
 
     public function testDryRunSaysWhatWouldBeCreatedWithoutWriting(): void

@@ -72,12 +72,17 @@ class SalesRegistrationReconcileCommand extends Command
             $counts[$result->status] = ($counts[$result->status] ?? 0) + 1;
             $output->writeln(match ($result->status) {
                 SyncResult::CREATED, SyncResult::WOULD_CREATE => sprintf(
-                    '  doc %d: %s %s %s (sold at %s)',
+                    '  doc %d: %s %s %s (sold at %s%s)',
                     $result->docId,
                     $result->status === SyncResult::CREATED ? 'created' : 'would create',
                     $result->sale['serial_number'],
                     $result->sale['amount'],
                     $result->sale['sold_at'],
+                    match ($result->timeBasis) {
+                        SyncResult::TIME_PAYMENT     => ', contact payment',
+                        SyncResult::TIME_FLAG_CHANGE => ', contact payment changed',
+                        default                      => '',
+                    },
                 ),
                 SyncResult::UNREGISTRABLE => sprintf('  doc %d: cannot be registered (%s)', $result->docId, $result->reason),
                 default => sprintf('  doc %d: %s', $result->docId, $result->status),
