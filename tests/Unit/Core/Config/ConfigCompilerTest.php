@@ -406,7 +406,7 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame('Contracts', $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]['contracts']['name']);
     }
 
-    // ── workOrderInvoiceContributors (#110 D10) ─────────────────────────────
+    // ── periodicInvoicingContributors (#110 D10, #175 D5) ─────────────────────────────
 
     public function testInvoiceContributorsOfAllModulesCompileIntoOneCfgItem(): void
     {
@@ -414,10 +414,10 @@ class ConfigCompilerTest extends TestCase
         $this->stubModuleDir('economy.water');
         ConfigCompiler::compile(
             [
-                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => [
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'periodicInvoicingContributors' => [
                     ['id' => 'energy.consumption', 'class' => 'Foo\\Energy', 'name' => 'Energy consumption', 'name:cs' => 'Spotřeba energií'],
                 ]]),
-                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'workOrderInvoiceContributors' => [
+                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'periodicInvoicingContributors' => [
                     ['id' => 'water.consumption', 'class' => 'Foo\\Water', 'name' => 'Water consumption', 'name:cs' => 'Spotřeba vody'],
                 ]]),
             ],
@@ -441,9 +441,101 @@ class ConfigCompilerTest extends TestCase
         $this->expectExceptionMessage("Invoice contributor 'consumption' is declared by more than one module");
         ConfigCompiler::compile(
             [
-                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => [['id' => 'consumption', 'class' => 'A', 'name' => 'A']]]),
-                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'workOrderInvoiceContributors' => [['id' => 'consumption', 'class' => 'B', 'name' => 'B']]]),
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'periodicInvoicingContributors' => [['id' => 'consumption', 'class' => 'A', 'name' => 'A']]]),
+                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'periodicInvoicingContributors' => [['id' => 'consumption', 'class' => 'B', 'name' => 'B']]]),
             ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testInvoiceContributorsCfgItemIsReserved(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/economy/periodicInvoicing';
+        $this->writeConfigFile($modulePath, 'config/contributors.jsonc', ['x' => ['class' => 'X']]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("cfgItem 'economy.periodicInvoicing.contributors' is reserved for periodicInvoicingContributors");
+
+        ConfigCompiler::compile(
+            [$this->makeModule('economy.periodicInvoicing', [
+                ['id' => ConfigCompiler::INVOICE_CONTRIBUTORS_ITEM, 'file' => 'config/contributors.jsonc'],
+            ])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    // ── periodicInvoicingSources (#175 D3) ──────────────────────────────────
+
+    public function testInvoicingSourcesOfAllModulesCompileIntoOneCfgItem(): void
+    {
+        $this->stubModuleDir('economy.workOrders');
+        $this->stubModuleDir('buildings.contracts');
+        $this->stubModuleDir('core.system');
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'core.system', 'name' => 'System']),
+                ModuleDefinition::fromArray(['id' => 'economy.workOrders', 'name' => 'Work orders', 'periodicInvoicingSources' => [
+                    ['id' => 'workOrders', 'class' => 'Foo\\WorkOrders'],
+                ]]),
+                ModuleDefinition::fromArray(['id' => 'buildings.contracts', 'name' => 'Contracts', 'periodicInvoicingSources' => [
+                    ['id' => 'contracts', 'class' => 'Foo\\Contracts'],
+                ]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+        );
+
+        $expected = ['workOrders' => ['class' => 'Foo\\WorkOrders'], 'contracts' => ['class' => 'Foo\\Contracts']];
+        $this->assertSame($expected, $this->compiledItems('cs')[ConfigCompiler::INVOICING_SOURCES_ITEM]);
+        $this->assertSame($expected, $this->compiledItems('en')[ConfigCompiler::INVOICING_SOURCES_ITEM]);
+    }
+
+    public function testNoInvoicingSourcesCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+        ConfigCompiler::compile(
+            [ModuleDefinition::fromArray(['id' => 'core.system', 'name' => 'System'])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::INVOICING_SOURCES_ITEM]);
+    }
+
+    public function testDuplicateInvoicingSourceAcrossModulesIsAnError(): void
+    {
+        $this->stubModuleDir('economy.workOrders');
+        $this->stubModuleDir('buildings.contracts');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Periodic invoicing source 'records' is declared by more than one module (again in 'buildings.contracts')");
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'economy.workOrders', 'name' => 'Work orders', 'periodicInvoicingSources' => [['id' => 'records', 'class' => 'A']]]),
+                ModuleDefinition::fromArray(['id' => 'buildings.contracts', 'name' => 'Contracts', 'periodicInvoicingSources' => [['id' => 'records', 'class' => 'B']]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testInvoicingSourcesCfgItemIsReserved(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/economy/periodicInvoicing';
+        $this->writeConfigFile($modulePath, 'config/sources.jsonc', ['x' => ['class' => 'X']]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("cfgItem 'economy.periodicInvoicing.sources' is reserved for periodicInvoicingSources");
+
+        ConfigCompiler::compile(
+            [$this->makeModule('economy.periodicInvoicing', [
+                ['id' => ConfigCompiler::INVOICING_SOURCES_ITEM, 'file' => 'config/sources.jsonc'],
+            ])],
             new ModulePathResolver([$this->tmpDir . '/modules']),
             ['en'],
             $this->tmpDir . '/output',

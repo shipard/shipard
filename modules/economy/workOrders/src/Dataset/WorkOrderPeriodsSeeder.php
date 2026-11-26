@@ -9,9 +9,10 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetException;
 use Shipard\Module\Core\Exchange\Dataset\SectionSeeder;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Dataset\SeedReport;
-use Shipard\Module\Economy\WorkOrders\Invoicing\ContentHash;
-use Shipard\Module\Economy\WorkOrders\Invoicing\Period;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\ContentHash;
+use Shipard\Module\Economy\PeriodicInvoicing\Period;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
+use Shipard\Module\Economy\WorkOrders\WorkOrderInvoicingSource;
 use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 
 /**
@@ -47,7 +48,11 @@ class WorkOrderPeriodsSeeder implements SectionSeeder
 
     public function seed(SeedContext $ctx, SeedReport $report): void
     {
-        $repository = $this->periods ?? new PeriodRepository($ctx->db);
+        $repository = $this->periods ?? new PeriodRepository(
+            $ctx->db,
+            WorkOrderInvoicingSource::PERIODS_TABLE,
+            WorkOrderInvoicingSource::PERIODS_RECORD_COLUMN,
+        );
         $now = $this->now();
         foreach ($ctx->reader->listFiles(WorkOrderSeeder::SECTION) as $rel) {
             try {
@@ -105,7 +110,7 @@ class WorkOrderPeriodsSeeder implements SectionSeeder
 
         $repository->ensurePlanned($workOrderId, [new Period($from, $to)], $now);
         $row = $db->fetch(
-            'SELECT [id] FROM [' . PeriodRepository::TABLE . '] WHERE [work_order] = %i AND [period_from] = %d',
+            'SELECT [id] FROM [' . $repository->table() . '] WHERE [' . $repository->recordColumn() . '] = %i AND [period_from] = %d',
             $workOrderId, $from,
         );
         $row = $row === null ? null : (is_array($row) ? $row : $row->toArray());

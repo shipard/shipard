@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\WorkOrders\Checks;
 
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoiceBuildException;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoiceBuildException;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 
 /**
  * Období se nepodařilo vystavit (tasks §6): per zakázka — `planned` období

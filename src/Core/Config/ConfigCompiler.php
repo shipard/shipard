@@ -24,11 +24,17 @@ class ConfigCompiler
     public const SEND_PURPOSES_ITEM = 'base.persons.sendPurposes';
 
     /**
-     * cfgItem složený z `workOrderInvoiceContributors` aktivních modulů —
-     * přispěvatelé obsahu faktury periodické zakázky (#110 D10): klíč = id,
-     * hodnota název (lokalizovaný) a třída.
+     * cfgItem složený z `periodicInvoicingContributors` aktivních modulů —
+     * přispěvatelé obsahu faktury periodické fakturace (#110 D10, #175 D5):
+     * klíč = id, hodnota název (lokalizovaný) a třída.
      */
-    public const INVOICE_CONTRIBUTORS_ITEM = 'economy.workOrders.invoiceContributors';
+    public const INVOICE_CONTRIBUTORS_ITEM = 'economy.periodicInvoicing.contributors';
+
+    /**
+     * cfgItem složený z `periodicInvoicingSources` aktivních modulů — zdroje
+     * periodické fakturace (#175 D3): klíč = id, hodnota třída.
+     */
+    public const INVOICING_SOURCES_ITEM = 'economy.periodicInvoicing.sources';
 
     /**
      * cfgItem složený z deklarací tisků (`prints`) aktivních modulů — klíč
@@ -207,12 +213,35 @@ class ConfigCompiler
         }
         $rawItems[self::SEND_PURPOSES_ITEM] = $purposes;
 
-        // Přispěvatelé obsahu faktury (`workOrderInvoiceContributors`
+        // Zdroje periodické fakturace (`periodicInvoicingSources`
+        // v module.jsonc) aktivních modulů → jeden cfgItem pro
+        // InvoicingSources::fromConfig (#175 D3).
+        $invoicingSources = [];
+        foreach ($modules as $module) {
+            foreach ($module->periodicInvoicingSources as $source) {
+                $sourceId = (string) $source['id'];
+                if (isset($invoicingSources[$sourceId])) {
+                    throw new \RuntimeException(
+                        "Periodic invoicing source '{$sourceId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                $invoicingSources[$sourceId] = ['class' => $source['class']];
+            }
+        }
+        if (isset($rawItems[self::INVOICING_SOURCES_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::INVOICING_SOURCES_ITEM . "' is reserved for periodicInvoicingSources",
+            );
+        }
+        $rawItems[self::INVOICING_SOURCES_ITEM] = $invoicingSources;
+
+        // Přispěvatelé obsahu faktury (`periodicInvoicingContributors`
         // v module.jsonc) aktivních modulů → jeden cfgItem: nabídka řádku
         // předpisu, validace id a třídy pro InvoiceContributorRegistry.
         $contributors = [];
         foreach ($modules as $module) {
-            foreach ($module->workOrderInvoiceContributors as $contributor) {
+            foreach ($module->periodicInvoicingContributors as $contributor) {
                 $contributorId = (string) $contributor['id'];
                 if (isset($contributors[$contributorId])) {
                     throw new \RuntimeException(
@@ -226,7 +255,7 @@ class ConfigCompiler
         }
         if (isset($rawItems[self::INVOICE_CONTRIBUTORS_ITEM])) {
             throw new \RuntimeException(
-                "cfgItem '" . self::INVOICE_CONTRIBUTORS_ITEM . "' is reserved for workOrderInvoiceContributors",
+                "cfgItem '" . self::INVOICE_CONTRIBUTORS_ITEM . "' is reserved for periodicInvoicingContributors",
             );
         }
         $rawItems[self::INVOICE_CONTRIBUTORS_ITEM] = $contributors;

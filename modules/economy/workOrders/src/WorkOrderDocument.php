@@ -12,8 +12,8 @@ use Shipard\Core\Numbering\NumberPattern;
 use Shipard\Core\Numbering\SequenceCounter;
 use Shipard\Core\Numbering\SequenceStorage;
 use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
 
 /**
  * Zakázka (economy_work_orders_heads, docs/work-orders.md §5.3–5.4,

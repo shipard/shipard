@@ -116,7 +116,7 @@ class WorkOrderSettingsFormsTest extends TestCase
         $config->method('cfgItem')->willReturnMap([
             [WorkOrderTypes::CFG_ITEM, self::TYPES + ['periodic' => ['name' => 'Periodická', 'external' => true, 'oneOff' => false, 'invoicing' => 'periodic']]],
             ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná']]],
-            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období'], 'end' => ['name' => 'Na konci období']]],
+            ['economy.periodicInvoicing.invoiceTimings', ['start' => ['name' => 'Na počátku období'], 'end' => ['name' => 'Na konci období']]],
             ['docs.core.vatModes', ['0' => ['name' => 'Bez DPH'], '1' => ['name' => 'Ze základu'], '2' => ['name' => 'Z ceny celkem']]],
             ['docs.core.paymentMethods', ['0' => ['name' => 'Hotovost'], '1' => ['name' => 'Převodem']]],
         ]);

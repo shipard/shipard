@@ -6,9 +6,9 @@ namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodCalendar;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodCalendar;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 
 /**
  * Viewer zakázek (sekce Zakázky, tasks/work-orders-phase1.md §5).
@@ -262,9 +262,9 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
                     : $this->text('text.noNextDue', 'none — past the end date'),
             );
         }
-        $this->addItem($items, $this->text('label.periodicity', 'Periodicity'), $this->cfgLabel('economy.workOrders.periodicities', $periodicity));
+        $this->addItem($items, $this->text('label.periodicity', 'Periodicity'), $this->cfgLabel('economy.periodicInvoicing.periodicities', $periodicity));
         $this->addItem($items, $this->text('label.invoiceFrom', 'Invoice from'), $this->formatDate($invoiceFrom));
-        $this->addItem($items, $this->text('label.invoiceTiming', 'Invoicing'), $this->cfgLabel('economy.workOrders.invoiceTimings', $settings->timing));
+        $this->addItem($items, $this->text('label.invoiceTiming', 'Invoicing'), $this->cfgLabel('economy.periodicInvoicing.invoiceTimings', $settings->timing));
         $this->addItem($items, $this->text('label.invoiceDocType', 'Document type'), $settings->docType !== null ? $this->cfgLabel('docs.core.docTypes', $settings->docType) : null);
 
         $periods = $this->periodRepository()->listFor($workOrderId);
@@ -280,7 +280,7 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
             $label = $this->formatDate($period['period_from']) . ' – ' . $this->formatDate($period['period_to']);
             $row = [
                 'period'   => $label,
-                'state'    => $this->cfgLabel('economy.workOrders.periodStates', $state),
+                'state'    => $this->cfgLabel('economy.periodicInvoicing.periodStates', $state),
                 'document' => $doc !== null ? $this->documentLabel($doc, $docId) : '',
                 'amount'   => $doc !== null && $doc['total_amount'] !== null
                     ? trim($this->formatAmount($doc['total_amount']) . ' ' . strtoupper((string) ($doc['doc_currency'] ?? '')))
@@ -587,7 +587,11 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
 
     protected function periodRepository(): PeriodRepository
     {
-        return new PeriodRepository($this->db->getDibiConnection());
+        return new PeriodRepository(
+            $this->db->getDibiConnection(),
+            WorkOrderInvoicingSource::PERIODS_TABLE,
+            WorkOrderInvoicingSource::PERIODS_RECORD_COLUMN,
+        );
     }
 
     /** Druh zakázky (sloupce předpisu inv_*), null = neexistuje. */

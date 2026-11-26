@@ -6,7 +6,7 @@ namespace Shipard\Module\Economy\WorkOrders\Checks;
 
 use Shipard\Core\Alerts\AlertCheck;
 use Shipard\Core\Alerts\AlertFinding;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\WorkOrders\WorkOrderInvoicingSource;
 use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
 
@@ -32,7 +32,7 @@ abstract class PeriodCheckBase extends AlertCheck
     {
         $sql = 'SELECT [p].[id], [p].[work_order], [p].[period_from], [p].[period_to], [p].[state], [p].[result],'
             . ' [p].[message], [p].[waiting_since], [w].[number], [w].[title]'
-            . ' FROM [' . PeriodRepository::TABLE . '] [p]'
+            . ' FROM [' . WorkOrderInvoicingSource::PERIODS_TABLE . '] [p]'
             . ' JOIN [' . WorkOrderDocument::TABLE . '] [w] ON [w].[id] = [p].[work_order]'
             . ' WHERE [p].[state] IN %in';
         $args = [$states];

@@ -10,8 +10,8 @@ use Shipard\Core\Form\TableForm;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocHeadVatContext;
 use Shipard\Module\Docs\Core\DocRowOperationRules;
-use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\Contributor\InvoiceContributorRegistry;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
 
 /**
  * Sub-formulář řádku předpisu periodické zakázky (tab Řádky ve
@@ -23,7 +23,7 @@ use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
  * jednotku a prodejní cenu jako u řádku dokladu (DocRowsForm).
  *
  * Pole Přispěvatel obsahu se ukáže jen s registrovaným přispěvatelem
- * (`contributorOptions()`, workOrderInvoiceContributors).
+ * (`contributorOptions()`, periodicInvoicingContributors).
  */
 class WorkOrderRowsForm extends TableForm
 {
@@ -160,7 +160,7 @@ class WorkOrderRowsForm extends TableForm
     }
 
     /**
-     * Registrovaní přispěvatelé obsahu (cfgItem z `workOrderInvoiceContributors`)
+     * Registrovaní přispěvatelé obsahu (cfgItem z `periodicInvoicingContributors`)
      * jako options; prázdné = pole se nezobrazí.
      *
      * @return list<array{value: string, label: string}>

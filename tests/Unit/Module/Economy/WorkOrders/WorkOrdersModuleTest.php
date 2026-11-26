@@ -33,7 +33,7 @@ class WorkOrdersModuleTest extends TestCase
         $module = ModuleDefinition::fromArray(self::module());
 
         $this->assertSame('economy.workOrders', $module->id);
-        foreach (['core.system', 'core.attachments', 'base.persons', 'economy.codebooks', 'docs.core', 'economy.accounting'] as $dependency) {
+        foreach (['core.system', 'core.attachments', 'base.persons', 'economy.codebooks', 'docs.core', 'economy.accounting', 'economy.periodicInvoicing'] as $dependency) {
             $this->assertContains($dependency, $module->dependencies, $dependency);
         }
 

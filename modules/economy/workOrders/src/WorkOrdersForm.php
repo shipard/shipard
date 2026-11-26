@@ -11,9 +11,9 @@ use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingFormOptions;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingFormOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
 
 /**
  * Formulář zakázky (tasks/work-orders-phase1.md §3, §5; fáze 2 §1).
@@ -415,7 +415,7 @@ class WorkOrdersForm extends TableForm
     /** @return list<array{value: string, label: string}> */
     private function periodicityOptions(): array
     {
-        $cfg = $this->config?->cfgItem('economy.workOrders.periodicities');
+        $cfg = $this->config?->cfgItem('economy.periodicInvoicing.periodicities');
         return is_array($cfg) ? EnumOptionsHelper::fromCfgData($cfg, 'enumString') : [];
     }
 

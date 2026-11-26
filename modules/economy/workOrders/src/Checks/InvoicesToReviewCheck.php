@@ -7,7 +7,7 @@ namespace Shipard\Module\Economy\WorkOrders\Checks;
 use Shipard\Core\Alerts\AlertCheck;
 use Shipard\Core\Alerts\AlertFinding;
 use Shipard\Module\Docs\Core\DocsHeadsViewer;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoiceBuilder;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoiceBuilder;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
 
 /**

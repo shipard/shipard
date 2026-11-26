@@ -14,7 +14,8 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Export\CanonicalParty;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
+use Shipard\Module\Economy\WorkOrders\WorkOrderInvoicingSource;
 use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
 
@@ -285,7 +286,7 @@ class WorkOrderExporter implements RecordExporter
     {
         $rows = $this->db->fetchAll(
             'SELECT [p].[period_from], [p].[period_to], [p].[state], [d].[doc_number], [d].[docState] AS [doc_state]'
-            . ' FROM [' . PeriodRepository::TABLE . '] AS [p]'
+            . ' FROM [' . WorkOrderInvoicingSource::PERIODS_TABLE . '] AS [p]'
             . ' LEFT JOIN [docs_core_heads] AS [d] ON [d].[id] = [p].[doc]'
             . ' WHERE [p].[work_order] = %i ORDER BY [p].[period_from], [p].[id]',
             $workOrderId,

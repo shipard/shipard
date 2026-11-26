@@ -12,9 +12,10 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunFactory;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunFactory;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunService;
+use Shipard\Module\Economy\PeriodicInvoicing\RunOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\Source\PeriodicInvoicingSource;
 
 /**
  * HTTP obal akcí periodické fakturace v detailu zakázky (D24, tasks §4):
@@ -48,7 +49,7 @@ class WorkOrdersInvoicingController
             return Response::error('BAD_REQUEST', 'Body must contain workOrder id', 400);
         }
         try {
-            $report = $this->service()->run(RunOptions::today(workOrderId: $workOrderId, force: true));
+            $report = $this->service()->run(RunOptions::today(sourceId: WorkOrderInvoicingSource::ID, recordId: $workOrderId, force: true));
         } catch (\DomainException $e) {
             return $this->domainError($e);
         } catch (\RuntimeException $e) {
@@ -64,7 +65,8 @@ class WorkOrdersInvoicingController
             return Response::error('BAD_REQUEST', 'Body must contain period id', 400);
         }
         try {
-            $line = $this->service()->regenerate($periodId, RunOptions::today());
+            $service = $this->service();
+            $line = $service->regenerate(self::source($service), $periodId, RunOptions::today());
         } catch (\DomainException $e) {
             return $this->domainError($e);
         } catch (\RuntimeException $e) {
@@ -80,13 +82,20 @@ class WorkOrdersInvoicingController
             return Response::error('BAD_REQUEST', 'Body must contain period id', 400);
         }
         try {
-            $line = $this->service()->restore($periodId, RunOptions::today());
+            $service = $this->service();
+            $line = $service->restore(self::source($service), $periodId, RunOptions::today());
         } catch (\DomainException $e) {
             return $this->domainError($e);
         } catch (\RuntimeException $e) {
             return Response::error('INTERNAL_ERROR', $e->getMessage(), 500);
         }
         return Response::success($line->toArray());
+    }
+
+    private static function source(InvoicingRunService $service): PeriodicInvoicingSource
+    {
+        return $service->sources()->get(WorkOrderInvoicingSource::ID)
+            ?? throw new \RuntimeException('Zdroj fakturace zakázek není registrovaný (ds-upgrade).');
     }
 
     protected function service(): InvoicingRunService

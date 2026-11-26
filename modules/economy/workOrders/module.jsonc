@@ -5,8 +5,9 @@
     // jako standardní dimenze jádra (D20, D23 — sloupce v tabulkách jádra,
     // deklarace v economy.accounting). Fáze 1 = tasks/work-orders-phase1.md;
     // fáze 2 = tasks/work-orders-phase2.md: fakturační předpis periodické
-    // zakázky (druh → zakázka → řádky), evidence období, denní běh přes
-    // výměnný formát (src/Invoicing/).
+    // zakázky (druh → zakázka → řádky) a evidence období. Engine periodické
+    // fakturace je v modulu economy.periodicInvoicing (#175) — zakázky jsou
+    // jeho zdroj (`periodicInvoicingSources`, WorkOrderInvoicingSource).
     "id": "economy.workOrders",
     "name": "Work orders",
     "name:cs": "Zakázky",
@@ -15,7 +16,13 @@
     "description:cs": "Zakázky: druhy s typem, číselné řady, evidence zakázek a dimenze deníku zakázka",
     "description:en": "Work orders: kinds with a type, number series, work order register and the work order journal dimension",
 
-    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.codebooks", "docs.core", "economy.accounting"],
+    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.codebooks", "docs.core", "economy.accounting", "economy.periodicInvoicing"],
+
+    // Zdroj periodické fakturace (#175 D3): periodické zakázky V pořádku
+    // s „fakturovat od“; evidence období economy_work_orders_periods.
+    "periodicInvoicingSources": [
+        {"id": "workOrders", "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderInvoicingSource"}
+    ],
 
     // Příkazy shpd-ds, které patří jen tomuto modulu (#172 D2) — třídy
     // v src/Command/.
@@ -244,26 +251,6 @@
         {
             "id": "economy.workOrders.viewerLabels",
             "file": "config/viewerLabels.jsonc"
-        },
-        {
-            // Periodicita periodické zakázky (D2, Q3) — PeriodCalendar.
-            "id": "economy.workOrders.periodicities",
-            "file": "config/periodicities.jsonc"
-        },
-        {
-            // Fakturace na počátku / konci období (D6).
-            "id": "economy.workOrders.invoiceTimings",
-            "file": "config/invoiceTimings.jsonc"
-        },
-        {
-            // Stavy období fakturace (D5, D10) — PeriodRepository, záložka Fakturace.
-            "id": "economy.workOrders.periodStates",
-            "file": "config/periodStates.jsonc"
-        },
-        {
-            // Tvar {období} v jazycích dokumentů (D12, Q6) — PeriodLabel.
-            "id": "economy.workOrders.periodTexts",
-            "file": "config/periodTexts.jsonc"
         }
     ]
 }

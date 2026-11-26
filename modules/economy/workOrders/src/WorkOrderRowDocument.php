@@ -6,7 +6,7 @@ namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
-use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
+use Shipard\Module\Economy\PeriodicInvoicing\Contributor\InvoiceContributorRegistry;
 
 /**
  * Řádek zakázky (economy_work_orders_rows, docs/work-orders.md §5.3) —

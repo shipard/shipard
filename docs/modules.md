@@ -877,7 +877,7 @@ formulář řádku předpisu nabídku pole *Přispěvatel obsahu* (bez registrac
 se pole neukáže), `WorkOrderRowDocument` ověřuje id a
 `InvoiceContributorRegistry::fromConfig` staví instance (neexistující
 třída nebo třída bez rozhraní = `LogicException`). Třída implementuje
-`Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributor`
+`Shipard\Module\Economy\PeriodicInvoicing\Contributor\InvoiceContributor`
 (`id()`, `contribute(ContributionContext): ContributionResult` — *Ready*
 s kanonickými řádky, které nahradí řádky přispěvatele, *Waiting* s důvodem,
 *Failed* se zprávou), typicky dědí `AbstractInvoiceContributor` (settery

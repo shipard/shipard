@@ -759,26 +759,26 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
-    // ── workOrderInvoiceContributors (#110 D10) ─────────────────────────────
+    // ── periodicInvoicingContributors (#110 D10, #175 D5) ─────────────────────────────
 
-    public function testWorkOrderInvoiceContributorsParsed(): void
+    public function testPeriodicInvoicingContributorsParsed(): void
     {
         $def = ModuleDefinition::fromArray([
             'id'   => 'economy.energy',
             'name' => 'Energy',
-            'workOrderInvoiceContributors' => [
+            'periodicInvoicingContributors' => [
                 ['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba', 'extra' => 'ignored'],
             ],
         ]);
 
         $this->assertSame(
             [['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba']],
-            $def->workOrderInvoiceContributors,
+            $def->periodicInvoicingContributors,
         );
-        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->workOrderInvoiceContributors);
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->periodicInvoicingContributors);
     }
 
-    public function testWorkOrderInvoiceContributorsValidation(): void
+    public function testPeriodicInvoicingContributorsValidation(): void
     {
         foreach ([
             [[['class' => 'Foo\\Bar', 'name' => 'X']], '.id must be an identifier'],
@@ -788,7 +788,43 @@ class ModuleDefinitionTest extends TestCase
             [[['id' => 'ok', 'class' => 'Foo\\Bar', 'name' => 'X'], ['id' => 'ok', 'class' => 'Foo\\Baz', 'name' => 'Y']], "duplicate id 'ok'"],
         ] as [$contributors, $message]) {
             try {
-                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => $contributors]);
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'periodicInvoicingContributors' => $contributors]);
+                $this->fail($message);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString($message, $e->getMessage());
+            }
+        }
+    }
+
+    // ── periodicInvoicingSources (#175 D3) ──────────────────────────────────
+
+    public function testPeriodicInvoicingSourcesParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.workOrders',
+            'name' => 'Work orders',
+            'periodicInvoicingSources' => [
+                ['id' => 'workOrders', 'class' => 'Foo\\WorkOrderSource', 'extra' => 'ignored'],
+            ],
+        ]);
+
+        $this->assertSame([['id' => 'workOrders', 'class' => 'Foo\\WorkOrderSource']], $def->periodicInvoicingSources);
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->periodicInvoicingSources);
+    }
+
+    public function testPeriodicInvoicingSourcesValidation(): void
+    {
+        foreach ([
+            ['not a list', 'must be a JSON array'],
+            [['x'], 'must be an object'],
+            [[['class' => 'Foo\\Bar']], '.id must be an identifier'],
+            // Id jde do CLI (--source) a do klíče nálezu „zdroj:id“ — bez teček a mezer.
+            [[['id' => 'work.orders', 'class' => 'Foo\\Bar']], '.id must be an identifier'],
+            [[['id' => 'ok']], "requires 'class'"],
+            [[['id' => 'ok', 'class' => 'Foo\\Bar'], ['id' => 'ok', 'class' => 'Foo\\Baz']], "duplicate id 'ok'"],
+        ] as [$sources, $message]) {
+            try {
+                ModuleDefinition::fromArray(['id' => 'economy.workOrders', 'name' => 'Work orders', 'periodicInvoicingSources' => $sources]);
                 $this->fail($message);
             } catch (\InvalidArgumentException $e) {
                 $this->assertStringContainsString($message, $e->getMessage());

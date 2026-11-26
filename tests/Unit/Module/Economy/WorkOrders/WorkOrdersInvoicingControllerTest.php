@@ -9,10 +9,13 @@ use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunLine;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunOptions;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunReport;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunService;
+use Shipard\Module\Economy\PeriodicInvoicing\RunLine;
+use Shipard\Module\Economy\PeriodicInvoicing\RunOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\Source\InvoicingSources;
+use Shipard\Module\Economy\PeriodicInvoicing\Source\PeriodicInvoicingSource;
+use Shipard\Tests\Unit\Module\Economy\PeriodicInvoicing\FakeInvoicingSource;
+use Shipard\Module\Economy\PeriodicInvoicing\RunReport;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersInvoicingController;
 
 /**
@@ -32,6 +35,11 @@ class WorkOrdersInvoicingControllerTest extends TestCase
             {
             }
 
+            public function sources(): InvoicingSources
+            {
+                return new InvoicingSources([new FakeInvoicingSource()]);
+            }
+
             public function run(RunOptions $options): RunReport
             {
                 $this->calls[] = ['run', $options];
@@ -39,26 +47,26 @@ class WorkOrdersInvoicingControllerTest extends TestCase
                     throw $this->throw;
                 }
                 $report = new RunReport($options);
-                $report->add(new RunLine(6, 'S260001', 'Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_ISSUED, 605, null, 3));
+                $report->add(new RunLine('workOrders', 6, 'S260001 Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_ISSUED, 605, null, 3));
                 return $report;
             }
 
-            public function regenerate(int $periodId, RunOptions $options): RunLine
+            public function regenerate(PeriodicInvoicingSource $source, int $periodId, RunOptions $options): RunLine
             {
                 $this->calls[] = ['regenerate', $periodId];
                 if ($this->throw !== null) {
                     throw $this->throw;
                 }
-                return new RunLine(6, 'S260001', 'Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_ISSUED, 605, null, $periodId);
+                return new RunLine('workOrders', 6, 'S260001 Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_ISSUED, 605, null, $periodId);
             }
 
-            public function restore(int $periodId, RunOptions $options): RunLine
+            public function restore(PeriodicInvoicingSource $source, int $periodId, RunOptions $options): RunLine
             {
                 $this->calls[] = ['restore', $periodId];
                 if ($this->throw !== null) {
                     throw $this->throw;
                 }
-                return new RunLine(6, 'S260001', 'Nájem', '2026-09-01', '2026-09-30', RunReport::OUTCOME_ISSUED, 606, null, $periodId);
+                return new RunLine('workOrders', 6, 'S260001 Nájem', '2026-09-01', '2026-09-30', RunReport::OUTCOME_ISSUED, 606, null, $periodId);
             }
         };
 
@@ -94,7 +102,7 @@ class WorkOrdersInvoicingControllerTest extends TestCase
         $this->assertSame(1, $payload['data']['counts']['issued']);
         $this->assertSame('run', $this->calls[0][0]);
         $options = $this->calls[0][1];
-        $this->assertSame(6, $options->workOrderId);
+        $this->assertSame(['workOrders', 6], [$options->sourceId, $options->recordId]);
         $this->assertTrue($options->force);
         $this->assertFalse($options->dryRun);
     }

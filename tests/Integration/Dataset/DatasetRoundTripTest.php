@@ -46,7 +46,7 @@ use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderExporter;
 use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderPeriodsSeeder;
 use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderSeeder;
 use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
-use Shipard\Module\Economy\WorkOrders\Invoicing\ContentHash;
+use Shipard\Module\Economy\PeriodicInvoicing\ContentHash;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**

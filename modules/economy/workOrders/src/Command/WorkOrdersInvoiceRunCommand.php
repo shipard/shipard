@@ -13,11 +13,12 @@ use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Api\TableLoader;
 use Shipard\Core\Module\ModulePathResolver;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunFactory;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunLine;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunOptions;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunReport;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunFactory;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunService;
+use Shipard\Module\Economy\PeriodicInvoicing\RunLine;
+use Shipard\Module\Economy\PeriodicInvoicing\RunOptions;
+use Shipard\Module\Economy\WorkOrders\WorkOrderInvoicingSource;
+use Shipard\Module\Economy\PeriodicInvoicing\RunReport;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -98,7 +99,8 @@ class WorkOrdersInvoiceRunCommand extends Command
 
         $options = new RunOptions(
             date: $date,
-            workOrderId: $workOrderId,
+            sourceId: $workOrderId !== null ? WorkOrderInvoicingSource::ID : null,
+            recordId: $workOrderId,
             dryRun: $dryRun,
             force: $workOrderId !== null,
             now: date('Y-m-d H:i:s'),
@@ -152,9 +154,10 @@ class WorkOrdersInvoiceRunCommand extends Command
     {
         $current = null;
         foreach ($report->lines as $line) {
-            if ($current !== $line->workOrderId) {
-                $current = $line->workOrderId;
-                $output->writeln(sprintf('<info>%s</info> — %s', $line->workOrderNumber !== '' ? $line->workOrderNumber : '#' . $line->workOrderId, $line->workOrderTitle));
+            $key = $line->sourceId . ':' . $line->recordId;
+            if ($current !== $key) {
+                $current = $key;
+                $output->writeln(sprintf('<info>%s</info>', $line->recordLabel));
             }
             $output->writeln('  ' . $this->formatLine($line));
         }

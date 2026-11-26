@@ -250,7 +250,7 @@
             "name:en": "Periodicity",
             "type": "enumString",
             "length": 10,
-            "cfgItem": "economy.workOrders.periodicities",
+            "cfgItem": "economy.periodicInvoicing.periodicities",
             "nullable": true,
             "group": "invoicing"
         },
@@ -317,7 +317,7 @@
             "name:en": "Invoicing timing",
             "type": "enumString",
             "length": 5,
-            "cfgItem": "economy.workOrders.invoiceTimings",
+            "cfgItem": "economy.periodicInvoicing.invoiceTimings",
             "nullable": true,
             "group": "invoicing"
         },

@@ -8,10 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Module\Economy\WorkOrders\Command\WorkOrdersInvoiceRunCommand;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunLine;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunOptions;
-use Shipard\Module\Economy\WorkOrders\Invoicing\RunReport;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunService;
+use Shipard\Module\Economy\PeriodicInvoicing\RunLine;
+use Shipard\Module\Economy\PeriodicInvoicing\RunOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\RunReport;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -92,8 +92,8 @@ class WorkOrdersInvoiceRunCommandTest extends TestCase
     public function testOptionsReachTheServiceAndReportIsPrinted(): void
     {
         $lines = [
-            new RunLine(6, 'S260001', 'Nájem kanceláře', '2026-08-01', '2026-08-31', RunReport::OUTCOME_ISSUED, 1001, 'Nájem srpen 2026', 1),
-            new RunLine(6, 'S260001', 'Nájem kanceláře', '2026-09-01', '2026-09-30', RunReport::OUTCOME_FAILED, null, 'number_series_not_found', 2),
+            new RunLine('workOrders', 6, 'S260001 Nájem kanceláře', '2026-08-01', '2026-08-31', RunReport::OUTCOME_ISSUED, 1001, 'Nájem srpen 2026', 1),
+            new RunLine('workOrders', 6, 'S260001 Nájem kanceláře', '2026-09-01', '2026-09-30', RunReport::OUTCOME_FAILED, null, 'number_series_not_found', 2),
         ];
         $tester = $this->tester(lines: $lines);
         $exit = $tester->execute(['--date' => '2026-10-08', '--work-order' => 'S260001']);
@@ -102,12 +102,12 @@ class WorkOrdersInvoiceRunCommandTest extends TestCase
         $this->assertCount(1, $this->runs);
         $options = $this->runs[0];
         $this->assertSame('2026-10-08', $options->date);
-        $this->assertSame(6, $options->workOrderId);
+        $this->assertSame(['workOrders', 6], [$options->sourceId, $options->recordId]);
         $this->assertTrue($options->force);
         $this->assertFalse($options->dryRun);
 
         $display = $tester->getDisplay();
-        $this->assertStringContainsString('S260001 — Nájem kanceláře', $display);
+        $this->assertStringContainsString('S260001 Nájem kanceláře', $display);
         $this->assertStringContainsString('2026-08-01 – 2026-08-31', $display);
         $this->assertStringContainsString('doklad #1001', $display);
         $this->assertStringContainsString('number_series_not_found', $display);
@@ -117,12 +117,12 @@ class WorkOrdersInvoiceRunCommandTest extends TestCase
     public function testDryRunIsPassedThroughAndAnnounced(): void
     {
         $tester = $this->tester(lines: [
-            new RunLine(6, 'S260001', 'Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_PLANNED, null, 'Nájem říjen 2026'),
+            new RunLine('workOrders', 6, 'S260001 Nájem', '2026-10-01', '2026-10-31', RunReport::OUTCOME_PLANNED, null, 'Nájem říjen 2026'),
         ]);
         $this->assertSame(0, $tester->execute(['--dry-run' => true]));
         $this->assertTrue($this->runs[0]->dryRun);
         $this->assertFalse($this->runs[0]->force);
-        $this->assertNull($this->runs[0]->workOrderId);
+        $this->assertSame([null, null], [$this->runs[0]->sourceId, $this->runs[0]->recordId]);
         $display = $tester->getDisplay();
         $this->assertStringContainsString('1 k vystavení', $display);
         $this->assertStringContainsString('Dry-run — nic se nezapsalo.', $display);

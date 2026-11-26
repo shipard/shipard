@@ -1,0 +1,41 @@
+{
+    // Periodická fakturace (#175 D1–D9, docs/work-orders.md §5.5): engine,
+    // který za záznamy zdrojů fakturace vystavuje koncepty dokladů za
+    // splatná období — evidence období per zdroj (PeriodRepository), kalendář
+    // a popisek období, sestavení kanonického dokladu (InvoiceBuilder), běh
+    // (InvoicingRunService) a přispěvatelé obsahu. Zdroj registruje jiný
+    // modul polem `periodicInvoicingSources` (rozhraní
+    // Source\PeriodicInvoicingSource); tabulky období zůstávají u zdrojů.
+    "id": "economy.periodicInvoicing",
+    "name": "Periodic invoicing",
+    "name:cs": "Periodická fakturace",
+    "name:en": "Periodic invoicing",
+    "description": "Periodic invoicing engine: invoicing sources, period register per source, daily run producing draft documents",
+    "description:cs": "Engine periodické fakturace: zdroje fakturace, evidence období per zdroj a denní běh, který vystavuje koncepty dokladů",
+    "description:en": "Periodic invoicing engine: invoicing sources, period register per source, daily run producing draft documents",
+
+    "dependencies": ["core.system", "core.alerts", "core.units", "base.persons", "economy.codebooks", "docs.core", "core.exchange"],
+
+    "config": [
+        {
+            // Periodicita fakturace (D2, Q3) — PeriodCalendar.
+            "id": "economy.periodicInvoicing.periodicities",
+            "file": "config/periodicities.jsonc"
+        },
+        {
+            // Fakturace na počátku / konci období (D6).
+            "id": "economy.periodicInvoicing.invoiceTimings",
+            "file": "config/invoiceTimings.jsonc"
+        },
+        {
+            // Stavy období fakturace (D5, D10) — PeriodRepository, záložka Fakturace.
+            "id": "economy.periodicInvoicing.periodStates",
+            "file": "config/periodStates.jsonc"
+        },
+        {
+            // Tvar {období} v jazycích dokumentů (D12, Q6) — PeriodLabel.
+            "id": "economy.periodicInvoicing.periodTexts",
+            "file": "config/periodTexts.jsonc"
+        }
+    ]
+}

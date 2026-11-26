@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\WorkOrders\Checks;
 
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingRunService;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 
 /**
  * Pojistka dohánění (Q4): per zakázka — `planned` období, která běh

@@ -7,8 +7,8 @@ namespace Shipard\Module\Economy\WorkOrders;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingFormOptions;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingFormOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
 
 /**
  * Formulář druhu zakázky (D14): název, typ a poznámka. Typ se po založení

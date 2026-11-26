@@ -30,7 +30,7 @@ class WorkOrderRowDocumentTest extends TestCase
         if ($contributors !== null) {
             $config = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
             $config->method('cfgItem')->willReturnCallback(
-                static fn(string $id): mixed => $id === 'economy.workOrders.invoiceContributors' ? $contributors : null,
+                static fn(string $id): mixed => $id === 'economy.periodicInvoicing.contributors' ? $contributors : null,
             );
             $doc->setConfig($config);
         }

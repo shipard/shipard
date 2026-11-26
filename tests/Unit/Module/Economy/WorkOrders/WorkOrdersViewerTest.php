@@ -11,7 +11,7 @@ use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Core\Viewer\ViewerDefinition;
 use Shipard\Core\Viewer\ViewerRegistry;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 use Shipard\Module\Economy\WorkOrders\WorkOrderJournalService;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTreeService;
@@ -64,9 +64,9 @@ class WorkOrdersViewerTest extends TestCase
             [WorkOrderTypes::CFG_ITEM, self::TYPES],
             ['economy.workOrders.docStates', JsoncParser::parseFile(self::MODULE . '/config/docStates.jsonc')],
             ['economy.workOrders.viewerLabels', ['label.kind' => ['name' => 'Druh'], 'group.customer' => ['name' => 'Zákazník']]],
-            ['economy.workOrders.periodStates', ['planned' => ['name' => 'Naplánováno'], 'waiting' => ['name' => 'Čeká na podklady'], 'issued' => ['name' => 'Vystaveno'], 'stopped' => ['name' => 'Zastaveno']]],
-            ['economy.workOrders.periodicities', ['month' => ['name' => 'Měsíčně']]],
-            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období']]],
+            ['economy.periodicInvoicing.periodStates', ['planned' => ['name' => 'Naplánováno'], 'waiting' => ['name' => 'Čeká na podklady'], 'issued' => ['name' => 'Vystaveno'], 'stopped' => ['name' => 'Zastaveno']]],
+            ['economy.periodicInvoicing.periodicities', ['month' => ['name' => 'Měsíčně']]],
+            ['economy.periodicInvoicing.invoiceTimings', ['start' => ['name' => 'Na počátku období']]],
             ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná']]],
         ]);
         $viewer = new TestableWorkOrdersViewer($db, 'economy_work_orders_heads');

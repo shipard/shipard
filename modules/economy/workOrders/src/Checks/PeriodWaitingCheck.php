@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\WorkOrders\Checks;
 
 use Shipard\Core\Settings\SettingsStore;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 
 /**
  * Období čeká na podklady (D10): per zakázka — `waiting` období čekající

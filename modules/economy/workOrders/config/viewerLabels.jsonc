@@ -81,5 +81,10 @@
     "text.noNextDue":         { "name": "none — past the end date", "name:cs": "žádné — po datu ukončení", "name:en": "none — past the end date" },
     "action.issueDue":        { "name": "Issue due periods",  "name:cs": "Vystavit dlužná období", "name:en": "Issue due periods" },
     "action.regenerate":      { "name": "Regenerate",         "name:cs": "Přegenerovat",       "name:en": "Regenerate" },
-    "action.restore":         { "name": "Restore",            "name:cs": "Obnovit",            "name:en": "Restore" }
+    "action.restore":         { "name": "Restore",            "name:cs": "Obnovit",            "name:en": "Restore" },
+
+    // --- zakázky jako zdroj periodické fakturace (#175): pojmenování záznamu
+    // v upozorněních společného enginu (WorkOrderInvoicingSource) ---
+    "source.recordNoun":      { "name": "Work order",         "name:cs": "Zakázka",            "name:en": "Work order" },
+    "source.openAction":      { "name": "Open work order",    "name:cs": "Otevřít zakázku",    "name:en": "Open work order" }
 }
