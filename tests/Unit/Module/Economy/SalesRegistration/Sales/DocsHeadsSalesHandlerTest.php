@@ -177,6 +177,7 @@ class DocsHeadsSalesHandlerTest extends TestCase
             public ?SaleQueue $fakeQueue = null;
             public ?MemorySaleStore $store = null;
             public bool $transaction = false;
+            public ?\Throwable $queueFailure = null;
 
             protected function sync(): SaleSync
             {
@@ -197,6 +198,9 @@ class DocsHeadsSalesHandlerTest extends TestCase
 
             protected function queue(): ?SaleQueue
             {
+                if ($this->queueFailure !== null) {
+                    throw $this->queueFailure;
+                }
                 return $this->fakeQueue;
             }
         };
@@ -249,6 +253,57 @@ class DocsHeadsSalesHandlerTest extends TestCase
     }
 
     /** U12: doklad s tržbou nejde přesunout do koše — hláška ve formuláři (DomainException → 422). */
+    /**
+     * F1: tržba vznikla, selhalo až okamžité odeslání — log nesmí tvrdit
+     * „not created“. Fronta se nesestavila (pojistka serveru nejde přečíst).
+     */
+    public function testFailureOfTheQueueAfterTheSaleWasCreatedIsNotLoggedAsNotCreated(): void
+    {
+        [$handler, $store, $sender, $sync] = $this->sendingHandler();
+        $handler->queueFailure = new \RuntimeException('Missing required config field: host');
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 10], 10, 40);
+
+        $this->assertCount(1, $sync->sales, 'tržba existuje');
+        $this->assertSame(SaleState::PENDING, $store->sales[1]['state'], 'pošle ji cron');
+        $this->assertSame([], $sender->messages);
+        $entries = $this->logEntries();
+        $this->assertSame(['info', 'warn'], array_column($entries, 'level'));
+        $this->assertSame('sales registration: sale 1 of document 10 not sent right away — left to the queue', $entries[1]['msg']);
+        $this->assertSame(
+            ['sale' => 1, 'doc' => 10, 'registration' => 1, 'exception' => 'RuntimeException', 'error' => 'Missing required config field: host'],
+            $entries[1]['ctx'],
+        );
+        $this->assertStringNotContainsString('not created', (string) file_get_contents($this->logFile));
+    }
+
+    /** F1: totéž, když výjimku vyhodí až pokus o odeslání. */
+    public function testExceptionFromTheAttemptAfterTheSaleWasCreatedLeavesItToTheQueue(): void
+    {
+        [$handler, $store, , $sync] = $this->sendingHandler();
+        $handler->fakeQueue = new class ($store, new ScriptedSender(), $this->salesRegistrationConfig()) extends SaleQueue {
+            public function attempt(int $saleId, ?\DateTimeImmutable $now = null): ?\Shipard\Module\Economy\SalesRegistration\Queue\AttemptResult
+            {
+                throw new \RuntimeException('databáze spadla');
+            }
+        };
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 10], 10, 40);
+
+        $this->assertCount(1, $sync->sales, 'tržba existuje');
+        $log = (string) file_get_contents($this->logFile);
+        $this->assertStringContainsString('sale 1 of document 10 not sent right away', $log);
+        $this->assertStringContainsString('left to the queue', $log);
+        $this->assertStringNotContainsString('not created', $log);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function logEntries(): array
+    {
+        $lines = array_filter(explode("\n", (string) file_get_contents($this->logFile)));
+        return array_values(array_map(static fn(string $line): array => json_decode($line, true, 16, JSON_THROW_ON_ERROR), $lines));
+    }
+
     public function testDocumentWithSaleCannotGoToTrash(): void
     {
         $handler = $this->handler(docsWithSales: [10]);

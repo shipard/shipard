@@ -1,7 +1,7 @@
 ---
 title: Evidence tržeb — tržby z dokladů
 summary: Které doklady se evidují jako tržba, kdy a jak se tržba odesílá správci daně, co znamenají stavy tržby a upozornění, jak nastavit evidenční jednotku na číselné řadě a co udělá storno nebo oprava dokladu.
-keywords: [evidence tržeb, evidenci tržeb, EET, EET 2.0, tržba, tržby, tržbu, tržeb, odeslání tržby, odeslat tržbu, tržba se neodeslala, nepotvrzená tržba, potvrzení tržby, kód potvrzení, potvrzovací kód, POK, pořadové číslo tržby, odeslat znovu, tržba selhala, tržba čeká na odeslání, zahozeno, pojistka serveru, kontaktní platba, platba hotově, platba kartou, platební brána, platební bránou, prodejka, prodejky, pokladní doklad, faktura hotově, faktura kartou, storno tržby, stornovat doklad, oprava dokladu, záporná tržba, evidenční jednotka na řadě, číselná řada, kód řady, označení pokladny, pokladní zařízení, doklad nejde zaevidovat, doklad nejde smazat, 48 hodin, lhůta evidence]
+keywords: [evidence tržeb, evidenci tržeb, EET, EET 2.0, tržba, tržby, tržbu, tržeb, odeslání tržby, odeslat tržbu, tržba se neodeslala, přerušený pokus, přerušeno, nepotvrzená tržba, potvrzení tržby, kód potvrzení, potvrzovací kód, POK, pořadové číslo tržby, odeslat znovu, tržba selhala, tržba čeká na odeslání, zahozeno, pojistka serveru, kontaktní platba, platba hotově, platba kartou, platební brána, platební bránou, prodejka, prodejky, pokladní doklad, faktura hotově, faktura kartou, storno tržby, stornovat doklad, oprava dokladu, záporná tržba, evidenční jednotka na řadě, číselná řada, kód řady, označení pokladny, pokladní zařízení, doklad nejde zaevidovat, doklad nejde smazat, 48 hodin, lhůta evidence]
 related: [evidence-trzeb/registrace-a-certifikat.md, pokladna/prodejka.md, pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, co-dnes-nejde.md]
 modules: [economy.salesRegistration]
 ---
@@ -108,6 +108,10 @@ příčinu co nejdřív.
 **Upozornění „Tržby odmítnuté službou“.** Tržba je ve stavu **Selhalo**.
 Podívej se do záložky **Pokusy**, proč ji služba odmítla, a pak dej
 **Odeslat znovu**.
+
+**Pokus s výsledkem „Přerušeno“.** Odesílání se přerušilo dřív, než se
+zapsal výsledek — zpráva odejít mohla i nemusela. Nic dělat nemusíš:
+Shipard tržbu pošle znovu sám a výsledek najdeš v dalším pokusu.
 
 **Upozornění „Doklad nejde zaevidovat jako tržbu“.** Doklad do evidence
 patří, ale chybí nastavení: registrace nemá výchozí evidenční jednotku,

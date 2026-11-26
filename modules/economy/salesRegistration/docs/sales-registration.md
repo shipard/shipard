@@ -434,17 +434,29 @@ do zóny místa tržby (`timeZone` typu, U10) ho převádí až sestavení zprá
 ### 10.2 Pokus — `economy_sales_registration_attempts`
 
 Jedna datová zpráva: `sale`, `uuid`, `started_at`, `first_sending`,
-`verification`, `environment`, `test_identity`, `status` (`sending` nebo
-hodnota `SendStatus`), `sent`, `problem`, `error_code`, `error_text`,
+`verification`, `environment`, `test_identity`, `status` (`sending`,
+`interrupted` nebo hodnota `SendStatus`), `sent`, `problem`, `error_code`,
+`error_text`,
 `warnings` (JSON), `confirmation_code`, `transaction_id`, `request_body`,
 `response_body` (`mediumtext`), `duration_ms`.
 
 Řádek vzniká **před odesláním** (UUID, čas, stav `sending`) a po odpovědi
 se doplní — pád procesu uprostřed tak zanechá stopu, že zpráva odejít
-mohla. Opakování je nový řádek s novým UUID. `first_sending` je pravda,
-dokud tržba nemá pokus se `sent = 1`; pokusy zastavené pojistkou nebo
-problémem na naší straně se nepočítají. Těla zpráv zůstávají jen tady —
+mohla. Opakování je nový řádek s novým UUID. Těla zpráv zůstávají jen tady —
 v detailu tržby ani v logu nejsou.
+
+**Přerušený pokus.** Spadne-li proces mezi odesláním a zápisem výsledku,
+zůstane pokus `sending` se `sent = 0`. Obnova zaseknuté tržby (§ 13.2) mu
+nastaví stav `interrupted` („Přerušeno“) — jediný stav pokusu, který není
+ani `sending`, ani výsledek enginu. `sent` zůstává 0: jestli zpráva odešla,
+nevíme. Detail tržby ho ukazuje vlastním popiskem a zvýrazněný jako chybu.
+
+**První zaslání.** `first_sending` je pravda, dokud tržba nemá pokus se
+`sent = 1` **nebo** se stavem `interrupted` (`SaleStore::hasSentAttempt()`).
+Přerušený pokus se bere jako možná odeslaný — metodika chce
+`prvni_zaslani = false` u každého dalšího pokusu o zaslání téže tržby, takže
+raději `false` u skutečně prvního zaslání než dvakrát `true`. Pokusy
+zastavené pojistkou (`dropped`) nebo problémem na naší straně se nepočítají.
 
 ### 10.3 Evidenční jednotka na číselné řadě (D21)
 
@@ -559,7 +571,15 @@ bez zámku. Výsledek `SyncResult`: `none` / `created` / `wouldCreate`
 
 - `stateChanged` — nový stav 40 nebo 30 (i starý stav 0: „Vystavit
   a uzavřít“, pokyn přes API) spustí `sync()`. Výjimky loguje; chybějící
-  tržbu dorovná záchranná síť.
+  tržbu dorovná záchranná síť. Založení tržby a její okamžité odeslání
+  (§ 13.4) mají každé svůj `try`:
+  - selhání založení — `error` „sale of document {doc} not created“;
+  - tržba vznikla, selhalo až odeslání nebo sestavení fronty — `warning`
+    „sale {sale} of document {doc} not sent right away — left to the queue“
+    s kontextem `sale`, `doc`, `registration` a třídou a textem výjimky.
+    Tržbu pošle cron: hned, pokud zůstala `pending`; spadlo-li odeslání až
+    po zámku odesílatele, zůstane `sending` a do fronty ji vrátí obnova po
+    10 minutách (její pokus pak bude `interrupted`).
 - `beforeSave` — doklad s tržbou nejde přesunout do koše (stav 90):
   `\DomainException`, formulář dostane 422 s hláškou „stornujte ho“.
 - `beforeDelete` — pojistka pro tvrdé smazání řádku.
@@ -606,12 +626,16 @@ i akce Odeslat znovu:
 
 SQL je v `Queue\SaleStore`; čas dostává parametrem z PHP, žádné `NOW()`.
 `sending` starší 10 minut znamená pád procesu — `recoverStale()` vrací
-tržbu na `pending` bez zvýšení počtu pokusů.
+tržbu na `pending` bez zvýšení počtu pokusů a jejím pokusům, které zůstaly
+`sending`, nastaví `interrupted` (§ 10.2). Pokusy označí **dřív**, než tržbu
+vrátí: spadne-li obnova mezi oběma dotazy, tržba zůstane `sending` a příští
+běh ji dorovná — opačné pořadí by nechalo pokus `sending` navždy.
 
 ### 13.3 Jistič (U6)
 
 `circuitOpen(registrace)`: skončil poslední dokončený pokus registrace
-v posledních 60 s výpadkem (`retryLater`, `unknown`)? Handler pak neposílá
+v posledních 60 s výpadkem (`retryLater`, `unknown`)? Pokus bez výsledku
+(`sending`, `interrupted`) dokončený není. Handler pak neposílá
 hned a tržbu nechá cronu. Běh cronu po výpadku přeskočí zbylé tržby téže
 registrace (`skipped`).
 

@@ -1,6 +1,6 @@
 # Evidence tržeb — úpravy po fázi 2: název registrací, log a první zaslání (#171)
 
-**Stav:** naplánováno — R1 (uživatel 2026-11-26), F1 a F2 z ověření fáze 2
+**Stav:** hotovo — R1, F1 a F2 hotové 2026-11-26 ve dvou commitech; ověřeno na ukázkovém zdroji `8yft-3` (název v navigaci Nastavení a hledání palety, integrační test fronty); při nasazení `ds-upgrade` zdrojů dat s doplňkem (název položky a popisek stavu „Přerušeno“)
 
 > Malý task pro Claude Code (1–2 commity). Navazuje na
 > `tasks/sales-registration-phase2.md`; ruční proklik fáze 2 prošel
@@ -64,16 +64,56 @@ tržby.
 
 ## Hotovo když
 
-- [ ] paleta na „EET“ najde Registrace EET; Nastavení a nápověda mají
+- [x] paleta na „EET“ najde Registrace EET; Nastavení a nápověda mají
       nový název
-- [ ] výjimka při okamžitém odeslání dá v logu „left to the queue“, ne
+- [x] výjimka při okamžitém odeslání dá v logu „left to the queue“, ne
       „not created“
-- [ ] osiřelý pokus po obnově = `interrupted`, další pokus
+- [x] osiřelý pokus po obnově = `interrupted`, další pokus
       `prvni_zaslani = false`
-- [ ] specifikace u doplňku (fronta, stavy pokusu) a `**Stav:**` tohoto
+- [x] specifikace u doplňku (fronta, stavy pokusu) a `**Stav:**` tohoto
       tasku
-- [ ] cílené testy doplňku zelené, celá sada PHPUnit lokálně zelená
+- [x] cílené testy doplňku zelené, celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+**R1.** Jen název vieweru v `module.jsonc` a tři texty s cestou (nápověda,
+README, specifikace § 3.3); druhá stránka nápovědy cestu nenese. Skupina
+„Registrace“ v detailu registrace a mezinadpis v nápovědě zůstaly. Ověřeno
+na `8yft-3` po `ds-upgrade`: navigace Nastavení vrací „Registrace EET“ /
+„EET registrations“ a hledání palety (`rankResults` nad skutečnou odpovědí
+navigace) dává na dotaz „EET“ položku jako první, na „registrace“ obě
+registrace. V prohlížeči neproklikáno.
+
+**F1.** Záznam „not created“ z ověření fáze 2 nevznikl v odeslání, ale už
+při sestavení fronty: ověřovací skript podvrhl `ServerConfig` bez `host`
+a `queue()` vyhodila výjimku. Vlastní `try` proto obaluje celé
+`afterCreated()`, ne jen `attempt()`. Kontext hlášky nese navíc třídu
+a text výjimky (`exception`, `error`) — `ErrorLogger::warn()` výjimku
+s trasou neloguje a příčina by se jinak ztratila.
+
+Hláška „left to the queue“ je doslova pravdivá, když tržba zůstala
+`pending`. Spadne-li odeslání až po zámku odesílatele, zůstane tržba
+`sending` a do fronty ji vrátí obnova po 10 minutách — pokus, který stihl
+vzniknout, pak dostane `interrupted` (F2). Popsáno ve specifikaci § 12.3.
+
+**F2.**
+
+- Schéma se nemění — sloupec `status` má délku 12, `interrupted` se vejde.
+- `SaleStore::recoverStale()` označí pokusy **před** vrácením tržby
+  (`UPDATE` pokusů přes `JOIN` na zaseknuté tržby). Pád mezi oběma dotazy
+  nechá tržbu `sending` a další obnova ji dorovná; v opačném pořadí by
+  pokus zůstal `sending` navždy.
+- `sent` přerušeného pokusu zůstává 0 — „možná odeslaný“ říká jen stav.
+- Jistič (`lastAttemptStatus()`) přerušený pokus přeskakuje stejně jako
+  `sending`: nemá výsledek, o výpadku služby nic neříká.
+- V detailu tržby má přerušený pokus popisek „Přerušeno“ a třídu řádku
+  `error` jako odmítnutí a výpadek (zadání chtělo jen popisek; zvýraznění
+  je volba implementace — zpráva mohla odejít a jde podruhé).
+- Nápověda dostala odstavec „Pokus s výsledkem Přerušeno“ (`Na co narazíš`).
+- Jediné nové SQL (`UPDATE … JOIN`) pokrývá integrační test
+  `testRecoveryMarksTheOrphanedAttemptAndTheNextOneIsNotTheFirstSending`
+  nad skutečnými tabulkami; paměťové úložiště testů ho nevidí.
+
+**Při nasazení:** `ds-upgrade` zdrojů dat s doplňkem — bez něj zůstane
+v navigaci starý název a přerušený pokus se v detailu ukáže kódem
+`interrupted` místo popisku.

@@ -15,6 +15,7 @@ use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
+use Shipard\Module\Economy\SalesRegistration\Engine\SalesMessage;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFactsLoader;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocSaleEvaluator;
 use Shipard\Module\Economy\SalesRegistration\Queue\SaleQueue;
@@ -381,6 +382,58 @@ class SalesFromDocumentsTest extends IntegrationTestCase
     }
 
     /** D7, D20: záchranná síť dorovná chybějící tržbu s původním časem. */
+    /**
+     * F2: pád procesu mezi odesláním a zápisem výsledku. Obnova označí osiřelý
+     * pokus `interrupted` a další pokus už nejde jako první zaslání — skutečné
+     * SQL obnovy (UPDATE pokusů přes JOIN na zaseknuté tržby).
+     */
+    public function testRecoveryMarksTheOrphanedAttemptAndTheNextOneIsNotTheFirstSending(): void
+    {
+        $this->createReceipt(400.0);
+        $this->transitionTo(40);
+        $dibi = $this->db->getDibiConnection();
+        $saleId = (int) $this->sales()[0]['id'];
+        $sender = new ScriptedSender();
+        $store = new SaleStore($dibi);
+        $queue = new SaleQueue($store, $sender, $this->configRuntime);
+        $now = new \DateTimeImmutable('2027-02-10 10:00:00');
+
+        // Proces si tržbu vzal, zapsal pokus a spadl.
+        $dibi->query(
+            'UPDATE %n SET [state] = %s, [attempt_count] = 0, [claimed_at] = %s WHERE [id] = %i',
+            self::SALES,
+            SaleState::SENDING,
+            '2027-02-10 09:55:00',
+            $saleId,
+        );
+        $orphan = $store->insertAttempt([
+            'sale' => $saleId, 'uuid' => SalesMessage::newUuid(), 'started_at' => '2027-02-10 09:55:00',
+            'first_sending' => 1, 'status' => SaleQueue::ATTEMPT_SENDING,
+        ]);
+        $status = fn(): string => (string) $dibi->fetchSingle('SELECT [status] FROM %n WHERE [id] = %i', self::ATTEMPTS, $orphan);
+
+        // Mladší než 10 minut — proces ještě může běžet, nic se nemění.
+        $queue->recoverStale($now);
+        $this->assertSame(SaleState::SENDING, (string) $this->sales()[0]['state']);
+        $this->assertSame(SaleQueue::ATTEMPT_SENDING, $status());
+        $this->assertFalse($store->hasSentAttempt($saleId));
+
+        $later = $now->modify('+6 minutes');
+        $this->assertGreaterThanOrEqual(1, $queue->recoverStale($later));
+        $this->assertSame(SaleState::PENDING, (string) $this->sales()[0]['state']);
+        $this->assertSame(SaleQueue::ATTEMPT_INTERRUPTED, $status());
+        $this->assertTrue($store->hasSentAttempt($saleId), 'přerušený pokus se bere jako možná odeslaný');
+
+        $this->assertSame(SaleState::CONFIRMED, $queue->attempt($saleId, $later)?->state);
+        $this->assertCount(1, $sender->messages);
+        $this->assertFalse($sender->messages[0]->firstSending);
+        $attempts = $this->db->fetchAll('SELECT * FROM %n WHERE [sale] = %i ORDER BY [id]', self::ATTEMPTS, $saleId);
+        $this->assertSame(['interrupted', 'confirmed'], array_map(static fn(array $a): string => (string) $a['status'], $attempts));
+        $this->assertSame([1, 0], array_map(static fn(array $a): int => (int) $a['first_sending'], $attempts));
+        $this->assertSame([0, 1], array_map(static fn(array $a): int => (int) $a['sent'], $attempts));
+        $this->assertSame(1, (int) $this->sales()[0]['attempt_count']);
+    }
+
     public function testReconcileRestoresAMissingSaleWithTheOriginalTime(): void
     {
         $this->createReceipt(500.0);

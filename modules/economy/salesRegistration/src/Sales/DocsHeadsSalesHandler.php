@@ -19,7 +19,9 @@ use Shipard\Module\Economy\SalesRegistration\Texts;
  *    (doklad založený rovnou V pořádku — „Vystavit a uzavřít“, pokyn přes
  *    API); importovaný doklad vyřadí vyhodnocení podle trvalého příznaku.
  *    Výjimky loguje — uložení dokladu kvůli evidenci selhat nesmí
- *    a chybějící tržbu dorovná záchranná síť.
+ *    a chybějící tržbu dorovná záchranná síť. Založení tržby a její
+ *    okamžité odeslání mají každé svůj `try`: „not created“ je jen selhání
+ *    založení, selhání odeslání u existující tržby je „left to the queue“.
  *  - `beforeSave`: doklad s tržbou nejde přesunout do koše (stav Smazáno).
  *    Doklad se v aplikaci nemaže řádkem, ale přechodem stavu, a `beforeDelete`
  *    se pro hlavičku z UI nevolá — proto tady. `\DomainException` dá
@@ -46,23 +48,42 @@ class DocsHeadsSalesHandler extends AbstractDocumentEventHandler
 
         try {
             $result = $this->sync()->sync($docId);
-            if ($result->status === SyncResult::NONE) {
-                return;
-            }
-            ErrorLogger::info('sales registration: document ' . $result->status, [
-                'doc'          => $docId,
-                'oldState'     => $oldState,
-                'newState'     => $newState,
-                'sale'         => $result->saleId,
-                'registration' => $result->registration,
-                'reason'       => $result->reason,
-                'serialNumber' => $result->sale['serial_number'] ?? null,
-            ]);
-            if ($result->isCreated()) {
-                $this->afterCreated($result);
-            }
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'sales registration: sale of document ' . $docId . ' not created');
+            return;
+        }
+        if ($result->status === SyncResult::NONE) {
+            return;
+        }
+        ErrorLogger::info('sales registration: document ' . $result->status, [
+            'doc'          => $docId,
+            'oldState'     => $oldState,
+            'newState'     => $newState,
+            'sale'         => $result->saleId,
+            'registration' => $result->registration,
+            'reason'       => $result->reason,
+            'serialNumber' => $result->sale['serial_number'] ?? null,
+        ]);
+        if (!$result->isCreated()) {
+            return;
+        }
+
+        // Okamžité odeslání má vlastní `try`: tržba už existuje a selhání
+        // odeslání (i sestavení fronty) není „not created“ — pošle ji cron.
+        try {
+            $this->afterCreated($result);
+        } catch (\Throwable $e) {
+            ErrorLogger::warn(
+                'sales registration: sale ' . $result->saleId . ' of document ' . $docId
+                . ' not sent right away — left to the queue',
+                [
+                    'sale'         => $result->saleId,
+                    'doc'          => $docId,
+                    'registration' => $result->registration,
+                    'exception'    => get_class($e),
+                    'error'        => $e->getMessage(),
+                ],
+            );
         }
     }
 

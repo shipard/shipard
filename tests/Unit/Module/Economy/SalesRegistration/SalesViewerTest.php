@@ -270,6 +270,25 @@ class SalesViewerTest extends TestCase
         );
     }
 
+    /** F2: pokus, který osiřel pádem procesu, má vlastní popisek a je zvýrazněný. */
+    public function testInterruptedAttemptHasItsOwnLabel(): void
+    {
+        $calls = [];
+        $attempts = [[
+            'id' => 32, 'started_at' => '2027-02-11 15:02:00', 'first_sending' => 1, 'verification' => 0,
+            'environment' => null, 'test_identity' => 0, 'status' => 'interrupted', 'sent' => 0, 'problem' => null,
+            'error_code' => null, 'error_text' => null, 'warnings' => null, 'transaction_id' => null, 'duration_ms' => null,
+        ]];
+
+        $row = $this->viewer($calls, self::RECORD, $attempts)->renderDetail(12)['tabs'][1]['content']['rows'][0];
+
+        $this->assertSame('Přerušeno', $row['status']);
+        $this->assertSame('error', $row['_class']);
+
+        $english = self::repoJsonc('modules/economy/salesRegistration/config/attemptStatuses.jsonc', 'en');
+        $this->assertSame('Interrupted', $english['interrupted']['name']);
+    }
+
     public function testDetailOfASaleThatWasNotSentYetAndWasStoppedOnOurSide(): void
     {
         $calls = [];

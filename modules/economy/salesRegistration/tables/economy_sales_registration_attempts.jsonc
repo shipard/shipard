@@ -54,9 +54,9 @@
             "system": true
         },
         {
-            // První zaslání = tržba ještě nemá pokus, který zprávu skutečně
-            // odeslal (`sent`). Pokusy zastavené pojistkou nebo problémem
-            // na naší straně se nepočítají.
+            // První zaslání = tržba ještě nemá pokus, který zprávu odeslal
+            // (`sent`) nebo odeslat mohl (`interrupted`). Pokusy zastavené
+            // pojistkou nebo problémem na naší straně se nepočítají.
             "id": "first_sending",
             "name": "First sending",
             "name:cs": "První zaslání",
@@ -97,9 +97,10 @@
             "system": true
         },
         {
-            // sending (zapsáno před odesláním) nebo výsledek enginu
-            // (SendStatus): confirmed / verified / rejected / retryLater /
-            // unknown / dropped.
+            // sending (zapsáno před odesláním), interrupted (pokus osiřel —
+            // proces skončil před zápisem výsledku, nastavuje obnova fronty)
+            // nebo výsledek enginu (SendStatus): confirmed / verified /
+            // rejected / retryLater / unknown / dropped.
             "id": "status",
             "name": "Result",
             "name:cs": "Výsledek",

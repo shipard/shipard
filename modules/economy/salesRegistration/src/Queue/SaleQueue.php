@@ -31,17 +31,22 @@ use Shipard\Module\Economy\SalesRegistration\Sender\SalesRegistrationSender;
  *     procesu uprostřed zanechá stopu, že zpráva odejít mohla;
  *  3. odeslání přes {@see SalesRegistrationSender} s daty tržby: opakování
  *     = nové UUID, původní čas tržby, `prvni_zaslani` jen dokud žádný pokus
- *     zprávu skutečně neodeslal;
+ *     zprávu neodeslal ani odeslat nemohl (přerušený pokus);
  *  4. výsledek do pokusu a stav tržby podle {@see SaleOutcome}.
  *
  * Čas dostává parametrem z PHP (žádné `NOW()` v SQL) — ve stejné zóně, v jaké
  * se ukládá čas přechodu dokladu. `sending` starší 10 minut znamená pád
- * procesu: tržba se vrací na `pending` bez zvýšení počtu pokusů.
+ * procesu: tržba se vrací na `pending` bez zvýšení počtu pokusů a její pokus,
+ * který zůstal `sending`, dostane stav `interrupted` — nevíme, jestli zpráva
+ * odešla, takže další pokus už není první zaslání.
  */
 class SaleQueue
 {
     /** Stav pokusu zapsaného před odesláním. */
     public const string ATTEMPT_SENDING = 'sending';
+
+    /** Stav pokusu, který osiřel: proces skončil dřív, než zapsal výsledek. */
+    public const string ATTEMPT_INTERRUPTED = 'interrupted';
 
     public const int STALE_SENDING_SEC = 600;
 
@@ -191,7 +196,11 @@ class SaleQueue
         return $stats;
     }
 
-    /** Vrátí zaseknuté `sending` (pád procesu) na `pending`; počet pokusů se nezvyšuje. */
+    /**
+     * Vrátí zaseknuté `sending` (pád procesu) na `pending`; počet pokusů se
+     * nezvyšuje. Pokusy těch tržeb, které zůstaly `sending`, označí
+     * `interrupted`.
+     */
     public function recoverStale(?\DateTimeImmutable $now = null): int
     {
         $now ??= new \DateTimeImmutable();

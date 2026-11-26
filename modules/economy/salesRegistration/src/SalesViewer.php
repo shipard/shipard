@@ -9,6 +9,7 @@ use Shipard\Core\Viewer\Detail\DetailHeader;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Economy\SalesRegistration\Engine\SendResult;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\Money;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleQueue;
 use Shipard\Module\Economy\SalesRegistration\Queue\SaleState;
 use Shipard\Module\Economy\SalesRegistration\Queue\SaleStore;
 
@@ -329,7 +330,7 @@ class SalesViewer extends TableViewer
                 'transaction_id' => (string) ($attempt['transaction_id'] ?? ''),
                 'duration_ms'    => $attempt['duration_ms'] !== null ? (string) (int) $attempt['duration_ms'] : '',
             ];
-            if (in_array($status, ['rejected', 'retryLater', 'unknown'], true)) {
+            if (in_array($status, ['rejected', 'retryLater', 'unknown', SaleQueue::ATTEMPT_INTERRUPTED], true)) {
                 $row['_class'] = 'error';
             } elseif ($status === 'dropped') {
                 $row['_class'] = 'muted';

@@ -52,13 +52,18 @@ class SaleStore
         return $row === null ? null : iterator_to_array($row);
     }
 
-    /** Má tržba pokus, který zprávu skutečně odeslal? */
+    /**
+     * Má tržba pokus, který zprávu odeslal — nebo odeslat mohl? Přerušený
+     * pokus (`interrupted`) se bere jako možná odeslaný: raději `false`
+     * u skutečně prvního zaslání než dvakrát `true`.
+     */
     public function hasSentAttempt(int $saleId): bool
     {
         return $this->db->fetchSingle(
-            'SELECT 1 FROM %n WHERE [sale] = %i AND [sent] = 1 LIMIT 1',
+            'SELECT 1 FROM %n WHERE [sale] = %i AND ([sent] = 1 OR [status] = %s) LIMIT 1',
             self::ATTEMPTS,
             $saleId,
+            SaleQueue::ATTEMPT_INTERRUPTED,
         ) !== null;
     }
 
@@ -112,9 +117,25 @@ class SaleStore
         );
     }
 
-    /** Vrátí `sending` zamčené před `$staleBefore` na `pending`; počet pokusů nemění. */
+    /**
+     * Vrátí `sending` zamčené před `$staleBefore` na `pending`; počet pokusů
+     * nemění. Pokusy těch tržeb, které zůstaly `sending`, dostanou stav
+     * `interrupted` — a to **dřív** než se tržba vrátí: spadne-li obnova mezi
+     * oběma dotazy, tržba zůstane `sending` a příští běh ji dorovná (opačné
+     * pořadí by nechalo pokus `sending` navždy).
+     */
     public function recoverStale(string $stamp, string $staleBefore): int
     {
+        $this->db->query(
+            'UPDATE %n a JOIN %n s ON s.[id] = a.[sale] SET a.[status] = %s'
+            . ' WHERE a.[status] = %s AND s.[state] = %s AND (s.[claimed_at] IS NULL OR s.[claimed_at] < %s)',
+            self::ATTEMPTS,
+            self::SALES,
+            SaleQueue::ATTEMPT_INTERRUPTED,
+            SaleQueue::ATTEMPT_SENDING,
+            SaleState::SENDING,
+            $staleBefore,
+        );
         $this->db->query(
             'UPDATE %n SET [state] = %s, [claimed_at] = NULL, [next_attempt] = %s'
             . ' WHERE [state] = %s AND ([claimed_at] IS NULL OR [claimed_at] < %s)',
@@ -127,18 +148,21 @@ class SaleStore
         return $this->db->getAffectedRows();
     }
 
-    /** Výsledek posledního dokončeného pokusu registrace od `$since`, nebo null. */
+    /**
+     * Výsledek posledního dokončeného pokusu registrace od `$since`, nebo
+     * null. Pokus bez výsledku (`sending`, `interrupted`) dokončený není.
+     */
     public function lastAttemptStatus(int $registrationId, string $since): ?string
     {
         $status = $this->db->fetchSingle(
             'SELECT a.[status] FROM %n a JOIN %n s ON s.[id] = a.[sale]'
-            . ' WHERE s.[registration] = %i AND a.[started_at] >= %s AND a.[status] <> %s'
+            . ' WHERE s.[registration] = %i AND a.[started_at] >= %s AND a.[status] NOT IN %in'
             . ' ORDER BY a.[started_at] DESC, a.[id] DESC LIMIT 1',
             self::ATTEMPTS,
             self::SALES,
             $registrationId,
             $since,
-            SaleQueue::ATTEMPT_SENDING,
+            [SaleQueue::ATTEMPT_SENDING, SaleQueue::ATTEMPT_INTERRUPTED],
         );
         return is_string($status) ? $status : null;
     }

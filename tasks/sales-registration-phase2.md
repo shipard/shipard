@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 2: tržby a pokusy, napojení na doklady, opakování cronem (#171)
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu a ručním proklikem 2026-11-26; zbývá `tasks/sales-registration-phase2-fixes.md` a nasazení
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu a ručním proklikem 2026-11-26, úpravy po prokliku hotové 2026-11-26 (`tasks/sales-registration-phase2-fixes.md`); zbývá nasazení
 
 > Task pro Claude Code (6 commitů). Design: issue #171 (EET 2.0), komentář
 > s D18–D25. Staví na fázi 1 (`tasks/sales-registration-phase1.md` —

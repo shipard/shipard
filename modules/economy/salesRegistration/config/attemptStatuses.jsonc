@@ -2,9 +2,12 @@
     // =========================================================================
     // economy.salesRegistration.attemptStatuses — výsledek pokusu o odeslání
     // (#171 D5), sloupec `status` tabulky economy_sales_registration_attempts.
-    // `sending` = zapsáno před odesláním; ostatní jsou hodnoty Engine\SendStatus.
+    // `sending` = zapsáno před odesláním, `interrupted` = proces skončil dřív,
+    // než zapsal výsledek (zpráva odejít mohla); ostatní jsou hodnoty
+    // Engine\SendStatus.
     // =========================================================================
     "sending":    { "name": "Sending",          "name:cs": "Odesílá se",        "name:en": "Sending" },
+    "interrupted": { "name": "Interrupted",     "name:cs": "Přerušeno",         "name:en": "Interrupted" },
     "confirmed":  { "name": "Confirmed",        "name:cs": "Potvrzeno",         "name:en": "Confirmed" },
     "verified":   { "name": "Verified",         "name:cs": "Ověřeno",           "name:en": "Verified" },
     "rejected":   { "name": "Rejected",         "name:cs": "Odmítnuto",         "name:en": "Rejected" },

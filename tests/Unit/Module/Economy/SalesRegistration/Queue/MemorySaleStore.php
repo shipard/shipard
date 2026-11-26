@@ -62,7 +62,9 @@ final class MemorySaleStore extends SaleStore
     public function hasSentAttempt(int $saleId): bool
     {
         foreach ($this->attempts as $attempt) {
-            if ($attempt['sale'] === $saleId && !empty($attempt['sent'])) {
+            if ($attempt['sale'] === $saleId
+                && (!empty($attempt['sent']) || $attempt['status'] === SaleQueue::ATTEMPT_INTERRUPTED)
+            ) {
                 return true;
             }
         }
@@ -106,6 +108,11 @@ final class MemorySaleStore extends SaleStore
         $count = 0;
         foreach ($this->sales as $id => $sale) {
             if ($sale['state'] === SaleState::SENDING && ($sale['claimed_at'] === null || $sale['claimed_at'] < $staleBefore)) {
+                foreach ($this->attempts as $attemptId => $attempt) {
+                    if ($attempt['sale'] === $id && $attempt['status'] === SaleQueue::ATTEMPT_SENDING) {
+                        $this->attempts[$attemptId]['status'] = SaleQueue::ATTEMPT_INTERRUPTED;
+                    }
+                }
                 $this->sales[$id] = ['state' => SaleState::PENDING, 'claimed_at' => null, 'next_attempt' => $stamp] + $sale;
                 $count++;
             }
@@ -118,7 +125,8 @@ final class MemorySaleStore extends SaleStore
         $last = null;
         foreach ($this->attempts as $attempt) {
             if ($this->sales[$attempt['sale']]['registration'] === $registrationId
-                && $attempt['started_at'] >= $since && $attempt['status'] !== SaleQueue::ATTEMPT_SENDING
+                && $attempt['started_at'] >= $since
+                && !in_array($attempt['status'], [SaleQueue::ATTEMPT_SENDING, SaleQueue::ATTEMPT_INTERRUPTED], true)
                 && ($last === null || [$attempt['started_at'], $attempt['id']] >= [$last['started_at'], $last['id']])
             ) {
                 $last = $attempt;

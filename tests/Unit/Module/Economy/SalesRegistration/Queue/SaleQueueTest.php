@@ -305,6 +305,94 @@ class SaleQueueTest extends TestCase
         $this->assertSame(3, $this->store->sales[1]['attempt_count']);
     }
 
+    // ── Přerušený pokus (F2) ────────────────────────────────────────────────
+
+    /** Proces spadl mezi odesláním a zápisem výsledku: pokus zůstal `sending`. */
+    private function orphanedAttempt(int $saleId, string $claimedAt): int
+    {
+        $this->store->addSale($saleId, ['state' => SaleState::SENDING, 'claimed_at' => $claimedAt]);
+        return $this->store->insertAttempt([
+            'sale' => $saleId, 'uuid' => 'uuid-' . $saleId, 'started_at' => $claimedAt,
+            'first_sending' => 1, 'status' => SaleQueue::ATTEMPT_SENDING,
+        ]);
+    }
+
+    public function testRecoveryMarksTheOrphanedAttemptInterrupted(): void
+    {
+        $this->store->addSale(1);
+        $this->sender->script = [ScriptedSender::retryLater()];
+        $this->queue->attempt(1, $this->at('2027-02-10 09:40:00'));
+        $this->store->sales[1] = ['state' => SaleState::SENDING, 'claimed_at' => '2027-02-10 09:45:00'] + $this->store->sales[1];
+        $orphan = $this->store->insertAttempt([
+            'sale' => 1, 'uuid' => 'uuid-1b', 'started_at' => '2027-02-10 09:45:00',
+            'first_sending' => 0, 'status' => SaleQueue::ATTEMPT_SENDING,
+        ]);
+        $running = $this->orphanedAttempt(2, '2027-02-10 09:55:00');
+
+        $this->assertSame(1, $this->queue->recoverStale($this->at()));
+
+        $this->assertSame(SaleQueue::ATTEMPT_INTERRUPTED, $this->store->attempts[$orphan]['status']);
+        $this->assertSame(0, $this->store->attempts[$orphan]['sent'], 'jestli zpráva odešla, nevíme');
+        $this->assertSame('retryLater', $this->store->attempts[1]['status'], 'dokončený pokus obnova nemění');
+        $this->assertSame(SaleQueue::ATTEMPT_SENDING, $this->store->attempts[$running]['status'], 'tržba mladší než 10 minut — proces ještě může běžet');
+    }
+
+    /** Metodika: `prvni_zaslani = false` u každého dalšího pokusu o zaslání téže tržby. */
+    public function testAttemptAfterAnInterruptedOneIsNotTheFirstSending(): void
+    {
+        $orphan = $this->orphanedAttempt(1, '2027-02-10 09:45:00');
+
+        $stats = $this->queue->processDue(20, $this->at());
+
+        $this->assertSame(1, $stats['requeued']);
+        $this->assertSame(1, $stats['confirmed']);
+        $this->assertCount(1, $this->sender->messages);
+        $this->assertFalse($this->sender->messages[0]->firstSending);
+        $this->assertSame(
+            [SaleQueue::ATTEMPT_INTERRUPTED, 'confirmed'],
+            array_column($this->store->attempts, 'status'),
+        );
+        $this->assertSame([1, 0], array_column($this->store->attempts, 'first_sending'));
+        $this->assertSame(0, $this->store->attempts[$orphan]['sent']);
+        $this->assertSame(1, $this->store->sales[1]['attempt_count'], 'přerušený pokus se do počtu nezapočítal');
+    }
+
+    /** Zahozeno pojistkou ani problém na naší straně zprávu neodeslaly — dál je to první zaslání. */
+    public function testDroppedAttemptAndProblemOnOurSideStillDoNotCountAsSent(): void
+    {
+        $this->store->addSale(7);
+        $this->sender->script = [
+            ScriptedSender::ourProblem(SendResult::PROBLEM_NO_CERTIFICATE),
+            ScriptedSender::dropped(),
+            ScriptedSender::confirmed(),
+        ];
+
+        $this->queue->attempt(7, $this->at());
+        $this->queue->attempt(7, $this->at());
+        // Pojistka serveru se vypnula a tržba se vrátila do fronty.
+        $this->store->sales[7]['state'] = SaleState::PENDING;
+        $this->queue->attempt(7, $this->at());
+
+        $this->assertSame(['rejected', 'dropped', 'confirmed'], array_column($this->store->attempts, 'status'));
+        $this->assertSame([true, true, true], array_map(static fn($m): bool => $m->firstSending, $this->sender->messages));
+        $this->assertSame([1, 1, 1], array_column($this->store->attempts, 'first_sending'));
+    }
+
+    /** Přerušený pokus nemá výsledek — o jističi rozhoduje poslední dokončený pokus. */
+    public function testInterruptedAttemptDoesNotCloseTheCircuit(): void
+    {
+        $this->store->addSale(1);
+        $this->sender->script = [ScriptedSender::retryLater()];
+        $this->queue->attempt(1, $this->at('2027-02-10 10:00:00'));
+        $this->store->addSale(2);
+        $this->store->insertAttempt([
+            'sale' => 2, 'uuid' => 'uuid-2', 'started_at' => '2027-02-10 10:00:10',
+            'first_sending' => 1, 'status' => SaleQueue::ATTEMPT_INTERRUPTED,
+        ]);
+
+        $this->assertTrue($this->queue->circuitOpen(1, $this->at('2027-02-10 10:00:30')));
+    }
+
     // ── Jistič (U6) ─────────────────────────────────────────────────────────
 
     public function testCircuitIsOpenForAMinuteAfterAnOutageOfTheSameRegistration(): void
