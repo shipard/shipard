@@ -1,6 +1,6 @@
 # Periodická fakturace jako modul se zdroji fakturace (#175 D1–D9)
 
-**Stav:** hotovo — 2026-11-26 ve čtyřech commitech (#175 D1–D9, U1–U6); ověřeno nad demo sadou v headless prohlížeči, ruční proklik naostro zbývá
+**Stav:** hotovo — 2026-11-26 ve čtyřech commitech (#175 D1–D9, U1–U6); ověřeno nad demo sadou v headless prohlížeči i ručním proklikem naostro (Vystavit dlužná období, Přegenerovat, Obnovit, badge v sekci Zakázky)
 
 > Task pro Claude Code (4 commity). Design: issue #175. Je to **refaktoring**:
 > chování periodické fakturace zakázek se nemění (D9). Druhým zdrojem budou
@@ -238,10 +238,10 @@
       sady se zakázkami projde a dump se od sady liší jen manifestem
       (`dataset-verify` demo sadu odmítá — nemá očekávání pro poštu;
       ověřeno seed → dump → diff)
-- [ ] ručně: zakázka v demo sadě — záložka Fakturace, Vystavit dlužná
+- [x] ručně: zakázka v demo sadě — záložka Fakturace, Vystavit dlužná
       období, Přegenerovat, Obnovit, upozornění s badge v sekci Zakázky
-      (proklikáno v headless prohlížeči nad demo sadou it-servis
-      2026-11-26; ruční proklik naostro zbývá)
+      (headless prohlížeč nad demo sadou it-servis a ruční proklik naostro
+      2026-11-26)
 - [x] dokumentace a nápověda podle commitu 4, `**Stav:**` aktualizovaný
 
 ## Pasti
