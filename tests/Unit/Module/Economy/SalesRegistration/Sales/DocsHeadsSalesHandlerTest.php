@@ -9,10 +9,14 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFacts;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\RegistrationFacts;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleQueue;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleState;
 use Shipard\Module\Economy\SalesRegistration\Sales\DocsHeadsSalesHandler;
 use Shipard\Module\Economy\SalesRegistration\Sales\SaleSync;
 use Shipard\Module\Economy\SalesRegistration\Sales\SyncResult;
 use Shipard\Module\Economy\SalesRegistration\SalesRegistrationTypes;
+use Shipard\Tests\Unit\Module\Economy\SalesRegistration\Queue\MemorySaleStore;
+use Shipard\Tests\Unit\Module\Economy\SalesRegistration\Queue\ScriptedSender;
 use Shipard\Tests\Unit\Module\Economy\SalesRegistration\SalesRegistrationConfig;
 
 /**
@@ -155,6 +159,93 @@ class DocsHeadsSalesHandlerTest extends TestCase
         $handler->onStateChanged('docs_core_heads', ['id' => 10], 10, 40);
 
         $this->assertFileDoesNotExist($this->logFile);
+    }
+
+    // ── Okamžité odeslání (D7, U6) ──────────────────────────────────────────
+
+    /** @return array{0: DocsHeadsSalesHandler, 1: MemorySaleStore, 2: ScriptedSender, 3: FakeSaleSync} */
+    private function sendingHandler(bool $inTransaction = false): array
+    {
+        $sync = $this->sync();
+        $store = new MemorySaleStore();
+        $store->registrations[1] = ['id' => 1, 'type' => 'cz.eet2', 'docState' => 40];
+        $sender = new ScriptedSender();
+        $queue = new SaleQueue($store, $sender, $this->salesRegistrationConfig());
+
+        $handler = new class extends DocsHeadsSalesHandler {
+            public ?SaleSync $fake = null;
+            public ?SaleQueue $fakeQueue = null;
+            public ?MemorySaleStore $store = null;
+            public bool $transaction = false;
+
+            protected function sync(): SaleSync
+            {
+                return $this->fake;
+            }
+
+            protected function afterCreated(SyncResult $result): void
+            {
+                // Tržba z rozdílového výpočtu „je v databázi“ — fronta ji uvidí.
+                $this->store->addSale((int) $result->saleId, $result->sale);
+                parent::afterCreated($result);
+            }
+
+            protected function inTransaction(): bool
+            {
+                return $this->transaction;
+            }
+
+            protected function queue(): ?SaleQueue
+            {
+                return $this->fakeQueue;
+            }
+        };
+        $handler->fake = $sync;
+        $handler->fakeQueue = $queue;
+        $handler->store = $store;
+        $handler->transaction = $inTransaction;
+        $handler->setDb((new \ReflectionClass(Connection::class))->newInstanceWithoutConstructor());
+        $handler->setConfig($this->salesRegistrationConfig());
+        return [$handler, $store, $sender, $sync];
+    }
+
+    public function testNewSaleIsSentRightAway(): void
+    {
+        [$handler, $store, $sender] = $this->sendingHandler();
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 10], 10, 40);
+
+        $this->assertCount(1, $sender->messages);
+        $this->assertSame('PR1270001', $sender->messages[0]->serialNumber);
+        $this->assertSame(SaleState::CONFIRMED, $store->sales[1]['state']);
+    }
+
+    /** Applier ukládá uvnitř transakce a doklad se ještě může vrátit — odeslání počká na cron. */
+    public function testInsideAnOpenTransactionTheSaleIsLeftToTheQueue(): void
+    {
+        [$handler, $store, $sender, $sync] = $this->sendingHandler(inTransaction: true);
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 10], 0, 40);
+
+        $this->assertCount(1, $sync->sales, 'tržba vznikla (vrátí se s dokladem)');
+        $this->assertSame([], $sender->messages, 'nic neodešlo');
+        $this->assertSame(SaleState::PENDING, $store->sales[1]['state']);
+    }
+
+    /** U6: po výpadku služby handler další tržby téže registrace minutu neposílá. */
+    public function testOpenCircuitLeavesTheSaleToTheQueue(): void
+    {
+        [$handler, $store, $sender] = $this->sendingHandler();
+        $store->addSale(50, ['registration' => 1]);
+        $sender->script = [ScriptedSender::retryLater()];
+        (new SaleQueue($store, $sender, $this->salesRegistrationConfig()))->attempt(50);
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 10], 10, 40);
+
+        $this->assertCount(1, $sender->messages, 'jen pokus, který skončil výpadkem');
+        $this->assertSame(SaleState::PENDING, $store->sales[1]['state']);
+        $this->assertSame(0, $store->sales[1]['attempt_count']);
+        $this->assertStringContainsString('sale left to the queue', (string) file_get_contents($this->logFile));
     }
 
     /** U12: doklad s tržbou nejde přesunout do koše — hláška ve formuláři (DomainException → 422). */

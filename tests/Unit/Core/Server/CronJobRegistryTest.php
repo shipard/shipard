@@ -30,12 +30,17 @@ class CronJobRegistryTest extends TestCase
             ['mail-analysis-reap', 'core.mail', ['active']],
             ['mail-preprocess --sweep', 'core.mail', ['active']],
             ['mail-analyze --sweep', 'core.mail', ['active']],
+            // fronta evidence tržeb (#171 D7) — doplněk, jen kde je zapnutý
+            ['sales-registration-run', 'economy.salesRegistration', ['active']],
         ],
         'two-minutes' => [],
         'five-minutes' => [
             // stahování kurzů před upozorněními — čerstvý zdroj dat nedostane
             // nález dřív, než poprvé stáhne
             ['exchange-rates-download', 'economy.exchangeRates', ['active']],
+            // záchranná síť evidence tržeb před upozorněními — chybějící
+            // tržbu nejdřív založí, pak teprve hlásí
+            ['sales-registration-reconcile', 'economy.salesRegistration', ['active']],
             ['alerts-run', 'core.alerts', ['active']],
         ],
         'daily' => [

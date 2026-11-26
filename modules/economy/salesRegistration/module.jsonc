@@ -29,6 +29,18 @@
         "economy_sales_registration_attempts"
     ],
 
+    // Příkazy a úlohy cronu doplňku (#172 D1–D6, #171 D7): fronta tržeb
+    // každou minutu, záchranná síť každých pět minut (před upozorněními —
+    // chybějící tržbu nejdřív založí, pak teprve hlásí).
+    "commands": [
+        "Shipard\\Module\\Economy\\SalesRegistration\\Command\\SalesRegistrationRunCommand",
+        "Shipard\\Module\\Economy\\SalesRegistration\\Command\\SalesRegistrationReconcileCommand"
+    ],
+    "cronJobs": [
+        {"command": "sales-registration-run", "slot": "minute"},
+        {"command": "sales-registration-reconcile", "slot": "five-minutes"}
+    ],
+
     // Evidenční jednotka na číselné řadě (#171 D4, D21) — pokladní zařízení
     // = řada. Sloupec přidává extension, edituje ho záložka formuláře řady
     // a kód řady proti masce typu hlídá handler při uložení řady.

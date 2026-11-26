@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\SalesRegistration\Sales;
 
 use Shipard\Core\Document\AbstractDocumentEventHandler;
+use Shipard\Core\Database\NestedTransaction;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleQueue;
+use Shipard\Module\Economy\SalesRegistration\Safety\SalesRegistrationServerConfig;
 use Shipard\Module\Economy\SalesRegistration\Texts;
 
 /**
@@ -94,9 +97,48 @@ class DocsHeadsSalesHandler extends AbstractDocumentEventHandler
         }
     }
 
-    /** Co se má stát s čerstvě založenou tržbou — odeslání přidává fronta (přepsatelné v testech). */
+    /**
+     * Čerstvě založenou tržbu hned zkusí odeslat (D7) — stejnou cestou jako
+     * cron. Dvě výjimky, kdy ji nechá cronu (do minuty):
+     *
+     *  - **otevřená transakce**: handler z applieru běží před jeho commitem
+     *    a doklad se ještě může vrátit (kontrolní součet) — zpráva by šla
+     *    správci daně za doklad, který nevznikl;
+     *  - **jistič** (U6): poslední pokus registrace v posledních 60 s skončil
+     *    výpadkem — každé uložení prodejky by jinak čekalo na timeout.
+     */
     protected function afterCreated(SyncResult $result): void
     {
+        if ($result->saleId === null || $this->inTransaction()) {
+            return;
+        }
+        $queue = $this->queue();
+        if ($queue === null) {
+            return;
+        }
+        if ($result->registration !== null && $queue->circuitOpen($result->registration)) {
+            ErrorLogger::info('sales registration: sale left to the queue (service outage)', [
+                'sale'         => $result->saleId,
+                'registration' => $result->registration,
+            ]);
+            return;
+        }
+        $queue->attempt($result->saleId);
+    }
+
+    /** Běží handler uvnitř cizí transakce (applier)? Přepsatelné v testech. */
+    protected function inTransaction(): bool
+    {
+        return $this->db !== null && NestedTransaction::isActive($this->db);
+    }
+
+    /** Pojistku serveru handler nedostává — čte si ji sám, fail-closed (#178 bod 2). */
+    protected function queue(): ?SaleQueue
+    {
+        if ($this->db === null || $this->dsConfig === null) {
+            return null;
+        }
+        return SaleQueue::create($this->db, $this->config, $this->dsConfig, SalesRegistrationServerConfig::forServer());
     }
 
     protected function sync(): SaleSync

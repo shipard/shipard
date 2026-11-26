@@ -128,9 +128,12 @@ class CronCommandTest extends TestCase
      * tabulkou hlídá CronJobRegistryTest).
      */
     private const SLOT_JOBS = [
-        'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'],
+        'minute'       => [
+            'mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep',
+            'sales-registration-run',
+        ],
         'two-minutes'  => [],
-        'five-minutes' => ['exchange-rates-download', 'alerts-run'],
+        'five-minutes' => ['exchange-rates-download', 'sales-registration-reconcile', 'alerts-run'],
         'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
         'weekly'       => ['alerts-prune'],
     ];
@@ -217,8 +220,12 @@ class CronCommandTest extends TestCase
             'economy/exchangeRates' => ['economy.exchangeRates', ['core.system'], [
                 ['command' => 'exchange-rates-download', 'slot' => 'five-minutes'],
             ]],
+            'economy/salesRegistration' => ['economy.salesRegistration', ['core.system'], [
+                ['command' => 'sales-registration-run', 'slot' => 'minute'],
+                ['command' => 'sales-registration-reconcile', 'slot' => 'five-minutes'],
+            ]],
             'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts'], []],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates'], []],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
         ];
         foreach ($defs as $path => [$id, $deps, $cronJobs]) {
             mkdir($root . '/' . $path, 0755, true);
@@ -336,10 +343,12 @@ class CronCommandTest extends TestCase
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analysis-reap'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-preprocess --sweep'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analyze --sweep'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'sales-registration-run'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-outbox-run'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analysis-reap'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-preprocess --sweep'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analyze --sweep'],
+            ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'sales-registration-run'],
         ], $cmd->callLog);
     }
 
@@ -458,11 +467,12 @@ class CronCommandTest extends TestCase
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analysis-reap'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-preprocess --sweep'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analyze --sweep'],
+            ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'sales-registration-run'],
         ], $cmd->callLog);
         $hb = $this->readHeartbeat('minute');
         $this->assertSame(2, $hb['dsCount']);
         $this->assertSame(1, $hb['skippedDataSources']);
-        $this->assertSame(4, $hb['jobsRun']);
+        $this->assertSame(count(self::SLOT_JOBS['minute']), $hb['jobsRun']);
         $this->assertStringContainsString('1 skipped by state', $tester->getDisplay());
     }
 
@@ -696,7 +706,7 @@ class CronCommandTest extends TestCase
 
         $this->assertSame(0, $exit);
         $this->assertCount(3 * count(self::SLOT_JOBS['minute']), $cmd->callLog);
-        $this->assertSame(12, $this->readHeartbeat('minute')['jobsRun']);
+        $this->assertSame(3 * count(self::SLOT_JOBS['minute']), $this->readHeartbeat('minute')['jobsRun']);
         $log = (string) file_get_contents($this->logPath);
         $this->assertSame(3, substr_count($log, 'active modules unknown'));
     }
@@ -752,7 +762,8 @@ class CronCommandTest extends TestCase
         $this->assertSame([], $cmd->callLog);
         $display = $tester->getDisplay();
         foreach (self::SLOT_JOBS['minute'] as $job) {
-            $this->assertStringContainsString("  · {$job}: skipped (module core.mail not active)", $display);
+            $module = str_starts_with($job, 'sales-registration') ? 'economy.salesRegistration' : 'core.mail';
+            $this->assertStringContainsString("  · {$job}: skipped (module {$module} not active)", $display);
         }
         $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
 
@@ -804,6 +815,7 @@ class CronCommandTest extends TestCase
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analysis-reap'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-preprocess --sweep'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analyze --sweep'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'sales-registration-run'],
         ], $cmd->callLog);
         $display = $tester->getDisplay();
         $this->assertStringContainsString('cron switch off (ignored by --ds)', $display);
@@ -830,7 +842,10 @@ class CronCommandTest extends TestCase
         fclose($lock);
 
         $this->assertSame(0, $exit);
-        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'exchange-rates-download'], ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-run']], $cmd->callLog);
+        $this->assertSame(
+            array_map(static fn(string $job): array => ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => $job], self::SLOT_JOBS['five-minutes']),
+            $cmd->callLog,
+        );
         $this->assertSame('{"old":true}', file_get_contents($heartbeatPath));
     }
 
@@ -890,7 +905,7 @@ class CronCommandTest extends TestCase
 
         $this->assertSame(1, $exit);
         // Selhání jedné úlohy nezastaví ostatní.
-        $this->assertCount(4, $cmd->callLog);
+        $this->assertCount(count(self::SLOT_JOBS['minute']), $cmd->callLog);
         $display = $tester->getDisplay();
         $this->assertStringContainsString('mail-analysis-reap: failed, exit 2', $display);
         $this->assertStringContainsString('    boom', $display);

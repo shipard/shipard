@@ -5,17 +5,27 @@ declare(strict_types=1);
 namespace Shipard\Tests\Integration\SalesRegistration;
 
 use Dibi\UniqueConstraintViolationException;
-use Shipard\Api\DocumentEventHandlerLoader;
 use Shipard\Api\DocumentLoader;
+use Shipard\Api\JournalContributorLoader;
+use Shipard\Api\OpenItemLookupLoader;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\TableGateway;
+use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Module\ModuleResolver;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocFactsLoader;
 use Shipard\Module\Economy\SalesRegistration\Evaluation\DocSaleEvaluator;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleQueue;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleState;
+use Shipard\Module\Economy\SalesRegistration\Queue\SaleStore;
+use Shipard\Module\Economy\SalesRegistration\Sales\DocsHeadsSalesHandler;
+use Shipard\Module\Economy\SalesRegistration\Sales\ReconcileScanner;
 use Shipard\Module\Economy\SalesRegistration\Sales\SaleSync;
 use Shipard\Module\Economy\SalesRegistration\Sales\SyncResult;
 use Shipard\Tests\Integration\IntegrationTestCase;
+use Shipard\Tests\Unit\Module\Economy\SalesRegistration\Queue\ScriptedSender;
 
 /**
  * Tržby z dokladů proti skutečné databázi (#171 fáze 2, „Hotovo když“):
@@ -25,8 +35,9 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  *
  * Potřebuje zdroj dat se zapnutým doplňkem `economy.salesRegistration`,
  * řadou prodejek a právě jednou registrací `cz.eet2` ve stavu V pořádku
- * s výchozí jednotkou, platnou dnes — jinak se přeskočí. Odeslání neřeší
- * (to je věc fronty a pojistky serveru); stav tržby proto nekontroluje.
+ * s výchozí jednotkou, platnou dnes — jinak se přeskočí. Ven nic neposílá:
+ * handler dokladů běží bez okamžitého odeslání ({@see NoSendSalesHandler})
+ * a fronta se zkouší s připraveným odesílačem.
  */
 class SalesFromDocumentsTest extends IntegrationTestCase
 {
@@ -82,7 +93,40 @@ class SalesFromDocumentsTest extends IntegrationTestCase
             $this->tables['docs_core_heads']->childTables,
             $this->configRuntime,
             $this->dsConfig,
-            DocumentEventHandlerLoader::load($this->dsConfig, $resolver, $this->db->getDibiConnection(), $this->configRuntime),
+            $this->dispatcherWithoutSending($resolver),
+        );
+    }
+
+    /**
+     * Skutečné handlery aktivních modulů (účtování, období DPH, …), jen
+     * handler evidence tržeb bez okamžitého odeslání — test nic neposílá ven.
+     */
+    private function dispatcherWithoutSending(ModulePathResolver $resolver): DocumentEventDispatcher
+    {
+        $errors = [];
+        $modules = ModuleResolver::resolve(ModuleLoader::loadAllModules($resolver), $this->dsConfig->getModules(), $errors);
+        $registrations = [];
+        $replaced = false;
+        foreach ($modules as $module) {
+            foreach ($module->documentEventHandlers as $registration) {
+                if ($registration['class'] === DocsHeadsSalesHandler::class) {
+                    $registration['class'] = NoSendSalesHandler::class;
+                    $replaced = true;
+                }
+                $registrations[] = $registration;
+            }
+        }
+        $this->assertTrue($replaced, 'doplněk registruje handler dokladů na docs_core_heads');
+
+        $dibi = $this->db->getDibiConnection();
+        return new DocumentEventDispatcher(
+            $registrations,
+            $dibi,
+            $this->configRuntime,
+            $this->dsConfig,
+            null,
+            OpenItemLookupLoader::fromModules($modules, $dibi, $this->configRuntime, $this->dsConfig),
+            JournalContributorLoader::fromModules($modules, $dibi, $this->configRuntime, $this->dsConfig),
         );
     }
 
@@ -171,7 +215,9 @@ class SalesFromDocumentsTest extends IntegrationTestCase
 
     private static function stamp(mixed $value): string
     {
-        return $value instanceof \DateTimeInterface ? $value->format('Y-m-d H:i:s') : (string) $value;
+        return $value instanceof \DateTimeInterface
+            ? $value->format('Y-m-d H:i:s')
+            : str_replace('T', ' ', substr((string) $value, 0, 19));
     }
 
     public function testReceiptLifecycleKeepsTheSumOfSalesEqualToTheAmount(): void
@@ -264,6 +310,107 @@ class SalesFromDocumentsTest extends IntegrationTestCase
         unset($duplicate['id']);
         $this->expectException(UniqueConstraintViolationException::class);
         $other->query('INSERT INTO %n %v', self::SALES, $duplicate);
+    }
+
+    /** Fronta nad skutečnými tabulkami: zámek, pokus, stavy, jistič, obnova, Odeslat znovu. */
+    public function testQueueWorksAgainstTheRealTables(): void
+    {
+        $this->createReceipt(400.0);
+        $this->transitionTo(40);
+        $dibi = $this->db->getDibiConnection();
+        $saleId = (int) $this->sales()[0]['id'];
+        $registration = (int) $this->sales()[0]['registration'];
+
+        $this->assertSame(SaleState::PENDING, (string) $this->sales()[0]['state'], 'handler testu neposílá');
+        $dibi->query(
+            'UPDATE %n SET [state] = %s, [attempt_count] = 0, [next_attempt] = %s, [claimed_at] = NULL WHERE [id] = %i',
+            self::SALES,
+            SaleState::PENDING,
+            '2027-02-10 10:00:00',
+            $saleId,
+        );
+        $sender = new ScriptedSender();
+        $sender->script = [ScriptedSender::retryLater(), ScriptedSender::confirmed('pok-it-ff', 'playground', true)];
+        $queue = new SaleQueue(new SaleStore($dibi), $sender, $this->configRuntime);
+        $now = new \DateTimeImmutable('2027-02-10 10:00:00');
+
+        // 1. výpadek → pending s backoffem, jistič sepnutý
+        $first = $queue->attempt($saleId, $now);
+        $this->assertSame(SaleState::PENDING, $first?->state);
+        $sale = $this->sales()[0];
+        $this->assertSame('2027-02-10 10:01:00', self::stamp($sale['next_attempt']));
+        $this->assertSame(1, (int) $sale['attempt_count']);
+        $this->assertNull($sale['claimed_at']);
+        $this->assertTrue($queue->circuitOpen($registration, $now->modify('+30 seconds')));
+        $this->assertFalse($queue->circuitOpen($registration, $now->modify('+61 seconds')));
+
+        // 2. ještě není splatná → běh ji nechá; po termínu ji pošle
+        $this->assertSame(0, $queue->processDue(5, $now->modify('+30 seconds'))['processed']);
+        $due = $queue->processDue(50, $now->modify('+2 minutes'));
+        $this->assertGreaterThanOrEqual(1, $due['confirmed']);
+        $sale = $this->sales()[0];
+        $this->assertSame(SaleState::CONFIRMED, (string) $sale['state']);
+        $this->assertSame('pok-it-ff', (string) $sale['confirmation_code']);
+        $this->assertSame(1, (int) $sale['test']);
+        $this->assertSame('playground', (string) $sale['environment']);
+        $this->assertNull($sale['next_attempt']);
+
+        $attempts = $this->db->fetchAll('SELECT * FROM %n WHERE [sale] = %i ORDER BY [id]', self::ATTEMPTS, $saleId);
+        $this->assertCount(2, $attempts);
+        $this->assertSame(['retryLater', 'confirmed'], array_map(static fn(array $a): string => (string) $a['status'], $attempts));
+        $this->assertSame([1, 0], array_map(static fn(array $a): int => (int) $a['first_sending'], $attempts), 'po odeslané zprávě už ne první zaslání');
+        $this->assertNotSame((string) $attempts[0]['uuid'], (string) $attempts[1]['uuid']);
+        $this->assertSame('<req/>', (string) $attempts[1]['request_body']);
+        $this->assertSame(1, (int) $attempts[1]['test_identity']);
+        $this->assertSame([true, false], array_map(static fn($m): bool => $m->firstSending, $sender->messages));
+        $this->assertSame((string) $sale['serial_number'], $sender->messages[1]->serialNumber);
+
+        // 3. potvrzenou tržbu nejde vzít ani poslat znovu
+        $this->assertNull($queue->attempt($saleId, $now));
+        $this->assertFalse($queue->resend($saleId, $now));
+
+        // 4. zaseknuté sending se vrací na pending, Odeslat znovu vrací failed do fronty
+        $dibi->query('UPDATE %n SET [state] = %s, [claimed_at] = %s WHERE [id] = %i', self::SALES, SaleState::SENDING, '2027-02-10 09:00:00', $saleId);
+        $this->assertGreaterThanOrEqual(1, $queue->recoverStale($now));
+        $this->assertSame(SaleState::PENDING, (string) $this->sales()[0]['state']);
+        $dibi->query('UPDATE %n SET [state] = %s, [next_attempt] = NULL WHERE [id] = %i', self::SALES, SaleState::FAILED, $saleId);
+        $this->assertTrue($queue->resend($saleId, $now));
+        $sale = $this->sales()[0];
+        $this->assertSame(SaleState::PENDING, (string) $sale['state']);
+        $this->assertSame('2027-02-10 10:00:00', self::stamp($sale['next_attempt']));
+    }
+
+    /** D7, D20: záchranná síť dorovná chybějící tržbu s původním časem. */
+    public function testReconcileRestoresAMissingSaleWithTheOriginalTime(): void
+    {
+        $this->createReceipt(500.0);
+        $this->transitionTo(40);
+        $dibi = $this->db->getDibiConnection();
+        $original = $this->sales()[0];
+        $dibi->query('DELETE FROM %n WHERE [sale] = %i', self::ATTEMPTS, (int) $original['id']);
+        $dibi->query('DELETE FROM %n WHERE [doc_head] = %i', self::SALES, $this->headId);
+
+        $scanner = ReconcileScanner::create($dibi, $this->configRuntime, $this->dsConfig);
+        $mine = fn(array $results): array => array_values(array_filter(
+            $results,
+            fn(SyncResult $result): bool => $result->docId === $this->headId,
+        ));
+
+        $dry = $mine($scanner->run(1, null, true));
+        $this->assertCount(1, $dry);
+        $this->assertSame(SyncResult::WOULD_CREATE, $dry[0]->status);
+        $this->assertSame([], $this->sales(), 'běh nanečisto nic nezapsal');
+
+        // Ostrý běh jen nad naším dokladem — cizí doklady zdroje dat neměníme.
+        $sync = SaleSync::create($dibi, $this->configRuntime, $this->dsConfig);
+        $this->assertSame(SyncResult::CREATED, $sync->sync($this->headId)->status);
+        $restored = $this->sales()[0];
+        $this->assertSame(self::stamp($this->head()['doc_state_changed_at']), self::stamp($restored['sold_at']));
+        $this->assertSame((string) $original['serial_number'], (string) $restored['serial_number']);
+        $this->assertEqualsWithDelta((float) $original['amount'], (float) $restored['amount'], 0.001);
+        $this->assertSame(SaleState::PENDING, (string) $restored['state']);
+
+        $this->assertSame([], $mine($scanner->run(1, null, true)), 'hotový doklad záchranná síť nechá být');
     }
 
     /** D8e, U11: doklad převzatý importem tržbu nedostane ani záchrannou sítí. */
