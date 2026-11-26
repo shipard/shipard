@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 2: tržby a pokusy, napojení na doklady, opakování cronem (#171)
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči (agenda, detail, Odeslat znovu, záložka řady) a nasazení
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v sedmi commitech (#171 D4–D8, D13, D18–D25, U5–U12), ověřeno živě proti playgroundu a ručním proklikem 2026-11-26; zbývá `tasks/sales-registration-phase2-fixes.md` a nasazení
 
 > Task pro Claude Code (6 commitů). Design: issue #171 (EET 2.0), komentář
 > s D18–D25. Staví na fázi 1 (`tasks/sales-registration-phase1.md` —
@@ -467,12 +467,24 @@ Specifikace: `modules/economy/salesRegistration/docs/sales-registration.md`
 - Ostatní zdroje dat `ds-upgrade` nedostaly — sloupec `imported` a nové
   tabulky jim přidá až upgrade.
 
+### Ruční proklik a schválení
+
+- 2026-11-26 na `8yft-3` (člověk): agenda Evidence tržeb s detailem,
+  záložka jednotky na číselné řadě prodejek, hláška při pokusu smazat
+  doklad s tržbou (výzva ke stornu) — vše v pořádku. Odeslat znovu se
+  nabízí jen u tržby `pending` / `failed`; ověřeno simulací (registrace
+  v opravě → storno prodejky → vyrovnávací tržba `pending` s problémem
+  `registration`): akce s registrací v opravě vrátí varování, po návratu
+  registrace do V pořádku tržbu potvrdí.
+- Výjimka `imported` v `RoundTripColumns::EXCLUDED` schválena 2026-11-26.
+- Ověření chatem (read-only): 406 cílených testů, data na `8yft-3`
+  (součet tržeb stornovaného dokladu 0, přípona `-2`, `sold_at` = čas
+  přechodu), XML zpráv (`dat_trzby` převedený z UTC na `+01:00`).
+  Nálezy F1, F2 a přejmenování R1 → `tasks/sales-registration-phase2-fixes.md`.
+
 ### Zbývá
 
-- Ruční proklik v prohlížeči s pojistkou `playground` v `server.json`
-  (člověk): agenda, detail, Odeslat znovu, záložka řady, hláška při
-  pokusu smazat doklad s tržbou.
-- Schválit výjimku `imported` v `RoundTripColumns::EXCLUDED`.
+- `tasks/sales-registration-phase2-fixes.md` (R1, F1, F2).
 - Nasazení: `ds-upgrade` **všech** zdrojů dat (sloupec `imported` je
   v jádře), ne jen těch s doplňkem; pojistka na testovacím serveru
   nastavuje člověk.
