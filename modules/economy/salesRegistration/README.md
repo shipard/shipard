@@ -56,7 +56,7 @@ Rozšíření cizí tabulky: `docs_core_number_series.sales_registration_unit`
 - `UnitDocument` — maska čísla jednotky podle typu registrace, číslo
   u registrace jen jednou
 - `RegistrationsForm` — formulář registrace se sub-tabulkou jednotek
-- `RegistrationsViewer` — Nastavení → Evidence tržeb → Registrace
+- `RegistrationsViewer` — Nastavení → Evidence tržeb → Registrace EET
 - `Certificate/Pkcs12Importer` — `.p12` + heslo → klíč a certifikát v PEM
   s ověřenou identitou; `Certificate/LegacyPkcs12Reader` — záložní
   `openssl pkcs12 -legacy` pro zastaralou šifru, heslo jen na stdin

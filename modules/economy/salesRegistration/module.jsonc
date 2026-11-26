@@ -111,9 +111,9 @@
     "viewers": [
         {
             "id": "economy.salesRegistration.registrations",
-            "name": "Registrations",
-            "name:cs": "Registrace",
-            "name:en": "Registrations",
+            "name": "EET registrations",
+            "name:cs": "Registrace EET",
+            "name:en": "EET registrations",
             "icon": "cash-register",
             "table": "economy_sales_registration_registrations",
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\RegistrationsViewer"

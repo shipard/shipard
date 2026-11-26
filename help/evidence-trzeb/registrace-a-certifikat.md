@@ -43,7 +43,7 @@ Potom se v **Nastavení aplikace** objeví sekce **Evidence tržeb**.
 
 **Registrace**
 
-1. V **Nastavení aplikace → Evidence tržeb → Registrace** dej **Přidat**.
+1. V **Nastavení aplikace → Evidence tržeb → Registrace EET** dej **Přidat**.
 2. Vyplň **Název** a vyber **Typ evidence** — *EET 2.0 (Česko)*.
 3. **Režim** nech zatím **Ověřovací** (viz níže).
 4. Vyplň **Platnost od** — den, od kterého se mají tržby evidovat. Doklad

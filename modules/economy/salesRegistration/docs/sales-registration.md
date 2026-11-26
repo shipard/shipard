@@ -109,7 +109,7 @@ výchozí jednotkou, registraci výchozí jednotku odebere.
 ### 3.3 UI
 
 Vlastní sekce Nastavení **Evidence tržeb** (`settingsSections`) s položkou
-Registrace. Formulář `RegistrationsForm`: typ, název, režim, platnost,
+Registrace EET. Formulář `RegistrationsForm`: typ, název, režim, platnost,
 výchozí jednotka (až u uložené registrace — nabízí její jednotky), poznámka;
 sekce Certifikát ukazuje údaje jen ke čtení (blok `properties`). Soukromý
 klíč formulář ani viewer nenačítají — viewer čte vyjmenované sloupce,
