@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 496 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
+Celkem 497 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -32,6 +32,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
 | `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
 | `native-frontend-bridge.md` | naplánováno | rozhodnutí #177 D6, D10, D21, D22, D29, D32, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
+| `periodic-invoicing-sources.md` | naplánováno | design #175 schválen 2026-11-26, task k implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -438,6 +439,7 @@ issue #110. Předpoklady: `dimensions-core.md` (Účetnictví),
 | `work-orders-phase2.md` | 2 | Periodická fakturace: předpis na druhu a zakázce, řádky s platností, evidence období, denní běh a CLI s náhledem, koncept přes výměnný formát, Přegenerovat (`replaceConcept`) a Obnovit, záložka Fakturace, rozhraní přispěvatelů, upozornění (#110 D2–D7, D10–D12, D24; Q1–Q7) |
 | `work-orders-rows-readonly.md` | 2 | Oprava: řádky předpisu se řídí stavem zakázky (bez `independentRows` — V pořádku jen ke čtení, Přidat / Smazat v Konceptu a V opravě), backend guard `parent_read_only` |
 | `work-orders-import.md` | — | Výměnný formát zakázky `shpd.workOrders.workOrder.v1` (hlavička, předpis, řádky, *fakturovat od*, cílový stav, převzaté číslo) a endpointy validate / apply pro import ze starého Shipardu (#110 D9, D25, D26) |
+| `periodic-invoicing-sources.md` | — | Periodická fakturace jako modul jádra `economy.periodicInvoicing` se zdroji fakturace: registrace `periodicInvoicingSources`, evidence období per zdroj, společní přispěvatelé, jeden běh a upozornění, záložka Fakturace a akce jako `recordActions`; Zakázky první zdroj (#175 D1–D9) |
 
 ## Došlá pošta (core.mail)
 
