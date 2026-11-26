@@ -117,6 +117,15 @@ feedu; check bez pole se do badge nepočítá (opt-in). Setup checkům
 (`tags: ["setup"]`) pole nedávej — agregují se do jediné setup karty,
 kam se hodnota z definice nepropisuje.
 
+**Sekce z nálezu — `context.navSection`** (#175 U4). Check společný víc
+agendám (upozornění periodické fakturace: jeden check pro zakázky i další
+zdroje) sekci v deklaraci nemá — dá ji do kontextu nálezu:
+`context: ['navSection' => 'workOrders', …]`. `AlertsSource` ji u karty
+jednoho alertu upřednostní před sekcí checku. Skupinová karta (víc než
+3 alerty checku) ji převezme, jen když ji nesou **všechny** aktivní alerty
+checku a shodují se v ní; jinak platí sekce checku (bez ní karta do badge
+nepatří). Hodnota má stejný formát jako `navSection` checku.
+
 ---
 
 ## 4. PHP API checku
@@ -249,6 +258,7 @@ klíč = jeden řádek v `core_alerts_alerts`. Pro různé typy checků:
 |---|---|---|
 | Singleton (problém buď je, nebo není) | `""` (prázdný řetězec) | `base.persons.missing_own_person` |
 | Per-row (jeden alert per dotčený záznam) | `(string) $id` (table je v `subjectTableId`) | `"1234"` pro doklad #1234 |
+| Per-row přes víc zdrojů (jeden check nad záznamy různých tabulek) | `<zdroj>:<id>` | `workOrders:6` — upozornění periodické fakturace (#175 D6) |
 | Per-(row, podtéma) | `<table>:<id>:<topic>` | `iot_devices:42:battery` |
 | Per-typ problému | `<typ>` (slug) | `unmatched_bank_payments` (singleton-ish — 1 alert nese počet) |
 
@@ -286,6 +296,16 @@ reconciler by při každém běhu vytvořil nový alert a předchozí by auto-re
 **Idempotence**: Reconciler nesmí nikdy vytvořit dva řádky pro stejné
 `(check_id, finding_key)`. Lock je dostatečný pro náš use case (cron + occasional
 manuální spuštění); plnohodnotný advisory lock v MariaDB neimplementujeme.
+
+**Přejmenovaný nebo zrušený check — osiřelé alerty.** Krok 7 uzavírá jen
+alerty checku, který právě běží. Otevřené alerty s `check_id`, které
+v registru už není (check přejmenovaný nebo odebraný z `module.jsonc`),
+proto nikdo neuzavře: feed je ukazuje dál (karta bez sekce, skupinová
+s holým id místo názvu) a `alerts-prune` maže jen uzavřené. **Změna id
+checku proto potřebuje úklid v `ds-upgrade`** — vzor
+`LegacyInvoicingAlertsCleanup` (#175): otevřené alerty se starým prefixem
+převede do Vyřešeno s `resolved_at`, nic nemaže, je idempotentní a běží
+i pod `skipProvisioning`.
 
 ---
 

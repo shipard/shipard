@@ -110,7 +110,7 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 | [`economy.codebooks`](economy/codebooks/README.md) | Číselníky | Sklady, střediska, fiskální období, registrace DPH, pokladny, bankovní spojení a další číselníky |
 | [`economy.exchangeRates`](economy/exchangeRates/README.md) | Kurzy cizích měn | Kurzovní lístky země zdroje dat a dohledání kurzu k datu pro doklady, applier a import bankovního výpisu |
 | [`economy.items`](economy/items/README.md) | Položky | Katalog položek (zboží, služby, účetní položky, …) a jejich druhů |
-| [`economy.periodicInvoicing`](economy/periodicInvoicing/module.jsonc) | Periodická fakturace | Engine periodické fakturace: zdroje fakturace, evidence období per zdroj a denní běh, který vystavuje koncepty dokladů |
+| [`economy.periodicInvoicing`](economy/periodicInvoicing/README.md) | Periodická fakturace | Engine periodické fakturace: zdroje fakturace, evidence období per zdroj a denní běh, který vystavuje koncepty dokladů |
 | [`economy.vat`](economy/vat/module.jsonc) | DPH | Výstupy DPH: živé přiznání, kontrolní hlášení a souhrnné hlášení počítané on-demand z potvrzených dokladů (issue #55, M1) |
 | [`economy.workOrders`](economy/workOrders/module.jsonc) | Zakázky | Zakázky: druhy s typem, číselné řady, evidence zakázek a dimenze deníku zakázka |
 

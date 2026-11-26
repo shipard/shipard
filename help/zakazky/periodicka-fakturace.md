@@ -97,13 +97,21 @@ zakázka. Úprava jde přes **V opravě**:
   (**Naplánováno**, **Čeká na podklady**, **Vystaveno**, **Zastaveno**),
   dokladem (odkaz otevře detail), částkou a zprávou, proč se období
   nevystavilo.
-- **Vystavit dlužná období** vystaví hned všechna splatná období zakázky
-  — i když jich je víc než tři (viz níže).
-- **Přegenerovat** (nabídka období s konceptem) sestaví koncept znovu
-  podle aktuální zakázky — stejný doklad, nové řádky. Ruční úpravy
-  konceptu se ztratí, proto se Shipard ptá.
-- **Obnovit** (nabídka zastavených období) vrátí období do plánu a hned
-  vystaví nový koncept.
+- Tlačítka nad detailem zakázky:
+  - **Vystavit dlužná období** vystaví hned všechna splatná období zakázky
+    — i když jich je víc než tři (viz níže). Výsledek se ukáže jako zpráva
+    **Vystaveno období: …, selhalo: …**.
+  - **Přegenerovat** otevře okno **Přegenerovat koncept**: v poli
+    **Období** vyber období s konceptem a potvrď **Přegenerovat**. Koncept
+    se sestaví znovu podle aktuální zakázky — stejný doklad, nové řádky.
+    Okno upozorňuje, že **ruční úpravy konceptu se ztratí**. Tlačítko je
+    vidět, jen když má zakázka období s dokladem v konceptu.
+  - **Obnovit** otevře okno **Obnovit období**: vyber zastavené období
+    a potvrď **Obnovit**. Období se vrátí do plánu a hned vznikne nový
+    koncept. Tlačítko je vidět, jen když má zakázka zastavené období.
+- Když zvolené období mezitím změnil noční běh nebo jiný uživatel, okno
+  zůstane otevřené a u pole **Období** řekne proč — zavři ho a zkus to
+  znovu.
 
 ## Na co narazíš
 
@@ -132,7 +140,7 @@ koncept má takový řádek s nulovým množstvím a období **Čeká na
 podklady**. Jakmile podklady přijdou, běh koncept sám přegeneruje — ale
 jen když jsi ho ručně neupravil; jinak tě upozornění vyzve dát
 **Přegenerovat**. Lhůtu, po které se čekání hlásí, nastavíš v **Nastavení
-aplikace → Zakázky → Periodická fakturace** (**Čekání na podklady**,
+aplikace → Účetnictví → Periodická fakturace** (**Čekání na podklady**,
 prázdné = 10 dní). Zatím není žádný přispěvatel k dispozici.
 
 **Koncept vzniká vždy jako koncept.** Automatické potvrzení ani odeslání

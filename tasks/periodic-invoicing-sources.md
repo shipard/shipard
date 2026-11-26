@@ -1,6 +1,6 @@
 # Periodická fakturace jako modul se zdroji fakturace (#175 D1–D9)
 
-**Stav:** naplánováno — design #175 schválen 2026-11-26, task k implementaci
+**Stav:** hotovo — 2026-11-26 ve čtyřech commitech (#175 D1–D9, U1–U6); ověřeno nad demo sadou v headless prohlížeči, ruční proklik naostro zbývá
 
 > Task pro Claude Code (4 commity). Design: issue #175. Je to **refaktoring**:
 > chování periodické fakturace zakázek se nemění (D9). Druhým zdrojem budou
@@ -222,23 +222,27 @@
 
 ## Hotovo když
 
-- [ ] `economy.periodicInvoicing` je v `install.base`, Zakázky na něm
+- [x] `economy.periodicInvoicing` je v `install.base`, Zakázky na něm
       závisí, `modules/README.md` přegenerovaný
-- [ ] v `modules/economy/workOrders/src/` nezůstala žádná třída enginu ani
+- [x] v `modules/economy/workOrders/src/` nezůstala žádná třída enginu ani
       reference na `economy.workOrders.periodicities` / `invoiceTimings` /
       `periodStates` / `periodTexts` / `invoiceContributors`
-- [ ] běh, CLI (vč. aliasu), Přegenerovat a Obnovit dávají nad zakázkami
+- [x] běh, CLI (vč. aliasu), Přegenerovat a Obnovit dávají nad zakázkami
       stejné výsledky jako před refaktoringem (přesunuté testy beze změny
       asercí)
-- [ ] test s fake druhým zdrojem: oddělená evidence období, dimenze ze
+- [x] test s fake druhým zdrojem: oddělená evidence období, dimenze ze
       zdroje, akce a upozornění najdou zdroj podle tabulky
-- [ ] `Viewer.svelte` nezná žádné `workOrder*` id; akce záložky Fakturace
+- [x] `Viewer.svelte` nezná žádné `workOrder*` id; akce záložky Fakturace
       jdou přes `POST /_ui/record-action/…`
-- [ ] `ds-upgrade` volného zdroje dat s demo sadou projde, `dataset-seed`
-      a `dataset-verify` sady se zakázkami bez rozdílu
+- [x] `ds-upgrade` volného zdroje dat s demo sadou projde, `dataset-seed`
+      sady se zakázkami projde a dump se od sady liší jen manifestem
+      (`dataset-verify` demo sadu odmítá — nemá očekávání pro poštu;
+      ověřeno seed → dump → diff)
 - [ ] ručně: zakázka v demo sadě — záložka Fakturace, Vystavit dlužná
       období, Přegenerovat, Obnovit, upozornění s badge v sekci Zakázky
-- [ ] dokumentace a nápověda podle commitu 4, `**Stav:**` aktualizovaný
+      (proklikáno v headless prohlížeči nad demo sadou it-servis
+      2026-11-26; ruční proklik naostro zbývá)
+- [x] dokumentace a nápověda podle commitu 4, `**Stav:**` aktualizovaný
 
 ## Pasti
 
@@ -261,3 +265,61 @@
   a zapojením `InvoicingDetailTab` ve vlastním vieweru.
 - **Seedery a exporter datových sad** období zůstávají v Zakázkách, jen
   používají `PeriodRepository` s tabulkou zakázek.
+
+## Poznámky k implementaci (2026-11-26)
+
+Rozhodnutí nad rámec zadání, potvrzená 2026-11-26 před implementací:
+
+- **R1 — pravidlo namespace rozšíření UI uvolněno.** `ModuleUiExtensionRules`
+  dovolilo třídu rozšíření UI jen v namespace deklarujícího modulu, takže
+  Zakázky nemohly deklarovat `recordActions` se třídami enginu (D8). Nově smí
+  třída ležet i v modulu, na kterém deklarující modul (tranzitivně) závisí —
+  stejný dosah jako u tabulek. Obecná změna #172, `docs/modules.md` kap. 5.
+- **R2 — jméno záznamu dává zdroj.** Rozhraní zdroje má navíc `recordNoun()`
+  („Zakázka“) a `openActionLabel()` („Otevřít zakázku“); titulky upozornění
+  a popisek akce zůstaly u zakázek znak po znaku. Zprávy enginu ukládané do
+  období jsou přepsané neutrálně („Předpis nemá typ dokladu (záznam ani jeho
+  druh).“, „K datu … není žádný platný řádek předpisu.“) — engine zakázky
+  nejmenuje.
+- **R3 — sekci badge dává zdroj** metodou `navSection()`, ne deklarace
+  `viewers[]` (U4): check nemá deklarace viewerů k dispozici. Test Zakázek
+  hlídá shodu s deklarací vieweru.
+
+Další odchylky a upřesnění:
+
+- **`tableId()` na rozhraní zdroje** — `subjectTableId` nálezu nejde vzít
+  „z definice tabulky zdroje“, check definice tabulek nemá; id dává zdroj
+  a test hlídá shodu s definicí tabulky.
+- **Tvar `RunLine`**: `sourceId`, `recordId`, `recordLabel` — výpis běhu má
+  hlavičku `<číslo a název> [<zdroj>]` místo `<číslo> — <název>`.
+- **Alias `work-orders-invoice-run`** běží vždy jen nad zdrojem `workOrders`
+  (i bez `--work-order`) a při spuštění vypíše, že zanikne. Pojistka „modul
+  zakázek není aktivní“ z něj zmizela — příkaz neaktivního modulu CLI
+  nenabídne (#172).
+- **Souhrnný nález konceptů ke kontrole** má `context.navSection`, jen když
+  se na sekci shodnou všechny registrované zdroje (doklady všech zdrojů mají
+  týž druh zdroje, D7); s jediným zdrojem je badge jako dřív.
+- **Skupinová karta feedu** (víc než 3 alerty checku) bere sekci z nálezů,
+  jen když ji nesou všechny aktivní alerty checku shodně — agregát
+  `JSON_VALUE(context, '$.navSection')` v dotazu fáze 1 `AlertsSource`.
+- **Osiřelé alerty** `economy.workorders.*` reconciler opravdu neuzavře
+  (uzavírá jen alerty běžícího checku) — `ds-upgrade` je převádí do
+  Vyřešeno (`LegacyInvoicingAlertsCleanup`), nic nemaže; `docs/alerts.md` § 6.
+- **Pořadí denního cronu** drží `order: 600` — běh fakturace zůstává za
+  `vat-periods-ensure`, i když ho nese modul dřív v abecedě.
+- **Akce v liště detailu** jsou až za akcí vieweru „Otevřít v deníku“ —
+  builder detailu řadí akce modulů za akce vieweru (dřív byly akce fakturace
+  první). Přegenerovat a Obnovit nově hlásí úspěch zprávou.
+- **Texty záložky a akcí** jsou v katalogu enginu
+  `economy.periodicInvoicing.viewerLabels` (17 klíčů přesunutých z katalogu
+  Zakázek + texty dialogů a výsledků); frontendové klíče
+  `viewer.detail.workOrder*` zanikly.
+- Konstanty `InvoicingSettings::SOURCE_WORK_ORDER` / `WORK_ORDER_COLUMNS`
+  zůstaly (D4 „beze změny“) — přejmenování až s druhým zdrojem.
+
+Ověření: unit sada celá, integrační `ViewerDetailContractTest`
+a `DatasetRoundTripTest`; volný zdroj dat s demo sadou it-servis — seed,
+dump shodný se sadou, `periodic-invoicing-run --dry-run` ke kotvě nic
+nevystaví (alias stejně), v prohlížeči záložka Fakturace a tři akce přes
+`POST /_ui/record-action/…`, po vyvolání pojistky dohánění badge v sekci
+Zakázky.
