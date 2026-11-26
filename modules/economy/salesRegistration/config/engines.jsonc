@@ -7,7 +7,8 @@
     // Typ, který tu není, se v registraci nenabízí — a naopak: záznam bez dat
     // typu (modul země není ve zdroji dat aktivní) se ignoruje. Skládá
     // SalesRegistrationTypes.
-    //
-    // Engine `cz.eet2` (EET 2.0) přibude s odesíláním zpráv.
     // =========================================================================
+
+    // EET 2.0 (datové rozhraní v4.1) nad knihovnou ondrejnov/eet.
+    "cz.eet2": "Shipard\\Module\\Economy\\SalesRegistration\\Country\\Cz\\Eet2Engine"
 }

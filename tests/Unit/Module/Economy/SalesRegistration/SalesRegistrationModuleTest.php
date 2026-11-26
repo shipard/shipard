@@ -10,6 +10,9 @@ use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModuleKind;
 use Shipard\Core\RecordAction\RecordAction;
 use Shipard\Module\Economy\SalesRegistration\Actions\UploadCertificateAction;
+use Shipard\Module\Economy\SalesRegistration\Actions\VerifyConnectionAction;
+use Shipard\Module\Economy\SalesRegistration\Country\Cz\Eet2Engine;
+use Shipard\Module\Economy\SalesRegistration\Engine\SalesRegistrationEngine;
 use Shipard\Module\Economy\SalesRegistration\Certificate\KeyFiles;
 use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Utils\JsoncParser;
@@ -80,8 +83,10 @@ class SalesRegistrationModuleTest extends TestCase
             $this->assertArrayHasKey($typeId, JsoncParser::parseFile($file));
             $this->assertStringStartsWith('Shipard\\Module\\Economy\\SalesRegistration\\', (string) $class);
             $this->assertTrue(class_exists((string) $class), "typ {$typeId}: třída engine {$class} neexistuje");
+            $this->assertTrue(is_subclass_of((string) $class, SalesRegistrationEngine::class), "typ {$typeId}: {$class} není engine");
+            $this->assertSame(0, (new \ReflectionClass((string) $class))->getConstructor()?->getNumberOfRequiredParameters() ?? 0, 'engine vzniká bez argumentů');
         }
-        $this->addToAssertionCount(1);
+        $this->assertSame(['cz.eet2' => Eet2Engine::class], $engines);
     }
 
     public function testDeclaresTwoTablesWithUniqueIds(): void
@@ -203,6 +208,11 @@ class SalesRegistrationModuleTest extends TestCase
         $this->assertSame(RegistrationDocument::TABLE, $upload['table']);
         $this->assertSame(UploadCertificateAction::class, $upload['class']);
         $this->assertTrue($upload['admin'], 'certifikát mění identitu, pod kterou se podepisuje — jen správce');
+        $verify = $actions['verifyConnection'] ?? null;
+        $this->assertNotNull($verify);
+        $this->assertSame(VerifyConnectionAction::class, $verify['class']);
+        $this->assertTrue($verify['admin']);
+        $this->assertGreaterThan($upload['order'], $verify['order'], 'Ověřit spojení až za Nahrát certifikát');
         foreach ($actions as $id => $action) {
             $this->assertTrue(is_subclass_of($action['class'], RecordAction::class), (string) $id);
         }

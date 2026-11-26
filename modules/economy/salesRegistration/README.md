@@ -52,6 +52,15 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
   zdroje dat `tmp/`, smazané ve `finally`
 - `Actions/UploadCertificateAction` — akce záznamu „Nahrát certifikát“
   (jen správce)
+- `Actions/VerifyConnectionAction` — akce záznamu „Ověřit spojení“:
+  zkušební zpráva v ověřovacím módu (jen správce)
+- `Engine/SalesRegistrationEngine` — rozhraní engine typu evidence
+  a hodnotové objekty `SalesMessage`, `SenderIdentity`, `EngineEnvironment`,
+  `SendResult`, `SendStatus`
+- `Country/Cz/Eet2Engine` — engine `cz.eet2` (EET 2.0) nad knihovnou
+  `ondrejnov/eet`
+- `Sender/SalesRegistrationSender` — odeslání jedné zprávy: typ → engine,
+  trasa, identita, dočasný klíč, log
 - `Texts` — texty akcí a hlášek z katalogu `economy.salesRegistration.texts`
 - `Safety/SalesRegistrationServerConfig` — pojistka serveru, sekce
   `salesRegistration` v `server.json` (níže)
@@ -72,6 +81,16 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 
 Doplněk deklaruje vlastní sekci Nastavení **Evidence tržeb**
 (`settingsSections`, #170 D13).
+
+## Knihovna
+
+`ondrejnov/eet` — klient EET 2.0 (sestavení a podpis zprávy, HTTPS, ověření
+podpisu potvrzení). Bez release tagu, proto pinovaný commit
+`cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8` v `composer.json`. Balík je
+v `repositories` jako `vcs` z GitHubu: Packagist má pod `dev-master` stále
+starou verzi pro EET 1 (závislost na `ext-soap`), a Composer bere u pinu
+commitu metadata z hlavy větve v repozitáři balíků. `minimum-stability` se
+kvůli tomu nemění. Doplněk používá knihovnu jen v `Eet2Engine`.
 
 ## Konfigurace serveru
 

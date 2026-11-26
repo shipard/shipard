@@ -3,6 +3,8 @@
     "require": {
         "php": ">=8.5",
         "ext-bcmath": "*",
+        "ext-curl": "*",
+        "ext-dom": "*",
         "ext-intl": "*",
         "ext-openssl": "*",
         "ext-zip": "*",
@@ -14,8 +16,15 @@
         "openspout/openspout": "^5.12",
         "twig/twig": "^3",
         "chillerlan/php-qrcode": "^6.0",
-        "league/commonmark": "^2"
+        "league/commonmark": "^2",
+        "ondrejnov/eet": "dev-master#cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ondrejnov/eet"
+        }
+    ],
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },

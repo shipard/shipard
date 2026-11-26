@@ -93,6 +93,14 @@
             "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\UploadCertificateAction",
             "admin": true,
             "order": 100
+        },
+        {
+            // Zkušební zpráva v ověřovacím módu — nic se neeviduje (#171 U4).
+            "id": "verifyConnection",
+            "table": "economy_sales_registration_registrations",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\VerifyConnectionAction",
+            "admin": true,
+            "order": 110
         }
     ],
 

@@ -127,7 +127,7 @@ Read-only health check. Vypíše:
   existujícím zdrojům dat; zatuchlý heartbeat `⚠` s radou
   `systemctl status cron` (uspaný notebook, zastavená VM).
 - **PHP extensions** — rozšíření, která `composer.json` vyžaduje (`ext-*`
-  v `require`: `bcmath`, `intl`, `openssl`, `zip`), jsou načtená (#146 D10);
+  v `require`: `bcmath`, `curl`, `dom`, `intl`, `openssl`, `zip`), jsou načtená (#146 D10);
   chybějící = error s balíčkem k doinstalování (`sudo apt install
   php8.5-bcmath && sudo systemctl restart php8.5-fpm`). Nový server je
   dostane ze `scripts/install-packages.sh`, existující jen ručně (`upgrade`

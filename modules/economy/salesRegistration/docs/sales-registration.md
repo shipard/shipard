@@ -220,3 +220,110 @@ repozitáře nepatří.
 `PlaygroundIdentityTest::testCertificateIsValidForAtLeast30Days` začne padat
 30 dní před koncem platnosti certifikátu — signál k obnově. Tentýž test
 hlídá, že v doplňku není žádný jiný soukromý klíč.
+
+## 6. Engine a odeslání zprávy (D12)
+
+### 6.1 Kontrakt engine
+
+`SalesRegistrationEngine::send(SalesMessage, SenderIdentity,
+EngineEnvironment): SendResult` — třída z mapy
+`economy.salesRegistration.engines`, instance bez argumentů konstruktoru.
+
+- Engine pošle **jednu zprávu** do daného prostředí pod danou identitou.
+  **Nikdy nevyhazuje** — každé selhání je stav výsledku.
+- Nerozhoduje, kam zpráva jde, ani pod jakou identitou; nic neukládá
+  a neopakuje. Klíč čte ze souborů identity jen po dobu volání.
+- Nepředpokládá online potvrzení každé tržby: `confirmationCode` je obecný
+  kód potvrzení, pokud ho protokol vydává.
+
+| Objekt | Obsah |
+|---|---|
+| `SalesMessage` | `uuid` (generuje volající — pokus jde zapsat před odesláním a potvrzení se váže na toto UUID), jednotka, pokladna, pořadové číslo, čas tržby, částka jako desetinný řetězec, měna, první zaslání, ověřovací mód, identifikátor poplatníka (doplní odesílač), `extras` typu |
+| `SenderIdentity` | cesty k dočasným souborům klíče a certifikátu, identifikátor poplatníka, příznak testovací identity |
+| `EngineEnvironment` | název prostředí a adresa služby z dat typu |
+| `SendResult` | `status`, `sent` (odešlo něco po síti?), kód potvrzení, kód a text chyby, varování `[kód → text]`, `transactionId`, odeslané a přijaté tělo, doba v ms, příznak testu, `untrusted`, `problem` (místní důvod), trasa (prostředí, testovací identita, ověření) |
+
+Stavy `SendStatus`: `confirmed` (jediný, který plní evidenční povinnost),
+`verified`, `rejected`, `retryLater`, `unknown`, `dropped`.
+
+### 6.2 `Eet2Engine` — typ `cz.eet2`
+
+Tenká vrstva nad knihovnou `ondrejnov/eet` (pinovaný commit, viz README
+modulu): `Certificate::fromPem()` z dočasných souborů, `Dispatcher`,
+`CurlTransport` s limity knihovny 2,5 s na požadavek a 2 s na spojení
+(HTTP/1.1, TLS ≥ 1.2, ověřený certifikát serveru).
+
+| Knihovna | Stav |
+|---|---|
+| `send()` vrátí POK | `confirmed` |
+| `check()` vrátí true (chyba s kódem 0) | `verified` |
+| chyba služby −1 nebo 8 | `retryLater` |
+| jiná chyba služby | `rejected` |
+| `TransportException` (timeout, výpadek, SOAP fault, nečitelná odpověď) | `unknown` |
+| `ResponseVerificationException` | `unknown` + `untrusted`, POK se nepřebírá |
+| `ValidationException`, nečitelný certifikát, `extras` | `rejected`, nic neodešlo |
+
+- `Dispatcher::check()` chybu služby polyká a vrací `false` — ověřovací mód
+  se proto vyhodnocuje z `getLastResponse()`, ne z výjimky.
+- Čas tržby jde v zóně `Europe/Prague`.
+- `extras` (čerpání a zúčtování, pověřující poplatník — #171 D14) engine
+  zatím neumí a zprávu s nimi **odmítne**, aby z daňové zprávy nic tiše
+  nezmizelo.
+- Chybové odpovědi služba nepodepisuje, ověřuje se jen potvrzení: podpis,
+  řetěz k I.CA (`resources/ica-signing-ca.pem` knihovny), platnost
+  certifikátu, `O = Generální finanční ředitelství` a shoda UUID se zprávou.
+  CRL ani OCSP se nekontrolují.
+
+### 6.3 Odesílač
+
+`SalesRegistrationSender::send(řádek registrace, SalesMessage)`:
+
+1. trasa — `MessageRouteResolver` (§5.2); `drop` = `dropped` bez sítě, klíč
+   se ani nedešifruje;
+2. typ registrace → engine; adresa prostředí z dat typu;
+3. identita: certifikát registrace (klíč dešifrovaný `DsSecretCipher` až
+   tady), nebo `PlaygroundIdentity` — s ní jde ve zprávě její identifikátor;
+4. `KeyFiles::with()` — dočasné soubory jen po dobu volání enginu (§4.2);
+5. `ErrorLogger::info('sales registration: message <stav>')` — registrace,
+   typ, UUID, prostředí, stav, kódy, `transactionId`, doba. **Bez klíče,
+   hesla a těl zpráv** (`SendResult::logContext()`).
+
+Místní důvody, proč nic neodešlo (`SendResult::$problem`): `safety`, `type`,
+`environment`, `noCertificate`, `key`, `noTestIdentity`, `message`,
+`internal`. Odesílač nic neukládá a neopakuje — žurnál pokusů a opakování
+staví fáze 2 nad vráceným výsledkem.
+
+### 6.4 Ověřit spojení (U4)
+
+Akce záznamu `verifyConnection` (`admin: true`), dostupná u živé registrace
+s výchozí jednotkou a certifikátem — bez certifikátu jen když trasa vede na
+testovací identitu. Po potvrzení pošle přes odesílač zkušební zprávu:
+výchozí jednotka registrace, pokladna `SHIPARD-TEST`, pořadové číslo
+`TEST-<RRRRMMDDhhmmss>`, částka 0,00, **vždy ověřovací mód** — nic se
+neeviduje. Výsledek: „Spojení ověřeno — prostředí, identita“ (`success`),
+jinak `warning` s kódem a textem chyby; varování služby (např. 1 = EIČ
+zprávy ≠ EIČ certifikátu) úspěch mění na `warning`. Pod pojistkou `drop`
+řekne, proč se nic neodešle.
+
+### 6.5 Testy
+
+- `Eet2EngineTest` — falešný transport nad oficiálními vzorovými zprávami
+  a skutečnými odpověďmi playgroundu (`tests/Fixtures/…/eet/`, kopie fixtur
+  knihovny); převod každého výsledku a výjimky.
+- `SalesRegistrationSenderTest` — tabulka tras, klíč registrace nikdy na
+  playground, úklid dočasného souboru i po výjimce, log bez tajemství.
+- `Eet2PlaygroundTest` (suite Integration) — živý playground, jen
+  s `SHIPARD_EET_PLAYGROUND=1`.
+
+## 7. Co není ověřené
+
+- **Produkce.** Knihovna i doplněk jsou ověřené jen proti playgroundu —
+  k produkci zatím nejsou certifikáty. Adresa produkce a vydavatel
+  podpisového certifikátu potvrzení (I.CA Public CA/RSA 06/2022, subjekt
+  `O = Generální finanční ředitelství`) jsou z dokumentu „Přístupové
+  a provozní informace — produkce“ (verze 1.2 z 11. 11. 2026) a odpovídají
+  tomu, co engine ověřuje; první ostré potvrzení to musí potvrdit.
+- **Šifra produkčních `.p12`** z CA EET — import má obě cesty (§4.1).
+- **Fixtury stárnou**: testovací certifikát playgroundu do 14. 5. 2027,
+  podpisový certifikát skutečného potvrzení do 8. 6. 2027; testy začnou
+  padat 30 dní předem.

@@ -120,6 +120,29 @@
             "name": "Messages are signed with the certificate of this registration and registered with the tax authority.",
             "name:cs": "Zprávy se podepisují certifikátem této registrace a evidují se u správce daně.",
             "name:en": "Messages are signed with the certificate of this registration and registered with the tax authority."
-        }
+        },
+
+        // --- Akce Ověřit spojení (#171 U4) ---
+        "verify.label": { "name": "Verify connection", "name:cs": "Ověřit spojení", "name:en": "Verify connection" },
+        "verify.confirm": { "name": "A test message of 0.00 is sent in verification mode — nothing is registered. Continue?", "name:cs": "Odešle se zkušební zpráva na 0,00 v ověřovacím módu — nic se neeviduje. Pokračovat?", "name:en": "A test message of 0.00 is sent in verification mode — nothing is registered. Continue?" },
+        "verify.errorType": { "name": "The registration type is not available in this data source.", "name:cs": "Typ evidence této registrace není ve zdroji dat dostupný.", "name:en": "The registration type is not available in this data source." },
+        "verify.errorNoUnit": { "name": "The registration has no default registration unit.", "name:cs": "Registrace nemá výchozí evidenční jednotku.", "name:en": "The registration has no default registration unit." },
+        "verify.errorNoDataSource": { "name": "The connection cannot be verified outside a data source.", "name:cs": "Spojení nejde ověřit mimo zdroj dat.", "name:en": "The connection cannot be verified outside a data source." },
+        "verify.ok": { "name": "Connection verified — {where}.", "name:cs": "Spojení ověřeno — {where}.", "name:en": "Connection verified — {where}." },
+        "verify.warnings": { "name": "Warnings of the service: {warnings}", "name:cs": "Varování služby: {warnings}", "name:en": "Warnings of the service: {warnings}" },
+        "verify.envProduction": { "name": "production", "name:cs": "produkce", "name:en": "production" },
+        "verify.envPlayground": { "name": "playground", "name:cs": "playground", "name:en": "playground" },
+        "verify.identityTest": { "name": "shared test identity {taxpayerId}", "name:cs": "sdílená testovací identita {taxpayerId}", "name:en": "shared test identity {taxpayerId}" },
+        "verify.identityRegistration": { "name": "certificate of the registration {taxpayerId}", "name:cs": "certifikát registrace {taxpayerId}", "name:en": "certificate of the registration {taxpayerId}" },
+        "verify.noCertificate": { "name": "The registration has no certificate — upload it first.", "name:cs": "Registrace nemá certifikát — nejdřív ho nahrajte.", "name:en": "The registration has no certificate — upload it first." },
+        "verify.keyUnusable": { "name": "The certificate of the registration cannot be used — upload it again.", "name:cs": "Certifikát registrace nejde použít — nahrajte ho znovu.", "name:en": "The certificate of the registration cannot be used — upload it again." },
+        "verify.noTestIdentity": { "name": "This registration type has no test identity for the non-production environment.", "name:cs": "Typ evidence nemá testovací identitu pro neprodukční prostředí.", "name:en": "This registration type has no test identity for the non-production environment." },
+        "verify.noEnvironment": { "name": "This registration type has no address of the target environment.", "name:cs": "Typ evidence nemá adresu cílového prostředí.", "name:en": "This registration type has no address of the target environment." },
+        "verify.messageInvalid": { "name": "The test message could not be built: {text}", "name:cs": "Zkušební zprávu se nepodařilo sestavit: {text}", "name:en": "The test message could not be built: {text}" },
+        "verify.internal": { "name": "The test message could not be sent because of an internal error — see the server log.", "name:cs": "Zkušební zprávu se nepodařilo odeslat kvůli vnitřní chybě — podrobnosti jsou v logu serveru.", "name:en": "The test message could not be sent because of an internal error — see the server log." },
+        "verify.retryLater": { "name": "The service is temporarily unavailable ({where}) — code {code}: {text} Try again later.", "name:cs": "Služba je dočasně nedostupná ({where}) — kód {code}: {text} Zkuste to později.", "name:en": "The service is temporarily unavailable ({where}) — code {code}: {text} Try again later." },
+        "verify.rejected": { "name": "The service refused the message ({where}) — code {code}: {text}", "name:cs": "Služba zprávu odmítla ({where}) — kód {code}: {text}", "name:en": "The service refused the message ({where}) — code {code}: {text}" },
+        "verify.untrusted": { "name": "The response of the service cannot be trusted ({where}): {text}", "name:cs": "Odpovědi služby nelze věřit ({where}): {text}", "name:en": "The response of the service cannot be trusted ({where}): {text}" },
+        "verify.noResponse": { "name": "No valid response from the service ({where}): {text}", "name:cs": "Služba neodpověděla platnou odpovědí ({where}): {text}", "name:en": "No valid response from the service ({where}): {text}" }
     }
 }

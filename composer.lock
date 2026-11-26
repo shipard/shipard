@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3184e817be2c7742fd81214fccae5f0f",
+    "content-hash": "0e89d86e14c6ce67e7db2a8a70c9a798",
     "packages": [
         {
             "name": "chillerlan/php-qrcode",
@@ -887,6 +887,54 @@
                 "source": "https://github.com/nette/utils/tree/v4.1.5"
             },
             "time": "2026-07-17T23:02:45+00:00"
+        },
+        {
+            "name": "ondrejnov/eet",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ondrejnov/eet.git",
+                "reference": "cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ondrejnov/eet/zipball/cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8",
+                "reference": "cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-dom": "*",
+                "ext-openssl": "*",
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "nette/tester": "^2.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ondrejnov\\EET\\": "src/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "tester -C tests"
+                ]
+            },
+            "license": [
+                "MIT",
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "description": "EET 2.0 (Czech electronic registration of sales, interface v4) client for PHP 7.0+",
+            "support": {
+                "source": "https://github.com/ondrejnov/eet/tree/master",
+                "issues": "https://github.com/ondrejnov/eet/issues"
+            },
+            "time": "2026-11-01T16:26:04+00:00"
         },
         {
             "name": "openspout/openspout",
@@ -4370,12 +4418,16 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "ondrejnov/eet": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=8.5",
         "ext-bcmath": "*",
+        "ext-curl": "*",
+        "ext-dom": "*",
         "ext-intl": "*",
         "ext-openssl": "*",
         "ext-zip": "*"
