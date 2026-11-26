@@ -1,0 +1,48 @@
+// Fixture tabulka — existuje jen v testech. Vazba rodič × cíl: cizí klíč
+// `parent`, odkaz `target` (jediný sloupec s `reference` na cílovou
+// tabulku), pořadí `order_pos` a sloupec navíc `note` s výchozí hodnotou,
+// který prvek `multilookup` nespravuje (#176 D9).
+{
+    "tableId": 9005,
+    "name": "test_multilookup_links",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "parent",
+            "name": "Parent",
+            "type": "int",
+            "nullable": false,
+            "reference": "test_multilookup_parents"
+        },
+        {
+            "id": "target",
+            "name": "Target",
+            "type": "int",
+            "nullable": false,
+            "reference": "test_multilookup_targets"
+        },
+        {
+            "id": "order_pos",
+            "name": "Order",
+            "type": "smallint",
+            "default": 0
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "type": "varchar",
+            "length": 40,
+            "nullable": false,
+            "default": "new"
+        }
+    ]
+}

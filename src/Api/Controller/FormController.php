@@ -20,8 +20,10 @@ use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\JsoncFormLoader;
 use Shipard\Core\Form\Lookup\LookupRegistry;
 use Shipard\Core\Form\ModuleFormTabs;
+use Shipard\Core\Form\MultiLookupBinding;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
+use Shipard\Core\I18n\CatalogText;
 use Shipard\Core\Module\ModuleExtensionContext;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleUiExtensions;
@@ -123,6 +125,11 @@ class FormController
         $formDefinition = $this->resolveFormDefinition(
             $table, $def, $data, $isNew, $formRegistry, $db, $config, $modulePathResolver, $language,
         );
+
+        // Prvky `multilookup` (#176): seznam id z child tabulky rodiče. Prvky
+        // říká až definice, takže ta se staví ještě bez seznamu v datech —
+        // PHP formulář ho uvidí při přepočtu (klient ho posílá s daty).
+        $data = $this->withMultiLookupValues($formDefinition, $table, $def, $data, $tables, $db);
 
         // Enrich with docStates if applicable
         if ($def->docStates !== null && $config !== null) {
@@ -227,6 +234,19 @@ class FormController
 
         // ── Běžné uložení přes TableGateway + Document lifecycle ──────────────
         $inputData = $this->filterWritableFields($body, $def);
+
+        // Prvky `multilookup` (#176 D3): seznam id → řádky child tabulky.
+        // Klíč projde jen u formuláře, který prvek má — jinak by uložení
+        // hlavičky jiným formulářem vazby smazalo (chybějící klíč ≠ `[]`).
+        $multiLookupRows = $this->multiLookupInput(
+            $table, $id, $body, $def, $tables, $db, $config,
+            $formRegistry, $modulePathResolver, $lookupRegistry, $language,
+        );
+        if ($multiLookupRows instanceof Response) {
+            return $multiLookupRows;
+        }
+        $inputData += $multiLookupRows;
+
         if ($id !== null) {
             $inputData['id'] = $id;
         } else {
@@ -314,7 +334,7 @@ class FormController
 
         $httpStatus = ($id === null) ? 201 : 200;
         $dataResolved = $this->resolveLookupValuesForRecord(
-            $table, $def, $record ?? [], $formRegistry, $db, $config,
+            $table, $def, $record, $formRegistry, $db, $config,
             $lookupRegistry, $modulePathResolver, $language, $tables,
         );
         $payload = [
@@ -1295,7 +1315,7 @@ class FormController
             $record = TableAccessGuard::stripSensitive($record, $def);
         }
         $dataResolved = $this->resolveLookupValuesForRecord(
-            $table, $def, $record ?? [], $formRegistry, $db, $config,
+            $table, $def, $record, $formRegistry, $db, $config,
             $lookupRegistry, $modulePathResolver, $language, $tables,
         );
         $payload = [
@@ -1357,7 +1377,7 @@ class FormController
             $record = TableAccessGuard::stripSensitive($record, $def);
         }
         $dataResolved = $this->resolveLookupValuesForRecord(
-            $table, $def, $record ?? [], $formRegistry, $db, $config,
+            $table, $def, $record, $formRegistry, $db, $config,
             $lookupRegistry, $modulePathResolver, $language, $tables,
         );
         return Response::success([
@@ -1378,9 +1398,9 @@ class FormController
     }
 
     /**
-     * Vrátí všechny lookup elementy z FormDefinition (rekurze přes
-     * tabs → sections → columns → elements). Inline group neobsahuje
-     * lookup elementy (validace na úrovni FormElement to zaručuje).
+     * Vrátí všechny elementy `lookup` a `multilookup` z FormDefinition
+     * (rekurze přes tabs → sections → columns → elements). Inline group je
+     * neobsahuje (validace na úrovni FormElement to zaručuje).
      *
      * @return list<FormElement>
      */
@@ -1394,7 +1414,7 @@ class FormController
             foreach ($tab->sections as $section) {
                 foreach ($section->columns as $column) {
                     foreach ($column->elements as $el) {
-                        if ($el->type === 'lookup') {
+                        if ($el->type === 'lookup' || $el->type === 'multilookup') {
                             $out[] = $el;
                         }
                     }
@@ -1409,8 +1429,12 @@ class FormController
      * jehož hodnota v `$data` je ne-null a kde resolve uspěl. Klíče se nevkládají
      * pro null hodnoty ani pro lookup elementy ukazující na nezaregistrovanou tabulku.
      *
+     * Prvek `multilookup` (#176 D3) má pod svým klíčem **seznam** položek
+     * v pořadí hodnoty — vždy celý (i prázdný), nenalezená id se vynechají;
+     * `TableLookup::resolve()` se volá jednou a pořadí jeho výstupu se nebere.
+     *
      * @param array<string, TableDefinition> $tables
-     * @return array<string, array{id: int|string, primary: string, secondary: string|null}>
+     * @return array<string, array{id: int|string, primary: string, secondary: string|null}|list<array{id: int|string, primary: string, secondary: string|null}>>
      */
     private function buildDataResolved(
         FormDefinition $formDef,
@@ -1427,6 +1451,13 @@ class FormController
                 continue;
             }
             $value = $data[$column] ?? null;
+            if ($element->type === 'multilookup') {
+                $items = $this->resolveMultiLookupItems($element, $value, $lookupRegistry, $db, $config, $tables);
+                if ($items !== null) {
+                    $result[$column] = $items;
+                }
+                continue;
+            }
             if ($value === null || $value === '') {
                 continue;
             }
@@ -1457,13 +1488,17 @@ class FormController
      * values. Used in save() and state-transition responses to keep the
      * client's `dataResolved` keš in sync.
      *
+     * Záznamu přitom doplní seznamy prvků `multilookup` (#176) — odpověď
+     * uložení a přechodu stavu nese `data` ve stejném tvaru jako meta.
+     *
+     * @param array<string, mixed>|null $record načtený řádek; doplní se v místě
      * @param array<string, TableDefinition> $tables
-     * @return array<string, array{id: int|string, primary: string, secondary: string|null}>
+     * @return array<string, mixed>
      */
     private function resolveLookupValuesForRecord(
         string $table,
         TableDefinition $def,
-        array $record,
+        ?array &$record,
         FormRegistry $formRegistry,
         DataSourceConnection $db,
         ?ConfigRuntime $config,
@@ -1472,7 +1507,7 @@ class FormController
         string $language,
         array $tables,
     ): array {
-        if ($record === []) {
+        if ($record === null || $record === []) {
             return [];
         }
         // Bez záložek z modulů — lookup v nich být nesmí (#172 D17), takže
@@ -1481,7 +1516,210 @@ class FormController
             $table, $def, $record, /*$isNew*/ false,
             $formRegistry, $db, $config, $modulePathResolver, $language,
         );
+        $record = $this->withMultiLookupValues($formDef, $table, $def, $record, $tables, $db);
         return $this->buildDataResolved($formDef, $record, $lookupRegistry, $db, $config, $tables);
+    }
+
+    // ─── Prvek `multilookup` (#176) ──────────────────────────────────────────
+
+    /**
+     * Doplní do dat formuláře hodnoty prvků `multilookup`: seznam id
+     * odkazovaných záznamů z child tabulky rodiče v pořadí (D3). Nový záznam
+     * má `[]`, ledaže seznam už v datech je (výchozí hodnoty formuláře).
+     * Chybná deklarace prvku je `\LogicException` z `MultiLookupBinding`.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, TableDefinition> $tables
+     * @return array<string, mixed>
+     */
+    private function withMultiLookupValues(
+        FormDefinition $formDef,
+        string $table,
+        TableDefinition $def,
+        array $data,
+        array $tables,
+        DataSourceConnection $db,
+    ): array {
+        $parentId = (int) ($data['id'] ?? 0);
+        foreach ($this->collectLookupElements($formDef) as $element) {
+            if ($element->type !== 'multilookup') {
+                continue;
+            }
+            $binding = MultiLookupBinding::forElement($element, $table, $def, $tables);
+            $data[$binding->column] = $parentId > 0
+                ? $binding->idsFromRows($this->multiLookupRows($binding, $parentId, $db))
+                : (MultiLookupBinding::parseIds($data[$binding->column] ?? null) ?? []);
+        }
+        return $data;
+    }
+
+    /**
+     * Řádky child tabulky jednoho rodiče — jen sloupce, které vazba čte.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function multiLookupRows(MultiLookupBinding $binding, int $parentId, DataSourceConnection $db): array
+    {
+        $columns = ['id', $binding->refColumn];
+        if ($binding->orderColumn !== null) {
+            $columns[] = $binding->orderColumn;
+        }
+        return $db->fetchAll(
+            'SELECT %n FROM %n WHERE %n = %i',
+            $columns, $binding->childTable, $binding->foreignKey, $parentId,
+        );
+    }
+
+    /**
+     * Položky `dataResolved` jednoho prvku `multilookup` v pořadí hodnoty.
+     * `null` = prvek nejde předřešit (hodnota není seznam id, tabulka nemá
+     * lookup) a klíč se do `dataResolved` nedává.
+     *
+     * @param array<string, TableDefinition> $tables
+     * @return list<array{id: int|string, primary: string, secondary: string|null}>|null
+     */
+    private function resolveMultiLookupItems(
+        FormElement $element,
+        mixed $value,
+        LookupRegistry $lookupRegistry,
+        DataSourceConnection $db,
+        ?ConfigRuntime $config,
+        array $tables,
+    ): ?array {
+        $ids = MultiLookupBinding::parseIds($value ?? []);
+        $targetTable = $element->lookup['table'] ?? null;
+        if ($ids === null || !is_string($targetTable) || $targetTable === '') {
+            return null;
+        }
+        $lookup = $lookupRegistry->create($targetTable, $db, $config, $tables[$targetTable] ?? null);
+        if ($lookup === null) {
+            return null;
+        }
+        if ($ids === []) {
+            return [];
+        }
+
+        $byId = [];
+        foreach ($lookup->resolve(array_values(array_unique($ids))) as $item) {
+            $byId[(string) $item->id] = $item->toArray();
+        }
+        $items = [];
+        foreach ($ids as $id) {
+            if (isset($byId[(string) $id])) {
+                $items[] = $byId[(string) $id];
+                unset($byId[(string) $id]);
+            }
+        }
+        return $items;
+    }
+
+    /**
+     * Hodnoty prvků `multilookup` z těla `save` převedené na řádky child
+     * tabulek pro `TableGateway` (#176 D3, D5, D9).
+     *
+     * Whitelist jde **podle prvků aktuální definice formuláře**, ne podle
+     * `childTables`: klíč child tabulky bez prvku (řádky dokladu, formulář
+     * bez prvku) ani prvek `readOnly` se nepropustí. Definice se staví jen
+     * tehdy, když tělo klíč některé child tabulky rodiče nese — u existujícího
+     * záznamu nad uloženým řádkem překrytým tělem, jako ji vidí klient.
+     *
+     * Hodnota, která není seznam kladných celých čísel, a duplicita jsou
+     * 422 `VALIDATION_ERROR` s chybou na `column` prvku dřív, než se volá
+     * gateway. `id` řádků se berou jen z databáze.
+     *
+     * @param array<string, mixed> $body
+     * @param array<string, TableDefinition> $tables
+     * @return array<string, list<array<string, int>>>|Response
+     */
+    private function multiLookupInput(
+        string $table,
+        ?int $id,
+        array $body,
+        TableDefinition $def,
+        array $tables,
+        DataSourceConnection $db,
+        ?ConfigRuntime $config,
+        FormRegistry $formRegistry,
+        ModulePathResolver $modulePathResolver,
+        LookupRegistry $lookupRegistry,
+        string $language,
+    ): array|Response {
+        $present = [];
+        foreach ($def->childTables as $childTable) {
+            $dataKey = $childTable['dataKey'] ?? null;
+            if (is_string($dataKey) && array_key_exists($dataKey, $body)) {
+                $present[$dataKey] = true;
+            }
+        }
+        if ($present === []) {
+            return [];
+        }
+
+        $formData = $body;
+        if ($id !== null) {
+            $stored = $db->fetchRow("SELECT * FROM `{$table}` WHERE `id` = %i", $id);
+            if ($stored === null) {
+                // Neexistující záznam ohlásí uložení samo.
+                return [];
+            }
+            $stored = $this->decodeJsonColumns(TableAccessGuard::stripSensitive($stored, $def), $def);
+            $stored = $this->flattenStructuredColumns(
+                $stored, $def, $config, $formRegistry->createForm($table, $stored, $db, $config), false,
+            );
+            $formData = array_merge($stored, $body);
+            $formData['id'] = $id;
+        }
+        $formDef = $this->resolveBaseFormDefinition(
+            $table, $def, $formData, $id === null, $formRegistry, $db, $config, $modulePathResolver, $language,
+        );
+
+        $rows = [];
+        foreach ($this->collectLookupElements($formDef) as $element) {
+            $column = (string) $element->column;
+            if ($element->type !== 'multilookup' || !isset($present[$column]) || $element->readOnly) {
+                continue;
+            }
+            $binding = MultiLookupBinding::forElement($element, $table, $def, $tables);
+
+            $ids = MultiLookupBinding::parseIds($body[$column]);
+            if ($ids === null) {
+                return $this->multiLookupError($column, 'invalid_list', $this->formDefaultText(
+                    $config, 'multiLookupInvalid', 'The value must be a list of records.',
+                ));
+            }
+            $duplicate = MultiLookupBinding::firstDuplicate($ids);
+            if ($duplicate !== null) {
+                $items = $this->resolveMultiLookupItems($element, [$duplicate], $lookupRegistry, $db, $config, $tables);
+                return $this->multiLookupError($column, 'duplicate', $this->formDefaultText(
+                    $config, 'multiLookupDuplicate', '{name} is selected more than once.',
+                    ['name' => (string) ($items[0]['primary'] ?? ('#' . $duplicate))],
+                ));
+            }
+
+            $rows[$column] = $binding->toRows(
+                $ids,
+                $id !== null ? $this->multiLookupRows($binding, $id, $db) : [],
+            );
+        }
+        return $rows;
+    }
+
+    private function multiLookupError(string $column, string $code, string $message): Response
+    {
+        return Response::error('VALIDATION_ERROR', 'Validation failed', 422, [
+            ['field' => $column, 'code' => $code, 'message' => $message],
+        ]);
+    }
+
+    /**
+     * Text z `core.system.formDefaults` (lokalizovaný kompilací konfigurace);
+     * bez konfigurace anglický fallback.
+     *
+     * @param array<string, scalar> $params
+     */
+    private function formDefaultText(?ConfigRuntime $config, string $key, string $fallback, array $params = []): string
+    {
+        return CatalogText::resolve($config?->cfgItem('core.system.formDefaults'), $key, $fallback, $params);
     }
 
     /**

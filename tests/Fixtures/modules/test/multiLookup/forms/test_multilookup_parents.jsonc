@@ -1,0 +1,30 @@
+// Fixture (#176): tentýž formulář rodiče zapsaný v JSONC — použije se, když
+// test nezaregistruje PHP třídu `ParentsForm`. Odkazový sloupec říká výslovně.
+{
+    "title": "Parent",
+    "titleNew": "New parent",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Basic",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"column": "name"},
+                                {
+                                    "type": "multilookup",
+                                    "column": "targets",
+                                    "label": "Targets",
+                                    "placeholder": "Search targets…",
+                                    "lookup": {"table": "test_multilookup_targets", "refColumn": "target"}
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

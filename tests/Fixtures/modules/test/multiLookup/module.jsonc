@@ -1,0 +1,24 @@
+// Fixture pro prvek formuláře `multilookup` (#176): rodič s child tabulkou
+// vazeb na cílovou tabulku, lookup cílové tabulky s whitelistem filtru
+// a PHP formulář rodiče s prvkem. Existuje jen v testech.
+{
+    "id": "test.multiLookup",
+    "name": "Test multilookup",
+    "description": "Fixture module: a parent table with an M:N child table edited by the multilookup form element.",
+
+    "dependencies": [],
+
+    "tables": [
+        "test_multilookup_parents",
+        "test_multilookup_links",
+        "test_multilookup_targets"
+    ],
+
+    "forms": [
+        {"table": "test_multilookup_parents", "class": "Shipard\\Module\\Test\\MultiLookup\\ParentsForm"}
+    ],
+
+    "lookups": [
+        {"table": "test_multilookup_targets", "class": "Shipard\\Module\\Test\\MultiLookup\\TargetsLookup"}
+    ]
+}

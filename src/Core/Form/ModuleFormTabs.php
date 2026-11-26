@@ -16,8 +16,9 @@ use Shipard\Core\Module\ModuleUiExtensions;
  *  - prvek s hodnotou (`input`, `select`, `multiselect`, i uvnitř `inline`)
  *    nese sloupec tabulky, který propustí běžné uložení formuláře — ne
  *    systémový, ne primární klíč, ne citlivý (`sensitive`);
- *  - prvky bez hodnoty jsou jen oddělovač a `content`; `lookup`
- *    a pojmenovaná `component` v 1. fázi nejsou povolené;
+ *  - prvky bez hodnoty jsou jen oddělovač a `content`; `lookup`,
+ *    `multilookup` (ukládá child tabulku, ne sloupec) a pojmenovaná
+ *    `component` v 1. fázi nejsou povolené;
  *  - id záložky se prefixuje id modulu (`<modul>.<id>`).
  *
  * `null` z poskytovatele = záložka se pro záznam nezobrazí (není to chyba).

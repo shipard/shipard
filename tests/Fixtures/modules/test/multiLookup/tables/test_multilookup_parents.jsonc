@@ -1,0 +1,38 @@
+// Fixture tabulka — existuje jen v testech. Rodič vazby M:N: child tabulku
+// `test_multilookup_links` nese pod klíčem `targets`, který ve formuláři
+// edituje prvek `multilookup` (#176).
+{
+    "tableId": 9004,
+    "name": "test_multilookup_parents",
+    "displayPattern": "{name}",
+
+    "childTables": [
+        {"table": "test_multilookup_links", "foreignKey": "parent", "dataKey": "targets"}
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "kind",
+            "name": "Kind",
+            "type": "varchar",
+            "length": 10,
+            "nullable": true
+        }
+    ]
+}

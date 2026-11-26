@@ -311,6 +311,7 @@ final class FormControllerModuleTabsTest extends TestCase
         return [
             'výjimka poskytovatele'  => ['ThrowingFormTab', 'form tab provider broke'],
             'lookup v záložce'       => ['LookupFormTab', "contains element 'lookup'"],
+            'multilookup v záložce'  => ['MultiLookupFormTab', "contains element 'multilookup'"],
             'záložka typu subtable'  => ['SubtableFormTab', "must be of type 'fields'"],
             'systémový sloupec'      => ['SystemColumnFormTab', "edits 'docState', which is not a writable column"],
             'sloupec mimo tabulku'   => ['UnknownColumnFormTab', "edits 'no_such_column', which is not a writable column"],

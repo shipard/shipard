@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 499 tasků: **naplánováno** 9 · **částečně** 26 · **zrušeno** 1 · **hotovo** 463.
+Celkem 499 tasků: **naplánováno** 8 · **částečně** 27 · **zrušeno** 1 · **hotovo** 463.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `buildings-phase1.md` | naplánováno | design #174 D16–D27 schválen 2026-11-26; čeká na `tasks/form-multilookup.md` (#176) |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `form-multilookup.md` | naplánováno | design #176 schválen 2026-11-26 (podle interaktivního mockupu), task k implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
 | `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
@@ -44,6 +43,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
 | `exchange-received-foreign-vat.md` | částečně | commity 1/3–3/3 hotové 2026-11-11 (D1–D4, náhled, help, varianta korpusu 11); ověřeno na dev zdroji 2026-11-11 datovou sadou plátce (body 1, 5, 6; `dataset-verify` 6× `ok`), body 2–4 jen testy; zbývá ruční proklik náhledu (body 2–4); navazuje `mail-card-band-special-place.md` (D17, D18) |
+| `form-multilookup.md` | částečně | commit 1 (backend: prvek, `MultiLookupBinding`, `FormController`, fixture modul, testy) hotov 2026-11-26; zbývá frontend (commit 2) a dokumentace (commit 3) |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |

@@ -1,6 +1,6 @@
 # Formulář — výběr více záznamů z tabulky, prvek `multilookup` (#176 D1–D10)
 
-**Stav:** naplánováno — design #176 schválen 2026-11-26 (podle interaktivního mockupu), task k implementaci
+**Stav:** částečně — commit 1 (backend: prvek, `MultiLookupBinding`, `FormController`, fixture modul, testy) hotov 2026-11-26; zbývá frontend (commit 2) a dokumentace (commit 3)
 
 > Task pro Claude Code (3 commity). Design: issue #176. Fáze 0 doplňku
 > Budovy (#174 D6, D11) — první skutečné použití bude pole Místa na

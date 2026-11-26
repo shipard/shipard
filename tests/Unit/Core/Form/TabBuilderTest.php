@@ -609,4 +609,59 @@ class TabBuilderTest extends TestCase
         $bare = TabBuilder::forTable('main', 'Main', null)->section()->col()->input('name')->build()->toArray();
         $this->assertArrayNotHasKey('icon', $bare);
     }
+
+
+    // -------- multiLookup() (#176) --------
+
+    public function testMultiLookupElement(): void
+    {
+        $tab = (new TabBuilder('t', 'T'))
+            ->section()->col()
+                ->multiLookup(
+                    'places',
+                    table: 'base_places_places',
+                    filter: ['types' => 'office'],
+                    label: 'Místa',
+                    placeholder: 'Hledat…',
+                    required: true,
+                    triggers: 'reload',
+                    hint: 'Nápověda',
+                )
+            ->build();
+        $el = $tab->sections[0]->columns[0]->elements[0];
+
+        $this->assertSame('multilookup', $el->type);
+        $this->assertSame('places', $el->column);
+        $this->assertSame('Místa', $el->label);
+        $this->assertSame('Hledat…', $el->placeholder);
+        $this->assertTrue($el->required);
+        $this->assertSame('reload', $el->triggers);
+        $this->assertSame('Nápověda', $el->hint);
+        $this->assertSame(['table' => 'base_places_places', 'filter' => ['types' => 'office']], $el->lookup);
+    }
+
+    public function testMultiLookupRefColumnStaysOnServer(): void
+    {
+        $tab = (new TabBuilder('t', 'T'))
+            ->section()->col()
+                ->multiLookup('places', table: 'base_places_places', refColumn: 'place', readOnly: true, hidden: true)
+            ->build();
+        $el = $tab->sections[0]->columns[0]->elements[0];
+
+        $this->assertSame('place', $el->lookup['ref_column']);
+        $this->assertTrue($el->readOnly);
+        $this->assertTrue($el->hidden);
+        $this->assertSame(['table' => 'base_places_places', 'filter' => null], $el->toArray()['lookup']);
+    }
+
+    public function testMultiLookupInsideInlineRejected(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('not allowed inside inline group');
+
+        (new TabBuilder('t', 'T'))
+            ->section()->col()
+                ->inline()->multiLookup('places', table: 'base_places_places')->endInline()
+            ->build();
+    }
 }
