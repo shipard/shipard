@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 497 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
+Celkem 498 tasků: **naplánováno** 9 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `form-multilookup.md` | naplánováno | design #176 schválen 2026-11-26 (podle interaktivního mockupu), task k implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
 | `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
@@ -154,6 +155,7 @@ Server-driven formuláře, generický klient. Reference
 | `form-builder-hardening.md` | Whitelist `inputType`, dedikované buildery (`addTextArea`, `addDate`, …) |
 | `form-header-info.md` | Strukturované info v hlavičce formuláře (`HeaderInfo`) |
 | `form-lookup-fields.md` | Typeahead lookup pro FK na velké tabulky |
+| `form-multilookup.md` | Prvek `multilookup` — výběr více záznamů z tabulky do child tabulky rodiče (`childTables`), převod seznam id ↔ řádky ve `FormController`, štítky s hledáním (#176 D1–D10) |
 | `form-modal-unified-size.md` | Sjednocení velikosti editačních modalů |
 | `form-validation-errors.md` | Zobrazení a kontrakt validačních hlášek |
 | `persons-form-restructure.md` | Restrukturalizace formuláře osob |
