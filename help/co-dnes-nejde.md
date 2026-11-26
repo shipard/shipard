@@ -253,6 +253,31 @@ místa nejsou. Místa ze starého Shipardu se zatím nepřevádějí.
 
 ---
 
+## Evidence tržeb
+
+Doplněk **Evidence tržeb** (EET 2.0, povinná od 1. 1. 2027) zatím umí jen
+přípravu — viz [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md).
+
+**Tržby z dokladů se neodesílají.** Prodejka, pokladní doklad ani faktura
+placená hotově nebo kartou zatím žádnou zprávu správci daně nepošle
+a potvrzovací kód na dokladu ani na tisku není. Odeslat jde jen zkušební
+zpráva akcí **Ověřit spojení**, která nic neeviduje.
+
+**Kontaktní platbu na dokladu neoznačíš** — pole ani akce k tomu zatím
+nejsou.
+
+**Certifikát se neobnovuje sám.** Nový si každý rok vystavíš v portálu
+CA EET a nahraješ ho; Shipard na blížící se konec platnosti upozorní.
+
+**Doplněk nezapneš z aplikace.** Zapíná ho správce serveru z konzole,
+stránka Doplňky v Nastavení zatím není. Kam zprávy na daném serveru jdou
+(ostrý provoz, zkušební prostředí, nikam), nastavuje taky jen správce
+serveru.
+
+**Jen česká evidence.** Jiné státy zatím ne.
+
+---
+
 ## Kde ještě nemusí souhlasit čísla
 
 Správnost čísel je pro nás priorita číslo jedna. Známý případ, kdy

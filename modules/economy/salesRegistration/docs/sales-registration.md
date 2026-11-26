@@ -12,7 +12,7 @@ registrací různých typů v jednom zdroji dat (#171 D16).
 
 | Fáze | Obsah | Stav |
 |---|---|---|
-| 1 | typ evidence, registrace a evidenční jednotky, certifikát, pojistka serveru, engine, Ověřit spojení, upozornění na certifikát | rozpracováno |
+| 1 | typ evidence, registrace a evidenční jednotky, certifikát, pojistka serveru, engine, Ověřit spojení, upozornění na certifikát | hotovo 2026-11-26 (`tasks/sales-registration-phase1.md`) |
 | 2 | tržby a pokusy, napojení na doklady, opakování cronem | — |
 | 3 | Kontaktní platba, záložka a štítky na dokladu | — |
 
@@ -315,7 +315,42 @@ zprávy ≠ EIČ certifikátu) úspěch mění na `warning`. Pod pojistkou `drop
 - `Eet2PlaygroundTest` (suite Integration) — živý playground, jen
   s `SHIPARD_EET_PLAYGROUND=1`.
 
-## 7. Co není ověřené
+## 7. Upozornění (D13)
+
+Tři kontroly `alertChecks` nad společným základem `CertificateCheck`
+(id malými písmeny — pravidlo `AlertCheckDefinition`):
+
+| Id | Závažnost | Kdy |
+|---|---|---|
+| `economy.salesregistration.cert_expiring` | warning | certifikát vyprší do 30 dnů (a ještě platí) |
+| `economy.salesregistration.cert_expired` | error | certifikát vypršel |
+| `economy.salesregistration.cert_missing` | warning | registrace nemá certifikát |
+
+Hlídají se jen **platné registrace**: stav V pořádku a dnešek v rozmezí
+`valid_from` – `valid_to`. Koncept, registrace v opravě, archiv a registrace
+mimo platnost upozornění nenesou. Jeden nález na registraci
+(`findingKey` = id, předmět = řádek registrace), nálezy „vyprší“ a „vypršel“
+se nepřekrývají. Kontroly soukromý klíč nenačítají. Upozornění na
+nepotvrzenou tržbu přijde s tržbami ve fázi 2.
+
+## 8. Chybějící body rozšíření
+
+Co fáze 1 obešla a co patří do obecné změny jádra s vlastní issue
+(#170 D6), ne do úpravy na míru doplňku:
+
+- **`doctor` a `/_app/info` neznají sekce `server.json` z modulů** — režim
+  pojistky evidence tržeb ukazuje jen detail registrace (#171 D13).
+- **Viewer ani `detailExtensions` nedostávají `ServerConfig`** — pojistku si
+  doplněk načítá sám (`SalesRegistrationServerConfig::forServer()`).
+- **Stránky `help/` nejsou vázané na aktivní moduly** — hlavička
+  `modules:` na stránce doplňku zatím nic nedělá (#170 D7), stránka se
+  nabízí i zdroji dat bez doplňku.
+- **Podproces se vstupem na stdin** — `CapturedProcess` stdin neumí, záložní
+  čtení `.p12` má vlastní `proc_open`.
+- **Doplněk se nezapíná z aplikace** — jen `shpd-ds ds-module enable`
+  (stránka Doplňky v Nastavení je cílový stav #170).
+
+## 9. Co není ověřené
 
 - **Produkce.** Knihovna i doplněk jsou ověřené jen proti playgroundu —
   k produkci zatím nejsou certifikáty. Adresa produkce a vydavatel

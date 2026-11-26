@@ -650,7 +650,7 @@ seznamu id ve `Viewer.svelte` — jde jen touto cestou.
 "recordActions": [
     {
         "id": "uploadCertificate",
-        "table": "economy_salesRegistration_registrations",
+        "table": "economy_sales_registration_registrations",
         "class": "Shipard\\Module\\Economy\\SalesRegistration\\Actions\\UploadCertificateAction",
         "admin": true,      // volitelné, výchozí false — jen pro správce
         "order": 500        // volitelné, výchozí 500

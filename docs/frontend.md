@@ -1283,7 +1283,7 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
        {"id": "paidAt", "type": "datetime", "label": "Čas platby", "required": true, "default": "now"},
        {"id": "info", "type": "notice", "text": "Certifikát nahradí stávající."}
    ]},
-   "target": {"table": "economy_salesRegistration_registrations", "recordId": 42}}
+   "target": {"table": "economy_sales_registration_registrations", "recordId": 42}}
   ```
 
   `id` je globální id akce (`<id modulu>.<id>`), `variant` `primary` /

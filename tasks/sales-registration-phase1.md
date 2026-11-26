@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 1: základ doplňku, registrace, certifikát, odeslání (#171)
 
-**Stav:** naplánováno — zadání 2026-11-26 (#171 D1–D3, D9–D12, D14, D16, D17, U1–U4; O1 otevřené)
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v šesti commitech (#171 D1–D3, D9–D12, D16, D17, U1–U4), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči (dialog Nahrát certifikát, Ověřit spojení) na dev serveru s `"safety": {"mode": "playground"}` v `server.json`
 
 > Task pro Claude Code (6 commitů). Design: issue #171 (EET 2.0). Staví na
 > bodech rozšíření z #172 (doplňky, `serverConfig`, `recordActions`,
@@ -275,25 +275,129 @@ Commit 6 (`docs(sales-registration): upozornění, nápověda a specifikace fáz
 
 ## Hotovo když
 
-- [ ] `shpd-ds ds-module enable economy.salesRegistration` na volném zdroji
+- [x] `shpd-ds ds-module enable economy.salesRegistration` na volném zdroji
       dat projde; v Nastavení je sekce Evidence tržeb s registracemi
-- [ ] registrace s jednotkami jde založit; masky typu `cz.eet2` se hlídají;
+- [x] registrace s jednotkami jde založit; masky typu `cz.eet2` se hlídají;
       víc registrací různých typů nic neblokuje
-- [ ] nahrání testovacího `.p12` playgroundu (RC2-40) i moderního `.p12`
+- [x] nahrání testovacího `.p12` playgroundu (RC2-40) i moderního `.p12`
       projde; klíč je v DB šifrovaně, heslo nikde; `taxpayer_id` a platnost
       z certifikátu; chybové stavy mají srozumitelné hlášky
-- [ ] dočasný soubor klíče po odeslání neexistuje ani po výjimce
-- [ ] tabulka „kam zpráva jde“ pokrytá testem; na dev serveru bez sekce
+- [x] dočasný soubor klíče po odeslání neexistuje ani po výjimce
+- [x] tabulka „kam zpráva jde“ pokrytá testem; na dev serveru bez sekce
       `salesRegistration` se nic neodešle (`drop`)
 - [ ] s `"safety": {"mode": "playground"}` na dev serveru vrátí Ověřit
       spojení úspěch z playgroundu (ověřeno ručně, výsledek v poznámkách)
-- [ ] engine převádí výsledky a výjimky podle kroku 5 (testy nad fixturami)
-- [ ] test platnosti testovacích certifikátů v repozitáři
-- [ ] upozornění na certifikát, nápověda, README a specifikace u modulu,
+      — **zbývá na člověku**: zápis do `/etc/shipard/server.json` chce
+      sudo. Stejná cesta je ověřená mimo prohlížeč (poznámky § Ověření)
+- [x] engine převádí výsledky a výjimky podle kroku 5 (testy nad fixturami)
+- [x] test platnosti testovacích certifikátů v repozitáři
+- [x] upozornění na certifikát, nápověda, README a specifikace u modulu,
       roadmapa a features
-- [ ] produkční adresa ověřená z dokumentu finanční správy (poznámka)
-- [ ] celá sada PHPUnit lokálně zelená
+- [x] produkční adresa ověřená z dokumentu finanční správy (poznámka)
+- [x] celá sada PHPUnit lokálně zelená
 
 ## Implementační poznámky
 
-(doplní Claude Code)
+Hotovo 2026-11-26 v šesti commitech na `stable` (nepushnuto). Specifikace:
+`modules/economy/salesRegistration/docs/sales-registration.md`.
+
+### Odchylky od zadání a upřesnění
+
+- **Composer pin (krok 5).** `"dev-master#cd26c32"` přes Packagist nejde:
+  Packagist má pod `dev-master` stále commit `968f463` (únor 2026, EET 1 —
+  `ext-soap`, `robrichards/wse-php`) a Composer u pinu commitu bere metadata
+  z hlavy větve v repozitáři balíků, takže by instalace chtěla `ext-soap`.
+  Řešení: `repositories` typu `vcs` na GitHub + plný hash
+  `cd26c32b573b0560ab8fe35ad2f3b8ff8fe096f8`. `minimum-stability` se nemění
+  (výslovné `dev-master` v kořenovém `require` si stabilitu pro balík povolí
+  samo). Přibylo `ext-curl` a `ext-dom`; hlídá je `doctor`.
+- **`Dispatcher::check()` polyká `ServerException`** — ověřovací mód engine
+  vyhodnocuje z `getLastResponse()->errorCode`, ne z výjimky.
+- **UUID zprávy dává odesílač**, ne knihovna (`SalesMessage::$uuid`):
+  potvrzení se na něj váže a fáze 2 ho potřebuje do pokusu před odesláním.
+- **`type` je `varchar`**, ne `enumString` (ten chce jeden cfgItem; typy se
+  skládají z dat zemí × mapy enginů). Hlídá `RegistrationDocument`.
+- **Skládání typů:** `ConfigRuntime` cfgItemy vyjmenovat neumí — registr jde
+  od mapy enginů, země je první část id typu (`cz.eet2` → `world.cz…`).
+- **Bez `exchangeKey`** (krok 2): přirozený klíč je dvojice (typ, poplatník),
+  identifikátor je do nahrání certifikátu prázdný a registrace
+  s certifikátem se mezi zdroji dat nepřenáší. Unikátnost dvojice mezi
+  živými stavy hlídá dokument — unikátní index by blokoval i archiv.
+- **Výchozí stav registrace je Koncept**; akce záznamu běží nad živými stavy
+  (i V pořádku — obnova certifikátu bez Opravit). Zámek řádků jednotek se
+  nestaví: sub-tabulka se zamyká s registrací V pořádku.
+- **Smazání výchozí jednotky** registraci výchozí jednotku odebere
+  (`UnitDocument::afterDelete`) — výjimka z `beforeDelete` by v endpointu
+  sub-tabulky skončila chybou 500.
+- **Privátní dočasný adresář** zdroje dat neexistoval: nová obecná položka
+  `PermissionSpec` `{ds}/tmp/` (`0700`, obsah nejvýš `0600`).
+- **Záložní `openssl`** má v doplňku vlastní `proc_open` — `CapturedProcess`
+  neumí stdin.
+- **Detail a pojistka:** viewer `ServerConfig` nedostává, pojistku si načte
+  `SalesRegistrationServerConfig::forServer()` (fail-closed).
+- **Důvod „jiný poplatník“** řeší akce proti `taxpayer_id` registrace, ne
+  služba importu; navíc je rozlišené „klíč nepatří k certifikátu“,
+  „ještě neplatí“ a „zastaralá šifra bez `openssl`“.
+- **Fixtury enginu** jsou kopie `tests/fixtures/` knihovny v
+  `tests/Fixtures/Module/Economy/SalesRegistration/eet/` — testy nezávisí na
+  tom, jestli instalace balíku adresář `tests/` nese.
+- **Specifikace** je jen u modulu (`modules/…/docs/`), ne v kořenovém `docs/`.
+- **Hlavička `modules:`** na stránce `help/` zatím nic nedělá (#170 D7 není
+  implementované) — stránka ji nese a říká to první odstavec.
+- **Id upozornění** malými písmeny: `economy.salesregistration.cert_*`.
+
+### Produkční adresa
+
+`https://trzbyeet.gov.cz/eet/services/EETServiceSOAP/v4` — ověřeno
+v dokumentu „Přístupové a provozní informace — produkce“, verze 1.2
+z 11. 11. 2026 (eet.gov.cz → Pro vývojáře → Dokumenty ke stažení). Týž
+dokument uvádí pro podpis potvrzení vydavatele I.CA Public CA/RSA 06/2022
+a subjekt `O = Generální finanční ředitelství` — shodně s tím, co engine
+ověřuje. Proti živé produkci nic ověřené není (nejsou certifikáty).
+
+### Stárnoucí artefakty
+
+| Artefakt | Platí do | Test, který začne padat 30 dní předem |
+|---|---|---|
+| testovací certifikát playgroundu `CZ00000019` (`resources/playground/`) | 2027-05-14 | `PlaygroundIdentityTest::testCertificateIsValidForAtLeast30Days` |
+| podpisový certifikát ve fixtuře skutečného potvrzení | 2027-06-08 | `Eet2EngineTest::testRealConfirmationPassesTheProductionVerifier` |
+
+Obnova: README v `resources/playground/` a u fixtur.
+
+### Ověření
+
+- **PHPUnit:** celá sada zelená po každém commitu (naposledy 13 145 testů).
+- **Volný testovací zdroj dat `bgse-r`:** `ds-module enable` prošel (2 tabulky),
+  sekce Evidence tržeb je v navigaci Nastavení; přes API formuláře založena
+  registrace, jednotky (maska, duplicita), výchozí jednotka, přechody stavu,
+  smazání výchozí jednotky; viewer a detail vrací očekávaný obsah.
+- **Nahrání certifikátu** proti skutečné databázi (akce spuštěná v procesu —
+  endpoint akcí chce přihlášeného správce): testovací `.p12` playgroundu
+  (RC2-40, záložní cesta) i moderní `.p12`, registrace v Konceptu i V pořádku;
+  v databázi `cert_key` s prefixem `v1:`, heslo nikde, formulář ani obecné
+  API klíč nevracejí; špatné heslo a jiný poplatník dávají správné hlášky.
+- **Dev server bez sekce `salesRegistration`:** detail registrace ukazuje
+  „Zprávy se neodesílají“ a Ověřit spojení vrací varování pojistky — nic
+  neodešlo.
+- **Playground naživo:** `SHIPARD_EET_PLAYGROUND=1 … --filter Eet2PlaygroundTest`
+  prošel — ověřovací mód `verified` za ~40 ms bez varování, ostrá zpráva
+  `confirmed` s kódem končícím `-ff` přes verifier, který engine používá
+  naostro, a celá cesta odesílače s pojistkou `playground`. Akce Ověřit
+  spojení nad registrací ve zdroji dat se zkušebním `server.json`
+  (`"safety": {"mode": "playground"}` předaný kontextu) vrátila „Spojení
+  ověřeno — playground, sdílená testovací identita CZ00000019“; dočasný
+  adresář `tmp/` vznikl s `0700` a zůstal prázdný.
+- **Upozornění:** `alerts-run` nad zdrojem dat založil
+  `economy.salesregistration.cert_expiring` pro registraci s certifikátem
+  končícím do 30 dnů.
+
+### Zbývá
+
+- Ruční proklik v prohlížeči s přihlášeným správcem: dialog Nahrát
+  certifikát (první skutečné pole `file` akce záznamu) a Ověřit spojení se
+  skutečným `"salesRegistration": {"safety": {"mode": "playground"}}`
+  v `/etc/shipard/server.json`.
+- Chybějící body rozšíření pro samostatné issue (specifikace § 8): pojistka
+  v `doctor` / `/_app/info`, `ServerConfig` pro viewer, `modules:` v `help/`,
+  podproces se stdin, zapnutí doplňku z aplikace.
+- Na `bgse-r` zůstala zkušební registrace s jednotkou a jedním upozorněním.

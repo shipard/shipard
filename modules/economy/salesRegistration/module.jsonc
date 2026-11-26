@@ -129,5 +129,50 @@
             "id": "economy.salesRegistration.texts",
             "file": "config/texts.jsonc"
         }
+        ],
+
+    // Upozornění na pokladní certifikát (#171 D13) — jen u registrací
+    // V pořádku v době jejich platnosti. Id malými písmeny (pravidlo
+    // AlertCheckDefinition), jako economy.exchangerates.*.
+    "alertChecks": [
+        {
+            "id": "economy.salesregistration.cert_expiring",
+            "name": "Sales registration certificate expires soon",
+            "name:cs": "Certifikát evidence tržeb brzy vyprší",
+            "name:en": "Sales registration certificate expires soon",
+            "description": "The cash register certificate of a confirmed, valid registration expires within 30 days — issue a new one and upload it.",
+            "description:cs": "Pokladní certifikát platné registrace V pořádku vyprší do 30 dnů — vystavte nový a nahrajte ho.",
+            "description:en": "The cash register certificate of a confirmed, valid registration expires within 30 days — issue a new one and upload it.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\CertificateExpiringCheck",
+            "severity": "warning",
+            "interval": "6h",
+            "tags": ["salesRegistration"]
+        },
+        {
+            "id": "economy.salesregistration.cert_expired",
+            "name": "Sales registration certificate has expired",
+            "name:cs": "Certifikát evidence tržeb vypršel",
+            "name:en": "Sales registration certificate has expired",
+            "description": "The cash register certificate of a confirmed, valid registration has expired — sales cannot be registered until a new one is uploaded.",
+            "description:cs": "Pokladní certifikát platné registrace V pořádku vypršel — do nahrání nového tržby evidovat nejde.",
+            "description:en": "The cash register certificate of a confirmed, valid registration has expired — sales cannot be registered until a new one is uploaded.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\CertificateExpiredCheck",
+            "severity": "error",
+            "interval": "6h",
+            "tags": ["salesRegistration"]
+        },
+        {
+            "id": "economy.salesregistration.cert_missing",
+            "name": "Sales registration without a certificate",
+            "name:cs": "Registrace k evidenci tržeb bez certifikátu",
+            "name:en": "Sales registration without a certificate",
+            "description": "A confirmed, valid registration has no cash register certificate uploaded.",
+            "description:cs": "Platná registrace V pořádku nemá nahraný pokladní certifikát.",
+            "description:en": "A confirmed, valid registration has no cash register certificate uploaded.",
+            "class": "Shipard\\Module\\Economy\\SalesRegistration\\Checks\\CertificateMissingCheck",
+            "severity": "warning",
+            "interval": "6h",
+            "tags": ["salesRegistration"]
+        }
     ]
 }

@@ -111,6 +111,12 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 |---------|----------------|
 | [Místa a druhy míst](mista/mista-a-druhy-mist.md) | Jak založit strom míst od areálu po pracovní místo, jak se ve stromu pohybovat a přidat podřízené místo, co smí být pod čím, jak místo přesunout a kdy má místo adresu. |
 
+### Evidence tržeb
+
+| Stránka | Co v ní najdeš |
+|---------|----------------|
+| [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) | Jak zapnout doplněk Evidence tržeb (EET 2.0), založit registraci s evidenčními jednotkami, nahrát pokladní certifikát, zvolit režim a ověřit spojení se správcem daně. |
+
 ### Účtárna
 
 | Stránka | Co v ní najdeš |

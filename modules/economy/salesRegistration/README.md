@@ -9,9 +9,10 @@ shpd-ds ds-module enable economy.salesRegistration
 ```
 
 Design: issue #171. Specifikace: [docs/sales-registration.md](docs/sales-registration.md).
-Fáze 1 (`tasks/sales-registration-phase1.md`) staví základ — typ evidence,
-registrace, certifikát, pojistku serveru, odeslání zprávy a Ověřit spojení;
-vazba na doklady přijde ve fázi 2–3.
+Fáze 1 (`tasks/sales-registration-phase1.md`) je základ — typ evidence,
+registrace, certifikát, pojistka serveru, odeslání zprávy, Ověřit spojení
+a upozornění na certifikát; vazba na doklady přijde ve fázi 2–3. Návod pro
+uživatele: [help/evidence-trzeb/](../../../help/evidence-trzeb/registrace-a-certifikat.md).
 
 Data typu evidence nedeklaruje tento modul, ale modul země
 (`world.cz.salesRegistrationTypes`, typ `cz.eet2`: platnost, měna, adresy
@@ -61,7 +62,11 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
   `ondrejnov/eet`
 - `Sender/SalesRegistrationSender` — odeslání jedné zprávy: typ → engine,
   trasa, identita, dočasný klíč, log
-- `Texts` — texty akcí a hlášek z katalogu `economy.salesRegistration.texts`
+- `Checks/CertificateExpiringCheck`, `CertificateExpiredCheck`,
+  `CertificateMissingCheck` — upozornění na pokladní certifikát (společný
+  základ `CertificateCheck`)
+- `Texts` — texty akcí, hlášek a upozornění z katalogu
+  `economy.salesRegistration.texts`
 - `Safety/SalesRegistrationServerConfig` — pojistka serveru, sekce
   `salesRegistration` v `server.json` (níže)
 - `Safety/MessageRouteResolver` → `MessageRoute` — jediné místo, které
@@ -81,6 +86,16 @@ ani `install.base` na něm nezávisí (`ModuleKindRules`).
 
 Doplněk deklaruje vlastní sekci Nastavení **Evidence tržeb**
 (`settingsSections`, #170 D13).
+
+## Upozornění
+
+| Id | Závažnost | Kdy |
+|---|---|---|
+| `economy.salesregistration.cert_expiring` | warning | certifikát platné registrace vyprší do 30 dnů |
+| `economy.salesregistration.cert_expired` | error | certifikát platné registrace vypršel |
+| `economy.salesregistration.cert_missing` | warning | platná registrace nemá certifikát |
+
+„Platná registrace“ = stav V pořádku a dnešek v její platnosti.
 
 ## Knihovna
 

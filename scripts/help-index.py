@@ -48,6 +48,7 @@ SECTIONS: list[tuple[str, str]] = [
     ("zakazky", "Zakázky"),
     ("majetek", "Majetek"),
     ("mista", "Místa"),
+    ("evidence-trzeb", "Evidence tržeb"),
     ("uctarna", "Účtárna"),
 ]
 
@@ -85,6 +86,9 @@ CATALOG_EXTRA_AGENDAS = {
     # Místa — číselník v Nastavení aplikace (base.places, #169), v levém
     # menu není; až dostane strom (task B), zůstává v Nastavení.
     "Místa",
+    # Evidence tržeb — doplněk economy.salesRegistration (#171): vlastní
+    # sekce v Nastavení aplikace, v levém menu není.
+    "Evidence tržeb",
 }
 
 # Řádek tabulky katalogu: `| **Agenda** | …`

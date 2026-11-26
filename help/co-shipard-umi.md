@@ -92,6 +92,17 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 
 ---
 
+## Doplňky
+
+Agendy, které většina firem nepoužije. Nejsou zapnuté samy — ve zdroji dat
+je zapíná správce.
+
+| Agenda | Co s ní uděláš | Návod |
+|---|---|---|
+| **Evidence tržeb** | Příprava na evidenci tržeb (EET 2.0, povinná od 1. 1. 2027): registrace s evidenčními jednotkami, nahrání pokladního certifikátu, volba režimu a ověření spojení se správcem daně. Není v levém menu: po zapnutí doplňku ji najdeš v **Nastavení aplikace → Evidence tržeb**. **Tržby z dokladů se zatím neodesílají** — zatím jde jen o přípravu a zkoušku spojení | [Evidence tržeb — registrace a certifikát](evidence-trzeb/registrace-a-certifikat.md) |
+
+---
+
 ## Systém
 
 | Agenda | Co s ní uděláš | Návod |
