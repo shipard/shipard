@@ -1,0 +1,34 @@
+{
+    // Dialog řádku podtabulky Periferie ve formuláři zařízení (#177 U19).
+    // Periferii hlásí zařízení samo — všechny její sloupce kromě `role`
+    // jsou systémové (formulář je nevykreslí), údaje ukazuje řádek
+    // podtabulky. Pravidla role hlídá PeripheralDocument.
+    "title": "Role periferie",
+    "title:cs": "Role periferie",
+    "title:en": "Peripheral role",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Periferie",
+            "label:cs": "Periferie",
+            "label:en": "Peripheral",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {
+                                    "type": "select",
+                                    "column": "role",
+                                    "hint": "Role říká, k čemu server periferii použije. Účtenky jdou na tiskárnu s rolí Účtenky — na zařízení je jedna.",
+                                    "hint:cs": "Role říká, k čemu server periferii použije. Účtenky jdou na tiskárnu s rolí Účtenky — na zařízení je jedna.",
+                                    "hint:en": "The role says what the server uses the peripheral for. Receipts go to the printer with the Receipts role — one per device."
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -59,6 +59,16 @@
             "order": 30
         },
         {
+            // Zařízení (#177 D13): registrovaná zařízení nativní aplikace
+            // a panel Toto zařízení (core.devices).
+            "id": "devices",
+            "name": "Devices",
+            "name:cs": "Zařízení",
+            "name:en": "Devices",
+            "icon": "device",
+            "order": 35
+        },
+        {
             // AI (#85 D49): připojení, funkce a přehled modelů (core.ai).
             // AI profily pošty zůstávají u Pošty (D8). Instalace bez core.ai
             // sekci nevykreslí — prázdné sekce SettingsController vynechává.

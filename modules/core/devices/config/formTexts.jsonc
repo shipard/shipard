@@ -1,0 +1,37 @@
+{
+    // core.devices.formTexts
+    //
+    // Texty prvků formuláře zařízení a periferie (#150 D87) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů
+    // a sekcí formulářů sem zatím nepatří (#154).
+    "texts": {
+        "device.modeHint": {
+            "name": "A personal device belongs to one user. A shared workplace is used by several users with profiles, lock and PIN.",
+            "name:cs": "Osobní zařízení patří jednomu uživateli. Sdílené pracoviště používá víc uživatelů s profily, zamčením a PINem.",
+            "name:en": "A personal device belongs to one user. A shared workplace is used by several users with profiles, lock and PIN."
+        },
+        "device.autoLockHint": {
+            "name": "Minutes of inactivity after which the app locks. Empty = no automatic lock.",
+            "name:cs": "Počet minut nečinnosti, po kterých se aplikace zamkne. Prázdné = bez automatického zamčení.",
+            "name:en": "Minutes of inactivity after which the app locks. Empty = no automatic lock."
+        },
+        "device.cashDeskHint": {
+            "name": "The cash desk the cash register on this device works with.",
+            "name:cs": "Pokladna, se kterou kasa na tomto zařízení pracuje.",
+            "name:en": "The cash desk the cash register on this device works with."
+        },
+        "device.applyHint": {
+            "name": "The device takes over the changes at its next synchronisation — at the start of the app or via Synchronise in This device.",
+            "name:cs": "Změny si zařízení převezme při příští synchronizaci — při startu aplikace nebo tlačítkem Synchronizovat v panelu Toto zařízení.",
+            "name:en": "The device takes over the changes at its next synchronisation — at the start of the app or via Synchronise in This device."
+        },
+        "peripherals.state": { "name": "State", "name:cs": "Stav", "name:en": "State" },
+        "peripherals.absent": { "name": "not connected", "name:cs": "nepřipojená", "name:en": "not connected" },
+        "peripheral.kind.printer": { "name": "Printer", "name:cs": "Tiskárna", "name:en": "Printer" },
+        "peripheral.kind.scanner": { "name": "Scanner", "name:cs": "Čtečka", "name:en": "Scanner" },
+        "peripheral.status.ready": { "name": "ready", "name:cs": "připravená", "name:en": "ready" },
+        "peripheral.status.offline": { "name": "offline", "name:cs": "nedostupná", "name:en": "offline" },
+        "peripheral.status.error": { "name": "error", "name:cs": "chyba", "name:en": "error" }
+    }
+}

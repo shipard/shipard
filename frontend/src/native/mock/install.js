@@ -66,6 +66,9 @@ export function isoWithZone(date) {
     + `${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
 }
 
+/** Verze, kterou simulace hlásí v `info.app.version` a v podepsaných voláních. */
+export const APP_VERSION = '0.0.0-mock';
+
 /**
  * @param {object} env
  * @param {string} env.apiBase  adresa API zdroje dat aktuální stránky (`location.origin + API_BASE_URL`) — identita zařízení i cíl podepsaných volání
@@ -108,7 +111,7 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
   async function info() {
     return {
       apiVersion: 1,
-      app: { version: '0.0.0-mock', build: 'mock' },
+      app: { version: APP_VERSION, build: 'mock' },
       platform: 'mock',
       osVersion: 'mock',
       dataSource: apiBase,
@@ -169,6 +172,8 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
         'X-Shipard-Device': deviceId,
         'X-Shipard-Challenge': challenge,
         'X-Shipard-Signature': await key.sign(purpose, challenge),
+        // Nepovinná: server si podle ní aktualizuje verzi aplikace u zařízení (§7.1).
+        'X-Shipard-App-Version': APP_VERSION,
       },
       body,
     });

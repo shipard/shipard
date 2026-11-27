@@ -7,7 +7,8 @@
     "description:cs": "Sklady, střediska, fiskální období, registrace DPH, pokladny, bankovní spojení a další číselníky",
     "description:en": "Warehouses, cost centers, fiscal periods, VAT registrations, cash desks, bank accounts and other codebooks",
 
-    "dependencies": ["core.system", "world.base", "world.trade", "world.validations", "base.persons"],
+    // core.devices kvůli extension `cash_desk` na zařízení (#177 U16).
+    "dependencies": ["core.system", "core.devices", "world.base", "world.trade", "world.validations", "base.persons"],
 
     "tables": [
         "economy_codebooks_warehouses",
@@ -19,6 +20,12 @@
         "economy_codebooks_bank_accounts",
         "economy_codebooks_payment_terminals",
         "economy_codebooks_transports"
+    ],
+
+    // Pokladna na zařízení (#177 U16) — jádro na číselníku pokladen
+    // záviset nesmí, sloupec proto přidává tento modul.
+    "extensions": [
+        "core_devices_devices"
     ],
 
     "settingsItems": [

@@ -1,0 +1,28 @@
+{
+    // Extension from economy.codebooks: cash_desk
+    //
+    // Pokladna zařízení (#177 U16, U23). Žije tady, ne v core.devices:
+    // číselník pokladen patří tomuto modulu a jádro na něm záviset nesmí.
+    // Zdroj dat bez číselníků sloupec nemá — nic ho proto nesmí předpokládat,
+    // přítomnost se ověřuje přes TableDefinition (formulář zařízení prvek
+    // bez sloupce nevykreslí).
+    //
+    // Sloupec plní administrátor ve formuláři zařízení; kasa z něj později
+    // čte svou pokladnu. Nativní aplikace ho nepotřebuje a `GET /_devices/self`
+    // ho nevrací. Po `ds-reset` může ukazovat na neexistující pokladnu —
+    // zařízení reset přežívají, pokladny ne.
+
+    "table": "core_devices_devices",
+    "columns": [
+        {
+            "id": "cash_desk",
+            "name": "Cash desk",
+            "name:cs": "Pokladna",
+            "name:en": "Cash desk",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_cash_desks",
+            "group": "settings"
+        }
+    ]
+}

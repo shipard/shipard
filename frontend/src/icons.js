@@ -67,6 +67,7 @@ import {
   faDownload,
   faFilm,
   faPlug,
+  faTabletScreenButton,
   faPlay,
   faCloudArrowDown,
   faUpload,
@@ -268,6 +269,7 @@ export const iconAttachment = faPaperclip;
 export const iconDownload = faDownload;
 export const iconVideo = faFilm; // oddíl Videa vývojářského dashboardu (#103 F7b)
 export const iconPlug = faPlug; // most nativní aplikace — stránka Most vývojářského dashboardu (#177)
+export const iconDevice = faTabletScreenButton; // registrované zařízení nativní aplikace — Nastavení → Zařízení (#177)
 export const iconPlay = faPlay;
 export const iconCloudDownload = faCloudArrowDown;
 export const iconUpload = faUpload;
@@ -387,6 +389,7 @@ export const iconMap = {
   'testing': iconTesting,
   'video': iconVideo,
   'plug': iconPlug,
+  'device': iconDevice,
   'play': iconPlay,
   'doctor': iconDoctor,
   'upgrade': iconUpgrade,

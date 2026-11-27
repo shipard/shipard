@@ -8,6 +8,7 @@
   import DsSetup from '../settings/DsSetup.svelte';
   import DsAbout from '../settings/DsAbout.svelte';
   import ContentTagsSettings from '../settings/ContentTagsSettings.svelte';
+  import ThisDevicePanel from '../devices/ThisDevicePanel.svelte';
   import PortalContent from '../portal/PortalContent.svelte';
   import ReportsPage from '../reports/ReportsPage.svelte';
   import CompanyOverview from '../overview/CompanyOverview.svelte';
@@ -28,6 +29,7 @@
     dsSetup: DsSetup,
     dsAbout: DsAbout,
     contentTags: ContentTagsSettings,
+    thisDevice: ThisDevicePanel,
     hostingPortal: PortalContent,
     reports: ReportsPage,
     companyOverview: CompanyOverview,

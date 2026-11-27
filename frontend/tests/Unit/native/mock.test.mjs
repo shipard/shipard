@@ -206,6 +206,8 @@ test('device.sync: podepsané GET self a PUT peripherals, režim z odpovědi', a
     const headers = server.calls[index].headers;
     assert.equal(headers['X-Shipard-Device'], info.deviceId);
     assert.equal(headers['X-Shipard-Challenge'], `challenge-${(index + 1) / 2}`);
+    // Nepovinná hlavička verze aplikace (§7.1) — shodná s `info.app.version`.
+    assert.equal(headers['X-Shipard-App-Version'], info.app.version);
     const message = Buffer.from(`shipard-device-v1|${purpose}|${info.deviceId}|${headers['X-Shipard-Challenge']}`, 'utf8');
     assert.equal(verify('sha256', message, { key, dsaEncoding: 'der' }, Buffer.from(headers['X-Shipard-Signature'], 'base64')), true, purpose);
   }

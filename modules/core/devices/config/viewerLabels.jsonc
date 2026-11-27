@@ -1,0 +1,43 @@
+{
+    // core.devices.viewerLabels — texty vieweru Zařízení (Nastavení →
+    // Zařízení) a akce Zneplatnit. Čte je DevicesViewer::text() přes
+    // `TableViewer::labelText()` a RevokeDeviceAction přes `CatalogText`;
+    // holé `name` je anglická varianta a shoduje se s fallbackem v PHP znak
+    // po znaku. Popisky položek shodné se sloupci jdou z definice tabulky.
+
+    // --- řádek seznamu ---
+    "row.thisDevice":  { "name": "this device", "name:cs": "toto zařízení", "name:en": "this device" },
+    "row.lastContact": { "name": "last contact {date}", "name:cs": "poslední kontakt {date}", "name:en": "last contact {date}" },
+    "row.noContact":   { "name": "no contact yet", "name:cs": "zatím bez kontaktu", "name:en": "no contact yet" },
+
+    // --- detail ---
+    "tab.peripherals":     { "name": "Peripherals", "name:cs": "Periferie", "name:en": "Peripherals" },
+    "group.settings":      { "name": "Settings", "name:cs": "Nastavení", "name:en": "Settings" },
+    "group.registration":  { "name": "Registration", "name:cs": "Registrace", "name:en": "Registration" },
+    "value.noAutoLock":    { "name": "off", "name:cs": "vypnuto", "name:en": "off" },
+    "value.minutes":       { "name": "{count} min", "name:cs": "{count} min", "name:en": "{count} min" },
+    "value.commandLine":   { "name": "command line", "name:cs": "příkazová řádka", "name:en": "command line" },
+    "peripherals.empty":   { "name": "The device has not reported any peripherals yet.", "name:cs": "Zařízení zatím žádné periferie nenahlásilo.", "name:en": "The device has not reported any peripherals yet." },
+    "peripherals.absent":  { "name": "not connected", "name:cs": "nepřipojená", "name:en": "not connected" },
+    "peripherals.state":   { "name": "State", "name:cs": "Stav", "name:en": "State" },
+
+    // --- hodnoty hlášené zařízením (kontrakt §3.5); neznámá hodnota se ukáže, jak přišla ---
+    "kind.printer":   { "name": "Printer", "name:cs": "Tiskárna", "name:en": "Printer" },
+    "kind.scanner":   { "name": "Scanner", "name:cs": "Čtečka", "name:en": "Scanner" },
+    "status.ready":   { "name": "ready", "name:cs": "připravená", "name:en": "ready" },
+    "status.offline": { "name": "offline", "name:cs": "nedostupná", "name:en": "offline" },
+    "status.error":   { "name": "error", "name:cs": "chyba", "name:en": "error" },
+    "platform.macos":  { "name": "macOS", "name:cs": "macOS", "name:en": "macOS" },
+    "platform.ipados": { "name": "iPadOS", "name:cs": "iPadOS", "name:en": "iPadOS" },
+    "platform.mock":   { "name": "bridge simulation", "name:cs": "simulace mostu", "name:en": "bridge simulation" },
+
+    // --- akce Zneplatnit ---
+    "revoke.label":   { "name": "Revoke", "name:cs": "Zneplatnit", "name:en": "Revoke" },
+    "revoke.confirm": {
+        "name": "The device \"{name}\" will stop working with this data source and the revocation cannot be undone — the device has to be registered again as a new one. Continue?",
+        "name:cs": "Zařízení „{name}“ přestane s tímto zdrojem dat pracovat a zneplatnění nejde vrátit — zařízení se musí zaregistrovat znovu jako nové. Pokračovat?",
+        "name:en": "The device \"{name}\" will stop working with this data source and the revocation cannot be undone — the device has to be registered again as a new one. Continue?"
+    },
+    "revoke.done":    { "name": "The device has been revoked.", "name:cs": "Zařízení je zneplatněné.", "name:en": "The device has been revoked." },
+    "revoke.gone":    { "name": "The device is no longer active.", "name:cs": "Zařízení už aktivní není.", "name:en": "The device is no longer active." }
+}

@@ -2,7 +2,8 @@
   import Icon from '../ui/Icon.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
-  import { normalizeSpans } from './viewerSpans.js';
+  import { normalizeSpans, spansForDevice } from './viewerSpans.js';
+  import { nativeStore } from '../../stores/native.svelte.js';
 
   let { row, index, selected = false, onclick } = $props();
 
@@ -14,11 +15,13 @@
   );
 </script>
 
-<!-- Render spanů jednoho pole (t1/i1/t2/i2/t3). Span s `badge` se kreslí
+<!-- Render spanů jednoho pole (t1/i1/t2/i2/t3). Span se značkou
+     `nativeDevice` se ukáže jen na zařízení, jehož `deviceId` hlásí most
+     (štítek „toto zařízení“, #177). Span s `badge` se kreslí
      jako pilulka (SpanBadge, má přednost před `class`; klidný tón `success`
      jako tečka + text); sep=true vkládá mezi spany oddělovač ` · ` (jen t2). -->
 {#snippet spanList(value, sep = false)}
-  {#each normalizeSpans(value) ?? [] as span, i}
+  {#each spansForDevice(normalizeSpans(value), nativeStore.info?.deviceId) ?? [] as span, i}
     {#if sep && i > 0}<span class="shpd-viewer-row__sep"> · </span>{/if}
     {#if span.badge}
       <SpanBadge style={span.badge} text={span.text} />
