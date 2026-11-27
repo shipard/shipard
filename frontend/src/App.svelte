@@ -10,6 +10,7 @@
   import AppShell from './components/layout/AppShell.svelte';
   import StatusScreen from './components/ui/StatusScreen.svelte';
   import { appInfoStore } from './stores/appInfo.svelte.js';
+  import { nativeStore } from './stores/native.svelte.js';
 
   // Po úspěšném loginu načti per-user preference (vzhled, jazyk) ze serveru.
   function handleLoginSuccess() {
@@ -39,4 +40,13 @@
   <SetPasswordScreen />
 {:else}
   <LoginScreen onSuccess={handleLoginSuccess} />
+{/if}
+
+<!-- Simulace mostu nativní aplikace (#177 U11): zapnutá je vždy vidět —
+     pruh a panel nad čímkoli, i nad přihlášením. Panel se načítá až se
+     simulací (dynamický import), do hlavního chunku nepatří. -->
+{#if nativeStore.mock}
+  {#await import('./components/native/NativeMockPanel.svelte') then panel}
+    <panel.default />
+  {/await}
 {/if}

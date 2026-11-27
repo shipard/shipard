@@ -17,19 +17,43 @@ import { parseAuthAction } from './api/authActions.js'
 import { parseReportDeepLink } from './api/reports.js'
 import { exchangeOidc } from './api/auth.js'
 import { nativeStore } from './stores/native.svelte.js'
+import { NATIVE_MOCK_FLAG, isNativeAvailable } from './native/bridge.js'
+import { API_BASE_URL } from './api/config.js'
 
 // Inicializace mobilní detekce (matchMedia listener). Jednou na začátku.
 layoutStore.initLayout()
-
-// Most nativní aplikace (docs/native-bridge.md): `info` a capabilities do
-// storu. Start aplikace na něm nečeká.
-nativeStore.load()
 
 // Načtení názvu/ikony aplikace — endpoint je veřejný, jede už před loginem
 // (titulek tabu, favicon, název na login obrazovce).
 appInfoStore.load()
 
+// Simulace mostu nativní aplikace pro vývoj (#177 D29, U11): jen když na
+// stránce skutečný most není a příznak v localStorage je "1" (zapíná ho
+// stránka Most ve vývojářském dashboardu). Kód simulace je samostatný
+// chunk — bez příznaku se nestahuje. Selhání start aplikace nezastaví.
+async function installNativeMock() {
+  try {
+    if (isNativeAvailable() || localStorage.getItem(NATIVE_MOCK_FLAG) !== '1') return
+    const { install } = await import('./native/mock/install.js')
+    install({
+      // Adresa API zdroje dat = identita zařízení pro tento zdroj dat (D33).
+      apiBase: window.location.origin + API_BASE_URL,
+      storage: localStorage,
+      fetch: window.fetch.bind(window),
+      crypto: window.crypto,
+      target: window,
+    })
+  } catch {
+    // simulace je pomůcka pro vývoj
+  }
+}
+
 async function boot() {
+  // Most nativní aplikace (docs/native-bridge.md): simulace musí být na
+  // místě před prvním `info`; store se plní na pozadí, start na něm nečeká.
+  await installNativeMock()
+  nativeStore.load()
+
   // Snapshot query stringu — větve níž čistí URL přes replaceState, parsery
   // proto nesmí číst window.location.search až po nich.
   const search = window.location.search
