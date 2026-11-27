@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — IPv6 jen na vyžádání (#183 D8)
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-27 (2 commity; site s IPv6 a bez něj ověřený na dočasném nginx bez roota, `doctor` a `dev-https --check` naživo na dev serveru); zbývá člověk: `sudo shpd-server dev-https` na dev serveru, `ss -ltn` (443 jen na IPv4) a čistá sekce *Development HTTPS* v `doctor`
+**Stav:** hotovo — implementováno 2026-11-27 ve dvou commitech (upřesnění U29–U33 při implementaci); na dev serveru ověřeno 2026-11-27: po `sudo shpd-server dev-https` naslouchá 443 jen na IPv4, sekce *Development HTTPS* v `doctor` čistá
 
 > Task pro Claude Code (2 commity). Design: issue #183 D8. Navazuje na
 > `tasks/dev-https.md` (fáze 1). **Kroky s rootem** (`sudo shpd-server
@@ -121,8 +121,8 @@ Později v #183.
 - [x] nový certifikát pro IP bez `ipv6` nese jen IPv4
 - [x] `doctor` hlásí IPv6 listen při globální IPv6 adrese (i ručně v http
       site), při ULA a bez IPv6 listen mlčí
-- [ ] na dev serveru po `sudo shpd-server dev-https` naslouchá Shipard
-      na 443 jen na IPv4 (`ss -ltn`) a `doctor` je v sekci čistý (člověk)
+- [x] na dev serveru po `sudo shpd-server dev-https` naslouchá Shipard
+      na 443 jen na IPv4 (`ss -ltn`) a `doctor` je v sekci čistý (2026-11-27)
 - [x] dokumentace podle oddílu Dokumentace;
       `python3 scripts/tasks-index.py --check` projde
 - [x] žádné názvy reálných zdrojů dat, firem ani osob
