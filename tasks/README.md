@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 500 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 466.
+Celkem 501 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 467.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -511,6 +511,7 @@ Systém upozornění s akcemi. Reference [`docs/alerts.md`](../docs/alerts.md).
 | `alerts-01.md` | Modul `core.alerts` MVP (checks, reconciliation, snooze/dismiss) |
 | `alerts-02.md` | `detail.actions` ve Vieweru (alerts první konzument akcí) |
 | `alerts-03.md` | Check `docs.core.stale_in_repair` |
+| `alerts-group-per-section.md` | Skupinová karta feedu per check a sekce z nálezu — odznak každé sekce, které se nálezy checku týkají (#181) |
 
 ## Dashboard a Úkoly
 

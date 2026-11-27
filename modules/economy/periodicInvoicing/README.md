@@ -193,12 +193,10 @@ shpd-ds periodic-invoicing-run [--date=YYYY-MM-DD] [--source=<id>] [--record=<č
 Nález per záznam má klíč `zdroj:id`, předmět = záznam zdroje, akci, která
 otevře viewer zdroje, a v `context.navSection` sekci vieweru zdroje — check
 sám `navSection` nemá, badge sekce bere feed z nálezu
-([docs/alerts.md](../../../docs/alerts.md)). **Známé omezení se dvěma zdroji:**
-nad tři aktivní nálezy jednoho checku je ve feedu jedna skupinová karta
-a ta sekci nese, jen když se v ní shodnou všechny nálezy checku. Mají-li
-nálezy zároveň dva zdroje s různou sekcí, odznak se nerozsvítí u žádné
-z nich (ověřeno 2026-11-27 nad zakázkami a smlouvami; samotný jeden zdroj
-odznak dává). Náprava je v `core.alerts` (skupina per check a sekce).
+([docs/alerts.md](../../../docs/alerts.md)). Feed dělí nálezy checku podle
+této sekce: každý zdroj má své karty (nad tři nálezy jednu skupinovou
+s názvem sekce v podtitulku) a svůj odznak, i když mají nálezy téhož checku
+dva zdroje zároveň (#181, `tasks/alerts-group-per-section.md`).
 Lhůtu čekání na podklady
 (výchozí 10 dní) nastavuje stránka *Nastavení → Účetnictví → Periodická
 fakturace* (`economy.periodicInvoicing.contributorWaitDays`).

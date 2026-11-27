@@ -252,8 +252,3 @@ a Majetkem) a `settingsSections` `buildings` (Nastavení).
   (`detailExtensions`) a štítek obsazenosti ve stromu míst (`rowDecorators`).
 - Později (#174 D38): přehled rezervací, jistota, zálohy na služby
   a vyúčtování, měřiče, indexace nájmu, import smluv, demo data Budov.
-
-Známé omezení: odznak sekce Budovy se nerozsvítí, když má check
-upozornění fakturace víc než tři aktivní nálezy a ty patří zároveň
-zakázkám i smlouvám — skupinová karta feedu pak sekci nenese
-([README enginu](../../economy/periodicInvoicing/README.md) → Upozornění).

@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Core\Alerts\Feed;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Alerts\AlertCheckRegistry;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Feed\FeedCollector;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Module\Core\Alerts\Feed\AlertsSource;
@@ -20,9 +21,11 @@ use Shipard\Tests\Fixtures\Core\Feed\ShippedFeedTexts;
  *   - actions passthrough beze změny (open_form/open_viewer)
  *   - title/subtitle/timestamp/id tvar
  *   - prázdný vstup → []
- *   - agregaci per check (práh GROUP_THRESHOLD = 3): skupinová karta
- *     nahrazuje individuální, titulek z registru s fallbackem na check_id,
- *     kind dle MAX(severity), jediná primary open_viewer akce
+ *   - agregaci per check a sekci z nálezu (práh GROUP_THRESHOLD = 3 per
+ *     skupina): skupinová karta nahrazuje individuální, titulek z registru
+ *     s fallbackem na check_id, kind dle MAX(severity), jediná primary
+ *     open_viewer akce; check s nálezy ze dvou sekcí dá kartu a odznak
+ *     každé z nich
  *   - texty z katalogu core.alerts.feedTexts (#101 D11): české plurály
  *     setup karty, en katalog × en fallback bez katalogu dávají totéž
  */
@@ -49,6 +52,7 @@ final class AlertsSourceTest extends TestCase
         ?string $setupTitle = null,
         ?int &$fetchRowCalls = null,
         bool $withCatalog = true,
+        array $configItems = [],
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(
@@ -66,28 +70,42 @@ final class AlertsSourceTest extends TestCase
             },
         );
         $db->method('fetchSingle')->willReturn($setupTitle);
-        return new FeedContext($db, $withCatalog ? ShippedFeedTexts::config($lang) : null, $lang, 30);
+        return new FeedContext($db, $withCatalog ? ShippedFeedTexts::config($lang, $configItems) : null, $lang, 30);
     }
 
-    /** @return array<string,mixed> agregátní řádek fáze 1 */
+    /**
+     * Sekce navigace jako v compiled configu (`global.navSections`) — názvy
+     * sekcí do podtitulku skupinové karty.
+     *
+     * @return array<string, mixed>
+     */
+    private static function navSections(): array
+    {
+        return ['global.navSections' => ['sections' => [
+            ['id' => 'workOrders', 'name' => 'Work orders', 'name:cs' => 'Zakázky', 'name:en' => 'Work orders'],
+            ['id' => 'buildings', 'name' => 'Buildings', 'name:cs' => 'Budovy', 'name:en' => 'Buildings'],
+        ]]];
+    }
+
+    /**
+     * @param ?string $section sekce z nálezů skupiny (`context.navSection`), null = nálezy bez sekce
+     * @return array<string,mixed> agregátní řádek fáze 1 (skupina = check × sekce)
+     */
     private function groupRow(
         string $checkId,
         int $cnt,
         int $maxSeverity,
         ?string $lastAt = '2026-06-28 12:00:00',
         ?string $firstAt = '2026-06-01 08:00:00',
-        ?array $nav = null,
+        ?string $section = null,
     ): array {
         return [
             'check_id'     => $checkId,
+            'nav_section'  => $section,
             'cnt'          => $cnt,
             'max_severity' => $maxSeverity,
             'last_at'      => $lastAt,
             'first_at'     => $firstAt,
-            // Agregát `context.navSection` nálezů: [počet, min, max].
-            'nav_cnt'      => $nav[0] ?? 0,
-            'nav_min'      => $nav[1] ?? null,
-            'nav_max'      => $nav[2] ?? null,
         ];
     }
 
@@ -361,48 +379,222 @@ final class AlertsSourceTest extends TestCase
         $this->assertSame('workOrders', (new AlertsSource())->collectCards($this->singleAlertContext($row))[0]['navSection']);
     }
 
-    public function testGroupCardTakesContextSectionOnlyWhenAllAlertsAgree(): void
+    /** Registr s checkem `base.persons.missing_own_person` v sekci `accounting`. */
+    private function sectionRegistry(): AlertCheckRegistry
     {
-        $registry = new AlertCheckRegistry([ModuleDefinition::fromArray([
+        return new AlertCheckRegistry([ModuleDefinition::fromArray([
             'id'          => 'base.persons',
             'name'        => 'Persons',
             'alertChecks' => [[
                 'id'         => 'base.persons.missing_own_person',
-                'name'       => 'X',
+                'name'       => 'Dlužná období',
                 'class'      => 'X',
                 'interval'   => '1h',
                 'navSection' => 'accounting',
             ]],
         ])], 'cs');
-        $src = new AlertsSource($registry);
-        $section = fn(?array $nav): ?string => $src->collectCards($this->context(
-            [$this->groupRow('base.persons.missing_own_person', 4, 20, nav: $nav)],
-        ))[0]['navSection'];
+    }
 
-        $this->assertSame('workOrders', $section([4, 'workOrders', 'workOrders']), 'všechny nálezy v téže sekci');
-        $this->assertSame('accounting', $section([4, 'buildings', 'workOrders']), 'nálezy dvou sekcí → sekce checku');
-        $this->assertSame('accounting', $section([3, 'workOrders', 'workOrders']), 'jeden nález sekci nenese');
-        $this->assertSame('accounting', $section(null));
+    public function testGroupCardTakesTheSectionOfItsFindings(): void
+    {
+        $src = new AlertsSource($this->sectionRegistry());
+        $card = fn(?string $section): array => $src->collectCards($this->context(
+            [$this->groupRow('base.persons.missing_own_person', 4, 20, section: $section)],
+        ))[0];
+
+        $withSection = $card('workOrders');
+        $this->assertSame('workOrders', $withSection['navSection'], 'sekce z nálezu má přednost před sekcí checku');
+        $this->assertSame('alert-group:base.persons.missing_own_person:workOrders', $withSection['id']);
+
+        // Nálezy bez sekce: sekce checku a id jako před dělením podle sekcí.
+        foreach ([null, ''] as $none) {
+            $plain = $card($none);
+            $this->assertSame('accounting', $plain['navSection']);
+            $this->assertSame('alert-group:base.persons.missing_own_person', $plain['id']);
+        }
+
+        // Bez registru a bez sekce v nálezu karta do odznaku nepatří.
         $this->assertNull((new AlertsSource())->collectCards($this->context(
-            [$this->groupRow('base.persons.missing_own_person', 4, 20, nav: [4, 'buildings', 'workOrders'])],
+            [$this->groupRow('base.persons.missing_own_person', 4, 20)],
         ))[0]['navSection']);
     }
 
-    public function testQueriesReadTheFindingContext(): void
+    /** Check společný dvěma agendám, obě sekce nad prahem → karta a odznak každé z nich. */
+    public function testFindingsOfTwoSectionsAboveThresholdYieldGroupCardPerSection(): void
     {
-        $sqls = [];
+        $check = 'base.persons.missing_own_person';
+        $fetchCalls = 0;
+        $cards = (new AlertsSource($this->sectionRegistry()))->collectCards($this->context(
+            [
+                $this->groupRow($check, 10, 20, section: 'workOrders'),
+                $this->groupRow($check, 5, 30, section: 'buildings'),
+            ],
+            [$this->alertRow(20)], // fáze 2 se nesmí spustit
+            'cs',
+            $fetchCalls,
+            configItems: self::navSections(),
+        ));
+
+        $this->assertSame(1, $fetchCalls);
+        $this->assertSame(
+            ["alert-group:{$check}:workOrders", "alert-group:{$check}:buildings"],
+            array_column($cards, 'id'),
+        );
+        $this->assertSame(['workOrders', 'buildings'], array_column($cards, 'navSection'));
+        $this->assertSame(['Dlužná období', 'Dlužná období'], array_column($cards, 'title'));
+        $this->assertSame(['10 upozornění · Zakázky', '5 upozornění · Budovy'], array_column($cards, 'subtitle'));
+        $this->assertSame([10, 5], array_column(array_column($cards, 'context'), 'count'));
+        $this->assertSame(['review', 'urgent'], array_column($cards, 'kind'), 'závažnost per skupina');
+
+        $this->assertSame(
+            [
+                'workOrders' => ['count' => 1, 'severity' => 'warning'],
+                'buildings'  => ['count' => 1, 'severity' => 'danger'],
+            ],
+            (new FeedCollector())->sectionBadges($cards),
+        );
+    }
+
+    /**
+     * Stav z ověření doplňku Budovy: deset nálezů zakázek a jeden nález
+     * smlouvy téhož checku. Práh platí per sekce — zakázky mají skupinovou
+     * kartu, smlouva individuální se svým titulkem a akcemi.
+     */
+    public function testSectionBelowThresholdStaysIndividualNextToGroupedSection(): void
+    {
+        $check = 'base.persons.missing_own_person';
+        $action = ['id' => 'open', 'label' => 'Otevřít', 'kind' => 'open_viewer', 'target' => ['viewerId' => 'x']];
+        $cards = (new AlertsSource($this->sectionRegistry()))->collectCards($this->context(
+            [
+                $this->groupRow($check, 10, 20, section: 'workOrders'),
+                $this->groupRow($check, 1, 20, section: 'buildings'),
+            ],
+            // Fáze 2 vrací jen řádky skupin pod prahem (okno v SQL).
+            [$this->alertRow(20, 7, [$action], ['navSection' => 'buildings'])],
+            configItems: self::navSections(),
+        ));
+
+        $this->assertSame(["alert-group:{$check}:workOrders", 'alert:7'], array_column($cards, 'id'));
+        $this->assertSame('Chybí vlastní firma', $cards[1]['title']);
+        $this->assertSame([$action], $cards[1]['actions']);
+        $this->assertSame(
+            [
+                'workOrders' => ['count' => 1, 'severity' => 'warning'],
+                'buildings'  => ['count' => 1, 'severity' => 'warning'],
+            ],
+            (new FeedCollector())->sectionBadges($cards),
+        );
+    }
+
+    /** Nálezy se sekcí a bez sekce jsou dvě skupiny: bez sekce platí sekce checku. */
+    public function testFindingsWithoutSectionFormTheirOwnGroup(): void
+    {
+        $check = 'base.persons.missing_own_person';
+        $cards = (new AlertsSource($this->sectionRegistry()))->collectCards($this->context(
+            [
+                $this->groupRow($check, 4, 20, section: 'workOrders'),
+                $this->groupRow($check, 6, 20),
+            ],
+            configItems: self::navSections(),
+        ));
+
+        $this->assertSame(["alert-group:{$check}:workOrders", "alert-group:{$check}"], array_column($cards, 'id'));
+        $this->assertSame(['workOrders', 'accounting'], array_column($cards, 'navSection'));
+        $this->assertSame(['4 upozornění · Zakázky', '6 upozornění'], array_column($cards, 'subtitle'));
+        $this->assertSame(
+            [
+                'workOrders' => ['count' => 1, 'severity' => 'warning'],
+                'accounting' => ['count' => 1, 'severity' => 'warning'],
+            ],
+            (new FeedCollector())->sectionBadges($cards),
+        );
+    }
+
+    /** Šest nálezů checku po třech ve dvou sekcích: žádná skupina nad prahem. */
+    public function testThresholdAppliesPerSectionNotPerCheck(): void
+    {
+        $check = 'base.persons.missing_own_person';
+        $rows = [];
+        foreach (['workOrders', 'buildings'] as $i => $section) {
+            for ($n = 1; $n <= 3; $n++) {
+                $rows[] = $this->alertRow(20, $i * 3 + $n, context: ['navSection' => $section]);
+            }
+        }
+        $cards = (new AlertsSource())->collectCards($this->context(
+            [
+                $this->groupRow($check, 3, 20, section: 'workOrders'),
+                $this->groupRow($check, 3, 20, section: 'buildings'),
+            ],
+            $rows,
+        ));
+
+        $this->assertSame(
+            ['alert:1', 'alert:2', 'alert:3', 'alert:4', 'alert:5', 'alert:6'],
+            array_column($cards, 'id'),
+        );
+        $this->assertSame(
+            [
+                'workOrders' => ['count' => 3, 'severity' => 'warning'],
+                'buildings'  => ['count' => 3, 'severity' => 'warning'],
+            ],
+            (new FeedCollector())->sectionBadges($cards),
+        );
+    }
+
+    public function testGroupSubtitleNamesTheSectionOnlyWhenNavigationKnowsIt(): void
+    {
+        $src = new AlertsSource();
+        $subtitle = fn(?string $section, string $lang = 'cs', array $items = [], bool $catalog = true): string
+            => $src->collectCards($this->context(
+                [$this->groupRow('x.y.z', 4, 20, section: $section)],
+                [],
+                $lang,
+                withCatalog: $catalog,
+                configItems: $items,
+            ))[0]['subtitle'];
+
+        $this->assertSame('4 upozornění · Zakázky', $subtitle('workOrders', 'cs', self::navSections()));
+        $this->assertSame('4 alerts · Work orders', $subtitle('workOrders', 'en', self::navSections()));
+        // Sekce, kterou navigace nezná (sentinel `_top`, sekce vypnutého modulu), a config bez sekcí.
+        $this->assertSame('4 upozornění', $subtitle('_top', 'cs', self::navSections()));
+        $this->assertSame('4 upozornění', $subtitle('workOrders'));
+        $this->assertSame('4 alerts', $subtitle('workOrders', 'en', catalog: false));
+        // Skupina bez sekce z nálezu název nenese ani se sekcemi v configu.
+        $this->assertSame('4 upozornění', $subtitle(null, 'cs', self::navSections()));
+    }
+
+    public function testQueriesGroupByTheFindingSection(): void
+    {
+        $calls = [];
         $db = $this->createMock(DataSourceConnection::class);
-        $db->method('fetchAll')->willReturnCallback(function (mixed ...$args) use (&$sqls): array {
-            $sqls[] = (string) $args[0];
+        $db->method('fetchAll')->willReturnCallback(function (mixed ...$args) use (&$calls): array {
+            $calls[] = $args;
             return str_contains((string) $args[0], 'GROUP BY')
-                ? [$this->groupRow('base.persons.missing_own_person', 1, 20)]
+                ? [
+                    $this->groupRow('base.persons.missing_own_person', 10, 20, section: 'workOrders'),
+                    $this->groupRow('base.persons.missing_own_person', 1, 20, section: 'buildings'),
+                    $this->groupRow('docs.core.stale_in_repair', 5, 20),
+                ]
                 : [$this->alertRow(20)];
         });
         (new AlertsSource())->collectCards(new FeedContext($db, ShippedFeedTexts::config('cs'), 'cs', 30));
 
-        $this->assertStringContainsString("COUNT(JSON_VALUE(`context`, '$.navSection')) AS `nav_cnt`", $sqls[0]);
-        $this->assertStringContainsString("MIN(JSON_VALUE(`context`, '$.navSection')) AS `nav_min`", $sqls[0]);
-        $this->assertStringContainsString('`actions`, `context`,', $sqls[1]);
+        $section = "NULLIF(JSON_VALUE(`context`, '$.navSection'), '')";
+        $this->assertStringContainsString($section . ' AS `nav_section`', $calls[0][0]);
+        $this->assertStringContainsString('GROUP BY `check_id`, ' . $section, $calls[0][0]);
+
+        // Fáze 2: jen checky se skupinou pod prahem a jen řádky takových
+        // skupin — okno dělí stejným výrazem jako fáze 1.
+        $this->assertCount(2, $calls);
+        $this->assertStringContainsString('`actions`, `context`,', $calls[1][0]);
+        $this->assertStringContainsString(
+            'COUNT(*) OVER (PARTITION BY `check_id`, ' . $section . ') AS `group_cnt`',
+            $calls[1][0],
+        );
+        $this->assertStringContainsString('WHERE `group_cnt` <= %i', $calls[1][0]);
+        $this->assertSame(['base.persons.missing_own_person'], $calls[1][2]);
+        $this->assertSame(3, $calls[1][3]);
+        $this->assertSame(30, $calls[1][4]);
     }
 
     public function testNavSectionNullWithoutRegistryOrField(): void

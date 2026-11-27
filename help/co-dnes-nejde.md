@@ -301,10 +301,6 @@ vystavuje koncepty faktur ze svých řádků (viz
   ani v dokladech podle smlouvy nevyfiltruješ. Faktury smlouvy najdeš na
   její záložce **Fakturace**.
 - Změna šablony řádků na druhu se do existujících smluv nepropíše.
-- Když mají upozornění z fakturace víc než tři záznamy a týkají se
-  zároveň zakázek i smluv, odznak u sekcí **Zakázky** a **Budovy**
-  v menu se nerozsvítí — upozornění najdeš na Dashboardu
-  a v **Upozornění**.
 
 **U místa nevidíš jeho smlouvy.** Detail místa v **Nastavení aplikace →
 Místa** smlouvy neukazuje a strom míst neříká, které místo je obsazené.

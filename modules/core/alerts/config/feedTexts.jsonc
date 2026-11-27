@@ -18,6 +18,14 @@
         "text:cs": "{n} upozornění",
         "text:en": "{n} alerts"
     },
+    // Podtitulek skupinové karty se sekcí z nálezu (check společný víc
+    // agendám — dvě karty téhož checku rozliší název sekce navigace);
+    // {n} = počet alertů, {section} = název sekce.
+    "group.subtitleSection": {
+        "text": "{n} alerts · {section}",
+        "text:cs": "{n} upozornění · {section}",
+        "text:en": "{n} alerts · {section}"
+    },
     // Label jediné akce skupinové karty (otevře agendu Upozornění).
     "group.action": {
         "text": "Open alerts",

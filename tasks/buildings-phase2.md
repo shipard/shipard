@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 2: fakturace smluv (#174 D29–D38)
 
-**Stav:** hotovo — 2026-11-27 ve čtyřech commitech (#174 D29–D38); ověřeno unit a integračními testy, během z CLI a v headless prohlížeči na volném zdroji dat s demo sadou (šablona řádků, potvrzení, koncepty, záložka Fakturace, Přegenerovat, Obnovit, Vystavit dlužná období, zakázky vedle smluv); odznak sekce při nálezech ze dvou zdrojů zároveň chybí — omezení `core.alerts`, viz Poznámky k implementaci
+**Stav:** hotovo — 2026-11-27 ve čtyřech commitech (#174 D29–D38); ověřeno unit a integračními testy, během z CLI a v headless prohlížeči na volném zdroji dat s demo sadou (šablona řádků, potvrzení, koncepty, záložka Fakturace, Přegenerovat, Obnovit, Vystavit dlužná období, zakázky vedle smluv); odznak sekce při nálezech ze dvou zdrojů zároveň opravil `tasks/alerts-group-per-section.md` (#181)
 
 > Task pro Claude Code (4 commity). Design: issue #174. Navazuje na fázi 1
 > (`tasks/buildings-phase1.md`) a na engine periodické fakturace
@@ -278,9 +278,10 @@ všechny nálezy (#175, `AlertsSource::groupNavSection`) — odznak se proto
 nerozsvítil u Zakázek ani u Budov. Po dovystavení dlužných období zakázek
 (zůstal jen nález smlouvy) `GET /_ui/section-badges` vrátil
 `buildings {count: 1, severity: warning}` a odznak se ukázal. Náprava
-patří do `core.alerts` (skupinová karta per check a sekce) — samostatná
-změna jádra, ne úprava na míru doplňku; zapsáno v README enginu
-a v `help/co-dnes-nejde.md`.
+patřila do `core.alerts` — samostatná změna jádra, ne úprava na míru
+doplňku: **opraveno 2026-11-27** (#181, `tasks/alerts-group-per-section.md`,
+skupinová karta per check a sekce); zmínky o omezení z README enginu,
+README doplňku a `help/co-dnes-nejde.md` zmizely.
 
 Ověření: unit sada celá (13 672 testů); integrační
 `--filter Facility` nad volným zdrojem dat se zapnutým doplňkem

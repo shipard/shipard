@@ -121,10 +121,14 @@ kam se hodnota z definice nepropisuje.
 agendám (upozornění periodické fakturace: jeden check pro zakázky i další
 zdroje) sekci v deklaraci nemá — dá ji do kontextu nálezu:
 `context: ['navSection' => 'workOrders', …]`. `AlertsSource` ji u karty
-jednoho alertu upřednostní před sekcí checku. Skupinová karta (víc než
-3 alerty checku) ji převezme, jen když ji nesou **všechny** aktivní alerty
-checku a shodují se v ní; jinak platí sekce checku (bez ní karta do badge
-nepatří). Hodnota má stejný formát jako `navSection` checku.
+jednoho alertu upřednostní před sekcí checku. **Skupinové karty se tvoří
+per check a sekce z nálezu**: nálezy téhož checku se dělí podle
+`context.navSection` (nálezy bez ní tvoří vlastní skupinu se sekcí checku)
+a práh skupinové karty — víc než 3 alerty — platí pro každou skupinu
+zvlášť. Check s nálezy ze dvou sekcí tak dá kartu i odznak oběma, ať má
+nálezů kolik chce; sekce s pár nálezy má vedle skupinové karty jiné sekce
+dál individuální karty. Hodnota má stejný formát jako `navSection` checku.
+Viz [`docs/dashboard.md` §5.2](dashboard.md).
 
 ---
 
