@@ -1,6 +1,6 @@
 # Nativní aplikace — kontrakt mostu a zařízení
 
-**Status:** návrh — verze 1, neimplementováno (#177)
+**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), server a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
 **Verze:** 1 (2026-11-27) — viz [Historie změn](#11-historie-změn)
 **Implementace:** web `frontend/src/native/` (task 2); server `core.devices`,
 `core.prints` (tasky 3, 4, 6); aplikace `shipard-app:apple/` (task 5)
@@ -190,11 +190,11 @@ při startu a po `device.sync`.
 |---|---|
 | `apiVersion` | verze kontraktu (§2.4) |
 | `app.version`, `app.build` | verze a číslo sestavení aplikace — totéž, co okno O aplikaci |
-| `platform` | `macos` \| `ipados` |
+| `platform` | `macos` \| `ipados`; simulace pro vývoj hlásí `mock` (§9a) |
 | `osVersion` | verze operačního systému |
 | `dataSource` | adresa API zdroje dat aktuální stránky (§1, Zařízení a zdroje dat); `null` mimo zdroj dat |
 | `deviceId` | UUID zařízení pro tento zdroj dat; vzniká při první práci se zdrojem dat, po zneplatnění aplikace vytvoří nové; `null` mimo zdroj dat |
-| `keyStorage` | kde je klíč zařízení: `secureEnclave` \| `keychain` (Mac bez Secure Enclave, §7.1) |
+| `keyStorage` | kde je klíč zařízení: `secureEnclave` \| `keychain` (Mac bez Secure Enclave, §7.1); simulace pro vývoj hlásí `mock` (§9a) |
 | `mode` | v tomto zdroji dat: `unregistered` \| `personal` \| `shared` (§1) |
 | `profile` | aktivní profil (§8); `null` mimo režim `shared` |
 | `profile.id` | UUID profilu na tomto zařízení |
@@ -755,12 +755,84 @@ průběžně mění. WebView profilu zůstává v paměti pod nativním zámkem.
 | Cizí stránka v aplikaci | most jen pro povolené originy, jen v hlavním rámci, původ se kontroluje u každého volání |
 | Doplňky prohlížeče čtoucí session | do aplikace nejdou instalovat |
 
+## 9a. Simulace pro vývoj
+
+Webová aplikace má simulaci mostu v prohlížeči (#177 D29, upřesnění
+U11–U13; kód `frontend/src/native/mock/`, popis v
+[frontend.md](frontend.md) → Nativní most). Slouží vývoji a testům webové
+strany a serveru bez aplikace a bez tiskárny; **do produkce nepatří**
+a skutečný most má vždy přednost.
+
+**Zapnutí.** Příznak `shpd_native_mock = "1"` v `localStorage`, který
+nastavuje stránka Most ve vývojářském dashboardu (`/_dev/bridge` existuje
+jen ve vývoji a sdílí origin s aplikací). Kód simulace je samostatný chunk
+načtený jen při zapnutém příznaku a jen když `window.shipardNative`
+neexistuje. Zapnutá simulace je v aplikaci vždy vidět (pruh a panel).
+Režim serveru `/_app/info` nevystavuje, simulace se podle něj neřídí.
+
+**Hodnoty jen pro vývoj.** Simulace hlásí `platform: "mock"`
+a `keyStorage: "mock"` a nese značku `window.shipardNative.__mock === true`.
+Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
+
+| Metoda / událost | Simulace |
+|---|---|
+| `info` | podle kontraktu; `dataSource` = `location.origin` + adresa API stránky, `profile` vždy `null` |
+| `device.register` | **skutečný** klíč ECDSA P-256 z WebCrypto a podpis podle §7.1 — server ho ověří stejně jako u aplikace |
+| `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`); režim z odpovědi si uloží. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
+| `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`, 48 znaků) a čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) |
+| `print.submit` | kontrola parametrů a limitů jako aplikace (`INVALID_PARAMS`, `PAYLOAD_TOO_LARGE`, `PERIPHERAL_NOT_FOUND`, `UNSUPPORTED_FORMAT`, `DUPLICATE_JOB` s pamětí 100 `jobId`, `PERIPHERAL_UNAVAILABLE`); místo tisku náhled účtenky |
+| `shipard:scan`, `shipard:peripheral` | z ovládacího panelu simulace |
+| `device.enroll`, `session.lock`, `session.take`, `auth.external` | `NOT_SUPPORTED` — doplní tasky 6 a 7 |
+
+- **Identita je pro každý zdroj dat zvlášť** (§1): `deviceId` a klíč jako
+  JWK v `localStorage` pod klíčem `shpd_native_mock_device:<adresa API>`.
+  Ve vývoji sdílejí všechny zdroje dat jeden origin — bez adresy v klíči by
+  si je simulace pletla. Klíč v `localStorage` je čitelný pro JS; proto jen
+  vývoj.
+- **Zabezpečený kontext.** WebCrypto (`crypto.subtle`) prohlížeč nabízí jen
+  na `https`, `localhost` a `127.0.0.1`. Na vývojovém serveru přes
+  `http://<privátní adresa>` simulace klíč nemá: `info` vrací `deviceId`,
+  ale capability `device` chybí a `device.register` i `device.sync` končí
+  `NOT_SUPPORTED`. Registraci proti serveru zkoušej přes `127.0.0.1`
+  nebo `https`.
+- Registrované zařízení po přepnutí stavu periferie v panelu samo
+  synchronizuje (aplikace sync spouští při změně periferií, §3.3).
+
+### Náhled ESC/POS
+
+Simulace a stránka Most ukazují místo tisku **náhled** — z bajtů úlohy
+čitelnou účtenku. Náhled je čistá funkce ve frontendu nad pevnou
+podmnožinou příkazů; `EscPosRenderer` na serveru (task 4) musí zůstat
+v ní, nebo náhled rozšířit i s testem.
+
+| Příkaz | Bajty | Náhled |
+|---|---|---|
+| inicializace | `ESC @` | reset stylu a kódové stránky |
+| odřádkování | `LF` | nový řádek |
+| posun o n řádků | `ESC d n` | n prázdných řádků |
+| zarovnání | `ESC a n` | `left` / `center` / `right` |
+| tučně | `ESC E n` | `bold` |
+| velikost | `GS ! n` | `size` `{w, h}` |
+| kódová stránka | `ESC t n` | přepne dekódování |
+| ořez | `GS V …` | značka `cut` |
+| QR | `GS ( k …` (uložení dat funkce 80, tisk funkce 81) | značka `qr` s obsahem |
+| šuplík | `ESC p …` | značka `drawer` |
+
+Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
+
+Čísla kódových stránek pro `ESC t n` (číslování Epson):
+
+| `codePage` profilu | `n` |
+|---|---|
+| `cp852` | 18 |
+| `windows-1250` | 45 |
+
 ## 10. Stav implementace
 
 | Část | Task | Stav |
 |---|---|---|
 | Kontrakt (tento dokument) | 1 — `tasks/native-bridge-contract.md` | hotovo |
-| Most ve frontendu, simulace mostu, testovací stránka v `/_dev/` | 2 — `tasks/native-frontend-bridge.md` | neimplementováno |
+| Most ve frontendu, simulace mostu, testovací stránka v `/_dev/` | 2 — `tasks/native-frontend-bridge.md` | hotovo |
 | `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | neimplementováno |
 | Tiskové úlohy, ESC/POS, katalog profilů tiskáren | 4 | neimplementováno |
 | Aplikace pro macOS a iPadOS (`shipard-app:apple/`) | 5 | neimplementováno |
@@ -774,6 +846,7 @@ průběžně mění. WebView profilu zůstává v paměti pod nativním zámkem.
 |---|---|---|
 | 1 | 2026-11-27 | První verze: #177 D21–D32, upřesnění U1–U10, U16, U20. |
 | 1 | 2026-11-27 | Identita a registrace zařízení pro každý zdroj dat zvlášť, `info.dataSource` (#177 D33); `DEVICE_UNKNOWN` se na mostu hlásí jako `NOT_REGISTERED`. Před implementací klienta, verze beze změny. |
+| 1 | 2026-11-27 | Oddíl Simulace pro vývoj (§9a, #177 U11–U13): hodnoty `mock` u `platform` a `keyStorage`, podmnožina ESC/POS pro náhled a čísla kódových stránek pro `ESC t` (18, 45). Webová strana mostu hotová (task 2). Verze beze změny. |
 
 ---
 

@@ -1,6 +1,6 @@
 # Nativní aplikace — task 2: most ve frontendu, simulace, stránka Most, pole bez oprav (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D6, D10, D21, D22, D29, D32, D33, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1
+**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (#177 D6, D10, D21, D22, D29, D32, D33, U11–U15); zbývá ruční ověření polí bez oprav v Safari na Macu nebo iPadu; odchylky od zadání jsou na konci
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (`tasks/native-bridge-contract.md`) — implementovat až po něm,
@@ -271,16 +271,60 @@ příkaz). Jen tokeny design systému.
 
 ## Hotovo když
 
-- [ ] `npm test`, `npm run check:i18n` a `npm run build` projdou; pre-commit
+- [x] `npm test`, `npm run check:i18n` a `npm run build` projdou; pre-commit
       kontroly CSS (tokeny, jednotky, kontrast) bez výjimek navíc
-- [ ] `vendor/bin/phpunit --filter DevDashboardControllerTest` projde
-- [ ] produkční bundle aplikace neobsahuje simulaci v hlavním chunku
-      (dynamický import; ověřit ve výstupu buildu)
-- [ ] na dev serveru: přepínač na `/_dev/bridge` zapne simulaci → aplikace
+- [x] `vendor/bin/phpunit --filter DevDashboardControllerTest` projde
+- [x] produkční bundle aplikace neobsahuje simulaci v hlavním chunku
+      (dynamický import; ověřeno ve výstupu buildu — `install-*.js`
+      a `NativeMockPanel-*.js`, v hlavním chunku jen texty `native.mock.*`)
+- [x] na dev serveru: přepínač na `/_dev/bridge` zapne simulaci → aplikace
       ukáže pruh a panel; Zkušební účtenka se objeví v náhledu s
       diakritikou, QR a ořezem; čtečka v panelu ukáže počet odběratelů;
-      Vypnout simulaci ji vypne
-- [ ] `/_dev/bridge` bez mostu i bez simulace nespadne a vysvětlí, co dělat
+      Vypnout simulaci ji vypne (ověřeno v headless Chromiu)
+- [x] `/_dev/bridge` bez mostu i bez simulace nespadne a vysvětlí, co dělat
 - [ ] v Safari na Macu (nebo iPadu) se v poli formuláře, přihlášení
       a hledání nic neopravuje ani nezvětšuje; v `TextArea` opravy fungují
-- [ ] `docs/frontend.md` a `docs/native-bridge.md` aktualizované
+      — **ruční ověření, z vývojového stroje nejde**
+- [x] `docs/frontend.md` a `docs/native-bridge.md` aktualizované
+
+## Odchylky od zadání
+
+Odsouhlasené při plánování 2026-11-27, nebo vynucené prostředím:
+
+- **Čísla kódových stránek pro `ESC t n`** kontrakt neuváděl — náhled
+  používá číslování Epson (18 = CP852, 45 = Windows-1250) a kontrakt je
+  nese v §9a; `EscPosRenderer` v tasku 4 se jich musí držet.
+- **Styl řádku náhledu**: `lines[]` nese jeden styl na řádek — ten, který
+  platil u prvního znaku; změna tučného uprostřed řádku se neukáže.
+  Přesně plný řádek se láme až dalším znakem (čára na šířku + `LF` je
+  jeden řádek).
+- **Prostředí simulace jde parametrem** (`install({apiBase, storage, fetch,
+  crypto, target})`) místo čtení globálů — testy běží v Node a podpis
+  zařízení půjde stejnou funkcí použít ve fixture tasku 3.
+- **Zabezpečený kontext**: WebCrypto prohlížeč nabízí jen na `https`,
+  `localhost` a `127.0.0.1`. Na `http://<privátní adresa>` simulace
+  capability `device` nenabízí (`device.register` a `device.sync` →
+  `NOT_SUPPORTED`) a panel to říká; UUID proto vzniká z `getRandomValues`,
+  ne z `crypto.randomUUID()`.
+- **Panel simulace** se načítá dynamickým importem stejně jako simulace
+  (jinak by s `ReceiptPreview` a dekodérem skončil v hlavním chunku);
+  navíc umí zapínat a vypínat capabilities. Pruh je vpravo dole nad
+  dialogy, ne přes celou šířku — shell má výšku okna a pruh nahoře by ho
+  posunul.
+- **Automatický sync po přepnutí periferie** dělá simulace jen
+  u registrovaného zařízení; neregistrované podepsaná volání nemá.
+- **Část E i ve vývojářském dashboardu**: test prochází celé `src` včetně
+  `src/dev` (stránka Most se otevírá ve WebView). Dvě výjimky
+  s komentářem: otázka asistentovi na dashboardu (`ChatLauncher` — věta,
+  ne údaj) a `OptionRow` (typ je vždy radio nebo checkbox).
+- **Kontroly kontraktu** na stránce Most volají most napřímo, ne přes
+  `nativeCall` — obálka by chybějící zprávu nebo kód dorovnala. Kontrola
+  bez potřebné capability je „přeskočeno“. Čisté funkce
+  `frontend/src/dev/bridge/checks.js` s testem `tests/Unit/dev/bridge.test.mjs`.
+- Navíc proti zadání: `native/bytes.js` (base64, UUID) s testem,
+  `validatePeripheralList`, `isNativeMock()`, konstanta `NATIVE_MOCK_FLAG`
+  v `bridge.js` (příznak čte `main.js` i dashboard, aniž by tahaly kód
+  simulace).
+- Zadání odkazuje na `CLAUDE.md → JavaScript: v kódu jen ASCII uvozovky`;
+  taková sekce v `CLAUDE.md` není — kód drží ASCII uvozovky jako
+  oddělovače řetězců, typografické jsou jen v textech slovníků.

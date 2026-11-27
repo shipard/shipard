@@ -25,7 +25,11 @@ Shipard frontend je single-page aplikace (SPA) postavená na **Svelte 5**, kter�
 
 ### Cílové prohlížeče
 
-Chrome, Firefox, Edge — poslední 2 roky. Žádná podpora IE nebo starších verzí.
+Chrome, Firefox, Edge a Safari (macOS i iPadOS) — poslední 2 roky. K tomu
+WKWebView v nativní aplikaci Shipardu (macOS 14, iPadOS 17; #177 D10, D14) —
+aplikace z App Store může být starší než web, proto se obrazovky řídí
+capabilities mostu, ne verzí aplikace (viz [13.5 Nativní most](#135-nativní-most)).
+Žádná podpora IE nebo starších verzí.
 
 ### Jazyk
 
@@ -53,7 +57,15 @@ frontend/
 │   │   ├── client.js                   # HTTP klient (fetch wrapper s auth, refresh, retry)
 │   │   └── auth.js                     # Login, refresh, logout (raw fetch)
 │   ├── icons.js                        # Centrální registr ikon (importy, mapování, resolveIcon)
+│   ├── native/                         # Most nativní aplikace (kap. 13.5) — čisté JS bez t() a api/client.js
+│   │   ├── bridge.js                   # Obálka window.shipardNative: nativeCall, nativeInfo, onNativeEvent
+│   │   ├── scanRouter.js               # Odběr čteček — zásobník odběratelů události shipard:scan
+│   │   ├── contract.js                 # Seznamy kontraktu a validátory (validateInfo, validatePeripheral, validateError)
+│   │   ├── bytes.js                    # base64 a UUID bez crypto.randomUUID
+│   │   ├── escpos/                     # Náhled ESC/POS (decode.js), kódové stránky, zkušební účtenka
+│   │   └── mock/                       # Simulace mostu pro vývoj — samostatný chunk (install.js, state.js, deviceKey.js)
 │   ├── stores/
+│   │   ├── native.svelte.js            # Most nativní aplikace: available, info, capabilities
 │   │   ├── auth.svelte.js              # Auth stav (token, user, isAuthenticated)
 │   │   ├── navigation.svelte.js        # Aktivní položka navigace
 │   │   └── theme.svelte.js             # Light/dark/auto theme s persistencí
@@ -98,6 +110,9 @@ frontend/
 │   │   │   ├── ViewerRow.svelte        # Jeden řádek seznamu (t1/t2/t3, stateStyle)
 │   │   │   ├── ViewerDetail.svelte     # Detail panel: hlavička + taby s content bloky
 │   │   │   └── ViewerToolbar.svelte    # Toolbar akcí (Přidat, Otevřít, …)
+│   │   ├── native/
+│   │   │   ├── ReceiptPreview.svelte   # Proužek účtenky z decodeEscPos (sdílí ho i vývojářský dashboard)
+│   │   │   └── NativeMockPanel.svelte  # Pruh a panel simulace mostu (jen se simulací, dynamický import)
 │   │   └── form/
 │   │       ├── FormField.svelte        # Dynamický field renderer (typ → komponenta)
 │   │       ├── FormRenderer.svelte     # Generický formulář z metadat
@@ -304,6 +319,32 @@ popisky `jobs.videoStep.*` / `jobs.videoStatus.*`; test
 `reduceProgress` beze změny (události `step` s názvy kroků `build` /
 `reseed` / `check` / `record` / `compose`); `JobDetailPage` má pro typ
 `video` blok průběhu, výsledek a vlastní větu zrušení. Klíče `videos.*`.
+
+**Most (#177 D29, `tasks/native-frontend-bridge.md`).** Stránka `bridge`
+(`routes.js` `['bridge', 'bridge']`, `SPA_PAGES` += `bridge`, položka lišty
+vždy, ikona `iconPlug`): `pages/bridge/BridgePage.svelte` ověří most nativní
+aplikace `window.shipardNative` kterékoli platformy proti kontraktu
+`docs/native-bridge.md`. Otevírá se v nativní aplikaci — vývojová sestavení
+dovolí přidat origin dev serveru; bez mostu stránka nespadne, vysvětlí to
+a nabídne **přepínač simulace** (`localStorage` `shpd_native_mock`), kterým
+se simulace zapne v aplikaci na tomto serveru — v dashboardu samotném se
+nespouští. S mostem: **Info** (JSON, capabilities jako štítky, nálezy
+`validateInfo`; dashboard je stránka mimo zdroj dat, čeká `dataSource:
+null`, D33), **Kontroly kontraktu** (tlačítko Spustit, nic netisknou —
+čisté funkce `bridge/checks.js` `runContractChecks(call)`: tvar `info`,
+`UNKNOWN_METHOD`, `print.submit` bez parametrů → `INVALID_PARAMS`,
+`peripherals.list`, každá chyba podle `validateError`; volají most
+**napřímo**, ne přes `nativeCall`, aby viděly chybu tak, jak ji aplikace
+zamítla; kontrola bez potřebné capability je „přeskočeno“), **Periferie**
+(tabulka z `peripherals.list`, u tiskárny Zkušební tisk s volbou kódové
+stránky a šířky — výchozí CP852 / 48 — náhled odeslaných bajtů přes
+`ReceiptPreview` a **Ověřit dvojí tisk**: stejné `jobId` znovu, čeká
+`DUPLICATE_JOB`) a **Události** (živý výpis posledních 50 `shipard:scan`
+a `shipard:peripheral`). Z aplikace bere jen `native/bridge.js`,
+`native/contract.js`, `native/bytes.js`, `native/escpos/*`
+a `components/native/ReceiptPreview.svelte` — nic z toho netahá `t()` ani
+`api/client.js`; popisky značek účtenky dává ze svého slovníku (`bridge.*`).
+Test `tests/Unit/dev/bridge.test.mjs` pouští kontroly proti simulaci.
 
 **Čeština a angličtina (#129 D12, `tasks/dev-dashboard-i18n.md`).** Dashboard
 má vlastní slovníky `src/dev/i18n/cs.js` / `en.js` (ploché objekty, tečkové
@@ -2274,6 +2315,136 @@ změna kódu.
 - push notifikace + service worker,
 - hosting PWA — PWA je vázaná na origin, DS appky na jiných doménách do
   hosting PWA zabalit nejde (otevřený bod v #52).
+
+---
+
+## 13.5 Nativní most
+
+Webová aplikace mluví s nativní aplikací Shipardu (macOS, iPadOS, repo
+`shipard-app`) přes `window.shipardNative`. Kontrakt — metody, události,
+capabilities, chybové kódy — je v [`native-bridge.md`](native-bridge.md);
+tady je webová strana (`tasks/native-frontend-bridge.md`, #177 D6, D10,
+D21, D29). Vše v `frontend/src/native/` je čisté JS bez `t()` aplikace
+a bez `api/client.js` — používá to i vývojářský dashboard (stránka Most)
+a testy běží v Node (`tests/Unit/native/`).
+
+### Obálka (`native/bridge.js`)
+
+| Funkce | Co dělá |
+|---|---|
+| `isNativeAvailable()` | je na stránce most — `typeof window.shipardNative?.call === 'function'`; most se zjišťuje přítomností objektu, ne podle prohlížeče |
+| `isNativeMock()` | most je simulace (`__mock`) |
+| `nativeCall(method, params)` | volání metody; odmítnutí je **vždy** `NativeBridgeError` (`code`, `message`, `details`) |
+| `nativeInfo({refresh})` | `info` s pamětí — souběžná volání sdílejí jeden dotaz, `refresh: true` po `device.sync` |
+| `hasCapability(name)` | nad posledním `info`; před prvním `nativeInfo()` `false` |
+| `onNativeEvent(name, handler)` | posluchač `shipard:<name>` na `window`, handler dostane `event.detail`; vrací odhlášení |
+
+Dva kódy chyb patří jen frontendu, ne kontraktu: `NOT_AVAILABLE` (most na
+stránce není) a `INVALID_RESPONSE` (odmítnutí bez kódu nebo výsledek, který
+není objekt). Obrazovka se řídí **capabilities**, ne platformou ani verzí
+aplikace.
+
+**Store** `stores/native.svelte.js` — `available`, `mock`, `info`,
+`capabilities`, `has(capability)`, `load({refresh})`. `main.js` ho načte
+při startu **bez čekání**; start aplikace na mostu nestojí.
+
+### Odběr čteček (`native/scanRouter.js`)
+
+Která obrazovka dostane událost čtečky, rozhoduje webová aplikace (#177 D6).
+Odběratelé tvoří **zásobník** (U15): `onScan(handler)` přihlásí odběratele
+navrch a vrátí odhlášení; událost dostane poslední přihlášený (obrazovka
+navrchu), po jeho odhlášení zase předchozí, bez odběratele se zahodí.
+Jeden posluchač `shipard:scan` pro celou aplikaci; `subscriberCount()`
+a `onSubscriberCountChange()` pro panel simulace a testy. Obrazovka se
+přihlásí při otevření a odhlásí při zavření (`$effect` s úklidem).
+
+### Validátory kontraktu (`native/contract.js`)
+
+Seznamy `CAPABILITIES`, `ERROR_CODES`, `PLATFORMS`, `MODES` (a výčty
+periferií, limity `print.submit`) a čisté funkce `validateInfo`,
+`validatePeripheral`, `validatePeripheralList`, `validateError` → seznam
+nálezů `{path, message}`. Používá je simulace (sama sebe kontroluje
+v testech) a stránka Most. Neznámá capability a neznámý `transport` nález
+nejsou (kontrakt §2.4), ostatní výčty se hlásí.
+
+### Náhled ESC/POS (`native/escpos/`)
+
+`decodeEscPos(bytes, {codePage, columns})` → `{lines: [{text, align, bold,
+size}], marks: [{at, kind, data}]}` — čistá funkce nad pevnou podmnožinou
+příkazů (kontrakt §9a): inicializace, odřádkování, posun, zarovnání, tučně,
+velikost, kódová stránka, ořez, QR, šuplík. Neznámý příkaz je značka
+`unknown` s hex bajty, náhled nespadne. Kódové stránky `codePages.js`:
+CP852 vlastní tabulkou (prohlížeče ji neumí), Windows-1250 přes
+`TextDecoder`; čísla pro `ESC t` 18 a 45. Meze: řádek nese styl svého
+prvního znaku, přesně plný řádek se láme až dalším znakem.
+`buildTestReceipt({codePage, columns, at})` složí zkušební účtenku
+(diakritika, čára na šířku, datum a čas, QR, ořez).
+`components/native/ReceiptPreview.svelte` kreslí výsledek jako proužek
+účtenky jen z tokenů; texty značek dostává v `labels`, sám nic neimportuje.
+**`EscPosRenderer` na serveru (task 4) musí zůstat v téhle podmnožině,
+nebo náhled rozšířit i s testem** `escposPreview.test.mjs`.
+
+### Simulace mostu (`native/mock/`)
+
+Aby šla webová strana vyvíjet bez aplikace i bez tiskárny (#177 D29,
+U11–U12; co simulace umí a co ne, je v kontraktu §9a):
+
+- **Zapnutí:** příznak `shpd_native_mock = "1"` v `localStorage` — nastavuje
+  ho přepínač na stránce Most ve vývojářském dashboardu (`/_dev/bridge`;
+  ve vývoji sdílí origin s aplikací). Vypíná se tamtéž nebo tlačítkem
+  **Vypnout simulaci** v panelu.
+- **Spuštění:** `main.js` před `mount` — když most chybí a příznak je `"1"`,
+  `await import('./native/mock/install.js')` a `install({apiBase, storage,
+  fetch, crypto, target})`. Skutečný most má vždy přednost. Kód simulace
+  i panel jsou **samostatné chunky** (`install-*.js`, `NativeMockPanel-*.js`)
+  — bez příznaku se nestahují; v hlavním chunku jsou jen texty
+  `native.mock.*`.
+- **Prostředí jde parametrem** (adresa API, úložiště, `fetch`, `crypto`,
+  cíl událostí): simulace i podpis zařízení běží v Node bez prohlížeče.
+- **Identita zařízení** (`deviceKey.js`) je pro každý zdroj dat zvlášť
+  (D33): klíč `shpd_native_mock_device:<adresa API>` drží `deviceId` a pár
+  ECDSA P-256 jako JWK — jen pro vývoj. Podpis WebCrypto (r‖s) se převádí
+  na DER, veřejný klíč je SPKI. **WebCrypto je jen v zabezpečeném kontextu**
+  (https, `localhost`, `127.0.0.1`): na `http://<privátní adresa>` simulace
+  capability `device` nenabízí a panel to říká; tisk, periferie a čtečka
+  fungují dál.
+- **Stav** (`state.js`, klíč `shpd_native_mock_state`): režim pro každý
+  zdroj dat, capabilities, stav periferií. Náhledy tisku (posledních 20)
+  a paměť posledních 100 `jobId` jsou jen v paměti stránky.
+- **Panel** `components/native/NativeMockPanel.svelte` kreslí `App`, jen
+  když je most `__mock` — trvalý pruh „Simulace nativní aplikace“ vpravo
+  dole (i na přihlášení) a sbalitelný panel: zdroj dat, režim, capabilities,
+  stav periferií (přepnutí vyšle `shipard:peripheral`), čtečka (pole + druh
+  + Enter vyšle `shipard:scan`; vedle počet odběratelů), **Zkušební
+  účtenka** přes `print.submit`, náhledy tisku se stažením bajtů. Leží nad
+  dialogy (`z-index` 1100), aby šla čtečka poslat i do otevřeného dialogu;
+  není vrstva zásobníku, Esc ho nezavírá. Texty `native.mock.*`.
+
+### Pole bez automatických oprav
+
+WebKit na Macu i iPadu (Safari i WKWebView) přepisuje v textových polích
+kódy, čísla dokladů a jména a zvětšuje první písmeno. Proto (#177 D10,
+U14): **každý textový `<input>` nese `autocorrect="off"`,
+`autocapitalize="off"` a `spellcheck="false"`** — sdílené `Input`,
+`LookupInput`, `ComboInput`, `NumberInput`, `DateInput` i raw pole
+(přihlášení, paleta příkazů, hledání a filtry vieweru), v aplikaci
+i ve vývojářském dashboardu. Víceřádkový `TextArea` (volný text) opravy
+ponechává. Podle druhu sloupce (kód × jméno) se nerozlišuje — jednořádkové
+pole v účetní aplikaci nese skoro vždy údaj, ne větu.
+
+Hlídá to `tests/Unit/inputAutocorrectUsage.test.mjs` nad všemi `.svelte`
+soubory: každý `<input>`, který není `type` checkbox / radio / file / color
+/ range / hidden / password (dynamický `type={…}` se bere jako textový), má
+všechny tři atributy. Výjimka jen komentářem těsně před značkou:
+
+```svelte
+<!-- autocorrect-ok: otázka asistentovi je věta, ne údaj -->
+<input type="text" … />
+```
+
+Dnes dvě: pole otázky asistentovi na dashboardu (`ChatLauncher`) a
+`OptionRow` (typ je vždy radio nebo checkbox). Výjimku u pole, které ji
+nepotřebuje, test odmítne.
 
 ---
 
