@@ -394,6 +394,11 @@ class DatasetE2eCommand extends Command implements SignalableCommandInterface
                     if ($pinned->chromiumRule() !== null) {
                         $e2eEnv['SHPD_E2E_HOST_RESOLVER_RULES'] = $pinned->chromiumRule();
                     }
+                    // https vstup vývojového serveru má self-signed certifikát (#183 U13):
+                    // cíl je ověřený a připíchnutý na tento server, výjimka session jinam neodnese.
+                    if ($pinned->isHttps()) {
+                        $e2eEnv['SHPD_E2E_IGNORE_HTTPS_ERRORS'] = '1';
+                    }
                     $env = PlaywrightRunner::environment($e2eEnv, $preflight->home());
 
                     $human->writeln('<info>Proklikání (Playwright Test)…</info>');

@@ -97,6 +97,10 @@ export function parseFixedTime(raw) {
  *   `null` = skutečný čas.
  * @property {string|null} hostResolverRules Mapování hostitele pro Chromium
  *   (`VIDEO_HOST_RESOLVER_RULES`, syntaxe `--host-resolver-rules`); `null` = žádné.
+ * @property {boolean} ignoreHttpsErrors Ignorovat chyby certifikátu
+ *   (`VIDEO_IGNORE_HTTPS_ERRORS=1`): https vstup vývojového serveru má
+ *   self-signed certifikát; nastavuje `shpd-ds video-run` pro ověřenou
+ *   a připíchnutou adresu tohoto serveru.
  */
 
 /**
@@ -118,6 +122,7 @@ export function loadConfig(need = {}) {
     headful: optional('VIDEO_HEADFUL', '0') === '1',
     fixedTime: parseFixedTime(process.env.VIDEO_FIXED_TIME),
     hostResolverRules: optional('VIDEO_HOST_RESOLVER_RULES', null),
+    ignoreHttpsErrors: optional('VIDEO_IGNORE_HTTPS_ERRORS', '0') === '1',
   };
 
   if (need.baseUrl) {

@@ -71,6 +71,9 @@ export async function createSession(config, scenario, options = {}) {
     // i zóna jdou ze scénáře (D121).
     locale: scenario.locale,
     timezoneId: scenario.timezone,
+    // Self-signed certifikát https vstupu vývojového serveru — jen když to
+    // `video-run` pro ověřenou adresu výslovně řekl.
+    ignoreHTTPSErrors: config.ignoreHttpsErrors,
   });
 
   // Pevný čas dne (D120): `Date` v prohlížeči stojí na zadaném okamžiku,

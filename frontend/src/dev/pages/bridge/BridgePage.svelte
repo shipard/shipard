@@ -14,6 +14,7 @@
   import TableScroll from '../../../components/ui/TableScroll.svelte';
   import ReceiptPreview from '../../../components/native/ReceiptPreview.svelte';
   import Crumbs from '../../components/Crumbs.svelte';
+  import InsecureContextAlert from '../../components/InsecureContextAlert.svelte';
   import { iconRefresh, iconPlay, iconPrint } from '../../../icons.js';
   import { t } from '../../i18n/index.js';
   import { formatTime } from '../../format.js';
@@ -176,6 +177,8 @@
   <Button label={t('common.refresh')} icon={iconRefresh} variant="secondary" size="sm" onclick={load} testid="bridge-refresh" />
 </div>
 <p class="dev-muted bridge-intro">{t('bridge.intro')}</p>
+
+<InsecureContextAlert context="bridge" />
 
 <div class="dev-card" data-testid="bridge-status">
   <h2 class="dev-card__title">{t('bridge.status.title')}</h2>

@@ -712,6 +712,10 @@ na jednom místě, ostatní na něj odkazují):
   a stažení přes `GET /_dev/api/videos/{id}/file` (`DevVideosController`,
   `Response::file` + `ByteRange` = HTTP `Range` 206 / 416, jen soubor
   z `meta.json`, jen `development`).
+  **Adresa** (#183 D3): `/_dev/api/info` vrací `access` (vstupy serveru, jen
+  allowlist `DevAccess::publicEntries()`), `dev/components/AddressMenu.svelte`
+  v pruhu přepíná vstup se zachováním cesty, `InsecureContextAlert` na http mimo
+  `localhost` (Zdroje dat, Most) odkáže na https vstup; čisté funkce `dev/access.js`.
   Viz `docs/frontend.md` → Vývojářský dashboard, `docs/dev/dev-daily.md` § 1,
   `docs/test-corpus.md` § 18 a § 20.
 

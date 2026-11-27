@@ -44,6 +44,9 @@ export function readEnv(env, options = {}) {
   // Připíchnutá adresa hostu (`MAP <host> <ip>`, D97) — Chromium pak jméno
   // z adresy aplikace nepřekládá, dostane ověřenou IP od příkazu.
   const hostResolverRules = (env.SHPD_E2E_HOST_RESOLVER_RULES ?? '').trim();
+  // Self-signed certifikát https vstupu vývojového serveru (#183 U13): jen
+  // přesná hodnota `1` od příkazu, který adresu ověřil a připíchl.
+  const ignoreHttpsErrors = (env.SHPD_E2E_IGNORE_HTTPS_ERRORS ?? '').trim() === '1';
   return {
     appUrl: appUrl.endsWith('/') ? appUrl : `${appUrl}/`,
     storageState: required('SHPD_E2E_STORAGE_STATE'),
@@ -51,6 +54,7 @@ export function readEnv(env, options = {}) {
     expectedCards: Number(expectedRaw),
     progressFile: progressFile === '' ? null : progressFile,
     hostResolverRules: hostResolverRules === '' ? null : hostResolverRules,
+    ignoreHttpsErrors,
   };
 }
 

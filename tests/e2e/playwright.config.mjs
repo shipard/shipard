@@ -8,6 +8,9 @@
 //   SHPD_E2E_PROGRESS_FILE  volitelně JSON řádky průběhu (`card` události)
 //   SHPD_E2E_HOST_RESOLVER_RULES  volitelně připíchnutá adresa hostu
 //                           (`MAP <host> <ip>`, D97) → Chromium --host-resolver-rules
+//   SHPD_E2E_IGNORE_HTTPS_ERRORS  `1` u https adresy (#183 U13): vývojový https
+//                           vstup má self-signed certifikát; cíl ověřil a připíchl
+//                           `dataset-e2e` na tento server
 // Chybějící povinná proměnná shodí už sběr testů s jejím jménem (D95 —
 // selhání je nález, ne tichý běh nad ničím).
 import { defineConfig } from '@playwright/test';
@@ -49,6 +52,7 @@ export default defineConfig({
     trace: 'off',
     screenshot: 'off',
     video: 'off',
+    ignoreHTTPSErrors: env.ignoreHttpsErrors,
     // Ověřená adresa hostu od `dataset-e2e` (D97): jméno serveru se v prohlížeči
     // nepřekládá znovu, aby ho mezi ověřením a během nešlo přesměrovat.
     launchOptions: env.hostResolverRules === null

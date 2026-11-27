@@ -18,10 +18,13 @@ final class StubbedPreflight extends E2ePreflight
     public array $http = ['status' => 200, 'error' => null, 'code' => null];
     /** @var list<array{0: string, 1: float, 2: ?string}> */
     public array $requests = [];
+    /** @var list<bool> ověření certifikátu vypnuté (#183 U17), v pořadí dotazů */
+    public array $insecure = [];
 
-    protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
+    protected function httpStatus(string $url, float $timeout, ?string $resolve = null, bool $insecureTls = false): array
     {
         $this->requests[] = [$url, $timeout, $resolve];
+        $this->insecure[] = $insecureTls;
         return $this->http + ['code' => null];
     }
 }
@@ -236,13 +239,26 @@ final class E2ePreflightTest extends TestCase
         $literal = E2ePreflight::probeUrl('http://127.0.0.1', 'abcd-abcd-abcd-abcd');
         $this->assertNull($p->appReachable($literal, 1.0, new PinnedBaseUrl('http://127.0.0.1', '127.0.0.1', 80, '127.0.0.1', true)));
         $this->assertNull($p->requests[2][2], 'IP literál se nepřipichuje');
+        // Certifikát se neověřuje jen u https cíle s ověřenou adresou (#183 U17).
+        $this->assertSame([false, true, false], $p->insecure);
 
-        // Jméno mimo domains.json: nginx stránku dá, API odmítne UNKNOWN_HOST — věta říká, co s tím.
+        // https na IP (self-signed certifikát vývojového serveru): literál bez pinu, ověření vypnuté.
+        $httpsIp = E2ePreflight::probeUrl('https://10.0.0.7', 'abcd-abcd-abcd-abcd');
+        $this->assertNull($p->appReachable($httpsIp, 1.0, new PinnedBaseUrl('https://10.0.0.7', '10.0.0.7', 443, '10.0.0.7', true)));
+        $this->assertNull($p->requests[3][2]);
+        $this->assertTrue($p->insecure[3]);
+
+        // Bez ověřené adresy se certifikát ověřuje vždy.
+        $this->assertNull($p->appReachable($httpsIp, 1.0));
+        $this->assertFalse($p->insecure[4]);
+
+        // Server mimo režim development a jméno mimo domains.json: API odmítne UNKNOWN_HOST — věta říká, co s tím.
         $p->http = ['status' => 404, 'error' => null, 'code' => 'UNKNOWN_HOST'];
         $problem = (string) $p->appReachable($named, 1.0, new PinnedBaseUrl('http://dev.example', 'dev.example', 80, '127.0.1.1', false));
         $this->assertStringContainsString("Aplikace host 'dev.example' nezná (HTTP 404 UNKNOWN_HOST)", $problem);
         $this->assertStringContainsString('domains.json', $problem);
-        $this->assertStringContainsString('http://127.0.0.1', $problem);
+        // Po #183 D1 stačí ve vývoji ID v cestě pro jakýkoli host — věta míří na režim serveru.
+        $this->assertStringContainsString('režimu development', $problem);
     }
 
     public function testRealHttpStatusReportsAClosedPortAsUnreachable(): void

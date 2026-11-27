@@ -226,6 +226,28 @@ v `.dev-actions__inner` (jinak se kebab zalomí, B2). Štítky `.dev-badge`
 Přehled zdrojů dat bez jediného zdroje (a bez chyby) kreslí místo tabulky
 kartu **Začni tady** + panel **Co tu ještě najdeš** (`.dev-start`, D15).
 
+**Adresa a nezabezpečený kontext (#183 D3, U10).** `GET /_dev/api/info`
+vrací `access` — vstupy vývojového serveru `[{kind, origin, preferred,
+current}]` (`kind`: `http-ip` | `https-ip` | `https-host`), jen allowlist
+z `Core\Server\DevAccess::publicEntries()`; surová sekce `devAccess` ze
+`server.json` ven nejde. `components/AddressMenu.svelte` v pruhu vedle
+serveru (vzor `VersionMenu`, tlačítko `.dev-stripe__version-btn`, bublina
+nad `Popover`): adresa, přes kterou je stránka otevřená (zámek = https,
+štítek „nezabezpečeno“ bez zabezpečeného kontextu), a seznam vstupů —
+aktuální označený, ostatní jako odkazy na **stejnou cestu, dotaz i kotvu**
+na jiném originu (plná navigace, ne router). Aktuální vstup určuje origin
+prohlížeče, ne příznak ze serveru (prohlížeč zná i port); adresa mimo
+vstupy serveru (`localhost`, tunel) je první řádek `other`. Pod seznamem
+věta, že každá adresa má vlastní přihlášení i nastavení, u `https-ip`
+nápověda k varování prohlížeče. `components/InsecureContextAlert.svelte`
+(stránky Zdroje dat a Most) se kreslí jen při `window.isSecureContext ===
+false`: co na http nepojede (schránka, klíč zařízení simulace mostu, PWA)
+a odkaz na tutéž stránku na https vstupu (`httpsEntry()` — preferovaný,
+jinak jméno před IP), bez https vstupu rada, jak ho zapnout. Hláška je
+`.dev-alert` dashboardu, ne sdílená `Notice`. Čisté funkce `access.js`
+(`entryUrl`, `accessEntries`, `httpsEntry`, `normalizeOrigin`), test
+`tests/Unit/dev/access.test.mjs`; klíče `access.*`.
+
 **Zastaralost a Aktualizovat (#129 fáze 3, `tasks/dev-dashboard-update.md`).**
 Verze v pruhu je `components/VersionMenu.svelte` (D23–D24, nahradil
 `UpdateChip`): tlačítko `.dev-stripe__version-btn` (`aria-haspopup="dialog"`,

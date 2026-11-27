@@ -12,6 +12,7 @@
   import { devInfo } from './info.svelte.js';
   import { updates } from './updates.svelte.js';
   import VersionMenu from './components/VersionMenu.svelte';
+  import AddressMenu from './components/AddressMenu.svelte';
   import { docsUrl } from './links.js';
   import { t, LANGUAGES, currentLanguage, setLanguage } from './i18n/index.js';
   import DataSourcesPage from './pages/DataSourcesPage.svelte';
@@ -94,6 +95,7 @@
           <Icon icon={iconServer} size="sm" />
           <span>{devInfo.value?.hostname ?? pending}</span>
         </span>
+        <AddressMenu />
         <VersionMenu />
       </span>
     </div>

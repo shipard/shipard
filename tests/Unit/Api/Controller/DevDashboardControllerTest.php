@@ -261,6 +261,46 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertFalse($data['testing'], 'repo root bez tests/datasets a tests/eval → sekce Testování se nenabízí');
 	}
 
+	public function testApiInfoListsServerEntriesAsAnAllowlist(): void
+	{
+		// #183 D3, U10: jen {kind, origin, preferred, current} — nic dalšího ze server.json.
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->fakeAccess = \Shipard\Core\Server\DevAccess::fromSection(
+			['httpsIp' => true, 'host' => 'shpd.example.com', 'ip' => '10.0.0.7'],
+			'development',
+			new \Shipard\Core\Net\LocalAddresses(static fn (): array => [], static fn (): array => ['127.0.0.1', '10.0.0.7']),
+		);
+
+		$request = Request::fromArray('GET', '/_dev/api/info', [], '', ['HTTP_HOST' => '10.0.0.7', 'HTTPS' => 'on']);
+		$access = $this->getPayloadRaw($ctrl->dispatch($request))['data']['access'];
+
+		$this->assertSame([
+			['kind' => 'http-ip', 'origin' => 'http://10.0.0.7', 'preferred' => false, 'current' => false],
+			['kind' => 'https-ip', 'origin' => 'https://10.0.0.7', 'preferred' => false, 'current' => true],
+			['kind' => 'https-host', 'origin' => 'https://shpd.example.com', 'preferred' => true, 'current' => false],
+		], $access);
+
+		// Požadavek přes jinou adresu (localhost): žádný vstup není aktuální.
+		$access = $this->getPayloadRaw($ctrl->dispatch(
+			Request::fromArray('GET', '/_dev/api/info', [], '', ['HTTP_HOST' => 'localhost']),
+		))['data']['access'];
+		$this->assertSame([false, false, false], array_column($access, 'current'));
+	}
+
+	public function testApiInfoHasNoEntriesOutsideDevelopment(): void
+	{
+		// Režim neznámý / produkce: sekce devAccess se nepoužije.
+		$ctrl = new DevDashboardController(
+			$this->tmpDir, null, null, $this->spaIndex, $this->tmpRoot,
+			serverMode: 'production',
+			devAccessSection: ['httpsIp' => true, 'host' => 'shpd.example.com'],
+		);
+
+		$data = $this->getPayloadRaw($ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info')))['data'];
+
+		$this->assertSame([], $data['access']);
+	}
+
 	public function testApiInfoDatasetsFlagFollowsTheSeedCatalog(): void
 	{
 		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/info'));
@@ -1715,6 +1755,14 @@ class TestableDevDashboardController extends DevDashboardController
 	public array $commandsRun = [];
 	/** @var list<array{argv: list<string>, cwd: string, stdin: ?string}> */
 	public array $processesRun = [];
+
+	/** Vstupy vývojového serveru s pevnými adresami (#183) — jinak skutečná rozhraní stroje. */
+	public ?\Shipard\Core\Server\DevAccess $fakeAccess = null;
+
+	protected function devAccess(): \Shipard\Core\Server\DevAccess
+	{
+		return $this->fakeAccess ?? parent::devAccess();
+	}
 
 	/** @return list<string> */
 	protected function serverCommand(): array

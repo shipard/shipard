@@ -426,6 +426,22 @@ final class VideoRunCommandTest extends TestCase
         $this->assertStringContainsString('--anchor: Kotva musí být datum', $tester->getDisplay());
     }
 
+    public function testHttpsBaseUrlTellsTheRunnerToIgnoreCertificateErrors(): void
+    {
+        // #183 U13: https vstup vývojového serveru má self-signed certifikát;
+        // adresa je ověřená jako tento server, takže výjimka session jinam neodnese.
+        $this->markCacheFresh();
+        $command = $this->command(E2eFakeConnection::create());
+        $command->localAddresses[] = '10.0.0.7';
+        $tester = $this->execute($command, ['--base-url' => 'https://10.0.0.7']);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $env = $command->runners[0]->env;
+        $this->assertSame('1', $env['VIDEO_IGNORE_HTTPS_ERRORS'] ?? null);
+        $this->assertSame('https://10.0.0.7/' . self::DS_ID, $env['SHPD_BASE_URL']);
+        $this->assertArrayNotHasKey('VIDEO_HOST_RESOLVER_RULES', $env);
+    }
+
     public function testForeignBaseUrlIsRefusedBeforeAnySessionAndUnreachableAppToo(): void
     {
         $db = E2eFakeConnection::create();
@@ -817,6 +833,7 @@ final class VideoRunCommandTest extends TestCase
         $this->assertStringContainsString('Aplikace: http://127.0.0.1/' . self::DS_ID . '/app/, čas v prohlížeči: 2026-10-23T09:30:00+02:00', $display);
         $this->assertSame([null], $command->preflightForTest()->pins, 'IP literál se nepřipichuje');
         $this->assertArrayNotHasKey('VIDEO_HOST_RESOLVER_RULES', $command->runners[0]->env);
+        $this->assertArrayNotHasKey('VIDEO_IGNORE_HTTPS_ERRORS', $command->runners[0]->env, 'na http se výjimka certifikátu nezapíná');
         $this->assertSame(UpdateEnvironment::DEFAULT_PATH, UpdateEnvironment::DEFAULT_PATH);
         $this->assertSame(['core_system_sessions'], array_column($db->inserted, 'table'), 'existující uživatel se nezakládá');
         $this->assertInstanceOf(DatasetCatalog::class, (new \ReflectionMethod($command, 'createCatalog'))->invoke($command));

@@ -1461,12 +1461,17 @@ a úlohu nezaloží.
   `--host-resolver-rules=MAP <host> <ip>` (`SHPD_E2E_HOST_RESOLVER_RULES`,
   jen u jména — literál není co mapovat), takže jméno mezi ověřením
   a během nejde přesměrovat. Jedno pravidlo pro příkaz i akci dashboardu
-  (`DevEvalController::e2e` s cizím originem → 400). **Jméno serveru musí
-  aplikace znát:** `DataSourceResolver` bere cestu `/<ds-id>/` jen u IP
-  hostu, jméno překládá přes `/etc/shipard/domains.json` — bez záznamu
-  odpoví API `404 UNKNOWN_HOST` a preflight to ohlásí větou „Aplikace host
-  '…' nezná“ (vývojový stroj bez mapy domén = jen IP: `127.0.0.1` nebo
-  adresa rozhraní).
+  (`DevEvalController::e2e` s cizím originem → 400). **Jméno serveru:**
+  na vývojovém serveru bere `DataSourceResolver` cestu `/<ds-id>/` pro
+  jakýkoli host (#183 D1), takže proklikání jde přes IP, `localhost`
+  i jméno bez záznamu v `/etc/shipard/domains.json`; `404 UNKNOWN_HOST`
+  od API znamená server mimo režim `development` a preflight to ohlásí
+  větou „Aplikace host '…' nezná“. **https** (#183 U13, U17): vývojový
+  https vstup na IP má self-signed certifikát, proto u `https` adresy
+  dostane Playwright `ignoreHTTPSErrors` (`SHPD_E2E_IGNORE_HTTPS_ERRORS=1`)
+  a kontrola dosažitelnosti přes curl certifikát neověřuje — jen proto, že
+  cíl je ověřený a připíchnutý na tento server; bez ověřené adresy se
+  certifikát ověřuje vždy.
 - **Přihlášení bez hesla (D92).** Vyhrazený uživatel `e2e` (administrátor,
   `is_system = 1` — neukazuje se v „Vystavil“, nejde mu resetovat heslo,
   `password_hash` NULL; `keepOnReset` ho přes přeseedování zachová).
@@ -1502,8 +1507,10 @@ verze jako `playwright` ve video-runneru; jeden projekt, Chromium kanál
 (počet zpráv sady s otevřeným návrhem — příkaz ho po přeseedování spočítá
 týmž predikátem, kterým feed vybírá karty návrhů,
 `MailSuggestionsSource::openProposalWhere()`) a volitelně
-`SHPD_E2E_PROGRESS_FILE` a `SHPD_E2E_HOST_RESOLVER_RULES` (připíchnutá
-adresa hostu `MAP <host> <ip>` → `launchOptions.args` Chromia, D97).
+`SHPD_E2E_PROGRESS_FILE`, `SHPD_E2E_HOST_RESOLVER_RULES` (připíchnutá
+adresa hostu `MAP <host> <ip>` → `launchOptions.args` Chromia, D97)
+a `SHPD_E2E_IGNORE_HTTPS_ERRORS` (`1` u https adresy → `use.ignoreHTTPSErrors`,
+#183 U13).
 Chybějící povinná proměnná shodí už sběr testů s jejím jménem. Texty UI se nepoužívají, jen testidy (`docs/frontend.md` § 9).
 
 Průchod: dashboard → dokud je ve feedu karta `mail_suggestion:*`
@@ -1697,7 +1704,9 @@ se stejným příkazem (`--json --progress-file <úloha>/progress.jsonl
   prostředím: pevný `PATH`, `HOME` (cache prohlížeče), `SHPD_BASE_URL =
   <origin>/<ds-id>`, `SHPD_STORAGE_STATE`, `VIDEO_WORK_DIR` /
   `VIDEO_OUT_DIR` (pod úložištěm videa), `VIDEO_FIXED_TIME`,
-  `VIDEO_HOST_RESOLVER_RULES` (jen u jména hostu) a `VIDEO_HEADFUL=0`
+  `VIDEO_HOST_RESOLVER_RULES` (jen u jména hostu), `VIDEO_IGNORE_HTTPS_ERRORS=1`
+  (jen u https adresy — self-signed certifikát vývojového vstupu, #183 U13)
+  a `VIDEO_HEADFUL=0`
   (vývojářův `tools/video-runner/.env` má nižší prioritu, ale `1` by
   prosáklo). Generátor sady (`DatasetBuildProcess`) dostává
   `GOTENBERG_URL` ze `server.json` a `PYTHONUTF8=1` (pevné prostředí

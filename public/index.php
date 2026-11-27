@@ -89,6 +89,7 @@ try {
 				$serverConfig->getLogFile(),
 				$modulePathResolver,
 				serverMode: $serverConfig->getMode(),
+				devAccessSection: $serverConfig->getDevAccess(),
 			))->dispatch($request);
 			$corsMiddleware->applyTo($response)->send();
 			exit;

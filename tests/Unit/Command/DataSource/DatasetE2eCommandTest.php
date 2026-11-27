@@ -528,6 +528,8 @@ final class DatasetE2eCommandTest extends TestCase
         // Jméno serveru (D97): dosažitelnost přes připíchnutou adresu, Chromium dostane mapování.
         $this->assertSame(['dev.example:8443:127.0.0.1'], $command->preflight->pins);
         $this->assertSame('MAP dev.example 127.0.0.1', $command->runner?->env['SHPD_E2E_HOST_RESOLVER_RULES'] ?? null);
+        // https: self-signed certifikát vývojového vstupu prohlížeč ignoruje (#183 U13).
+        $this->assertSame('1', $command->runner?->env['SHPD_E2E_IGNORE_HTTPS_ERRORS'] ?? null);
 
         // Adresa vlastního rozhraní: literál, bez pinu.
         $command = $this->command($db);
@@ -535,6 +537,15 @@ final class DatasetE2eCommandTest extends TestCase
         $tester = $this->execute($command, ['--base-url' => 'http://10.0.0.7']);
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
         $this->assertSame([null], $command->preflight->pins);
+        $this->assertArrayNotHasKey('SHPD_E2E_HOST_RESOLVER_RULES', $command->runner?->env ?? []);
+        $this->assertArrayNotHasKey('SHPD_E2E_IGNORE_HTTPS_ERRORS', $command->runner?->env ?? [], 'na http se výjimka nezapíná');
+
+        // https na adrese vlastního rozhraní (vstup https-ip): bez pinu, s výjimkou certifikátu.
+        $command = $this->command($db);
+        $command->localAddresses[] = '10.0.0.7';
+        $tester = $this->execute($command, ['--base-url' => 'https://10.0.0.7']);
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame('1', $command->runner?->env['SHPD_E2E_IGNORE_HTTPS_ERRORS'] ?? null);
         $this->assertArrayNotHasKey('SHPD_E2E_HOST_RESOLVER_RULES', $command->runner?->env ?? []);
     }
 

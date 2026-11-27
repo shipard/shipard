@@ -209,18 +209,22 @@ class E2ePreflight
      * má odpovídat přímo, jinak je `--base-url` špatně. S `$pin` (D97) jde
      * dotaz na ověřenou adresu hostu (`CURLOPT_RESOLVE`), ne na to, co by
      * jméno přeložilo teď; 404 `UNKNOWN_HOST` = aplikace host nezná.
+     * U https cíle s `$pin` se certifikát neověřuje (#183 U17): adresa je
+     * ověřená jako tento server a vývojový https vstup má self-signed
+     * certifikát — stejná výjimka jako `ignoreHTTPSErrors` v prohlížeči (U13).
      */
     public function appReachable(string $url, float $timeout = self::APP_TIMEOUT_SECONDS, ?PinnedBaseUrl $pin = null): ?string
     {
-        ['status' => $status, 'error' => $error, 'code' => $code] = $this->httpStatus($url, $timeout, $pin?->curlResolve());
+        ['status' => $status, 'error' => $error, 'code' => $code] = $this->httpStatus($url, $timeout, $pin?->curlResolve(), $pin?->isHttps() ?? false);
         if ($status === null) {
             return "Aplikace na {$url} není dosažitelná" . ($error !== null ? " ({$error})" : '')
                 . ' — zkontroluj --base-url (výchozí http://127.0.0.1; nginx musí mít Shipard jako výchozí server_name)';
         }
         if ($status >= 400 && $code === 'UNKNOWN_HOST') {
             $host = $pin?->host ?? (string) (parse_url($url, PHP_URL_HOST) ?? '');
-            return "Aplikace host '{$host}' nezná (HTTP {$status} UNKNOWN_HOST) — jméno musí být v mapě domén serveru"
-                . ' (/etc/shipard/domains.json), nebo použij IP adresu serveru (--base-url http://127.0.0.1)';
+            return "Aplikace host '{$host}' nezná (HTTP {$status} UNKNOWN_HOST) — na vývojovém serveru stačí ID zdroje dat v cestě"
+                . ' pro jakýkoli host; tahle odpověď znamená, že server neběží v režimu development (mode v server.json)'
+                . ' a jméno není v mapě domén (/etc/shipard/domains.json)';
         }
         if ($status >= 400) {
             return "Aplikace na {$url} odpověděla HTTP {$status}" . ($code !== null ? " ({$code})" : '')
@@ -232,11 +236,13 @@ class E2ePreflight
     /**
      * Jeden HTTP GET bez přesměrování (curl, jen http/https); `$resolve` =
      * záznam `host:port:ip` pro `CURLOPT_RESOLVE` ({@see PinnedBaseUrl::curlResolve()}).
-     * `code` = `error.code` z JSON těla chybové odpovědi API, je-li. Šev pro testy.
+     * `code` = `error.code` z JSON těla chybové odpovědi API, je-li.
+     * `$insecureTls` vypne ověření certifikátu — jen pro ověřenou lokální
+     * adresu ({@see appReachable()}). Šev pro testy.
      *
      * @return array{status: ?int, error: ?string, code: ?string}
      */
-    protected function httpStatus(string $url, float $timeout, ?string $resolve = null): array
+    protected function httpStatus(string $url, float $timeout, ?string $resolve = null, bool $insecureTls = false): array
     {
         $ch = curl_init($url);
         if ($ch === false) {
@@ -254,6 +260,10 @@ class E2ePreflight
         ];
         if ($resolve !== null) {
             $options[CURLOPT_RESOLVE] = [$resolve];
+        }
+        if ($insecureTls) {
+            $options[CURLOPT_SSL_VERIFYPEER] = false;
+            $options[CURLOPT_SSL_VERIFYHOST] = 0;
         }
         curl_setopt_array($ch, $options);
         $body = curl_exec($ch);

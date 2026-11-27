@@ -25,6 +25,11 @@ test('readEnv: povinné proměnné a lomítko na konci adresy', () => {
   assert.equal(env.hostResolverRules, null);
   assert.equal(readEnv({ ...okEnv, SHPD_E2E_HOST_RESOLVER_RULES: ' MAP dev.example 127.0.1.1 ' }).hostResolverRules, 'MAP dev.example 127.0.1.1');
   assert.equal(readEnv({ ...okEnv, SHPD_E2E_HOST_RESOLVER_RULES: '  ' }).hostResolverRules, null);
+  // Self-signed certifikát https vstupu (#183 U13): jen přesná hodnota `1`.
+  assert.equal(readEnv(okEnv).ignoreHttpsErrors, false);
+  assert.equal(readEnv({ ...okEnv, SHPD_E2E_IGNORE_HTTPS_ERRORS: ' 1 ' }).ignoreHttpsErrors, true);
+  assert.equal(readEnv({ ...okEnv, SHPD_E2E_IGNORE_HTTPS_ERRORS: 'true' }).ignoreHttpsErrors, false);
+  assert.equal(readEnv({ ...okEnv, SHPD_E2E_IGNORE_HTTPS_ERRORS: '0' }).ignoreHttpsErrors, false);
 });
 
 test('readEnv: chybějící proměnná jmenuje, co chybí', () => {

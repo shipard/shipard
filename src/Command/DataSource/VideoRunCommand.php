@@ -450,6 +450,10 @@ class VideoRunCommand extends Command implements SignalableCommandInterface
                     if ($pinned->chromiumRule() !== null) {
                         $vars['VIDEO_HOST_RESOLVER_RULES'] = $pinned->chromiumRule();
                     }
+                    // Self-signed certifikát https vstupu (#183 U13) — cíl je ověřený a připíchnutý.
+                    if ($pinned->isHttps()) {
+                        $vars['VIDEO_IGNORE_HTTPS_ERRORS'] = '1';
+                    }
                     $env = VideoRunnerProcess::environment($vars, $preflight->home(), $preflight->toolPath());
 
                     $first = $verb === VideoReport::VERB_BUILD ? VideoProgress::STEP_RECORD : VideoProgress::STEP_CHECK;

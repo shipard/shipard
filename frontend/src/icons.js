@@ -97,6 +97,7 @@ import {
   faRobot,
   faComments,
   faLock,
+  faGlobe,
   faArrowUpRightFromSquare,
   faServer,
   faDatabase,
@@ -183,6 +184,7 @@ export const iconCalculator = faCalculator;
 export const iconUser = faUser;
 export const iconUsers = faUsers;
 export const iconLock = faLock;
+export const iconAddress = faGlobe; // adresa / vstup serveru (dev dashboard — menu Adresa)
 
 // ── Číselníky / moduly (sidebar, navigace) ──────────────────────
 export const iconChart = faChartColumn;
@@ -368,6 +370,7 @@ export const iconMap = {
   'database': iconDatabase,
   'logout': iconLogout,
   'lock': iconLock,
+  'address': iconAddress,
   'calculator': iconCalculator,
   'chart': iconChart,
   'overview': iconOverview,

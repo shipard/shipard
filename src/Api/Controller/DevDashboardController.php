@@ -6,6 +6,7 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Cli\BinPaths;
+use Shipard\Core\Server\DevAccess;
 use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\DevJobs\DevActionGuard;
 use Shipard\Core\DevJobs\JobConflict;
@@ -54,6 +55,8 @@ class DevDashboardController
 		?string $serverMode = null,
 		?JobStore $jobStore = null,
 		?JobLauncher $jobLauncher = null,
+		/** Surová sekce `devAccess` ze `server.json` (#183 U2); vykládá ji jen {@see DevAccess}. */
+		private readonly mixed $devAccessSection = null,
 	) {
 		$this->repoRoot     = $repoRoot ?? dirname(__DIR__, 3);
 		$this->spaIndexPath = $spaIndexPath ?? $this->repoRoot . '/public/_dev/dev.html';
@@ -100,7 +103,7 @@ class DevDashboardController
 
 		// JSON API a streamované akce — kontrakt beze změny (#103 D57).
 		if ($path === '/_dev/api/info' && $method === 'GET') {
-			return $this->getInfo();
+			return $this->getInfo($request);
 		}
 		if ($path === '/_dev/api/data-sources' && $method === 'GET') {
 			return $this->listDataSources();
@@ -189,8 +192,13 @@ class DevDashboardController
 	 * gitu pro pruh dashboardu. Bez gitu nebo s jeho odmítnutím (PHP-FPM pod
 	 * jiným uživatelem než vlastník checkoutu) jsou `hash`, `fullHash`,
 	 * `branch` a `commitDate` null a pruh ukáže jen číslo verze.
+	 *
+	 * `access` (#183 D3, U10): vstupy vývojového serveru `{kind, origin,
+	 * preferred, current}` pro přepínač Adresa — jen allowlist
+	 * z {@see DevAccess::publicEntries()}, nikdy surová konfigurace
+	 * (`server.json` nese tajemství). `current` podle schématu a hostu požadavku.
 	 */
-	private function getInfo(): Response
+	private function getInfo(Request $request): Response
 	{
 		$git = Version::gitInfo();
 		return Response::success([
@@ -199,6 +207,7 @@ class DevDashboardController
 			'testing'        => is_dir($this->repoRoot . '/tests/datasets') && is_dir($this->repoRoot . '/tests/eval'),
 			'datasets'       => (new DatasetCatalog($this->repoRoot))->isAvailable(),
 			'videos'         => is_dir($this->repoRoot . '/demo/scenarios') && is_dir($this->repoRoot . '/tools/video-runner'),
+			'access'         => $this->devAccess()->publicEntries($request->getScheme() . '://' . $request->getHost()),
 			'version'        => [
 				'version'    => Version::VERSION,
 				'hash'       => $git['hash'] ?? null,
@@ -585,6 +594,12 @@ class DevDashboardController
 	}
 
 	/** Režim serveru pro pojistku D60 — bez předání `unknown` (fail-closed, nikdy development). */
+	/** Vstupy vývojového serveru — mimo režim `development` žádné. Šev pro testy (adresy rozhraní). */
+	protected function devAccess(): DevAccess
+	{
+		return DevAccess::fromSection($this->devAccessSection, $this->serverMode ?? 'production');
+	}
+
 	protected function serverMode(): string
 	{
 		return $this->serverMode ?? 'unknown';

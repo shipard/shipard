@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — fáze 1: adresování, nginx, vstupy, certifikát pro IP (#183)
 
-**Stav:** částečně — hotové commity 1–4 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, sekce `doctor`, 2026-11-27); zbývají commity 5–6 (dashboard a Playwright, návody) a kroky s rootem
+**Stav:** částečně — hotové commity 1–5 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, sekce `doctor`, menu Adresa a Playwright přes https, 2026-11-27); zbývá commit 6 (návody) a kroky s rootem
 
 > Task pro Claude Code (6 commitů). Design: issue #183. Tajemství serveru
 > mimo `server.json` (D7) jsou samostatný task, vlastní jména pro zdroje
@@ -256,6 +256,10 @@ Vyplynula z porovnání zadání s kódem; U20–U22 rozhodl člověk.
   jako potřebu běhu. Trvale ho hlásí `doctor` varováním.
 - **U22 — selhání `dev-https` v `upgrade`.** Upgrade se nepřeruší:
   selhání se vypíše v souhrnu, `doctor` proběhne a upgrade skončí nenulově.
+
+- **U23 — hláška v dashboardu.** Dashboard sdílenou `Notice` nepoužívá
+  (hlášky má jako `.dev-alert`); upozornění na http je proto dev-lokální
+  `InsecureContextAlert` ve stejném vzhledu jako ostatní hlášky stránky.
 
 ## Rozsah
 

@@ -28,6 +28,16 @@ final readonly class PinnedBaseUrl
     ) {
     }
 
+    /**
+     * Cíl je https (#183 U13, U17). Vývojový server má na IP self-signed
+     * certifikát, takže běh nad ověřenou a připíchnutou adresou smí chyby
+     * certifikátu ignorovat — spojení jinam než na tento server jít nemůže.
+     */
+    public function isHttps(): bool
+    {
+        return str_starts_with($this->origin, 'https://');
+    }
+
     /** Záznam pro `CURLOPT_RESOLVE` (`host:port:ip`), null pro IP literál. */
     public function curlResolve(): ?string
     {

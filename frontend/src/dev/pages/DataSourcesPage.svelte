@@ -22,6 +22,7 @@
   import { formatDateTime, dataClassLabel, dataClassTitle, truncate } from '../format.js';
   import { t, label, currentLanguage } from '../i18n/index.js';
   import DevKebabMenu from '../components/DevKebabMenu.svelte';
+  import InsecureContextAlert from '../components/InsecureContextAlert.svelte';
   import LoadDatasetDialog from './LoadDatasetDialog.svelte';
   import DeleteDataSourceDialog from './DeleteDataSourceDialog.svelte';
   import TableScroll from '../../components/ui/TableScroll.svelte';
@@ -141,6 +142,8 @@
   <Button label={t('common.refresh')} icon={iconRefresh} variant="secondary" size="sm" onclick={refreshNow} />
   <a class="dev-btn-primary" href={router.href('dsCreate')} onclick={onLinkClick}><Icon icon={iconAdd} size="sm" />{t('ds.new')}</a>
 </div>
+
+<InsecureContextAlert context="dataSources" />
 
 {#if error}
   <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{error}</span></div>
