@@ -803,8 +803,12 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
   na `https`, `localhost` a `127.0.0.1`. Na vývojovém serveru přes
   `http://<privátní adresa>` simulace klíč nemá: `info` vrací `deviceId`,
   ale capability `device` chybí a `device.register` i `device.sync` končí
-  `NOT_SUPPORTED`. Registraci proti serveru zkoušej přes `127.0.0.1`
-  nebo `https`.
+  `NOT_SUPPORTED`. Registraci proti serveru zkoušej přes **https vstup
+  vývojového serveru** (`https://<IP>/<ID>/app/` se self-signed
+  certifikátem, nebo `https://<jméno>/…`, #183 — zapnutí
+  `docs/dev/linux-install.md` oddíl 6, přepnutí tlačítkem s adresou
+  v pruhu dashboardu); ve WSL přes `http://localhost/`. Identita
+  simulovaného zařízení je vázaná na origin — každý vstup má vlastní.
 - Registrované zařízení po přepnutí stavu periferie v panelu samo
   synchronizuje (aplikace sync spouští při změně periferií, §3.3).
 

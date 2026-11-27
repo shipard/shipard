@@ -1123,7 +1123,7 @@ export default {
   'native.mock.modes.personal': 'personal device',
   'native.mock.modes.shared': 'shared workstation',
   'native.mock.deviceId': 'Device ID',
-  'native.mock.insecure': 'The page does not run in a secure context (https or localhost), so the browser provides no device key. Device registration and sync are turned off in the simulation.',
+  'native.mock.insecure': 'The page does not run in a secure context (https or localhost), so the browser provides no device key. Device registration and sync are turned off in the simulation. Open the application on the https address of the server — the address button in the developer dashboard offers it.',
   'native.mock.capabilities': 'What the simulation offers (capabilities)',
   'native.mock.peripherals': 'Peripherals',
   'native.mock.status.ready': 'ready',

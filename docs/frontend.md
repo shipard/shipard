@@ -401,7 +401,7 @@ testy dashboardu volají `use('cs')` (v Node je `navigator.language`
 
 ### Dev mód — DS ID v URL
 
-V dev módu (IP adresa) se aplikace otevírá na `http://{ip}/{ds-id}/app/`. Frontend automaticky detekuje DS ID z URL a přidává ho jako prefix ke všem API voláním (`/{ds-id}/api/v1/...`). Logika je v `api/config.js`.
+V dev módu se aplikace otevírá na `http(s)://{host}/{ds-id}/app/` (IP, `localhost` i jméno — #183 D1). Frontend automaticky detekuje DS ID z URL a přidává ho jako prefix ke všem API voláním (`/{ds-id}/api/v1/...`). Logika je v `api/config.js`.
 
 V produkčním módu (subdoména) se DS ID nepoužívá — API je na `/api/v1/...`.
 
@@ -2430,7 +2430,9 @@ U11–U12; co simulace umí a co ne, je v kontraktu §9a):
   na DER, veřejný klíč je SPKI. **WebCrypto je jen v zabezpečeném kontextu**
   (https, `localhost`, `127.0.0.1`): na `http://<privátní adresa>` simulace
   capability `device` nenabízí a panel to říká; tisk, periferie a čtečka
-  fungují dál.
+  fungují dál. Plnou simulaci dává https vstup vývojového serveru (#183,
+  `docs/dev/linux-install.md` oddíl 6) — stránka Most v dashboardu na něj
+  na http odkáže.
 - **Stav** (`state.js`, klíč `shpd_native_mock_state`): režim pro každý
   zdroj dat, capabilities, stav periferií. Náhledy tisku (posledních 20)
   a paměť posledních 100 `jobId` jsou jen v paměti stránky.

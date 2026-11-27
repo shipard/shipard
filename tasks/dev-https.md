@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — fáze 1: adresování, nginx, vstupy, certifikát pro IP (#183)
 
-**Stav:** částečně — hotové commity 1–5 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, sekce `doctor`, menu Adresa a Playwright přes https, 2026-11-27); zbývá commit 6 (návody) a kroky s rootem
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-27 (6 commitů, celá sada 13 686 testů; šablony nginx, certifikát přes `openssl`, sonda a Playwright ověřené na dočasném nginx bez roota); zbývá člověk: `sudo shpd-server dev-https` na dev serveru s `devAccess`, proklik `https://<IP>/<ID>/app/` a vstupu se jménem, testovací kolo z dashboardu přes https, bootstrap na čisté VM a ve WSL
 
 > Task pro Claude Code (6 commitů). Design: issue #183. Tajemství serveru
 > mimo `server.json` (D7) jsou samostatný task, vlastní jména pro zdroje
@@ -333,9 +333,10 @@ kontext“ v aplikaci, produkční nginx kromě rozdělení TLS.
 
 ## Hotovo když
 
-- [ ] ve vývoji `Host: localhost` i jméno s ID v cestě vrací zdroj dat
+- [x] ve vývoji `Host: localhost` i jméno s ID v cestě vrací zdroj dat
       (curl na `/<ID>/api/v1/_app/info`), v produkci IP → `UNKNOWN_HOST`
-- [ ] `devMode ? 'http' : 'https'` v kódu není; OIDC redirect a odkaz
+      (produkce jen unit testem — režim dev serveru se nepřepínal)
+- [x] `devMode ? 'http' : 'https'` v kódu není; OIDC redirect a odkaz
       na nastavení hesla mají schéma požadavku
 - [ ] `sudo shpd-server dev-https` na dev serveru s `httpsIp: true`
       vyrobí certifikát pro IP, site `shipard-https.conf`, projde
@@ -344,15 +345,16 @@ kontext“ v aplikaci, produkční nginx kromě rozdělení TLS.
 - [ ] s `host` a certifikátem v `dev-host/` funguje
       `https://<jméno>/<ID>/app/` bez varování (člověk, kdo má certifikát)
 - [ ] vypnutí všech https vstupů a nový běh `dev-https` site odstraní,
-      http na IP běží dál
-- [ ] `dev-https --check` bez roota nic nemění a hlásí potřebu běhu;
+      http na IP běží dál (příkaz to má v testu; na serveru ověří člověk)
+- [x] `dev-https --check` bez roota nic nemění a hlásí potřebu běhu;
       `dev-update.sh` vypíše hint
-- [ ] `doctor` hlásí vypršelý, expirující a nesedící certifikát podle U11
-- [ ] dashboard ukáže menu Adresa, `Notice` na http a přepnutí zachová
-      cestu
+- [x] `doctor` hlásí vypršelý, expirující a nesedící certifikát podle U11
+- [x] dashboard ukáže menu Adresa, hlášku na http (U23) a přepnutí zachová
+      cestu (headless Chromium)
 - [ ] testovací kolo z dashboardu otevřeného přes `https://<IP>` projde
-- [ ] produkční `shipard-tls.conf` dál posílá HSTS (`nginx -T` na
+- [x] produkční `shipard-tls.conf` dál posílá HSTS (`nginx -T` na
       produkční šabloně), vývojová https odpověď hlavičku HSTS nemá
-- [ ] dokumentace podle oddílu Dokumentace; `python3 scripts/tasks-index.py --check` projde
-- [ ] žádné názvy reálných zdrojů dat, firem ani osob
+      (dočasný nginx na vysokých portech)
+- [x] dokumentace podle oddílu Dokumentace; `python3 scripts/tasks-index.py --check` projde
+- [x] žádné názvy reálných zdrojů dat, firem ani osob
       (`scripts/check-sensitive.py`)

@@ -101,7 +101,12 @@ Hotovo je, když výpis skončí souhrnem
 multipass info shipard
 ```
 
-V prohlížeči otevři `http://<IPv4>/_dev/`.
+V prohlížeči otevři `https://<IPv4>/_dev/`. Server si certifikát vyrobil
+sám, takže prohlížeč **jednou varuje** — klikni na „Rozšířené“ a pokračuj.
+Bez https a bez varování funguje i `http://<IPv4>/_dev/`, jen na něm
+prohlížeč nenabídne schránku ani klíč zařízení pro simulaci nativní
+aplikace; dashboard to řekne a přepneš se v něm tlačítkem s adresou
+v oranžovém pruhu ([`dev-daily.md`](dev-daily.md#adresy-serveru-http-a-https)).
 
 Příkazy, které se budou hodit:
 
@@ -110,6 +115,7 @@ Příkazy, které se budou hodit:
 | `multipass shell shipard` | terminál uvnitř Ubuntu |
 | `multipass stop shipard` / `multipass start shipard` | vypnutí a zapnutí stroje |
 | `multipass info shipard` | stav a adresa (po restartu ji ověř, může se změnit) |
+| `multipass exec shipard -- sudo shpd-server dev-https` | po změně adresy stroje: nový certifikát pro https (prohlížeč pak varuje znovu) |
 | `multipass delete --purge shipard` | smazání stroje **včetně dat** |
 
 ---
@@ -142,6 +148,10 @@ Kdyby Ubuntu hlásilo `curl: command not found`, doinstaluj ho
 (`sudo apt update && sudo apt install -y curl`) a příkaz zopakuj.
 
 **4. Otevři dashboard** v prohlížeči ve Windows: `http://localhost/_dev/`.
+Přes `localhost` otevírej i aplikaci (tlačítko **Otevřít** u zdroje dat) —
+prohlížeč ho bere jako zabezpečený kontext i bez https, takže funguje
+schránka i simulace nativní aplikace. Https na adrese stroje se proto ve
+WSL nezapíná.
 
 **5. Volitelně: SSH pro Clauda v chatu** (kapitola 5). Klíč vytvoř ve
 Windows — v PowerShellu, na dotaz na heslo (passphrase) jen stiskni Enter:
@@ -299,6 +309,12 @@ sleduj ji podle kroku 5 v kapitole 2.
 
 **Dashboard se neotevře.** Na Macu ověř adresu a stav stroje
 (`multipass info shipard`), ve Windows měj otevřené okno Ubuntu.
+
+**Prohlížeč na `https://<IPv4>/` varuje před certifikátem.** To je v pořádku
+— certifikát si stroj vyrobil sám; varování jednou proklikni. Když se po
+restartu stroje změnila adresa, certifikát ji nezná a prohlížeč hlásí
+neshodu jména: spusť `multipass exec shipard -- sudo shpd-server dev-https`
+(hlídá to i `shpd-server doctor`).
 
 **Aplikace hlásí chybu, nebo to pořád nejde?** Zdravotní kontrola
 `shpd-server doctor`, oprava práv, logy a kam se obrátit —

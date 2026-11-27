@@ -88,7 +88,9 @@ sudo shpd-server server-init --mode=development
 
 Vytvoří `/etc/shipard/server.json` s admin DB credentials. Soubor má
 ownership `root:<tvůj-user>` a mode `0640` — root ho edituje, ty čteš
-přes group membership.
+přes group membership. Nová vývojová instalace (mimo WSL) dostane rovnou
+sekci `"devAccess": {"httpsIp": true}` — https na adrese stroje, viz
+oddíl 6.
 
 ---
 
@@ -106,7 +108,99 @@ zapni je těm, které chceš (`sudo shpd-server ds-cron --on <id>`). Podrobně
 
 ---
 
-## 6. Ověření
+## 6. https
+
+Prohlížeč řadu funkcí nabízí jen v **zabezpečeném kontextu** — na `https`,
+`localhost` a `127.0.0.1`. Na `http://<adresa stroje>/` proto nejde
+kopírování do schránky, simulace nativní aplikace nedostane klíč zařízení,
+aplikace nejde nainstalovat (PWA) a skuteční poskytovatelé přihlášení
+(OIDC) redirect odmítnou. Vývojový server má tři vstupy; každý je pro
+prohlížeč jiný web, takže přihlášení ani nastavení se mezi nimi nesdílejí:
+
+| Vstup | Certifikát | Kdy |
+|-------|------------|-----|
+| `http://<IP>/<ID>/` | žádný | vždy — rychlý vstup |
+| `https://<IP>/<ID>/` | server si ho vyrobí sám | nová instalace ho má zapnutý |
+| `https://<jméno>/<ID>/` | dodáš ty | volitelně |
+
+Vstupy řídí sekce `devAccess` v `/etc/shipard/server.json` (edituje root;
+klíče popisuje [`cli.md`](../cli.md#dev-https---check)) a provede je:
+
+```bash
+sudo shpd-server dev-https
+```
+
+Příkaz je idempotentní — spusť ho po každé změně `devAccess` a po změně
+adresy stroje. `shpd-server upgrade` ho volá sám, `dev-update.sh` připomene,
+když je potřeba, a `shpd-server doctor` certifikáty hlídá.
+
+### https na IP adrese
+
+```json
+"devAccess": { "httpsIp": true }
+```
+
+Server si vyrobí certifikát se všemi adresami stroje (platí 397 dní,
+obnovuje se sám měsíc před koncem a když stroj dostane novou adresu).
+Prohlížeč ho nezná, takže **při první návštěvě varuje** — klikni na
+„Rozšířené“ a pokračuj; od té chvíle je stránka zabezpečený kontext. Po
+obnově certifikátu se varování objeví znovu.
+
+Co na tomhle vstupu nepojede: service worker (instalovaná aplikace) —
+prohlížeč ho na webu s nedůvěryhodným certifikátem nezaregistruje —
+a nativní aplikace Shipard. K tomu je vstup se jménem.
+
+Stávající server bez sekce `devAccess` zůstává jen u http; https zapneš
+doplněním sekce a příkazem výše. Když už na stroji jiný web drží
+`default_server` na portu 443, vstup přes IP nevznikne a příkaz to řekne.
+
+### https se jménem
+
+```json
+"devAccess": { "httpsIp": true, "host": "shpd.example.com" }
+```
+
+Certifikát a klíč dodáš na pevné cesty (soubory, nebo symlinky — třeba do
+adresáře certbotu):
+
+```
+/etc/shipard/tls/dev-host/fullchain.pem
+/etc/shipard/tls/dev-host/privkey.pem
+```
+
+Adresář založí první běh `sudo shpd-server dev-https`; dokud v něm
+certifikát není, sedí ke klíči a nese jméno, vstup se jménem nevznikne
+a příkaz skončí chybou s těmito cestami. Ostatní vstupy tím dotčené nejsou.
+
+Kde certifikát vzít:
+
+- **Skutečný certifikát pro vlastní doménu.** Dev server bývá na privátní
+  adrese, kam certifikační autorita z internetu nedosáhne — ověření přes
+  HTTP nepůjde, potřebuješ **ověření přes DNS** (DNS-01; certbot s pluginem
+  tvého poskytovatele DNS, `acme.sh` apod.). Po obnově certifikátu stačí
+  `sudo systemctl reload nginx`.
+- **Vlastní certifikační autorita** ve stylu `mkcert`: certifikát vydáš
+  sám a autoritu přidáš mezi důvěryhodné v prohlížeči (a v systému, kde
+  běží nativní aplikace).
+
+Jméno se musí překládat na tento stroj — v prohlížeči **i na serveru
+samotném** (testovací kolo a videa otevírají aplikaci stejnou adresou jako
+ty; `doctor` to kontroluje). Veřejný DNS záznam, který míří na privátní
+adresu, některé routery a resolvery zahazují (ochrana proti DNS rebinding);
+pak pomůže záznam v `hosts` na tvém počítači a na serveru:
+
+```
+10.0.0.7   shpd.example.com
+```
+
+Nepoužívej jména z domén `.dev` a `.app` — prohlížeče u nich https
+s důvěryhodným certifikátem vyžadují vždy a varování nejde prokliknout.
+Hlavičku HSTS vývojový server neposílá, takže se k http na jiném jméně
+můžeš kdykoli vrátit.
+
+---
+
+## 7. Ověření
 
 ```bash
 shpd-server doctor
@@ -114,7 +208,7 @@ shpd-server doctor
 
 Vypíše report: mode, shipard-user, PHP-FPM pool user, kontrolu cest, cron
 (soubor a heartbeat slotů — čerstvě po instalaci jen „not yet run“),
-DB connection per DS. Exit 0 = vše OK.
+https vstupy (certifikáty a site nginx), DB connection per DS. Exit 0 = vše OK.
 
 Pokud něco nesouhlasí:
 

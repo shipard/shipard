@@ -17,14 +17,44 @@ zdrojů dat v terminálu.
 Otevři v prohlížeči:
 
 ```
-http://<adresa-serveru>/_dev/
+https://<adresa-serveru>/_dev/
 ```
 
-Kořen `/` se v dev módu automaticky přesměruje na `/_dev/`, takže stačí
+(Na serveru bez https vstupu a ve WSL `http://…` — viz Adresy serveru
+níže.) Kořen `/` se v dev módu automaticky přesměruje na `/_dev/`, takže stačí
 zadat jen adresu serveru. V produkčním módu dashboard neexistuje —
 `/_dev/...` vrací 404. Bez sestaveného frontendu (`bash scripts/dev-update.sh`
 nebo `cd frontend && npm run build`) ukáže `/_dev/` jen stránku s návodem,
 jak build spustit.
+
+### Adresy serveru: http a https
+
+Vývojový server jde otevřít až třemi adresami (jak je zapnout:
+[`linux-install.md`](linux-install.md#6-https), oddíl 6):
+
+| Adresa | Co na ní je jinak |
+|--------|-------------------|
+| `http://<IP>/` | funguje vždy; prohlížeč tu **nenabízí schránku** (kopírování tabulek), **klíč zařízení** pro simulaci nativní aplikace ani **instalaci aplikace** (PWA) |
+| `https://<IP>/` | certifikát si server vyrobil sám — prohlížeč **jednou varuje**, po prokliknutí funguje vše kromě service workeru (instalovaná aplikace) |
+| `https://<jméno>/` | s důvěryhodným certifikátem bez omezení |
+
+`http://localhost/` (WSL) se chová jako https — prohlížeč `localhost`
+bere jako zabezpečený kontext.
+
+V oranžovém pruhu dashboardu je vedle názvu serveru tlačítko s adresou,
+přes kterou máš stránku otevřenou (zámek = https, štítek **nezabezpečeno**
+= http mimo `localhost`). Klik otevře seznam **Adresa**: aktuální vstup je
+označený, klik na jiný otevře **stejnou stránku** na něm. Na http navíc
+stránky Zdroje dat a Most ukážou upozornění s odkazem na https vstup.
+
+**Každá adresa je pro prohlížeč jiný web.** Přihlášení, vzhled, jazyk
+i identita simulovaného zařízení se mezi adresami nesdílejí — po přepnutí
+se přihlásíš znovu. Vyber si jednu a zůstaň u ní.
+
+Certifikát pro `https://<IP>/` se obnovuje sám měsíc před koncem platnosti
+(při `shpd-server upgrade`) a když stroj dostane novou adresu; ručně
+`sudo shpd-server dev-https`. Nový certifikát znamená nové varování
+v prohlížeči. Stav hlídá `shpd-server doctor` (sekce *Development HTTPS*).
 
 Sekce v horní liště:
 
@@ -266,8 +296,9 @@ dostane i `npm install` a Chromium Playwrightu v `tests/e2e/`
 a `tools/video-runner/` — bez `node_modules` se tyhle kroky přeskočí.
 Všechny kroky jsou idempotentní — pokud se nic
 nezměnilo, projdou během pár sekund. Na konci připomene, co sám neudělá
-(nevolá `sudo`): upgrade datových zdrojů a instalaci cronu, pokud na stroji
-chybí nebo je zastaralý (oddíl 4).
+(nevolá `sudo`): upgrade datových zdrojů, instalaci cronu, pokud na stroji
+chybí nebo je zastaralý (oddíl 4), a `sudo shpd-server dev-https`, když
+certifikát pro https na IP expiruje nebo nezná adresu stroje (oddíl 1).
 
 Pokud se měnily definice tabulek nebo cfgItems modulů, je potřeba
 zaktualizovat i datové zdroje:
@@ -423,6 +454,13 @@ Node musí být v systémovém `PATH` (`/usr/bin`, tak ho instaluje
 `install-packages.sh`), ne jen z nvm — preflighty i úlohy dashboardu ho
 hledají v pevné cestě.
 
+Proklikání, videa i testovací kolo spuštěné z dashboardu otevírají aplikaci
+**stejnou adresou, přes kterou máš dashboard** — tedy i přes https.
+Certifikát vyrobený serverem při tom prohlížeč testu ignoruje; smí, protože
+příkaz předem ověří, že adresa míří na tento server. Jméno z `https://<jméno>/`
+se proto musí překládat i na serveru samotném (`doctor` to kontroluje);
+z terminálu zadáš adresu volbou `--base-url`.
+
 Po `git pull` kroky 3 a 5 zopakuje `scripts/dev-update.sh` (oddíl 3) — jen
 u projektu, který `node_modules` má; bez nich ho přeskočí. Systémové
 knihovny Chromia neaktualizuje: když je nová revize potřebuje, řekne to
@@ -469,6 +507,12 @@ sudo shpd-server fix-permissions              # oprav
 `fix-permissions` se před opravou ptá na potvrzení. Ve skriptu nebo přes
 vzdálený nástroj, kde není kdo by odpověděl, použij `--dry-run`, případně
 `--force`.
+
+**Nejde kopírování do schránky nebo simulace nativní aplikace hlásí, že
+nemá klíč?** Stránka běží na http mimo `localhost` — přepni se tlačítkem
+s adresou v pruhu dashboardu na https (oddíl 1). **Prohlížeč po čase znovu
+varuje před certifikátem?** Server ho obnovil (blížil se konec platnosti,
+nebo se změnila adresa stroje) — varování znovu proklikni.
 
 Logy aplikace najdeš ve vývojářském dashboardu pod **Logy**
 (`/_dev/logs/`) — s filtrováním podle úrovně a fulltextu — nebo přímo

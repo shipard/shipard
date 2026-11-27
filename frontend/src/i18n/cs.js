@@ -1136,7 +1136,7 @@ export default {
   'native.mock.modes.personal': 'osobní zařízení',
   'native.mock.modes.shared': 'sdílené pracoviště',
   'native.mock.deviceId': 'ID zařízení',
-  'native.mock.insecure': 'Stránka neběží v zabezpečeném kontextu (https nebo localhost), prohlížeč proto nedá klíč zařízení. Registrace a synchronizace zařízení jsou v simulaci vypnuté.',
+  'native.mock.insecure': 'Stránka neběží v zabezpečeném kontextu (https nebo localhost), prohlížeč proto nedá klíč zařízení. Registrace a synchronizace zařízení jsou v simulaci vypnuté. Otevři aplikaci přes https adresu serveru — nabídne ji tlačítko s adresou ve vývojářském dashboardu.',
   'native.mock.capabilities': 'Co simulace nabízí (capabilities)',
   'native.mock.peripherals': 'Periferie',
   'native.mock.status.ready': 'připraveno',
