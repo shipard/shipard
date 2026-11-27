@@ -1,0 +1,15 @@
+{
+    // facility.buildings.viewerLabels — popisky viewerů doplňku Budovy
+    // (druhy smluv, smlouvy): skupiny a položky detailu, nadpisy a sloupce.
+    // Viewery je čtou přes BuildingsViewerBase::text(klíč, anglický
+    // fallback); popisky shodné se sloupcem tabulky jdou z definice tabulky
+    // (`columnLabel()`), opakované texty ze sdíleného katalogu jádra
+    // (`sharedText()`). Holé `name` = anglický fallback v PHP.
+
+    "column.location": { "name": "Location", "name:cs": "Umístění", "name:en": "Location" },
+    "column.place": { "name": "Place", "name:cs": "Místo", "name:en": "Place" },
+    "group.note": { "name": "Note", "name:cs": "Poznámka", "name:en": "Note" },
+    "group.numbering": { "name": "Numbering", "name:cs": "Číslování", "name:en": "Numbering" },
+    "heading.places": { "name": "Places", "name:cs": "Místa", "name:en": "Places" },
+    "label.sampleNumber": { "name": "Number example", "name:cs": "Ukázka čísla", "name:en": "Number example" }
+}

@@ -39,7 +39,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 |---|---|---|
 | **Osoby** | Dodavatelé, odběratelé i fyzické osoby v jedné evidenci. Firmu si doplníš z veřejného registru podle IČO. Ke každé osobě vedeš kontakty, adresy a bankovní spojení; u kontaktu určíš, co se na jeho e-mail posílá | [Založení osoby](osoby/zalozeni-osoby.md) · [Kontakty a účely odesílání](osoby/kontakty-a-ucely.md) |
 | **Položky** | Co se na dokladech fakturuje — jeden řádek dokladu je položka. U položky se drží i to, čím se účtuje (druhy položek a měrné jednotky se nastavují v Nastavení) | [Založení položky](polozky/zalozeni-polozky.md) · [Obsahové štítky](polozky/obsahove-stitky.md) |
-| **Místa** | Číselník toho, kde se co nachází — areály, budovy, podlaží, místnosti a jednotlivá místa ve stromu, každé s druhem (*Kancelář*, *Sklad*) a u areálu, budovy a venkovní plochy s adresou. Není v levém menu: najdeš ho v **Nastavení aplikace → Místa**. Shipard hlídá, co smí být pod čím. **Jiné agendy místa zatím nepoužívají** a seznam je zatím plochý, bez rozbalovacího stromu | [Místa a druhy míst](mista/mista-a-druhy-mist.md) |
+| **Místa** | Číselník toho, kde se co nachází — areály, budovy, podlaží, místnosti a jednotlivá místa ve stromu, každé s druhem (*Kancelář*, *Sklad*) a u areálu, budovy a venkovní plochy s adresou. Není v levém menu: najdeš ho v **Nastavení aplikace → Místa**. Shipard hlídá, co smí být pod čím. Místa používají smlouvy doplňku **Budovy**; **jiné agendy je zatím nepoužívají** a seznam je zatím plochý, bez rozbalovacího stromu | [Místa a druhy míst](mista/mista-a-druhy-mist.md) |
 
 ---
 
@@ -60,6 +60,16 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
 | **Zakázky** | Evidence zakázek čtyř typů — **Periodická** (smlouva pro budoucí periodickou fakturaci), **Externí jednorázová** (projekt pro zákazníka), **Interní průběžná** (režie) a **Interní jednorázová** (vnitřní úkol, zákazníka přebírá z nadřazené). Typ dává druh zakázky, zakázka vzniká v číselné řadě druhu (záložky dole) a při **V pořádku** dostane číslo podle vzorce řady; jednorázové zakázky mohou mít **Nadřazenou zakázku**. Hotovou zakázku **Ukončíš**, nerealizovanou **Zrušíš** (obě v archivu), přílohy má na záložce **Přílohy**. Se zapnutým **Zakázka na dokladech** (Nastavení → Účetnictví → Dimenze na dokladech) má pole **Zakázka** hlavička i řádky faktur, pokladních a účetních dokladů; detail zakázky má záložku **Deník** s obraty po letech a zápisy účetního deníku, účetní deník filtr a sloupec **Zakázka**. **Periodická zakázka** nese fakturační předpis (výchozí hodnoty na druhu, přepisy a řádky s platností na zakázce, `{období}` v textu, pevný VS) a noční běh z ní za každé splatné období vystaví **koncept** faktury nebo zálohové faktury vydané; záložka **Fakturace** ukazuje období, **Vystavit dlužná období**, **Přegenerovat** a **Obnovit**, Dashboard kartu konceptů ke kontrole. **Cena, předmět dodávky a vyhodnocení projektu zatím nejsou** | [Zakázky](zakazky/zakazky.md) · [Periodická fakturace](zakazky/periodicka-fakturace.md) · [Nastavení zakázek](zakazky/nastaveni-zakazek.md) · [Zakázka na dokladech](zakazky/zakazka-na-dokladech.md) |
+
+---
+
+## Budovy
+
+Sekce je vidět, jen když je zapnutý doplněk **Budovy** — zapíná ho správce systému.
+
+| Agenda | Co s ní uděláš | Návod |
+|---|---|---|
+| **Smlouvy** | Evidence pronájmů v doplňku **Budovy** — kanceláře, byty, obchodní prostory, sklady, parkování a virtuální kanceláře. Smlouva má druh (ten dává typ), nájemce, zahájení a ukončení a jedno nebo víc **míst** z číselníku míst; typ smlouvy říká, jaké typy míst smí mít. Při **V pořádku** dostane číslo podle vzorce druhu a roku zahájení (*KA-2027-0001*). Stejné místo ve dvou platných smlouvách s překrývající se dobou Shipard ohlásí varováním, uložení nezastaví. Doběhlou smlouvu **Ukončíš**, nerealizovanou **Zrušíš** (obě v archivu); seznam má filtry **Druh** a **Typ smlouvy** a hledá i podle názvu místa, detail ukazuje místa s umístěním a proklikem. Druhy smluv s číslováním jsou v **Nastavení aplikace → Budovy**. **Fakturace smluv zatím není** | [Smlouvy](budovy/smlouvy.md) · [Druhy smluv a číslování](budovy/nastaveni.md) |
 
 ---
 

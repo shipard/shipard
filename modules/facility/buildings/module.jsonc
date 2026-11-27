@@ -32,6 +32,48 @@
         { "id": "buildings", "name": "Buildings", "name:cs": "Budovy", "name:en": "Buildings", "icon": "city", "order": 13 }
     ],
 
+    // Smlouvy ve vlastní sekci sidebaru; bez dolních tabů — filtr druh / typ
+    // a ikona typu v řádku (#174 D5, D25). Druhy smluv žijí v Nastavení →
+    // Budovy, do hlavní navigace nepatří.
+    "viewers": [
+        {
+            "id": "facility.buildings.contracts",
+            "name": "Contracts",
+            "name:cs": "Smlouvy",
+            "name:en": "Contracts",
+            "icon": "contract",
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsViewer",
+            "navSection": "buildings",
+            "navOrder": 10,
+            "detailHeader": { "title": "{title}", "subtitle": "{number}" }
+        },
+        {
+            "id": "facility.buildings.contractKinds",
+            "name": "Contract kinds",
+            "name:cs": "Druhy smluv",
+            "name:en": "Contract kinds",
+            "icon": "kinds",
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsViewer"
+        }
+    ],
+
+    "settingsItems": [
+        { "viewer": "facility.buildings.contractKinds", "section": "buildings", "order": 10 }
+    ],
+
+    "forms": [
+        {
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsForm"
+        },
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsForm"
+        }
+    ],
+
     "documentClasses": [
         {
             "table": "facility_buildings_contract_kinds",
@@ -58,6 +100,8 @@
     "config": [
         { "id": "facility.buildings.contractTypes", "file": "config/contractTypes.jsonc" },
         { "id": "facility.buildings.docStates",     "file": "config/docStates.jsonc" },
-        { "id": "facility.buildings.resetScopes",   "file": "config/resetScopes.jsonc" }
+        { "id": "facility.buildings.resetScopes",   "file": "config/resetScopes.jsonc" },
+        { "id": "facility.buildings.viewerLabels",  "file": "config/viewerLabels.jsonc" },
+        { "id": "facility.buildings.formTexts",     "file": "config/formTexts.jsonc" }
     ]
 }

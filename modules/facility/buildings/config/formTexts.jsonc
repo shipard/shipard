@@ -1,0 +1,93 @@
+{
+    // facility.buildings.formTexts
+    //
+    // Texty prvků formulářů doplňku Budovy (#150 D87, #174 D24) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů,
+    // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
+    "texts": {
+        // --- druh smlouvy ---
+        "kind.typeLockedHint": {
+            "name": "The type of a confirmed kind cannot be changed.",
+            "name:cs": "Typ potvrzeného druhu nejde změnit.",
+            "name:en": "The type of a confirmed kind cannot be changed."
+        },
+        "kind.typeUsedHint": {
+            "name": "The type cannot be changed while contracts use this kind.",
+            "name:cs": "Typ nejde změnit, dokud druh používají smlouvy.",
+            "name:en": "The type cannot be changed while contracts use this kind."
+        },
+        "kind.typeHint": {
+            "name": "The type decides which places a contract of this kind may have. It cannot be changed once the kind is confirmed or used by a contract.",
+            "name:cs": "Typ určuje, jaká místa smí smlouva tohoto druhu mít. Po potvrzení druhu nebo jeho použití na smlouvě už ho nejde změnit.",
+            "name:en": "The type decides which places a contract of this kind may have. It cannot be changed once the kind is confirmed or used by a contract."
+        },
+        "kind.codeHint": {
+            "name": "Short code used as %C in the number pattern, unique among kinds.",
+            "name:cs": "Krátký kód, který se do vzorce čísla dosadí za %C; mezi druhy jedinečný.",
+            "name:en": "Short code used as %C in the number pattern, unique among kinds."
+        },
+        "kind.patternHint": {
+            "name": "%C kind code, %y / %Y year the contract starts (2 / 4 digits), %3 to %6 sequence padded with zeros. The sequence is required.",
+            "name:cs": "%C kód druhu, %y / %Y rok zahájení smlouvy (2 / 4 místa), %3 až %6 pořadí doplněné nulami. Pořadí je povinné.",
+            "name:en": "%C kind code, %y / %Y year the contract starts (2 / 4 digits), %3 to %6 sequence padded with zeros. The sequence is required."
+        },
+        "kind.resetHint": {
+            "name": "Yearly = the sequence starts again every calendar year a contract starts in; the pattern must then contain the year.",
+            "name:cs": "Ročně = pořadí začíná znovu každý kalendářní rok zahájení smlouvy; vzorec pak musí obsahovat rok.",
+            "name:en": "Yearly = the sequence starts again every calendar year a contract starts in; the pattern must then contain the year."
+        },
+
+        // --- smlouva ---
+        "contract.placesTypesHint": {
+            "name": "Allowed place types: {types}.",
+            "name:cs": "Povolené typy míst: {types}.",
+            "name:en": "Allowed place types: {types}."
+        },
+        "contract.placesAnyHint": {
+            "name": "Places of any type.",
+            "name:cs": "Místa libovolného typu.",
+            "name:en": "Places of any type."
+        },
+        "contract.kindHint": {
+            "name": "The kind decides the contract type and number; it cannot be changed after confirmation.",
+            "name:cs": "Druh určuje typ a číslo smlouvy; po potvrzení se nemění.",
+            "name:en": "The kind decides the contract type and number; it cannot be changed after confirmation."
+        },
+        "contract.numberPlaceholder": {
+            "name": "Assigned on confirmation",
+            "name:cs": "Přidělí se při potvrzení",
+            "name:en": "Assigned on confirmation"
+        },
+        "contract.customerPlaceholder": {
+            "name": "Search for a person…",
+            "name:cs": "Hledat osobu…",
+            "name:en": "Search for a person…"
+        },
+        "contract.customerHint": {
+            "name": "Required to confirm the contract.",
+            "name:cs": "Povinný při potvrzení smlouvy.",
+            "name:en": "Required to confirm the contract."
+        },
+        "contract.startHint": {
+            "name": "Required to confirm the contract; its year decides the contract number.",
+            "name:cs": "Povinné při potvrzení smlouvy; jeho rok určuje číslo smlouvy.",
+            "name:en": "Required to confirm the contract; its year decides the contract number."
+        },
+        "contract.endHint": {
+            "name": "Empty = open-ended.",
+            "name:cs": "Prázdné = doba neurčitá.",
+            "name:en": "Empty = open-ended."
+        },
+        "contract.places": {
+            "name": "Places",
+            "name:cs": "Místa",
+            "name:en": "Places"
+        },
+        "contract.placesPlaceholder": {
+            "name": "Search for a place…",
+            "name:cs": "Hledat místo…",
+            "name:en": "Search for a place…"
+        }
+    }
+}

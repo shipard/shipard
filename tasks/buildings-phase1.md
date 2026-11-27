@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** částečně — commity 0 (provisionery modulů, D28), 1 (filtr `types` v lookupu míst) a 2 (modul a model) hotové 2026-11-27, zbývají commity 3–4; design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
+**Stav:** částečně — commity 0 (provisionery modulů, D28), 1 (filtr `types` v lookupu míst), 2 (modul a model) a 3 (Nastavení, formulář, prohlížeč, detail, nápověda) hotové 2026-11-27, zbývá commit 4 (README, dokumentace, ověření doplňku D26); design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
 
 > Task pro Claude Code (5 commitů — 0 až 4). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez
@@ -209,7 +209,11 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
   neopakuje hlavičku“), řádek seznamu, formulář (filtr podle typu,
   skryté pole u `none`), `npm run build`, CSS kontroly.
 
-### Commit 4 — nápověda, dokumentace, ověření doplňku
+### Commit 4 — dokumentace, ověření doplňku
+
+> Stránky nápovědy šly už s commitem 3: `scripts/help-index.py` vyžaduje
+> řádek katalogu pro každý viewer s `navSection`, jinak pre-commit
+> zastaví commit s viewerem smluv.
 
 - `modules/facility/buildings/README.md` (co modul dělá, tabulky, typy
   a jejich vlastnosti, číslování, validace, co přijde ve fázi 2 a 3).

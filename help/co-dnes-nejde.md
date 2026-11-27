@@ -247,7 +247,7 @@ místa přetahovat nejde — pod jiné nadřazené místo ho přesuneš polem
 **Stromem míst neprojdeš šipkami na klávesnici.** Rozbaluje se a vybírá
 myší nebo tabulátorem a mezerníkem.
 
-**Jiné části Shipardu místa zatím nepoužívají.** Kartě majetku, zakázce
+**Místa používají jen smlouvy doplňku Budovy.** Kartě majetku, zakázce
 ani dokladu místo nepřiřadíš; rezervace místností, plocha a kapacita
 místa nejsou. Místa ze starého Shipardu se zatím nepřevádějí.
 
@@ -287,6 +287,30 @@ stránka Doplňky v Nastavení zatím není. Kam zprávy na daném serveru jdou
 serveru.
 
 **Jen česká evidence.** Jiné státy zatím ne.
+
+## Budovy (doplněk)
+
+**Smlouvy se nefakturují.** Smlouva v sekci **Budovy → Smlouvy** je zatím
+jen evidence: nemá řádky s cenou, nastavení fakturace ani záložku
+**Fakturace** a žádnou fakturu z ní Shipard nevystaví. Nájem zatím
+fakturuj periodickou zakázkou (viz
+[Periodická fakturace](zakazky/periodicka-fakturace.md)).
+
+**U místa nevidíš jeho smlouvy.** Detail místa v **Nastavení aplikace →
+Místa** smlouvy neukazuje a strom míst neříká, které místo je obsazené.
+Kdo má místo pronajaté, zjistíš hledáním názvu místa ve **Smlouvách**.
+Přehled obsazenosti a rezervace míst nejsou.
+
+**Jistota, zálohy na služby, vyúčtování, měřiče a indexace nájmu nejsou.**
+
+**Pořadí míst na smlouvě nezměníš přetažením.** Místa se řadí tak, jak
+jsi je přidal; jiné pořadí uděláš odebráním a novým přidáním. Nové místo
+z formuláře smlouvy nezaložíš — založ ho v číselníku míst.
+
+**Doplněk si nezapneš sám.** Budovy zapíná správce systému na serveru;
+v **Nastavení aplikace** pro to přepínač není.
+
+**Smlouvy ze starého Shipardu se nepřevádějí.**
 
 ---
 
