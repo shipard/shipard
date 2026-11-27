@@ -1,6 +1,6 @@
 # Nativní aplikace — task 2: most ve frontendu, simulace, stránka Most, pole bez oprav (#177)
 
-**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (#177 D6, D10, D21, D22, D29, D32, D33, U11–U15); zbývá ruční ověření polí bez oprav v Safari na Macu nebo iPadu; odchylky od zadání jsou na konci
+**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (#177 D6, D10, D21, D22, D29, D32, D33, U11–U15); pole bez oprav ověřená ručně v Safari 2026-11-27; odchylky od zadání jsou na konci
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (`tasks/native-bridge-contract.md`) — implementovat až po něm,
@@ -282,9 +282,9 @@ příkaz). Jen tokeny design systému.
       diakritikou, QR a ořezem; čtečka v panelu ukáže počet odběratelů;
       Vypnout simulaci ji vypne (ověřeno v headless Chromiu)
 - [x] `/_dev/bridge` bez mostu i bez simulace nespadne a vysvětlí, co dělat
-- [ ] v Safari na Macu (nebo iPadu) se v poli formuláře, přihlášení
+- [x] v Safari na Macu (nebo iPadu) se v poli formuláře, přihlášení
       a hledání nic neopravuje ani nezvětšuje; v `TextArea` opravy fungují
-      — **ruční ověření, z vývojového stroje nejde**
+      — ověřeno ručně 2026-11-27
 - [x] `docs/frontend.md` a `docs/native-bridge.md` aktualizované
 
 ## Odchylky od zadání

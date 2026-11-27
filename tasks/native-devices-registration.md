@@ -1,6 +1,6 @@
 # Nativní aplikace — task 3: modul `core.devices`, registrace zařízení a podepsaná volání (#177)
 
-**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (upřesnění U24–U26 schválená při plánování); zbývá proklik na dev serveru s přihlášeným administrátorem: seznam zařízení se štítkem „toto zařízení“, role periferie ve formuláři a akce Zneplatnit z UI (přihlášené cesty šly ověřit jen testy a podvrženou session)
+**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (upřesnění U24–U26 schválená při plánování); proklik přes https na dev serveru prošel 2026-11-27 (jedinečnost role `receipt` jen testy — simulace má jednu tiskárnu)
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (kontrakt `docs/native-bridge.md`); s taskem 2 jde souběžně —
@@ -284,10 +284,12 @@ platforma, stav, poslední kontakt), `device-revoke <deviceId>` (potvrzení,
       registrované zařízení, Synchronizovat nahlásí periferie simulace —
       ověřeno v headless prohlížeči; výzvu k registraci a registraci
       (session administrátora) tam obsloužila služba modulu přímo
-- [ ] role `receipt` jde přiřadit jen jedné tiskárně — pravidlo hlídá
-      `PeripheralDocument` (testy), z formuláře zbývá proklik
+- [x] role `receipt` jde přiřadit tiskárně, čtečce ne — proklik 2026-11-27;
+      „jen jedné tiskárně“ hlídá `PeripheralDocument` (testy), proklik
+      s druhou tiskárnou simulace až s taskem 4
 - [x] po `device-revoke` skončí `device.sync` chybou `DEVICE_REVOKED`
-- [ ] Zneplatnit z UI — akce je pokrytá testy, zbývá proklik
+- [x] Zneplatnit z UI — proklik 2026-11-27: stav zneplatněné, formulář
+      jen ke čtení, sync `DEVICE_REVOKED`, nová registrace = nový záznam
 - [x] podepsané volání se starou, cizí nebo použitou výzvou je odmítnuté
 - [x] v režimu jen pro čtení `self` funguje, `register` a hlášení
       periferií vrací `DS_READ_ONLY`
