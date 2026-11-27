@@ -578,6 +578,39 @@ class DataSourceConfigTest extends TestCase
         ], $overrides);
     }
 
+    public function testPinPolicyDefaultsWithoutTheKey(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets());
+
+        $pin = (new DataSourceConfig($this->tempDir))->getPinPolicy();
+        $this->assertFalse($pin->enabled);
+        $this->assertTrue($pin->isValid());
+    }
+
+    public function testPinPolicyIsReadEvenWhenProvidersAreBroken(): void
+    {
+        // Podepsané volání zařízení vrací politiku PINu bez ohledu na OIDC.
+        $this->createConfig($this->baseDataWithoutSecrets() + [
+            'auth' => ['providers' => 'broken', 'pin' => ['enabled' => true, 'maxLength' => 6]],
+        ]);
+
+        $pin = (new DataSourceConfig($this->tempDir))->getPinPolicy();
+        $this->assertTrue($pin->enabled);
+        $this->assertSame(6, $pin->maxLength);
+    }
+
+    public function testInvalidPinPolicyNeverThrows(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + ['auth' => ['pin' => ['minLength' => 1]]]);
+        $config = new DataSourceConfig($this->tempDir);
+
+        $this->assertFalse($config->getPinPolicy()->isValid());
+        $this->assertFalse($config->getAuthPolicy()->pin->enabled);
+
+        $this->createConfig($this->baseDataWithoutSecrets() + ['auth' => 'broken']);
+        $this->assertTrue((new DataSourceConfig($this->tempDir))->getPinPolicy()->isValid());
+    }
+
     public function testAuthPolicyClientSecretComesFromSecretsFile(): void
     {
         $this->createConfig($this->baseDataWithoutSecrets() + [

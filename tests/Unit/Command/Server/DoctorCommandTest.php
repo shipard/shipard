@@ -865,6 +865,71 @@ class DoctorCommandTest extends TestCase
         $this->assertStringNotContainsString('✗', $section);
     }
 
+    // ── Data source auth policy (#177 U21) ──────────────────────────────────
+
+    private function authPolicySection(string $display): string
+    {
+        $start = strpos($display, 'Data source auth policy');
+        $this->assertNotFalse($start, 'sekce Data source auth policy chybí');
+        $end = strpos($display, 'Outbound mail', $start);
+        return substr($display, $start, $end === false ? null : $end - $start);
+    }
+
+    public function testValidAndMissingPinPolicyPass(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001');
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002', extra: [
+            'auth' => ['pin' => ['enabled' => true, 'minLength' => 4, 'maxLength' => 6]],
+        ]);
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $section = $this->authPolicySection($tester->getDisplay());
+
+        $this->assertStringContainsString('All auth policies valid ✓', $section);
+        $this->assertStringNotContainsString('✗', $section);
+    }
+
+    public function testInvalidPinPolicyIsAnErrorPerDataSource(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $this->createDataSourceFixture($spec, 'test-0001-test-0001', extra: [
+            'auth' => ['pin' => ['enabled' => true, 'minLength' => 3]],
+        ]);
+        $this->createDataSourceFixture($spec, 'test-0002-test-0002');
+
+        $tester = new CommandTester($command);
+        $exit = $tester->execute([]);
+        $section = $this->authPolicySection($tester->getDisplay());
+
+        $this->assertStringContainsString(
+            "✗ test-0001-test-0001: auth.pin is invalid — 'auth.pin.minLength' must be at least 4; PIN stays disabled",
+            $section,
+        );
+        $this->assertStringNotContainsString('test-0002-test-0002', $section);
+        $this->assertStringNotContainsString('All auth policies valid', $section);
+        $this->assertSame(1, $exit);
+    }
+
+    public function testUnusableMainJsonIsSkippedInTheAuthPolicySection(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->commandWithStubs($spec);
+        $dsDir = $spec->getDataSourcesDir() . '/test-0001-test-0001';
+        mkdir($dsDir . '/config', 0750, true);
+        file_put_contents($dsDir . '/config/main.json', '{not json');
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $section = $this->authPolicySection($tester->getDisplay());
+
+        $this->assertStringNotContainsString('test-0001-test-0001', $section);
+        $this->assertStringNotContainsString('✗', $section);
+    }
+
     public function testEnableResetWarnsOnProduction(): void
     {
         $spec = $this->makeSpec();

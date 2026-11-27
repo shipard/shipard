@@ -1,0 +1,157 @@
+{
+    "tableId": 473,
+    "name": "Device peripherals",
+    "name:cs": "Periferie zařízení",
+    "name:en": "Device peripherals",
+
+    // Periferie zařízení (#177 D23, D32, U19) — tiskárny a čtečky tak, jak
+    // je nativní část hlásí podepsaným `PUT /_devices/self/peripherals`
+    // (tvar kontraktu §3.5). Řádky zakládá a aktualizuje jen `PeripheralSync`;
+    // periferie, která v hlášení chybí, se nemaže — dostane `present = 0`
+    // a přiřazená role jí zůstává. Uživatel mění jen sloupec `role`
+    // (podtabulka ve formuláři zařízení), proto je vše ostatní systémové.
+
+    "displayPattern": "{name}",
+    "hideFromNavigation": true,
+    "adminOnly": true,
+    "systemManaged": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "device",
+            "name": "Device",
+            "name:cs": "Zařízení",
+            "name:en": "Device",
+            "type": "int",
+            "nullable": false,
+            "reference": "core_devices_devices",
+            "system": true
+        },
+        {
+            // ID periferie z aplikace, stabilní v rámci zařízení.
+            "id": "peripheral_id",
+            "name": "Peripheral ID",
+            "name:cs": "ID periferie",
+            "name:en": "Peripheral ID",
+            "type": "varchar",
+            "length": 64,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true
+        },
+        {
+            // `printer` | `scanner`; neznámá hodnota není chyba (kontrakt §2.4).
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "transport",
+            "name": "Connection",
+            "name:cs": "Připojení",
+            "name:en": "Connection",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "system": true
+        },
+        {
+            // Jen tiskárna: ID profilu z katalogu serveru (kontrakt §6).
+            "id": "profile_id",
+            "name": "Printer profile",
+            "name:cs": "Profil tiskárny",
+            "name:en": "Printer profile",
+            "type": "varchar",
+            "length": 64,
+            "nullable": true,
+            "system": true
+        },
+        {
+            // Jen čtečka: co čte — `["barcode"]`, `["rfid"]`.
+            "id": "reads",
+            "name": "Reads",
+            "name:cs": "Čte",
+            "name:en": "Reads",
+            "type": "json",
+            "nullable": true,
+            "system": true
+        },
+        {
+            // Poslední hlášený stav: `ready` | `offline` | `error`.
+            "id": "status",
+            "name": "Status",
+            "name:cs": "Stav",
+            "name:en": "Status",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "system": true
+        },
+        {
+            // 0 = v posledním hlášení chyběla (U19).
+            "id": "present",
+            "name": "Present",
+            "name:cs": "Přítomná",
+            "name:en": "Present",
+            "type": "boolean",
+            "default": 1,
+            "nullable": false,
+            "system": true
+        },
+        {
+            // Role periferie na zařízení (U19, U23). Pravidla role — pro
+            // který druh periferie platí a jestli smí být na zařízení jen
+            // jednou — nese cfgItem a čte je `PeripheralRoles`.
+            "id": "role",
+            "name": "Role",
+            "name:cs": "Role",
+            "name:en": "Role",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "core.devices.peripheralRoles",
+            "nullable": true
+        },
+        {
+            "id": "reported_at",
+            "name": "Reported",
+            "name:cs": "Nahlášeno",
+            "name:en": "Reported",
+            "type": "datetime",
+            "nullable": false,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_device_peripheral",
+            "type": "unique",
+            "columns": [
+                {"column": "device"},
+                {"column": "peripheral_id"}
+            ]
+        }
+    ]
+}

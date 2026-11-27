@@ -1,0 +1,45 @@
+{
+    // core.devices.docStates
+    //
+    // Stavy zařízení (core_devices_devices, #177 U18). Vlastní sada, ne
+    // `core.system.docStatesArchive`: zařízení vzniká registrací rovnou jako
+    // aktivní (Koncept ani V opravě nedávají smysl) a zneplatnění je konečné
+    // — nová registrace téhož zařízení je nový záznam s novým `deviceId`.
+    //
+    //   Aktivní      → (ručně nic; zneplatňuje akce Zneplatnit a příkaz
+    //                   `device-revoke` přes DeviceRegistrationService)
+    //   Zneplatněné  → (nic)
+    //
+    // Aktivní zařízení je editovatelné bez přechodu stavu (název, režim,
+    // automatické zamčení, pokladna, role periferií).
+
+    "40": {
+        "stateName": "Active",
+        "stateName:cs": "Aktivní",
+        "stateName:en": "Active",
+        "actionName": "Activate",
+        "actionName:cs": "Aktivovat",
+        "actionName:en": "Activate",
+        "stateStyle": "done",
+        "detailBadge": false,
+        "mainState": 1,
+        "viewGroup": "active",
+        "closeForm": 1,
+        "goto": []
+    },
+
+    "70": {
+        "stateName": "Revoked",
+        "stateName:cs": "Zneplatněné",
+        "stateName:en": "Revoked",
+        "actionName": "Revoke",
+        "actionName:cs": "Zneplatnit",
+        "actionName:en": "Revoke",
+        "stateStyle": "archive",
+        "mainState": 2,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": []
+    }
+}

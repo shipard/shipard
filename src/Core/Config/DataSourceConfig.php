@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Config;
 
 use Shipard\Core\Auth\AuthPolicy;
+use Shipard\Core\Auth\PinPolicy;
 use Shipard\Core\Mail\MailRelayConfig;
 
 /**
@@ -193,6 +194,19 @@ class DataSourceConfig
             $this->authPolicy = AuthPolicy::fromArray(is_array($auth) ? $auth : []);
         }
         return $this->authPolicy;
+    }
+
+    /**
+     * Politika PINu z volitelného klíče `auth.pin` (#177 U21). Čte se přímo,
+     * ne přes {@see getAuthPolicy()}: nikdy nevyhazuje výjimku (neplatná sekce
+     * = výchozí hodnoty + nález v doctoru) a nesmí ji shodit ani chyba
+     * v sousedních klíčích auth politiky — podepsané volání zařízení ji vrací
+     * bez ohledu na OIDC providery.
+     */
+    public function getPinPolicy(): PinPolicy
+    {
+        $auth = $this->data['auth'] ?? null;
+        return PinPolicy::fromConfig(is_array($auth) ? ($auth['pin'] ?? null) : null);
     }
 
     /**

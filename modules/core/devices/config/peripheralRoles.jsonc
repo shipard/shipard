@@ -1,0 +1,20 @@
+{
+    // =========================================================================
+    // core.devices.peripheralRoles — role periferie na zařízení (#177 U19,
+    // U23), sloupec `role`. Role se přiřazuje v Shipardu na záznamu zařízení,
+    // ne v aplikaci; podle role server směruje tiskovou úlohu (task 4).
+    //
+    // Pravidla role jsou data, ne podmínky v kódu (čte je PeripheralRoles):
+    //   - kinds  — druhy periferií, kterým jde roli přiřadit
+    //   - single — true = na jednom zařízení nejvýš jedna periferie s rolí
+    //
+    // Ve verzi 1 jen `receipt`; později `a4` (s `print.pdf`) a štítky.
+    // =========================================================================
+    "receipt": {
+        "name": "Receipts",
+        "name:cs": "Účtenky",
+        "name:en": "Receipts",
+        "kinds": ["printer"],
+        "single": true
+    }
+}

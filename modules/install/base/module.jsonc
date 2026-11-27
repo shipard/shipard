@@ -18,6 +18,7 @@
         "core.units",
         "core.exchange",
         "core.prints",
+        "core.devices",
         "base.persons",
         "base.registry",
         "base.places",

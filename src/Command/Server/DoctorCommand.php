@@ -166,6 +166,10 @@ class DoctorCommand extends Command
         $stateErrors = $this->checkDataSourceStates($spec, $output, $mode);
 
         $output->writeln('');
+        $output->writeln('<info>Data source auth policy</info>');
+        $authErrors = $this->checkDataSourceAuthPolicy($spec, $output);
+
+        $output->writeln('');
         $output->writeln('<info>Outbound mail</info>');
         $mailErrors = $this->checkMailSafety($config, $output)
                     + $this->checkMailOutbound($spec, $config, $output);
@@ -174,7 +178,7 @@ class DoctorCommand extends Command
         $output->writeln(str_repeat('─', 55));
 
         $totalIssues = count($issues) + $dsErrors + $fpmErrors + $nginxErrors + $extErrors + $toolErrors
-                     + $mailErrors + $cronErrors + $renderErrors + $stateErrors + $secretErrors
+                     + $mailErrors + $cronErrors + $renderErrors + $stateErrors + $secretErrors + $authErrors
                      + ($poolUser !== $shipardUser ? 1 : 0);
         if ($totalIssues === 0) {
             $output->writeln('<info>✓ All checks passed.</info>');
@@ -302,6 +306,43 @@ class DoctorCommand extends Command
             ));
         } elseif ($errors === 0 && $warnings === 0) {
             $output->writeln('  All secrets in secrets/ ✓');
+        }
+        return $errors;
+    }
+
+    /**
+     * Auth politika zdrojů dat — klíč `auth.pin` (#177 U21). Neplatná sekce
+     * zdroj dat neshodí (platí výchozí hodnoty, PIN vypnutý), ale správce se
+     * o ní musí dozvědět: každý takový zdroj dat je jedna chyba. Zdroj dat
+     * s nepoužitelným `main.json` se tu přeskakuje beze slova.
+     *
+     * @return int number of errors
+     */
+    protected function checkDataSourceAuthPolicy(PermissionSpec $spec, OutputInterface $output): int
+    {
+        $dsList = $spec->discoverDataSources();
+        if (count($dsList) === 0) {
+            $output->writeln('  (no data sources)');
+            return 0;
+        }
+
+        $errors = 0;
+        foreach ($dsList as $dsDir) {
+            $id = basename($dsDir);
+            try {
+                $pin = (new DataSourceConfig($dsDir))->getPinPolicy();
+            } catch (\Throwable) {
+                // Nepoužitelný main.json hlásí už Data source DB connections.
+                continue;
+            }
+            if (!$pin->isValid()) {
+                $output->writeln("  ✗ {$id}: auth.pin is invalid — {$pin->problem}; PIN stays disabled until config/main.json is fixed");
+                $errors++;
+            }
+        }
+
+        if ($errors === 0) {
+            $output->writeln('  All auth policies valid ✓');
         }
         return $errors;
     }

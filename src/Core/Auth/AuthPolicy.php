@@ -9,14 +9,22 @@ namespace Shipard\Core\Auth;
  * provideři). Validuje se lazy při prvním použití (DataSourceConfig::
  * getAuthPolicy()), ne při načtení configu — rozbitá auth sekce nesmí
  * zablokovat CLI (break-glass musí fungovat vždy).
+ *
+ * Politika PINu (`auth.pin`, #177 U21) výjimku nevyhazuje nikdy: neplatná
+ * sekce jsou výchozí hodnoty a nález v `shpd-server doctor` — viz PinPolicy.
  */
 final readonly class AuthPolicy
 {
+	public PinPolicy $pin;
+
 	/** @param OidcProviderConfig[] $providers */
 	public function __construct(
 		public bool $localLogin = true,
 		public array $providers = [],
+		?PinPolicy $pin = null,
 	) {
+		$this->pin = $pin ?? PinPolicy::defaults();
+
 		if (!$this->localLogin && $this->providers === []) {
 			throw new \RuntimeException("Auth policy: 'local: false' requires at least one OIDC provider");
 		}
@@ -43,6 +51,7 @@ final readonly class AuthPolicy
 				static fn (array $p) => OidcProviderConfig::fromArray($p),
 				array_values($providersData),
 			),
+			pin: PinPolicy::fromConfig($data['pin'] ?? null),
 		);
 	}
 

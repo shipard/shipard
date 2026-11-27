@@ -1,0 +1,114 @@
+{
+    "tableId": 474,
+    "name": "Device challenges",
+    "name:cs": "Výzvy zařízení",
+    "name:en": "Device challenges",
+
+    // Jednorázové výzvy pro podpis zařízení (#177 D27, U4, U20, kontrakt
+    // §7.1): 32 náhodných bajtů v base64url, platnost 60 s, vázané na účel
+    // a zařízení. Bez Document třídy — tabulku obsluhuje jen
+    // `ChallengeService` (spotřeba atomickým UPDATE). Prošlé a použité výzvy
+    // uklízí úloha cronu modulu; `ds-reset` tabulku zahazuje.
+    //
+    // `device_id` je řetězec, ne vazba na zařízení: výzva s účelem
+    // `register` vzniká dřív než záznam zařízení. Collation `utf8mb4_bin`,
+    // aby se výzva v base64url porovnávala včetně velikosti písmen.
+
+    "hideFromNavigation": true,
+    "adminOnly": true,
+    "systemManaged": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "challenge",
+            "name": "Challenge",
+            "name:cs": "Výzva",
+            "name:en": "Challenge",
+            "type": "varchar",
+            "length": 64,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "device_id",
+            "name": "Device ID",
+            "name:cs": "ID zařízení",
+            "name:en": "Device ID",
+            "type": "varchar",
+            "length": 36,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "purpose",
+            "name": "Purpose",
+            "name:cs": "Účel",
+            "name:en": "Purpose",
+            "type": "varchar",
+            "length": 20,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "created_at",
+            "name": "Created",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created",
+            "type": "datetime",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "expires_at",
+            "name": "Expires",
+            "name:cs": "Platí do",
+            "name:en": "Expires",
+            "type": "datetime",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "used_at",
+            "name": "Used",
+            "name:cs": "Použito",
+            "name:en": "Used",
+            "type": "datetime",
+            "nullable": true,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_challenge",
+            "type": "unique",
+            "columns": [{"column": "challenge"}]
+        },
+        {
+            // Počet nevyužitých platných výzev zařízení (limit 5).
+            "id": "idx_device_open",
+            "type": "index",
+            "columns": [
+                {"column": "device_id"},
+                {"column": "used_at"},
+                {"column": "expires_at"}
+            ]
+        },
+        {
+            // Úklid prošlých výzev.
+            "id": "idx_expires",
+            "type": "index",
+            "columns": [{"column": "expires_at"}]
+        }
+    ]
+}

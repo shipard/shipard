@@ -1,0 +1,242 @@
+{
+    "tableId": 472,
+    "name": "Devices",
+    "name:cs": "Zařízení",
+    "name:en": "Devices",
+
+    // Registrovaná zařízení (#177 D5, D13, D24, U17, U18, U23) — nativní
+    // aplikace, později i hub bez okna. Záznam vzniká **jen registrací**
+    // (`DeviceRegistrationService`), proto `systemManaged`; zneplatnění je
+    // konečné a záznam zůstává kvůli auditu. Plní roli pracoviště ze starého
+    // Shipardu: název, režim, automatické zamčení, role periferií a přes
+    // extension z `economy.codebooks` pokladna (U16).
+    //
+    // `device_id` je unikátní i přes zneplatněná zařízení — nová registrace
+    // téhož zařízení znamená nové `deviceId` (kontrakt §7.3). Collation
+    // `utf8mb4_bin`: identita se porovnává přesně, ne podle české abecedy.
+
+    "displayPattern": "{name}",
+    "adminOnly": true,
+    "systemManaged": true,
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.devices.docStates"
+    },
+
+    "columnGroups": [
+        {
+            "id": "settings",
+            "name": "Settings",
+            "name:cs": "Nastavení",
+            "name:en": "Settings"
+        },
+        {
+            "id": "registration",
+            "name": "Registration",
+            "name:cs": "Registrace",
+            "name:en": "Registration"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "group": "settings"
+        },
+        {
+            // Režim zařízení (#177 D13): osobní, nebo sdílené pracoviště.
+            "id": "mode",
+            "name": "Mode",
+            "name:cs": "Režim",
+            "name:en": "Mode",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "core.devices.modes",
+            "default": "personal",
+            "nullable": false,
+            "group": "settings"
+        },
+        {
+            // null = bez automatického zamčení (#177 D17).
+            "id": "auto_lock_minutes",
+            "name": "Auto-lock after (minutes)",
+            "name:cs": "Automatické zamčení po (minuty)",
+            "name:en": "Auto-lock after (minutes)",
+            "type": "smallint",
+            "nullable": true,
+            "group": "settings"
+        },
+
+        // --- registrace (systémové — plní registrace a podepsaná volání) ---
+
+        {
+            "id": "device_id",
+            "name": "Device ID",
+            "name:cs": "ID zařízení",
+            "name:en": "Device ID",
+            "type": "varchar",
+            "length": 36,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // `macos` | `ipados`; simulace pro vývoj hlásí `mock`.
+            "id": "platform",
+            "name": "Platform",
+            "name:cs": "Platforma",
+            "name:en": "Platform",
+            "type": "varchar",
+            "length": 20,
+            "nullable": false,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // Z registrace; podepsané volání ji aktualizuje hlavičkou
+            // `X-Shipard-App-Version` (U25).
+            "id": "app_version",
+            "name": "App version",
+            "name:cs": "Verze aplikace",
+            "name:en": "App version",
+            "type": "varchar",
+            "length": 40,
+            "nullable": true,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // Veřejný klíč zařízení, SPKI DER v base64 (kontrakt §7.1).
+            "id": "public_key",
+            "name": "Public key",
+            "name:cs": "Veřejný klíč",
+            "name:en": "Public key",
+            "type": "text",
+            "nullable": false,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            "id": "key_algorithm",
+            "name": "Key algorithm",
+            "name:cs": "Algoritmus klíče",
+            "name:en": "Key algorithm",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // `secureEnclave` | `keychain` | `mock` — z těla registrace (U24).
+            "id": "key_storage",
+            "name": "Key storage",
+            "name:cs": "Uložení klíče",
+            "name:en": "Key storage",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            "id": "registered_by",
+            "name": "Registered by",
+            "name:cs": "Registroval",
+            "name:en": "Registered by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "system": true,
+            "group": "registration"
+        },
+        {
+            "id": "registered_at",
+            "name": "Registered",
+            "name:cs": "Registrováno",
+            "name:en": "Registered",
+            "type": "datetime",
+            "nullable": false,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // Čas posledního ověřeného podepsaného volání.
+            "id": "last_seen_at",
+            "name": "Last contact",
+            "name:cs": "Poslední kontakt",
+            "name:en": "Last contact",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            "id": "revoked_at",
+            "name": "Revoked",
+            "name:cs": "Zneplatněno",
+            "name:en": "Revoked",
+            "type": "datetime",
+            "nullable": true,
+            "system": true,
+            "group": "registration"
+        },
+        {
+            // null u zneplatnění z příkazové řádky.
+            "id": "revoked_by",
+            "name": "Revoked by",
+            "name:cs": "Zneplatnil",
+            "name:en": "Revoked by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "system": true,
+            "group": "registration"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 40,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_device_id",
+            "type": "unique",
+            "columns": [{"column": "device_id"}]
+        }
+    ]
+}

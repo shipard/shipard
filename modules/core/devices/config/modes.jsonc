@@ -1,0 +1,12 @@
+{
+    // =========================================================================
+    // core.devices.modes — režim registrovaného zařízení (#177 D13), sloupec
+    // `mode`. Hodnoty shodné s kontraktem mostu (docs/native-bridge.md §1);
+    // `unregistered` v číselníku není — to je stav aplikace bez záznamu.
+    //
+    //   - personal — zařízení jednoho uživatele, běžné přihlášení
+    //   - shared   — sdílené pracoviště: víc uživatelů, profily, zamčení a PIN
+    // =========================================================================
+    "personal": { "name": "Personal", "name:cs": "Osobní", "name:en": "Personal" },
+    "shared":   { "name": "Shared workplace", "name:cs": "Sdílené pracoviště", "name:en": "Shared workplace" }
+}

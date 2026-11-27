@@ -1,0 +1,43 @@
+{
+    // Zařízení (#177, docs/native-bridge.md §7): registrovaná zařízení
+    // nativní aplikace, jejich periferie a podepsaná volání bez session.
+    // Záznam zařízení vzniká jen registrací a plní roli pracoviště ze starého
+    // Shipardu (U23). Endpointy `/_devices/*` jsou v jádru
+    // (`src/Api/Controller/DevicesController.php`), logika tady.
+    "id": "core.devices",
+    "name": "Devices",
+    "name:cs": "Zařízení",
+    "name:en": "Devices",
+    "description": "Registered devices of the native app, their peripherals and signed device calls",
+    "description:cs": "Registrovaná zařízení nativní aplikace, jejich periferie a podepsaná volání zařízení",
+    "description:en": "Registered devices of the native app, their peripherals and signed device calls",
+
+    "dependencies": [
+        "core.system"
+    ],
+
+    "tables": [
+        "core_devices_devices",
+        "core_devices_peripherals",
+        "core_devices_challenges"
+    ],
+
+    // Zařízení a jejich periferie jsou konfigurace zdroje dat — registraci
+    // by po `ds-reset` musel administrátor opakovat na každém zařízení (U17).
+    // Výzvy žijí 60 s, reset je zahazuje.
+    "keepOnReset": [
+        "core_devices_devices",
+        "core_devices_peripherals"
+    ],
+
+    "documentClasses": [
+        { "table": "core_devices_devices",     "class": "Shipard\\Module\\Core\\Devices\\DeviceDocument" },
+        { "table": "core_devices_peripherals", "class": "Shipard\\Module\\Core\\Devices\\PeripheralDocument" }
+    ],
+
+    "config": [
+        { "id": "core.devices.docStates",       "file": "config/docStates.jsonc" },
+        { "id": "core.devices.modes",           "file": "config/modes.jsonc" },
+        { "id": "core.devices.peripheralRoles", "file": "config/peripheralRoles.jsonc" }
+    ]
+}
