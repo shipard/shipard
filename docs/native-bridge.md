@@ -669,7 +669,7 @@ počet session uživatele na tomto zařízení, které server zneplatnil.
 | `PIN_INVALID` | 401 | PIN nesouhlasí; `details.attemptsLeft` = zbývající pokusy |
 | `PIN_LOCKED` | 403 | vyčerpané pokusy — dál jen plné přihlášení |
 | `USER_NOT_ENROLLED` | 403 | uživatel není na tomto zařízení zařazený |
-| `RATE_LIMITED` | 429 | příliš mnoho nevyužitých výzev |
+| `RATE_LIMITED` | 429 | příliš mnoho nevyužitých výzev, nebo překročený limit požadavků zařízení — 120 za minutu na `deviceId` ([rest-api.md](rest-api.md) §11); `details` nese `_retry_after` v sekundách |
 
 Chyby ověření podpisem nenesou podrobnosti, které by pomohly hádat.
 
@@ -860,6 +860,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Nepovinná hlavička `X-Shipard-App-Version` u podepsaných volání (§7.1, #177 U25) — verze aplikace na záznamu zařízení se jinak po registraci neměla jak aktualizovat. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Nepovinné pole `keyStorage` v těle `POST /_devices/register` (§7.2, #177 U24) a výčet chyb registrace. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Server pro zařízení hotový (task 3): modul `core.devices`, endpointy `challenge`, `register`, `self`, `self/peripherals`, Nastavení → Zařízení s panelem Toto zařízení. Kontrakt beze změny. |
+| 1 | 2026-11-27 | Volání zařízení mají vlastní limit požadavků (120 za minutu na `deviceId`, strop na IP adresu) — `RATE_LIMITED` u §7.2 doplněno. Verze beze změny. |
 
 ---
 

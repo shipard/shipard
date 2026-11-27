@@ -1029,6 +1029,18 @@ Omezení počtu požadavků chrání server před přetížením.
 | API klíč | 1000 req | 1 minuta |
 | Session token | 300 req | 1 minuta |
 | Login endpoint | 10 req | 1 minuta (per IP) |
+| Bez přihlášení | 60 req | 1 minuta (per IP) |
+| Zařízení nativní aplikace | 120 req | 1 minuta (per `deviceId`); navíc strop 1200 req za minutu na IP adresu |
+
+Volání zařízení (`/_devices/challenge`, `/_devices/self`,
+`/_devices/self/peripherals`, [native-bridge.md](native-bridge.md) §7)
+session nenesou a bez vlastního limitu by všechna zařízení jedné provozovny
+sdílela anonymní limit IP adresy. Počítají se podle `deviceId` (hlavička
+`X-Shipard-Device`, u výzvy pole těla); ID se v tu chvíli neověřuje, proto
+má každá IP adresa ještě společný strop — střídáním vymyšlených ID ho
+obejít nejde. Požadavek bez `deviceId` ve tvaru UUID zůstává v anonymním
+limitu. Hlavičky `X-RateLimit-*` popisují ten z obou limitů, kterému zbývá
+méně.
 
 Při překročení → `429 Too Many Requests`:
 

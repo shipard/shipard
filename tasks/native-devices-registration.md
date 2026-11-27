@@ -314,10 +314,10 @@ platforma, stav, poslední kontakt), `device-revoke <deviceId>` (potvrzení,
 
 ## Zbývá mimo tento task
 
-- Anonymní požadavky sdílejí limit 60 za minutu na IP adresu a jedna
-  synchronizace jsou čtyři požadavky — víc zařízení za jednou adresou může
-  na limit narazit. Vlastní limit pro zařízení (vzor `hostingAiGateway`)
-  je na zvážení před nasazením sdílených pracovišť.
+- ~~Anonymní požadavky sdílejí limit 60 za minutu na IP adresu~~ —
+  doplněno 2026-11-27: volání zařízení mají vlastní limit 120 za minutu na
+  `deviceId` se stropem 1200 za minutu na IP adresu (`RateLimitMiddleware`,
+  `docs/rest-api.md` §11).
 - Generické CRUD (`PATCH`) jde mimo dokumenty, jedinečnost role `receipt`
   hlídá jen formulář — směrování tisku (task 4) musí počítat i s víc
   periferiemi s rolí.

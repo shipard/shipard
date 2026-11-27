@@ -69,6 +69,10 @@ Zdroj dat bez číselníků sloupec nemá a formulář prvek nevykreslí;
   `X-Shipard-App-Version` verzi aplikace.
 - V režimu jen pro čtení fungují `challenge` a `self`; registrace
   a hlášení periferií vrací `DS_READ_ONLY`.
+- Volání zařízení mají vlastní limit požadavků (`RateLimitMiddleware`):
+  120 za minutu na `deviceId` a strop 1200 za minutu na IP adresu — zařízení
+  jedné provozovny tak nesdílejí anonymní limit 60 za minutu a střídání
+  vymyšlených ID limit neobejde. Jedna synchronizace jsou čtyři požadavky.
 
 Hlášení periferií (`PUT /_devices/self/peripherals`) nese vždy úplný
 seznam: známá periferie se aktualizuje, nová založí a chybějící dostane
@@ -138,6 +142,3 @@ v `GET /_devices/self`.
   `GET /_devices/self` proto vrací `users: []`.
 - Výměna hardwaru („Registrovat jako náhradu za…“, převzetí nastavení ze
   zneplatněného zařízení) — mimo verzi 1.
-- Anonymní požadavky sdílejí limit 60 za minutu na IP adresu; jedna
-  synchronizace jsou čtyři požadavky. Víc zařízení za jednou adresou může
-  na limit narazit — vlastní limit pro zařízení zatím není.
