@@ -85,6 +85,14 @@ class AuthMiddleware
 		if ($route->controller === 'hostingAiGateway' && $route->action === 'messages') {
 			return true;
 		}
+		// Podepsaná volání zařízení (#177 U4): session nenesou, ověřuje je
+		// DevicesController podpisem výzvy klíčem zařízení. `challenge`
+		// a `register` výjimkou NEJSOU — registrace potřebuje session
+		// administrátora a bez hlavičky Authorization projdou jako anonymní.
+		if ($route->controller === 'devices'
+			&& in_array($route->action, ['self', 'peripherals'], true)) {
+			return true;
+		}
 		if ($openApiPublic && $route->controller === 'openapi' && $route->action === 'spec') {
 			return true;
 		}

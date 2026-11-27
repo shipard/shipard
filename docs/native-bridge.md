@@ -590,14 +590,21 @@ administrátor zdroje dat. Tělo:
   "name": "Pokladna 2",
   "mode": "shared",
   "platform": "ipados",
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.0",
+  "keyStorage": "secureEnclave"
 }
 ```
 
 `deviceId`, `algorithm`, `publicKey` a `signature` jsou výsledek
-`device.register`, `platform` a `appVersion` z `info`, `name` a `mode`
-(`personal` | `shared`) zadává administrátor. Odpověď 201:
+`device.register`, `platform`, `appVersion` a `keyStorage` z `info`
+(`app.version`, `keyStorage`; `appVersion` a `keyStorage` jsou nepovinné),
+`name` a `mode` (`personal` | `shared`) zadává administrátor. Odpověď 201:
 `{deviceId, name, mode, state}`.
+
+Chyby: `VALIDATION_ERROR` (422, tělo neodpovídá kontraktu — `details` nese
+pole), `SIGNATURE_INVALID`, `CHALLENGE_INVALID`, `DEVICE_EXISTS`
+a `DEVICE_REVOKED` — zneplatněné `deviceId` se znovu neregistruje (§7.3).
+Bez session `UNAUTHORIZED` (401), bez práv administrátora `FORBIDDEN` (403).
 
 **`GET /_devices/self`** — stav registrace:
 
@@ -849,6 +856,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Identita a registrace zařízení pro každý zdroj dat zvlášť, `info.dataSource` (#177 D33); `DEVICE_UNKNOWN` se na mostu hlásí jako `NOT_REGISTERED`. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Oddíl Simulace pro vývoj (§9a, #177 U11–U13): hodnoty `mock` u `platform` a `keyStorage`, podmnožina ESC/POS pro náhled a čísla kódových stránek pro `ESC t` (18, 45). Webová strana mostu hotová (task 2). Verze beze změny. |
 | 1 | 2026-11-27 | Nepovinná hlavička `X-Shipard-App-Version` u podepsaných volání (§7.1, #177 U25) — verze aplikace na záznamu zařízení se jinak po registraci neměla jak aktualizovat. Před implementací klienta, verze beze změny. |
+| 1 | 2026-11-27 | Nepovinné pole `keyStorage` v těle `POST /_devices/register` (§7.2, #177 U24) a výčet chyb registrace. Před implementací klienta, verze beze změny. |
 
 ---
 

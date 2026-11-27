@@ -149,6 +149,10 @@ class DevicesModuleTest extends TestCase
         $this->assertSame([], $states[DeviceDocument::STATE_REVOKED]['goto']);
         $this->assertSame('Zneplatněné', $states[DeviceDocument::STATE_REVOKED]['stateName']);
 
+        // Služba registrace zapisuje stav mimo gateway — konstanty musí sedět s číselníkem.
+        $this->assertSame(DeviceDocument::STATE_MAIN_ACTIVE, $states[DeviceDocument::STATE_ACTIVE]['mainState']);
+        $this->assertSame(DeviceDocument::STATE_MAIN_REVOKED, $states[DeviceDocument::STATE_REVOKED]['mainState']);
+
         $columns = self::columns('core_devices_devices');
         $this->assertSame(DeviceDocument::STATE_ACTIVE, $columns['docState']['default']);
         $this->assertSame($states[DeviceDocument::STATE_ACTIVE]['mainState'], $columns['docStateMain']['default']);

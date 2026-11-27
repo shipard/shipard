@@ -25,6 +25,9 @@ class InMemoryDevicesDb extends DataSourceConnection
     /** @var list<string> provedené zápisy, pro kontrolu „nic se nezapsalo“ */
     public array $writes = [];
 
+    /** True = dohledání zařízení podle `device_id` nic nenajde (souběžná registrace). */
+    public bool $hideExistingDevice = false;
+
     private int $affected = 0;
     private int $nextId = 1;
 
@@ -86,6 +89,9 @@ class InMemoryDevicesDb extends DataSourceConnection
     {
         $sql = self::sql($args);
         if (str_contains($sql, 'FROM core_devices_devices WHERE device_id = %s')) {
+            if ($this->hideExistingDevice) {
+                return null;
+            }
             foreach ($this->tables['core_devices_devices'] as $row) {
                 if ($row['device_id'] === $args[1]) {
                     return $row;
@@ -140,6 +146,18 @@ class InMemoryDevicesDb extends DataSourceConnection
                 }
             }
             $this->writes[] = 'prune';
+            return;
+        }
+        if (str_contains($sql, 'UPDATE core_devices_devices SET docState = %i')) {
+            [$state, $main, $at, $by, $id, $from] = [$args[1], $args[2], $args[3], $args[4], (int) $args[5], $args[6]];
+            $row = $this->tables['core_devices_devices'][$id] ?? null;
+            if ($row !== null && (int) $row['docState'] === $from) {
+                $this->tables['core_devices_devices'][$id] = array_merge($row, [
+                    'docState' => $state, 'docStateMain' => $main, 'revoked_at' => $at, 'revoked_by' => $by,
+                ]);
+                $this->affected = 1;
+            }
+            $this->writes[] = 'revoke';
             return;
         }
         throw new \LogicException("InMemoryDevicesDb: unexpected execute: {$sql}");

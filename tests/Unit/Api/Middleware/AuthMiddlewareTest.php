@@ -192,6 +192,37 @@ class AuthMiddlewareTest extends TestCase
 		}
 	}
 
+	public function testSignedDeviceEndpointsAreExempt(): void
+	{
+		// Podepsané volání zařízení session nenese (#177 U4) — ověřuje ho
+		// DevicesController podpisem; zastaralá hlavička nesmí vadit.
+		foreach (['self', 'peripherals'] as $action) {
+			$route = new Route('devices', $action);
+			$req = $this->req(server: ['HTTP_AUTHORIZATION' => 'Token malformed']);
+			$result = $this->middleware->handle($req, $route, $this->db);
+
+			$this->assertInstanceOf(AuthContext::class, $result);
+			$this->assertFalse($result->isAuthenticated);
+		}
+	}
+
+	public function testDeviceChallengeAndRegisterAreNotExempt(): void
+	{
+		// Registrace potřebuje session administrátora: vadná hlavička je 401
+		// už tady, bez hlavičky projde anonymní kontext a rozhodne controller.
+		foreach (['challenge', 'register'] as $action) {
+			$route = new Route('devices', $action);
+
+			$bad = $this->middleware->handle($this->req(server: ['HTTP_AUTHORIZATION' => 'Token malformed']), $route, $this->db);
+			$this->assertInstanceOf(Response::class, $bad, $action);
+			$this->assertSame(401, $bad->getStatus(), $action);
+
+			$anonymous = $this->middleware->handle($this->req(), $route, $this->db);
+			$this->assertInstanceOf(AuthContext::class, $anonymous, $action);
+			$this->assertFalse($anonymous->isAuthenticated, $action);
+		}
+	}
+
 	public function testHostingMailLookupIsExempt(): void
 	{
 		// Auth klíčem shpd_hk_ routeru si dělá HostingMailController sám.

@@ -289,6 +289,13 @@ class Router
 			return $this->resolveHostingOidcRoute($subpath, $method);
 		}
 
+		// Zařízení ↔ server (#177, docs/native-bridge.md §7.2) — ověření
+		// session administrátora nebo podpisem zařízení i gating na modul
+		// core.devices dělá kontroler.
+		if ($subpath === '/_devices' || str_starts_with($subpath, '/_devices/')) {
+			return $this->resolveDevicesRoute($subpath, $method);
+		}
+
 		// Provisioning API pro DS servery (D3) — autentizaci klíčem
 		// shpd_hk_ i gating dělá kontroler (endpointy jsou exempt).
 		if (str_starts_with($subpath, '/_hosting/server/')) {
@@ -804,6 +811,27 @@ class Router
 			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 		}
 		return new Route('hostingOidc', $action);
+	}
+
+	private function resolveDevicesRoute(string $subpath, string $method): Route|Response
+	{
+		// Nová akce = řádek v ReadOnlyPolicy (výchozí je 403) a rozhodnutí
+		// o výjimce v AuthMiddleware::isExempt().
+		$actions = [
+			'/_devices/challenge'        => ['POST', 'challenge'],
+			'/_devices/register'         => ['POST', 'register'],
+			'/_devices/self'             => ['GET', 'self'],
+			'/_devices/self/peripherals' => ['PUT', 'peripherals'],
+		];
+		if (!isset($actions[$subpath])) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+
+		[$expectedMethod, $action] = $actions[$subpath];
+		if ($method !== $expectedMethod) {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+		return new Route('devices', $action);
 	}
 
 	private function resolveHostingServerRoute(string $subpath, string $method): Route|Response

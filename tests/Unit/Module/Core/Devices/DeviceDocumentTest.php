@@ -8,8 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Devices\DeviceDocument;
 
 /**
- * Zařízení (#177 U18): vzniká jen registrací, zneplatnění je konečné
- * a smí ho provést jen služba registrace; údaje z registrace se nemění.
+ * Zařízení (#177 U18): vzniká jen registrací, stav se přes dokument nemění
+ * (zneplatňuje služba registrace) a údaje z registrace jsou pevné.
  */
 class DeviceDocumentTest extends TestCase
 {
@@ -114,21 +114,6 @@ class DeviceDocumentTest extends TestCase
         );
     }
 
-    public function testRegistrationServiceMayRevoke(): void
-    {
-        $data = [
-            'id'                          => 5,
-            'docState'                    => DeviceDocument::STATE_REVOKED,
-            DeviceDocument::MARKER_REVOKE => true,
-        ];
-        $doc = $this->doc();
-
-        $this->assertSame([], $this->codes($doc, $data));
-
-        $doc->beforeSave($data, self::STORED);
-        $this->assertArrayNotHasKey(DeviceDocument::MARKER_REVOKE, $data);
-    }
-
     public function testRevokedDeviceIsFinal(): void
     {
         $revoked = ['docState' => DeviceDocument::STATE_REVOKED] + self::STORED;
@@ -136,11 +121,7 @@ class DeviceDocumentTest extends TestCase
         $this->assertSame(['revoked'], $this->codes($this->doc($revoked), ['id' => 5, 'name' => 'Jinak']));
         $this->assertSame(
             ['revoked'],
-            $this->codes($this->doc($revoked), [
-                'id'                          => 5,
-                'docState'                    => DeviceDocument::STATE_ACTIVE,
-                DeviceDocument::MARKER_REVOKE => true,
-            ]),
+            $this->codes($this->doc($revoked), ['id' => 5, 'docState' => DeviceDocument::STATE_ACTIVE]),
         );
     }
 

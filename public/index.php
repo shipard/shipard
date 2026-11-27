@@ -385,6 +385,7 @@ function dispatch(
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
 		'hostingOidc' => dispatchHostingOidc($route, $request, $auth, $db, $tables, $resolved),
+		'devices' => dispatchDevices($route, $request, $auth, $db, $tables, $resolved, $configRuntime),
 		'hostingServer' => dispatchHostingServer($route, $request, $db, $tables, $resolved),
 		'hostingMail' => dispatchHostingMail($route, $request, $db, $tables, $resolved),
 		'hostingAiGateway' => dispatchHostingAiGateway($route, $request, $db, $tables, $resolved),
@@ -765,6 +766,36 @@ function dispatchHostingServer(
 		'confirm'   => $ctrl->confirm($request, $db, $tables),
 		'stats'     => $ctrl->stats($request, $db, $tables),
 		default     => Response::error('INTERNAL_ERROR', "Unknown hostingServer action: {$route->action}", 500),
+	};
+}
+
+/**
+ * Zařízení ↔ server (#177). `self` a `peripherals` jsou exempt (ověřuje je
+ * kontroler podpisem zařízení), `challenge` volá zařízení bez session —
+ * velikost těla proto omezit už tady; hlášení periferií má strop 64 položek.
+ *
+ * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+ */
+function dispatchDevices(
+	Route $route,
+	Request $request,
+	AuthContext $auth,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	array $tables,
+	\Shipard\Api\ResolvedDataSource $resolved,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+): Response {
+	$contentLength = (int) ($request->getHeader('content-length') ?? '0');
+	if ($contentLength > 65536) {
+		return Response::error('PAYLOAD_TOO_LARGE', 'Request body too large', 413);
+	}
+	$ctrl = new \Shipard\Api\Controller\DevicesController($resolved->config, $configRuntime);
+	return match ($route->action) {
+		'challenge'   => $ctrl->challenge($request, $auth, $db, $tables),
+		'register'    => $ctrl->register($request, $auth, $db, $tables),
+		'self'        => $ctrl->selfState($request, $db, $tables),
+		'peripherals' => $ctrl->peripherals($request, $db, $tables),
+		default       => Response::error('INTERNAL_ERROR', "Unknown devices action: {$route->action}", 500),
 	};
 }
 

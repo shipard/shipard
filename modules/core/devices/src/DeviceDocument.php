@@ -11,12 +11,11 @@ use Shipard\Core\Document\ValidationResult;
 /**
  * Zařízení (core_devices_devices, #177 U18).
  *
- * Záznam vzniká jen registrací (`DeviceRegistrationService` vkládá řádek
- * přímo, mimo gateway) — přes dokumentový lifecycle jde jen upravit
+ * Vznik i zneplatnění záznamu patří `DeviceRegistrationService`, která
+ * zapisuje přímo, mimo gateway (registrace vkládá řádek, zneplatnění je
+ * atomický podmíněný UPDATE) — přes dokumentový lifecycle jde jen upravit
  * nastavení aktivního zařízení. Zneplatnění je konečné: zneplatněné
- * zařízení je jen ke čtení a do aktivního stavu se nevrací. Zneplatnit
- * smí jen služba registrace (akce Zneplatnit, příkaz `device-revoke`),
- * která si přechod povolí markerem `_revoke`.
+ * zařízení je jen ke čtení a stav se tudy nemění nikdy.
  *
  * Systémové sloupce (identita, klíč, časy) se z formuláře ani z CRUD
  * nezapíšou; tady je pojistka pro každého dalšího volajícího gateway.
@@ -28,8 +27,9 @@ class DeviceDocument extends Document
     public const int STATE_ACTIVE = 40;
     public const int STATE_REVOKED = 70;
 
-    /** Marker služby registrace: uložení smí zařízení zneplatnit. */
-    public const string MARKER_REVOKE = '_revoke';
+    /** `mainState` stavů z `core.devices.docStates` — služba registrace zapisuje mimo gateway. */
+    public const int STATE_MAIN_ACTIVE = 1;
+    public const int STATE_MAIN_REVOKED = 2;
 
     public const int NAME_MAX_LENGTH = 100;
     public const int AUTO_LOCK_MAX_MINUTES = 1440;
@@ -70,7 +70,7 @@ class DeviceDocument extends Document
             );
             return $result;
         }
-        if ($newState !== $oldState && !($newState === self::STATE_REVOKED && !empty($data[self::MARKER_REVOKE]))) {
+        if ($newState !== $oldState) {
             $result->addError(
                 ValidationError::FIELD_FORM,
                 'Stav zařízení nelze změnit ručně — použijte akci Zneplatnit',
@@ -129,7 +129,6 @@ class DeviceDocument extends Document
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         $this->trackStateChange($data, $originalData);
-        unset($data[self::MARKER_REVOKE]);
 
         if (array_key_exists('name', $data) && $data['name'] !== null) {
             $data['name'] = trim((string) $data['name']);

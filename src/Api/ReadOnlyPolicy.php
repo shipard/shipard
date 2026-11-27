@@ -84,6 +84,14 @@ final class ReadOnlyPolicy
 		],
 		// Reporty v read-only fungují (D7).
 		'reports' => [self::ANY => ReadOnlyVerdict::Allow],
+		// Zařízení (#177): bez výzvy a `self` by se zařízení v režimu jen pro
+		// čtení neověřilo vůbec (výzva i poslední kontakt jsou provozní
+		// stopa, ne data zdroje dat).
+		'devices' => [
+			'challenge' => ReadOnlyVerdict::Allow,
+			'self'      => ReadOnlyVerdict::Allow,
+			// register, peripherals → 403: zakládají a mění záznamy
+		],
 		// Tisk = čtení záznamu (#90 D21); návrh odeslání nic nemění.
 		'prints' => [
 			'run'           => ReadOnlyVerdict::Allow,

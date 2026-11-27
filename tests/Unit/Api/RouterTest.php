@@ -811,6 +811,47 @@ class RouterTest extends TestCase
 		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
 	}
 
+	// Zařízení ↔ server (#177, docs/native-bridge.md §7.2)
+
+	public function testDevicesRoutes(): void
+	{
+		foreach ([
+			['/api/v1/_devices/challenge', 'POST', 'challenge'],
+			['/api/v1/_devices/register', 'POST', 'register'],
+			['/api/v1/_devices/self', 'GET', 'self'],
+			['/api/v1/_devices/self/peripherals', 'PUT', 'peripherals'],
+		] as [$path, $method, $action]) {
+			$result = $this->router->resolve($path, $method);
+			$this->assertInstanceOf(Route::class, $result, $path);
+			$this->assertRoute($result, 'devices', $action);
+		}
+	}
+
+	public function testDevicesRoutesRejectOtherMethods(): void
+	{
+		foreach ([
+			['/api/v1/_devices/challenge', 'GET'],
+			['/api/v1/_devices/self', 'POST'],
+			['/api/v1/_devices/self/peripherals', 'GET'],
+			['/api/v1/_devices/self/peripherals', 'POST'],
+		] as [$path, $method]) {
+			$result = $this->router->resolve($path, $method);
+			$this->assertInstanceOf(Response::class, $result, "{$method} {$path}");
+			$this->assertSame(405, $result->getStatus(), "{$method} {$path}");
+		}
+	}
+
+	public function testUnknownDevicesPathIsNotFoundInsteadOfCrud(): void
+	{
+		// Bez vlastní větve by `/_devices` skončilo jako CRUD nad tabulkou `_devices`
+		// a starý endpoint se session (`/_devices/{deviceId}/peripherals`) nesmí existovat (D32).
+		foreach (['/api/v1/_devices', '/api/v1/_devices/0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10/peripherals', '/api/v1/_devices/printer-profiles'] as $path) {
+			$result = $this->router->resolve($path, 'GET');
+			$this->assertInstanceOf(Response::class, $result, $path);
+			$this->assertSame(404, $result->getStatus(), $path);
+		}
+	}
+
 	// Hosting server provisioning routes (D3)
 
 	public function testHostingServerReconcilePost(): void
