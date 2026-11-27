@@ -423,6 +423,15 @@ případně Přegenerovat koncept.
 > V modulu Zakázek zůstává předpis (sloupce `inv_*`, řádky), tabulka období,
 > seeder a exporter datových sad a deklarace `recordActions` nad
 > `economy_work_orders_heads`. Chování nad zakázkami se přesunem nezměnilo.
+>
+> **Od #174 D31, D34, D35** (`tasks/buildings-phase2.md`, 2026-11-27) má engine
+> druhý zdroj — smlouvy doplňku Budovy — a řádek předpisu **společný
+> základ** v enginu (`Rows\AbstractPrescriptionRowsForm`,
+> `…RowDocument`, `…RowLockProvider`, `PrescriptionRowsSubtable`):
+> `WorkOrderRowsForm`, `WorkOrderRowDocument` a `WorkOrderRowLockProvider`
+> z něj jen dědí a dodávají rodiče, chování zakázek se nezměnilo. Konstanty
+> `InvoicingSettings::WORK_ORDER_COLUMNS` / `SOURCE_WORK_ORDER` se jmenují
+> `RECORD_COLUMNS` / `SOURCE_RECORD`.
 
 **`economy_work_orders_periods`** — evidence období: zakázka, začátek
 a konec období, stav (*naplánováno / čeká na podklady / vystaveno /

@@ -2,7 +2,7 @@
 title: Periodická fakturace
 summary: Jak nastavit periodické zakázce fakturační předpis (druh, zakázka, řádky s platností), kdy a jak vznikají koncepty faktur, co s nimi udělat a jak období přegenerovat, obnovit nebo dovystavit.
 keywords: [periodická fakturace, opakovaná fakturace, pravidelná fakturace, fakturace nájmu, nájemné, nájem, paušál, paušální faktura, měsíční faktura, čtvrtletní faktura, roční faktura, roční záloha, zálohová faktura periodicky, fakturační předpis, předpis fakturace, řádky zakázky, řádek předpisu, platnost řádku, změna ceny od data, nová cena od, periodicita, fakturovat od, text dokladu, období, {období}, proměnná období, pevný variabilní symbol, trvalý příkaz, kdy vznikne faktura, faktura na počátku období, faktura na konci období, koncept faktury ke kontrole, koncepty ke kontrole, periodická faktura nevznikla, smazaný koncept, zastavené období, obnovit období, přegenerovat koncept, přegenerovat fakturu, vystavit dlužná období, dlužná období, dohánění, čeká na podklady, přispěvatel obsahu, přefakturace spotřeby, záložka fakturace, výchozí hodnoty fakturace, typ dokladu na druhu, řada dokladů na druhu, splatnost na druhu]
-related: [zakazky/zakazky.md, zakazky/nastaveni-zakazek.md, faktury-vydane/vystaveni-faktury.md, co-dnes-nejde.md]
+related: [zakazky/zakazky.md, zakazky/nastaveni-zakazek.md, budovy/smlouvy.md, faktury-vydane/vystaveni-faktury.md, co-dnes-nejde.md]
 ---
 
 # Periodická fakturace
@@ -12,6 +12,9 @@ fakturu (nebo zálohovou fakturu). Ty nastavíš **co** a **jak často**, běh
 jednou denně vystaví koncepty za splatná období a ty je zkontroluješ
 a potvrdíš. Předpis a vystavená období najdeš na zakázce v **Zakázky →
 Zakázky**, záložka **Fakturace** v detailu.
+
+Stejným během se fakturují i smlouvy doplňku Budovy — co se nastavuje na
+smlouvě, popisuje stránka [Smlouvy](../budovy/smlouvy.md).
 
 ## Kdy to potřebuješ
 

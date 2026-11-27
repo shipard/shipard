@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 2: fakturace smluv (#174 D29–D38)
 
-**Stav:** naplánováno — design #174 D29–D38 schválen 2026-11-27, task k implementaci
+**Stav:** hotovo — 2026-11-27 ve čtyřech commitech (#174 D29–D38); ověřeno unit a integračními testy, během z CLI a v headless prohlížeči na volném zdroji dat s demo sadou (šablona řádků, potvrzení, koncepty, záložka Fakturace, Přegenerovat, Obnovit, Vystavit dlužná období, zakázky vedle smluv); odznak sekce při nálezech ze dvou zdrojů zároveň chybí — omezení `core.alerts`, viz Poznámky k implementaci
 
 > Task pro Claude Code (4 commity). Design: issue #174. Navazuje na fázi 1
 > (`tasks/buildings-phase1.md`) a na engine periodické fakturace
@@ -185,19 +185,20 @@
 
 ## Hotovo když
 
-- [ ] konstanty přejmenované, Zakázky po refaktoringu D31 beze změny
+- [x] konstanty přejmenované, Zakázky po refaktoringu D31 beze změny
       chování (testy beze změny asercí)
-- [ ] druh smlouvy má výchozí hodnoty fakturace a šablonu řádků; nová
+- [x] druh smlouvy má výchozí hodnoty fakturace a šablonu řádků; nová
       smlouva (i po změně druhu v konceptu) dostane řádky šablony jen
       když žádné nemá
-- [ ] smlouva s periodicitou nejde potvrdit bez „fakturovat od“ a bez
+- [x] smlouva s periodicitou nejde potvrdit bez „fakturovat od“ a bez
       řádku; řádek mimo platnost smlouvy je chyba
-- [ ] `periodic-invoicing-run` vystaví koncepty za smlouvy i zakázky,
+- [x] `periodic-invoicing-run` vystaví koncepty za smlouvy i zakázky,
       evidence období se nemíchají; ukončená smlouva po `date_end`
       nefakturuje
-- [ ] záložka Fakturace a akce v detailu smlouvy, upozornění s badge
-      v sekci Budovy
-- [ ] nápověda, README, `docs/features.md`, ruční ověření, `**Stav:**`
+- [x] záložka Fakturace a akce v detailu smlouvy, upozornění s badge
+      v sekci Budovy — badge jen když nálezy checku nepatří zároveň
+      zakázkám i smlouvám (viz Poznámky k implementaci)
+- [x] nápověda, README, `docs/features.md`, ruční ověření, `**Stav:**`
 
 ## Pasti
 
@@ -215,3 +216,87 @@
   odpovědí se nemění, jen jména konstant.
 - **`tableId` přes `next-table-id` až po aktuálním `git pull`** — při
   souběžné práci na jiném doplňku hrozí kolize jako ve fázi 1.
+
+## Poznámky k implementaci (2026-11-27)
+
+Rozhodnutí nad rámec zadání, potvrzená 2026-11-27 před implementací:
+
+- **Upřesnění D36 — potvrzení vyžaduje i typ dokladu a řadu.** Smlouva
+  s periodicitou nejde potvrdit bez efektivního typu dokladu a řady
+  dokladů (smlouva → druh), chyba u pole `inv_doc_type` /
+  `inv_number_series` jako u zakázky. D36 je nevyjmenovává, engine by ale
+  bez nich každé období shodil s upozorněním. Smlouva bez periodicity
+  beze změny; druh hlídá u výchozích hodnot jen tvar.
+- **Hodnota `SOURCE_RECORD` je `'record'`** (dřív `'workOrder'`). Ověřeno:
+  `InvoicingSettings::$sources` čte jen `source()` a tu jen test — hodnota
+  se neukládá, neserializuje a klient ji nedostává. Druh zdroje dokladu
+  `InvoiceBuilder::SOURCE_KIND = 'workOrder'` (D7) se nezměnil.
+- **Commity průběžně** přímo na `stable` po každém kroku s prošlou sadou.
+
+Odchylky a upřesnění:
+
+- **Deklarace už v commitu 2**: závislost na `economy.periodicInvoicing`
+  (a `docs.core`, `economy.codebooks`), `documentClasses`
+  a `documentLockProviders` — dokumenty řádků dědí z enginu a zámek se
+  testuje s modelem. Zdroj, akce a formuláře zůstaly v commitu 3.
+- **Jména metod základu**: dokument řádku má `rowsTable()`,
+  `parentColumn()` a `parentRequiredMessage()` (celá věta — „Řádek musí
+  patřit zakázce.“ se skloňuje) místo `parentTable()` / `parentLabel()`;
+  pravidla proti rodiči jdou hákem `validateAgainstParent()`. Zámek má
+  navíc `docStatesCfgItem()`, `subjectTableId()`, `source()`, `lockTitle()`,
+  `lockMessage()` a hák `parentLabel()`.
+- **Testy Zakázek**: aserce beze změny; v `WorkOrderRowLockProviderTest`
+  se změnilo jen jméno přepsaného švu (`loadWorkOrders` → `loadParents`).
+- **Nápovědy formuláře řádku** jdou z nového katalogu
+  `economy.periodicInvoicing.formTexts`; jedna z nich u zakázek nově
+  nejmenuje zakázku („…typem dokladu záznamu nebo jeho druhu“). Na zdroji
+  dat před `ds-upgrade` jsou nápovědy anglicky.
+- **`ContractKindRowLockProvider` je potřeba**: druh má sadu stavů
+  `core.system.docStatesArchive`, kde je V pořádku, Archiv i Koš
+  `readOnly` — šablona potvrzeného druhu se mění přes V opravě.
+- **`inv_from` se doplňuje ve `validate()`**, ne v `beforeSave()`:
+  validace běží dřív a potvrzení s periodicitou by spadlo na povinné pole.
+- **Kopie šablony**: `afterPersist()` originál nedostává, vložení / změnu
+  druhu si dokument poznamená v `beforeSave()` (vzor `stateTransition`);
+  kopie je jeden `INSERT … SELECT`. Smazání konceptu maže i řádky
+  předpisu.
+- **Sekce Fakturace a záložka Řádky jsou na formuláři smlouvy vždy** —
+  periodicita je nepovinná a šablonu dostane i smlouva, která se zatím
+  nefakturuje. Detail druhu výchozí hodnoty fakturace neukazuje (jen
+  formulář).
+- **Test běhu se dvěma skutečnými zdroji** je u doplňku
+  (`ContractInvoicingSourceTest`), ne u enginu — test „jádro nejmenuje
+  doplněk“ prochází i ostatní moduly.
+- **Integrační test** `tests/Integration/Facility/ContractInvoicingGatewayTest.php`
+  (nad rámec zadání): kopie šablony a zámky přes skutečný `TableGateway`.
+
+**Nález — odznak sekce se dvěma zdroji.** Check
+`economy.periodicinvoicing.catchup_blocked` měl na ověřovacím zdroji
+10 aktivních nálezů zakázek a 1 nález smlouvy. Nad tři nálezy checku je ve
+feedu jedna skupinová karta a ta sekci nese, jen když se v ní shodnou
+všechny nálezy (#175, `AlertsSource::groupNavSection`) — odznak se proto
+nerozsvítil u Zakázek ani u Budov. Po dovystavení dlužných období zakázek
+(zůstal jen nález smlouvy) `GET /_ui/section-badges` vrátil
+`buildings {count: 1, severity: warning}` a odznak se ukázal. Náprava
+patří do `core.alerts` (skupinová karta per check a sekce) — samostatná
+změna jádra, ne úprava na míru doplňku; zapsáno v README enginu
+a v `help/co-dnes-nejde.md`.
+
+Ověření: unit sada celá (13 672 testů); integrační
+`--filter Facility` nad volným zdrojem dat se zapnutým doplňkem
+(4 testy). Ručně na volném zdroji dat s demo sadou it-servis
+a doplňkem: druh Ostatní přes V opravě dostal typ dokladu, řadu, splatnost
+21 a šablonu dvou řádků (šablona potvrzeného druhu Kancelář zamčená) →
+nová smlouva dostala řádky, `inv_from` = zahájení, měna czk → smazání
+řádků a uložení šablonu nevrátilo → potvrzení přidělilo číslo →
+`periodic-invoicing-run --source=buildingContracts` vystavil 3 koncepty
+(text „… září 2026“, období, středisko, pevný VS, splatnost +21 dní, bez
+dimenze zakázky), smlouvu s 11 dlužnými obdobími zastavila pojistka
+dohánění, smlouva bez periodicity se nefakturuje; druhý běh nic →
+zakázky na témže zdroji fakturují dál (evidence období zvlášť). Headless
+prohlížeč: záložka Fakturace, Přegenerovat (dialog výběru období),
+Obnovit po smazání konceptu, Vystavit dlužná období (11 období), formulář
+smlouvy (sekce Fakturace, „Z druhu: …“, záložka Řádky — u potvrzené jen ke
+čtení), nová smlouva z formuláře má po uložení řádky šablony, dialog řádku
+nabízí kódy DPH a pohyby podle typu dokladu druhu, formulář druhu se
+záložkou Šablona řádků.

@@ -3,8 +3,10 @@
 Doplněk pro správu budovy (#174). Fáze 1 je evidence **nájemních smluv
 s místy**: druhy smluv s typem a číslováním, smlouva s nájemcem, dobou
 platnosti a jedním nebo více místy z číselníku míst (`base.places`).
-Fakturace smluv a napojení na Místa přijdou v dalších fázích (viz
-[Co přijde](#co-přijde)).
+Fáze 2 je **fakturace smluv**: smlouvy jsou zdroj periodické fakturace
+(`economy.periodicInvoicing`, #175) s předpisem na druhu a smlouvě, řádky
+předpisu a šablonou řádků na druhu. Napojení na Místa přijde v další fázi
+(viz [Co přijde](#co-přijde)).
 
 Modul je **doplněk** (`"kind": "addon"`, `docs/modules.md` §9): není součástí
 `install.base`, jádro o něm neví a ve zdroji dat se zapíná
@@ -22,6 +24,12 @@ zůstávají a po novém zapnutí jsou zpět. Uživatelská nápověda:
 - `core.system`, `core.attachments`
 - `base.persons` — nájemce
 - `base.places` — místa smlouvy (`PlacesLookup` s filtrem `types`, `PlaceTree`)
+- `economy.periodicInvoicing` — engine fakturace: rozhraní zdroje, společný
+  základ řádku předpisu (`Rows\*`), záložka Fakturace, akce záznamu
+- `docs.core`, `economy.codebooks` — řady dokladů, typy dokladů, střediska,
+  bankovní účty
+
+Doplněk tak předpokládá zdroj dat s účetními moduly (`install.base` je má).
 
 ## Tabulky
 
@@ -31,6 +39,16 @@ zůstávají a po novém zapnutí jsou zpět. Uživatelská nápověda:
 | [facility_buildings_number_counters](tables/facility_buildings_number_counters.jsonc) | Čítače čísel smluv per druh a rok (rok `NULL` = průběžně) |
 | [facility_buildings_contracts](tables/facility_buildings_contracts.jsonc) | Smlouvy — druh, typ, číslo, název, nájemce, zahájení, ukončení; `exchangeKey` = `number` |
 | [facility_buildings_contract_places](tables/facility_buildings_contract_places.jsonc) | Místa smlouvy — child tabulka smlouvy (`dataKey` `places`), pořadí `order_pos` |
+| [facility_buildings_contract_rows](tables/facility_buildings_contract_rows.jsonc) | Řádky předpisu smlouvy (tvar #175 U2) — **sub-tabulka**, ne child tabulka |
+| [facility_buildings_contract_kind_rows](tables/facility_buildings_contract_kind_rows.jsonc) | Šablona řádků na druhu — tvar řádku předpisu bez platnosti |
+| [facility_buildings_contract_periods](tables/facility_buildings_contract_periods.jsonc) | Evidence vyfakturovaných období smlouvy (tvar předepisuje engine), unikátní smlouva × začátek období |
+
+Druh navíc nese výchozí hodnoty fakturace (`inv_doc_type`,
+`inv_number_series`, `inv_due_days`, `inv_timing`, `inv_vat_mode`,
+`inv_payment_method`, `inv_bank_account`), smlouva `inv_periodicity`,
+`inv_from`, `inv_doc_text`, `currency`, `payment_reference`, `cost_center`
+a přepisy těch sedmi (prázdné = z druhu). Definice sloupců jsou shodné se
+Zakázkami — hlídá `ContractInvoicingModelTest`.
 
 ## Typy smluv
 
@@ -104,7 +122,83 @@ a smazané se nepočítají; jeden nález na místo. Varování putuje v úspě�
 odpovědi uložení (`warnings[]`) a uložení ani potvrzení nezastaví.
 
 Přechod do Ukončená / Zrušená doplní prázdné ukončení dneškem. Fyzicky
-smazat jde jen koncept (i z koše); s ním odejdou vazby míst.
+smazat jde jen koncept (i z koše); s ním odejdou vazby míst a řádky
+předpisu.
+
+## Fakturace smluv (fáze 2, #174 D29–D37)
+
+Smlouva se fakturuje enginem periodické fakturace
+([README enginu](../../economy/periodicInvoicing/README.md)); doplněk dodává
+předpis, řádky a zdroj. Engine o doplňku neví.
+
+### Předpis
+
+Efektivní hodnoty skládá jen `InvoicingSettingsResolver` (smlouva → druh →
+výchozí hodnota enginu). **Periodicita je nepovinná** (D36) — smlouva bez
+ní se nefakturuje a nic z fakturace se u ní nevyžaduje.
+
+| Kdy | Pravidlo | Kód chyby |
+|---|---|---|
+| vždy | známá periodicita, typ dokladu, okamžik fakturace; splatnost ≥ 0 | `invalid` |
+| vždy | řada dokladů existuje a patří efektivnímu typu dokladu | `not_found`, `series_type_mismatch` |
+| vždy | prázdné `inv_from` se doplní zahájením; dřív než zahájení být nesmí | `before_start` |
+| vždy | prázdná měna se doplní domácí měnou zdroje dat | — |
+| potvrzení s periodicitou | `inv_from`, efektivní typ dokladu a řada dokladů | `required` |
+| potvrzení s periodicitou | aspoň jeden řádek předpisu | `_form` / `rows_required` |
+| potvrzení s periodicitou | platnost každého řádku uvnitř platnosti smlouvy | `_form` / `row_outside_contract` |
+
+Doplnění `inv_from` je ve `validate()`, ne v `beforeSave()` — validace běží
+dřív a potvrzení by jinak spadlo na povinné pole. Druh hlídá u svých
+výchozích hodnot jen tvar (`ContractKindDocument`), povinné nejsou.
+
+### Řádky a šablona
+
+Řádky předpisu (`ContractRowDocument`, `ContractRowsForm`) i řádky šablony
+na druhu (`ContractKindRowDocument`, `ContractKindRowsForm`) dědí ze
+společného základu enginu `Rows\AbstractPrescriptionRow*` a dodávají jen
+rodiče. Řádek smlouvy navíc hlídá platnost uvnitř platnosti smlouvy
+(`outside_contract` na `valid_from` / `valid_to`); tutéž kontrolu dělá
+smlouva při potvrzení, protože její platnost se může změnit později.
+
+**Šablona řádků (D32)** se do smlouvy zkopíruje, když jde o **vložení nebo
+změnu druhu**, smlouva je Koncept a nemá žádné řádky. Podmínka „nemá
+řádky“ sama nestačí — uživatel, který řádky smaže a smlouvu uloží, je
+znovu dostat nesmí. `afterPersist()` originál nedostává, proto si dokument
+vložení / změnu druhu poznamená v `beforeSave()`; kopie je jeden
+`INSERT … SELECT` v transakci uložení (`copyTemplateRows()`), pořadí
+šablony, platnost prázdná. Šablona nese i výchozí kód DPH řádků (D33) —
+typ smlouvy žádnou takovou vlastnost nemá.
+
+**Dva mechanismy na jednom formuláři:** místa jsou `multilookup` nad child
+tabulkou (ukládá je uložení smlouvy), řádky sub-tabulka (ukládá je dialog
+řádku) — uložení hlavičky na řádky nesahá.
+
+**Zámky** (`documentLockProviders`, potomci
+`Rows\AbstractPrescriptionRowLockProvider`): řádky smlouvy ve stavu
+s `readOnly` (`ContractRowLockProvider`) a šablona druhu ve stavu
+s `readOnly` sady `core.system.docStatesArchive`
+(`ContractKindRowLockProvider`) jsou jen ke čtení — úprava přes V opravě.
+Jádro providery vynucuje i na generickém CRUD.
+
+### Zdroj fakturace
+
+`ContractInvoicingSource` (id `buildingContracts`, registrace
+`periodicInvoicingSources`): kandidáti jsou smlouvy **V pořádku**
+s periodicitou a `inv_from`; záznam je řádek smlouvy 1 : 1 (`customer` =
+nájemce, `date_end` = ukončení — období začínající po něm se nevystaví);
+řádky `order_pos`, `id`; dimenze dokladu jen `costCenter`; sekce badge
+upozornění `buildings`. Text dokladu jako u zakázek (prázdná šablona =
+název a `{období}`), proměnná pro místa není (D37).
+
+Akce Vystavit dlužná období / Přegenerovat / Obnovit jsou `recordActions`
+nad `facility_buildings_contracts` se třídami enginu (globální id
+`facility.buildings.issueDue` / `.regenerate` / `.restore`); záložku
+Fakturace zapojuje `ContractsViewer` přes `InvoicingDetailTab` jen u smlouvy
+s periodicitou.
+
+```bash
+shpd-ds periodic-invoicing-run --source=buildingContracts [--record=<číslo smlouvy>] [--dry-run]
+```
 
 ## Zdrojové soubory
 
@@ -113,11 +207,15 @@ smazat jde jen koncept (i z koše); s ním odejdou vazby míst.
 | [ContractTypes.php](src/ContractTypes.php) | Jediné čtení cfgItem typů smluv — vlastnosti typu |
 | [ContractKindDocument.php](src/ContractKindDocument.php) | Druh smlouvy — vzorec čísla, zámek typu, koš použitého druhu |
 | [ContractKindsProvisioner.php](src/ContractKindsProvisioner.php) | Výchozí druhy (`ModuleProvisioner`) |
-| [ContractDocument.php](src/ContractDocument.php) | Smlouva — validace, místa podle typu, překryv, číslo, stavy |
+| [ContractDocument.php](src/ContractDocument.php) | Smlouva — validace, místa podle typu, překryv, číslo, stavy; fakturační předpis a kopie šablony řádků |
+| [ContractRowDocument.php](src/ContractRowDocument.php) / [ContractRowsForm.php](src/ContractRowsForm.php) | Řádek předpisu smlouvy — platnost uvnitř platnosti smlouvy; sub-formulář tabu Řádky |
+| [ContractKindRowDocument.php](src/ContractKindRowDocument.php) / [ContractKindRowsForm.php](src/ContractKindRowsForm.php) | Řádek šablony na druhu (bez platnosti); sub-formulář tabu Šablona řádků |
+| [ContractRowLockProvider.php](src/ContractRowLockProvider.php) / [ContractKindRowLockProvider.php](src/ContractKindRowLockProvider.php) | Zámek řádků podle stavu smlouvy / šablony podle stavu druhu |
+| [ContractInvoicingSource.php](src/ContractInvoicingSource.php) | Zdroj periodické fakturace `buildingContracts` |
 | [ContractsLookup.php](src/ContractsLookup.php) | Lookup smluv (číslo, název, nájemce) pro odkazy z dalších agend |
-| [ContractKindsViewer.php](src/ContractKindsViewer.php) / [ContractKindsForm.php](src/ContractKindsForm.php) | Druhy smluv v Nastavení → Budovy; ukázka čísla podle vzorce |
-| [ContractsViewer.php](src/ContractsViewer.php) | Smlouvy v sekci Budovy — filtry druh a typ, bez dolních tabů, detail s tabulkou míst |
-| [ContractsForm.php](src/ContractsForm.php) | Formulář smlouvy — pole Místa (`multilookup`) podle typu druhu |
+| [ContractKindsViewer.php](src/ContractKindsViewer.php) / [ContractKindsForm.php](src/ContractKindsForm.php) | Druhy smluv v Nastavení → Budovy; ukázka čísla podle vzorce; výchozí hodnoty fakturace a tab Šablona řádků |
+| [ContractsViewer.php](src/ContractsViewer.php) | Smlouvy v sekci Budovy — filtry druh a typ, bez dolních tabů, detail s tabulkou míst a záložkou Fakturace |
+| [ContractsForm.php](src/ContractsForm.php) | Formulář smlouvy — pole Místa (`multilookup`) podle typu druhu, sekce Fakturace a přepisy hodnot druhu, tab Řádky |
 | [BuildingsViewerBase.php](src/BuildingsViewerBase.php) | Společný základ viewerů (texty z katalogu, typy, stavy) |
 
 ## Konfigurace
@@ -138,16 +236,24 @@ a Majetkem) a `settingsSections` `buildings` (Nastavení).
 - `tests/Unit/Module/Facility/Buildings/` — typy, druh, provisioner,
   smlouva, formuláře, viewery a deklarace modulu (včetně pravidla, že jádro
   doplněk nejmenuje).
-- `tests/Integration/Facility/ContractGatewayTest.php` — smlouva přes
-  skutečný `TableGateway`; běží jen nad volným zdrojem dat se zapnutým
-  doplňkem (`SHIPARD_INTEGRATION_DS_PATH`), jinak se přeskočí.
+  Fáze 2: `ContractInvoicingModelTest` (šablona, D36, zámky, tvar
+  tabulek), `ContractInvoicingSourceTest` (zdroj a běh enginu se dvěma
+  skutečnými zdroji — Zakázky + Smlouvy), `ContractInvoicingUiTest`
+  (formuláře, záložka Fakturace).
+- `tests/Integration/Facility/ContractGatewayTest.php`
+  a `ContractInvoicingGatewayTest.php` — smlouva přes skutečný
+  `TableGateway` (místa, číslo; kopie šablony `INSERT … SELECT`, potvrzení
+  s periodicitou, zámky řádků a šablony); běží jen nad volným zdrojem dat
+  se zapnutým doplňkem (`SHIPARD_INTEGRATION_DS_PATH`), jinak se přeskočí.
 
 ## Co přijde
 
-- **Fáze 2 — fakturace** (#174 D16, zdroj periodické fakturace #175):
-  nastavení fakturace na druhu a smlouvě, řádky předpisu a šablona řádků
-  na druhu, evidence období, záložka Fakturace; měna, VS a středisko.
 - **Fáze 3 — napojení na Místa** (#174 D8): záložka Smlouvy v detailu místa
   (`detailExtensions`) a štítek obsazenosti ve stromu míst (`rowDecorators`).
-- Později: přehled rezervací, jistota, zálohy na služby a vyúčtování,
-  měřiče, indexace nájmu, import smluv.
+- Později (#174 D38): přehled rezervací, jistota, zálohy na služby
+  a vyúčtování, měřiče, indexace nájmu, import smluv, demo data Budov.
+
+Známé omezení: odznak sekce Budovy se nerozsvítí, když má check
+upozornění fakturace víc než tři aktivní nálezy a ty patří zároveň
+zakázkám i smlouvám — skupinová karta feedu pak sekci nenese
+([README enginu](../../economy/periodicInvoicing/README.md) → Upozornění).

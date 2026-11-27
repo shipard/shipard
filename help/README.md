@@ -98,8 +98,8 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
-| [Druhy smluv a číslování](budovy/nastaveni.md) | Kde upravíš druhy smluv doplňku Budovy, jak napsat vzorec čísla smlouvy, co znamená roční restart a co se u druhu po potvrzení už nedá změnit. |
-| [Smlouvy](budovy/smlouvy.md) | Jak v doplňku Budovy založit nájemní smlouvu, přidat jí místa, potvrdit ji a dostat číslo, co znamená varování o překryvu míst a jak smlouvu ukončit nebo zrušit. |
+| [Druhy smluv a číslování](budovy/nastaveni.md) | Kde upravíš druhy smluv doplňku Budovy, jak napsat vzorec čísla smlouvy, co znamená roční restart, jak druhu nastavit výchozí hodnoty fakturace a šablonu řádků pro nové smlouvy a co se u druhu po potvrzení už nedá změnit. |
+| [Smlouvy](budovy/smlouvy.md) | Jak v doplňku Budovy založit nájemní smlouvu, přidat jí místa, potvrdit ji a dostat číslo, jak jí nastavit fakturaci (periodicita, řádky, přepisy hodnot druhu) a pracovat se záložkou Fakturace, co znamená varování o překryvu míst a jak smlouvu ukončit nebo zrušit. |
 
 ### Majetek
 
