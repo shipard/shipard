@@ -16,9 +16,14 @@ import { parseOidcRedirect, parseOpAuth } from './api/oidc.js'
 import { parseAuthAction } from './api/authActions.js'
 import { parseReportDeepLink } from './api/reports.js'
 import { exchangeOidc } from './api/auth.js'
+import { nativeStore } from './stores/native.svelte.js'
 
 // Inicializace mobilní detekce (matchMedia listener). Jednou na začátku.
 layoutStore.initLayout()
+
+// Most nativní aplikace (docs/native-bridge.md): `info` a capabilities do
+// storu. Start aplikace na něm nečeká.
+nativeStore.load()
 
 // Načtení názvu/ikony aplikace — endpoint je veřejný, jede už před loginem
 // (titulek tabu, favicon, název na login obrazovce).
