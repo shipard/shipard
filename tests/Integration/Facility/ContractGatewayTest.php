@@ -194,7 +194,13 @@ class ContractGatewayTest extends IntegrationTestCase
         $this->assertSame(date('Y-m-d'), substr((string) $this->gateway->loadDocument($id)['date_end'], 0, 10));
 
         // Potvrzenou smlouvu smazat nejde, koncept ano — i s vazbami míst.
-        $this->assertFalse($this->gateway->deleteDocument($secondId)->isSuccess());
+        try {
+            $this->gateway->deleteDocument($secondId);
+            $this->fail('potvrzená smlouva smazat nejde');
+        } catch (\DomainException $e) {
+            $this->assertStringContainsString('Smazat jde jen koncept smlouvy', $e->getMessage());
+        }
+        $this->assertNotNull($this->gateway->loadDocument($secondId));
         $draftId = (int) $this->save($this->draft('koncept', [$this->placeIds[0]], '2029-01-01'))['data']['id'];
         $this->assertTrue($this->gateway->deleteDocument($draftId)->isSuccess());
         $this->assertSame(

@@ -221,7 +221,11 @@ smí názvy nést — tam jsou potřeba k práci.
   rozšíření — chybějící bod je změna jádra s vlastní issue, ne úprava na
   míru doplňku. Po změně názvu, popisu nebo druhu modulu
   `php scripts/modules-index.php` (rozcestník `modules/README.md`, hlídá
-  pre-commit i `ModulesIndexTest`). Viz `docs/modules.md` §9
+  pre-commit i `ModulesIndexTest`). Viz `docs/modules.md` §9. První doplněk
+  v repozitáři je `facility.buildings` (Budovy — smlouvy s místy, #174;
+  `modules/facility/buildings/README.md`) — vzor pro další: vlastní sekce,
+  výchozí data přes `provisioners`, test, že jádro doplněk nejmenuje
+  (`BuildingsModuleTest::testCoreDoesNotNameTheAddon`)
 - Definiční soubory: `.jsonc` (ručně psané), `.json` (generované)
 - Vícejazyčnost: suffix `:lang` (`"name:cs": "Název"`), holé pole povinné jako fallback
 - Fallback: požadovaný jazyk → `en` → holé pole

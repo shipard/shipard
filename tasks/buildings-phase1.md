@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** částečně — commity 0 (provisionery modulů, D28), 1 (filtr `types` v lookupu míst), 2 (modul a model) a 3 (Nastavení, formulář, prohlížeč, detail, nápověda) hotové 2026-11-27, zbývá commit 4 (README, dokumentace, ověření doplňku D26); design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
+**Stav:** částečně — implementace hotová 2026-11-27 (commity 0–4, ověření doplňku D26 naostro); zbývá ruční kontrola pole Místa podle #176 D7 a rozhodnutí o varování překryvu při potvrzení (formulář se zavře i s varováním — viz Ověření D26 → Otevřené); design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
 
 > Task pro Claude Code (5 commitů — 0 až 4). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez
@@ -235,22 +235,73 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
 
 ## Hotovo když
 
-- [ ] `facility.buildings` je doplněk, bez zapnutí ho žádný zdroj dat
+- [x] `facility.buildings` je doplněk, bez zapnutí ho žádný zdroj dat
       nemá a `install.base` na něm nezávisí
-- [ ] po `enable` jsou v Nastavení → Budovy výchozí druhy (D19)
+- [x] po `enable` jsou v Nastavení → Budovy výchozí druhy (D19)
       a v sidebaru sekce Budovy se Smlouvami
-- [ ] smlouvu jde založit, přidat jí víc míst jen povolených typů, potvrdit
+- [x] smlouvu jde založit, přidat jí víc míst jen povolených typů, potvrdit
       (číslo podle druhu a roku zahájení), opravit, ukončit a zrušit
-- [ ] překryv míst ukáže varování, uložení nezastaví
-- [ ] detail ukazuje místa s proklikem, seznam má filtry druh a typ, žádné
+- [ ] překryv míst ukáže varování, uložení nezastaví — **částečně**:
+      varování se ukáže po Uložit, při potvrzení tlačítkem V pořádku se
+      formulář zavře i s ním (viz Ověření D26 → Otevřené)
+- [x] detail ukazuje místa s proklikem, seznam má filtry druh a typ, žádné
       dolní taby
 - [ ] pole Místa ručně podle #176 D7 (první skutečné použití `multilookup`):
       hledání, šipky / Enter, Esc zavře jen nabídku, Backspace v prázdném
       vstupu odebere poslední štítek, vybraná místa se v nabídce
       nenabízejí, jen ke čtení (V pořádku) bez křížků, zalamování na
       telefonu, chyba z uložení u pole, dirty stav a Zrušit bez uložení
-- [ ] `disable` / `enable` ověřené naostro (D26)
-- [ ] nápověda, README modulu, `docs/features.md`, `**Stav:**`
+- [x] `disable` / `enable` ověřené naostro (D26)
+- [x] nápověda, README modulu, `docs/features.md`, `**Stav:**`
+
+## Ověření D26 (2026-11-27)
+
+Volný zdroj dat `r3ow-2` založený jen pro ověření (`ds-create`, třída
+`free`, bez datové sady; místa a nájemce doplněné pro scénář).
+
+- `ds-module list` nabízí `facility.buildings` mezi doplňky; bez zapnutí
+  není v navigaci ani v Nastavení nic z doplňku.
+- `ds-module enable facility.buildings` — `ds-upgrade` ve stejném procesu
+  založil 4 tabulky a provisioner 7 výchozích druhů
+  (`[CREATE] contract kinds — created: 7, existing: 0`).
+- Aplikace v prohlížeči (Playwright, uživatel `e2e`): sekce **Budovy**
+  se **Smlouvami** v sidebaru, **Druhy smluv** v Nastavení → Budovy
+  s ukázkou čísla. Smlouva typu Kancelář: nabídka pole Místa jen místnosti
+  (podlaží, budova ani parkovací stání se nenabízejí), vybraná místa
+  z nabídky mizí; potvrzení přidělilo `KA-2027-0001`, druhá smlouva
+  `KA-2027-0002`. Typ Parkování nabízí jen stání a venkovní plochu. Po
+  změně druhu zůstává nevyhovující místo ve formuláři a uložení ho ohlásí
+  u pole Místa; potvrzení bez nájemce hlásí chybu u pole. Hledání podle
+  čísla místnosti smlouvu najde, detail ukazuje tabulku Místa s umístěním
+  a klik na místo otevře jeho detail.
+- Varování o překryvu: po **Uložit** žlutý banner „Uloženo, ale
+  zkontroluj: Kancelář 202 je i ve smlouvě KA-2027-0001 (od 01.01.2027)“,
+  uložení ani potvrzení nezastaví.
+- `ds-module disable` — sekce Budovy zmizela ze sidebaru i z Nastavení,
+  tabulky a data zůstaly (7 druhů, 3 smlouvy, 4 vazby míst, 1 čítač).
+- Druhé `enable` — nic se nezakládalo
+  (`contract kinds — created: 0, existing: 7`), sekce i data zpět.
+- `tests/Integration/Facility/ContractGatewayTest` a
+  `ViewerDetailContractTest` nad tímto zdrojem prošly (seedovaný druh se
+  jmenuje jako jeho typ — výjimka `OVERVIEW_REPEAT_ALLOWED` jako u druhů
+  míst).
+
+### Otevřené
+
+- **Varování při potvrzení není vidět.** Tlačítko V pořádku má
+  `closeForm`, `FormEditor` po úspěšném přechodu stavu formulář zavře
+  i s bannerem varování — obecné chování jádra, stejně mizí varování
+  ostatních agend (bankovní spojení dodavatele u přijaté faktury). Úprava
+  (formulář s varováním po přechodu stavu nezavírat, jako dialog
+  sub-tabulky) je změna jádra s dopadem na ostatní agendy — čeká na
+  rozhodnutí. Nápověda zatím radí dát nejdřív Uložit.
+- **Ruční kontrola pole Místa podle #176 D7** (klávesnice, telefon,
+  dirty stav) — dělá člověk.
+- Upřesnění proti zadání: název smlouvy je povinný (D22 ho nevyjmenovává,
+  řádek seznamu by bez něj neměl titulek); vzorec druhu s ročním restartem
+  musí obsahovat rok a kód druhu je unikátní (číslo smlouvy je unikátní);
+  seedové kódy druhů jsou vlastnost typu (`seedCode`), ne mapa v kódu;
+  fyzicky smazat jde koncept i z koše.
 
 ## Pasti
 

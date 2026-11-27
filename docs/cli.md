@@ -1223,9 +1223,9 @@ nebo třída, neplatný účel, přechod na `free` bez terminálu, chyba zápisu
 cd /opt/shipard/data-sources/<id>
 shpd-ds ds-module                              # list (výchozí akce)
 shpd-ds ds-module list --json
-sudo shpd-ds ds-module enable facility.core    # zapíše main.json a spustí ds-upgrade
-sudo shpd-ds ds-module disable facility.core   # tabulky modulu zůstávají
-sudo shpd-ds ds-module enable facility.core --no-upgrade
+sudo shpd-ds ds-module enable facility.buildings    # zapíše main.json a spustí ds-upgrade
+sudo shpd-ds ds-module disable facility.buildings   # tabulky modulu zůstávají
+sudo shpd-ds ds-module enable facility.buildings --no-upgrade
 ```
 
 Moduly zdroje dat a zapínání **doplňků** (#170 D5,

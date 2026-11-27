@@ -61,8 +61,8 @@ kancelář už někdo nemá. Nebo nájemce končí a smlouvu je potřeba ukonči
 8. Dej **V pořádku**. Smlouva dostane **Číslo** podle vzorce svého druhu
    — například *KA-2027-0001* — a přesune se mezi potvrzené.
 
-Chceš smlouvu jen rozpracovat? Dej **Uložit jako koncept**. Koncept
-potřebuje jen druh a název a číslo ještě nemá.
+Chceš smlouvu jen rozpracovat? Dej **Uložit**. Koncept potřebuje jen druh
+a název a číslo ještě nemá.
 
 **Oprava smlouvy**
 
@@ -90,14 +90,19 @@ jde tlačítkem **Opravit**.
 
 ## Na co narazíš
 
-**„Místo … je i ve smlouvě …“.** Po uložení se nad formulářem objeví
+**„… je i ve smlouvě …“.** Po **Uložit** se nad formulářem objeví
 **Uloženo, ale zkontroluj:** a věta se jménem místa a číslem druhé
-smlouvy. Je to varování, ne chyba — smlouva se uložila i potvrdila.
+smlouvy. Je to varování, ne chyba — smlouva se uložila a potvrdit jde.
 Shipard jím upozorňuje, že stejné místo má v překrývající se době ještě
 jiná platná smlouva. Někdy je to záměr (sdílená kancelář, nový nájemce
 nastupuje dřív, než starý skončí), jindy překlep v místě nebo datu.
 Počítají se smlouvy **V pořádku** a **V opravě**; koncepty, ukončené
 a zrušené ne. Smlouva bez **Ukončení** platí pořád.
+
+**Varování po V pořádku neuvidíš.** Tlačítko **V pořádku** formulář
+rovnou zavře, takže varování o překryvu zmizí s ním. Když si obsazeností
+míst nejsi jistý, dej nejdřív **Uložit**, přečti si případné varování
+a potvrď až potom.
 
 **Místo nejde přidat nebo ho nabídka neukazuje.** Typ smlouvy ho
 nepovoluje — do smlouvy na kancelář nedáš podlaží ani parkovací stání.

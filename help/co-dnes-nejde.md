@@ -301,6 +301,10 @@ Místa** smlouvy neukazuje a strom míst neříká, které místo je obsazené.
 Kdo má místo pronajaté, zjistíš hledáním názvu místa ve **Smlouvách**.
 Přehled obsazenosti a rezervace míst nejsou.
 
+**Varování o překryvu míst při potvrzení neuvidíš.** Ukáže se po
+**Uložit**; tlačítko **V pořádku** formulář zavře i s varováním (viz
+[Smlouvy](budovy/smlouvy.md)).
+
 **Jistota, zálohy na služby, vyúčtování, měřiče a indexace nájmu nejsou.**
 
 **Pořadí míst na smlouvě nezměníš přetažením.** Místa se řadí tak, jak

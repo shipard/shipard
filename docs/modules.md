@@ -1570,7 +1570,7 @@ Při odebrání modulu z `modules`:
 
 ### Doplňky
 
-**Doplněk** je modul, který není součástí `install.base` a ve zdroji dat se zapíná — správa budovy, správa počítačové sítě (#170). Většina firem ho nepoužije, ale je obecný a veřejný, takže patří do hlavního repozitáře.
+**Doplněk** je modul, který není součástí `install.base` a ve zdroji dat se zapíná — správa budovy, správa počítačové sítě (#170). První doplněk v repozitáři je `facility.buildings` (Budovy, #174 — [README](../modules/facility/buildings/README.md)). Většina firem ho nepoužije, ale je obecný a veřejný, takže patří do hlavního repozitáře.
 
 **Umístění.** Doplněk leží v `modules/{skupina}/{modul}/` jako každý jiný modul, ve skupině podle své domény. Žádný podadresář `addons/` ani druhý kořen: ID je trvalé (tabulky, namespace, klíče konfigurace), zařazení ne — doplněk přejde do jádra a naopak změnou jednoho pole. Doplněk je vždy **jeden modul**.
 
@@ -1578,10 +1578,10 @@ Při odebrání modulu z `modules`:
 
 ```jsonc
 {
-    "id": "facility.core",
-    "name": "Facility management",
+    "id": "facility.buildings",
+    "name": "Buildings",
     "kind": "addon",
-    "dependencies": ["core.system", "base.persons"]
+    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places"]
 }
 ```
 

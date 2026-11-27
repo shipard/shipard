@@ -1,6 +1,6 @@
 # Doplňkové moduly — druh modulu, `ds-module`, rozcestník, sekce z modulů (#170)
 
-**Stav:** hotovo — 2026-11-25 (#170 D1–D13, U1–U4) včetně drobností z ověření V1–V2; ověření `enable` / `disable` se skutečným `ds-upgrade` proběhne s prvním doplňkem
+**Stav:** hotovo — 2026-11-25 (#170 D1–D13, U1–U4) včetně drobností z ověření V1–V2; `enable` / `disable` se skutečným `ds-upgrade` ověřeno 2026-11-27 s prvním doplňkem `facility.buildings` (#174 D26)
 
 > Jednorázový task pro Claude Code (5 commitů). Design: issue #170.
 
@@ -421,8 +421,14 @@ případech nepíšeš kód, ale zadání.“ → „Ve všech případech …�
 - **Ověření `enable` / `disable` se skutečným `ds-upgrade` ve stejném
   procesu** (tabulky, sekce v sidebaru a v Nastavení, vypnutí) proběhne
   s prvním reálným doplňkem — v repu zatím žádný doplněk není.
+  **Proběhlo 2026-11-27** s `facility.buildings` na volném zdroji dat
+  (`r3ow-2`, `tasks/buildings-phase1.md` → Ověření D26): `enable` založil
+  čtyři tabulky a výchozí druhy, sekce Budovy se objevila v sidebaru
+  i v Nastavení; `disable` sekce skryl a tabulky s daty nechal; druhé
+  `enable` nic nezakládalo a data byla zpět.
 - **Příklad ID `facility.core`** v `docs/modules.md` §9 a `docs/cli.md`
   přepsat, až se v issue doplňku správy budovy rozhodne název.
+  **Přepsáno 2026-11-27** na `facility.buildings` (#174 D1).
 
 Commit: `fix(cli): ds-module enable nepočítá předchozí chyby resolveru; drobnosti z ověření (#170)`
 — V1, V2, `**Stav:**` na hotovo, `python3 scripts/tasks-index.py`.
