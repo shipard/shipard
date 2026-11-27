@@ -258,7 +258,7 @@ class WorkOrderDocument extends Document
             $data['parent'] = null;
         }
         if ($type !== '' && $types->invoicing($type) !== WorkOrderTypes::INVOICING_PERIODIC) {
-            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::WORK_ORDER_COLUMNS] as $col) {
+            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::RECORD_COLUMNS] as $col) {
                 $data[$col] = null;
             }
         } elseif ($type !== '' && !self::hasValue($data['inv_from'] ?? null)) {

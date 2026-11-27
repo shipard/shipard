@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\PeriodicInvoicing;
 
 /**
- * Jediné místo, kde se skládá efektivní předpis (D3): hodnota zakázky
- * → hodnota druhu → pevný default. Čistá funkce nad poli řádků — druh si
+ * Jediné místo, kde se skládá efektivní předpis (D3): hodnota záznamu
+ * zdroje → hodnota druhu → pevný default. Čistá funkce nad poli řádků — druh si
  * načte volající (Document přes Dibi, formulář přes DataSourceConnection,
  * běh v dávce), aby resolver nenosil dva druhy DB přístupu.
  */
 final class InvoicingSettingsResolver
 {
     /**
-     * @param array<string, mixed> $workOrder hlavička zakázky (sloupce inv_*)
+     * @param array<string, mixed> $record záznam zdroje fakturace (sloupce inv_*)
      * @param array<string, mixed>|null $kind řádek druhu (sloupce inv_*), null = druh neznámý
      */
-    public static function resolve(array $workOrder, ?array $kind): InvoicingSettings
+    public static function resolve(array $record, ?array $kind): InvoicingSettings
     {
         $sources = [];
-        $pick = static function (string $column) use ($workOrder, $kind, &$sources): mixed {
-            $own = $workOrder[$column] ?? null;
+        $pick = static function (string $column) use ($record, $kind, &$sources): mixed {
+            $own = $record[$column] ?? null;
             if ($own !== null && $own !== '') {
-                $sources[$column] = InvoicingSettings::SOURCE_WORK_ORDER;
+                $sources[$column] = InvoicingSettings::SOURCE_RECORD;
                 return $own;
             }
             $inherited = $kind[$column] ?? null;

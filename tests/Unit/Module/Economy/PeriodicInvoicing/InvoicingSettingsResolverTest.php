@@ -35,8 +35,8 @@ class InvoicingSettingsResolverTest extends TestCase
         $this->assertSame(1, $settings->paymentMethod);
         $this->assertSame(3, $settings->bankAccount);
 
-        $this->assertSame(InvoicingSettings::SOURCE_WORK_ORDER, $settings->source('inv_doc_type'));
-        $this->assertSame(InvoicingSettings::SOURCE_WORK_ORDER, $settings->source('inv_number_series'));
+        $this->assertSame(InvoicingSettings::SOURCE_RECORD, $settings->source('inv_doc_type'));
+        $this->assertSame(InvoicingSettings::SOURCE_RECORD, $settings->source('inv_number_series'));
         $this->assertSame(InvoicingSettings::SOURCE_KIND, $settings->source('inv_due_days'));
         $this->assertSame(InvoicingSettings::SOURCE_KIND, $settings->source('inv_timing'));
         $this->assertSame(InvoicingSettings::SOURCE_KIND, $settings->source('inv_bank_account'));
@@ -63,7 +63,7 @@ class InvoicingSettingsResolverTest extends TestCase
         $settings = InvoicingSettingsResolver::resolve(['inv_vat_mode' => 0, 'inv_due_days' => 0], self::KIND);
         $this->assertSame(0, $settings->vatMode);
         $this->assertSame(0, $settings->dueDays);
-        $this->assertSame(InvoicingSettings::SOURCE_WORK_ORDER, $settings->source('inv_vat_mode'));
+        $this->assertSame(InvoicingSettings::SOURCE_RECORD, $settings->source('inv_vat_mode'));
     }
 
     public function testUnknownDocTypeAndTimingAreIgnored(): void

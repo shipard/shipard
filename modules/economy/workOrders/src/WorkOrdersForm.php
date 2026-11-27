@@ -8,12 +8,12 @@ use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\RecalculateResult;
-use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\PeriodicInvoicing\InvoicingFormOptions;
 use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
 use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\Rows\PrescriptionRowsSubtable;
 
 /**
  * Formulář zakázky (tasks/work-orders-phase1.md §3, §5; fáze 2 §1).
@@ -260,7 +260,7 @@ class WorkOrdersForm extends TableForm
 
     /**
      * Sub-tabulka řádků předpisu: popis, množství, jednotka, cena, DPH,
-     * platnost. Ostatní taby default.
+     * platnost (společný PrescriptionRowsSubtable). Ostatní taby default.
      */
     public function renderSubtable(FormTab $tab, array $rows, array $parentData): array
     {
@@ -268,34 +268,13 @@ class WorkOrdersForm extends TableForm
             return parent::renderSubtable($tab, $rows, $parentData);
         }
         $table = WorkOrderDocument::ROWS_TABLE;
-        $label = fn(string $column, string $fallback): string => $this->subtableLabel($table, $column, $fallback);
-        $units = $this->unitShortcuts();
 
-        $columns = [
-            ['id' => 'description', 'label' => $label('description', 'Popis'), 'grow' => true],
-            ['id' => 'quantity', 'label' => $label('quantity', 'Množství'), 'align' => 'right', 'width' => 90],
-            ['id' => 'unit', 'label' => $label('unit', 'Jednotka'), 'width' => 80],
-            ['id' => 'unit_price', 'label' => $label('unit_price', 'Cena/jednotka'), 'align' => 'right', 'width' => 120],
-            ['id' => 'vat_code', 'label' => $label('vat_code', 'Kód DPH'), 'width' => 90],
-            ['id' => 'valid_from', 'label' => $label('valid_from', 'Platnost od'), 'width' => 100],
-            ['id' => 'valid_to', 'label' => $label('valid_to', 'Platnost do'), 'width' => 100],
-        ];
-
-        $out = [];
-        foreach ($rows as $row) {
-            $cells = [
-                'description' => (string) ($row['description'] ?? ''),
-                'quantity'    => SubtableCellFormatter::trimmedNumber($row['quantity'] ?? null, 4) ?? '',
-                'unit'        => $units[(int) ($row['unit'] ?? 0)] ?? '',
-                'unit_price'  => SubtableCellFormatter::number($row['unit_price'] ?? null, 2) ?? '',
-                'vat_code'    => (string) ($row['vat_code'] ?? ''),
-                'valid_from'  => SubtableCellFormatter::date($row['valid_from'] ?? null, $this->language) ?? '',
-                'valid_to'    => SubtableCellFormatter::date($row['valid_to'] ?? null, $this->language) ?? '',
-            ];
-            $out[] = ['id' => (int) ($row['id'] ?? 0), 'cells' => $cells];
-        }
-
-        return ['columns' => $columns, 'rows' => $out, 'order_column' => 'order_pos'];
+        return PrescriptionRowsSubtable::render(
+            $rows,
+            fn(string $column, string $fallback): string => $this->subtableLabel($table, $column, $fallback),
+            $this->unitShortcuts(),
+            $this->language,
+        );
     }
 
     /**
@@ -326,7 +305,7 @@ class WorkOrdersForm extends TableForm
             $data['parent'] = null;
         }
         if ($type === '' || $types->invoicing($type) !== WorkOrderTypes::INVOICING_PERIODIC) {
-            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::WORK_ORDER_COLUMNS] as $col) {
+            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::RECORD_COLUMNS] as $col) {
                 $data[$col] = null;
             }
         }
@@ -426,15 +405,7 @@ class WorkOrdersForm extends TableForm
      */
     protected function unitShortcuts(): array
     {
-        if ($this->db === null) {
-            return [];
-        }
-        $out = [];
-        foreach ($this->db->fetchAll('SELECT `id`, `name`, `shortcut` FROM `core_units`') as $row) {
-            $shortcut = (string) ($row['shortcut'] ?? '');
-            $out[(int) $row['id']] = $shortcut !== '' ? $shortcut : (string) ($row['name'] ?? '');
-        }
-        return $out;
+        return PrescriptionRowsSubtable::unitShortcuts($this->db);
     }
 
     /** Domácí měna DS ze settings `economy.homeCurrency` (vzor DocsHeadsFormBase). */

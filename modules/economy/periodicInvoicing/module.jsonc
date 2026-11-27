@@ -145,6 +145,12 @@
             // Texty záložky Fakturace a akcí záznamu (D8) — InvoicingTexts.
             "id": "economy.periodicInvoicing.viewerLabels",
             "file": "config/viewerLabels.jsonc"
+        },
+        {
+            // Nápovědy společného formuláře řádku předpisu (#174 D31) —
+            // Rows\AbstractPrescriptionRowsForm.
+            "id": "economy.periodicInvoicing.formTexts",
+            "file": "config/formTexts.jsonc"
         }
     ]
 }

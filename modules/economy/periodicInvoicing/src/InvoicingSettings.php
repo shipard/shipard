@@ -10,8 +10,8 @@ namespace Shipard\Module\Economy\PeriodicInvoicing;
  * {@see InvoicingSettingsResolver}; formulář z něj bere placeholdery
  * („Z druhu: …“), builder hodnoty dokladu.
  *
- * `sources` říká per sloupec, odkud hodnota přišla: `workOrder` (přepis na
- * zakázce), `kind` (druh) nebo `default` (ani jeden — pevný default třídy;
+ * `sources` říká per sloupec, odkud hodnota přišla: `record` (přepis na
+ * záznamu zdroje), `kind` (druh) nebo `default` (ani jeden — pevný default třídy;
  * u typu dokladu, řady a účtu neexistuje a hodnota je null).
  */
 final readonly class InvoicingSettings
@@ -32,16 +32,17 @@ final readonly class InvoicingSettings
     /** docs.core.paymentMethods: 1 = převodem. */
     public const DEFAULT_PAYMENT_METHOD = 1;
 
-    /** Sloupce předpisu společné druhu a zakázce (NULL na zakázce = z druhu). */
+    /** Sloupce předpisu společné druhu a záznamu zdroje (NULL na záznamu = z druhu). */
     public const COLUMNS = [
         'inv_doc_type', 'inv_number_series', 'inv_due_days', 'inv_timing',
         'inv_vat_mode', 'inv_payment_method', 'inv_bank_account',
     ];
 
-    /** Sloupce jen na zakázce. */
-    public const WORK_ORDER_COLUMNS = ['inv_periodicity', 'inv_from', 'inv_doc_text'];
+    /** Sloupce jen na záznamu zdroje. */
+    public const RECORD_COLUMNS = ['inv_periodicity', 'inv_from', 'inv_doc_text'];
 
-    public const SOURCE_WORK_ORDER = 'workOrder';
+    /** Hodnota neopouští proces — neukládá se a klient ji nedostává. */
+    public const SOURCE_RECORD = 'record';
     public const SOURCE_KIND = 'kind';
     public const SOURCE_DEFAULT = 'default';
 
