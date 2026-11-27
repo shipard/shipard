@@ -66,6 +66,7 @@ import {
   faPaperclip,
   faDownload,
   faFilm,
+  faPlug,
   faPlay,
   faCloudArrowDown,
   faUpload,
@@ -266,6 +267,7 @@ export const iconChat = faComments;
 export const iconAttachment = faPaperclip;
 export const iconDownload = faDownload;
 export const iconVideo = faFilm; // oddíl Videa vývojářského dashboardu (#103 F7b)
+export const iconPlug = faPlug; // most nativní aplikace — stránka Most vývojářského dashboardu (#177)
 export const iconPlay = faPlay;
 export const iconCloudDownload = faCloudArrowDown;
 export const iconUpload = faUpload;
@@ -384,6 +386,7 @@ export const iconMap = {
   // vývojářský dashboard (#129 D5)
   'testing': iconTesting,
   'video': iconVideo,
+  'plug': iconPlug,
   'play': iconPlay,
   'doctor': iconDoctor,
   'upgrade': iconUpgrade,

@@ -16,6 +16,10 @@ test('dnešní stránky s lomítkem i bez a s query', () => {
   assert.equal(matchRoute('/_dev/ds-create').name, 'dsCreate');
   assert.equal(matchRoute('/_dev/doctor/').name, 'doctor');
   assert.equal(matchRoute('/_dev/upgrade-all/').name, 'upgradeAll');
+  assert.equal(matchRoute('/_dev/bridge/').name, 'bridge');
+  assert.equal(matchRoute('/_dev/bridge').name, 'bridge');
+  assert.equal(buildPath('bridge'), '/_dev/bridge/');
+  assert.equal(matchRoute('/_dev/bridge/x/').name, 'notFound');
 });
 
 test('neznámá cesta a cesta mimo /_dev → notFound', () => {

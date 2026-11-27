@@ -6,7 +6,7 @@
   // bloku měří a dává do --dev-top-height pro lepicí prvky pod lištou (PdfPane).
   import { onMount } from 'svelte';
   import Icon from '../components/ui/Icon.svelte';
-  import { iconDatabase, iconTesting, iconVideo, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer } from '../icons.js';
+  import { iconDatabase, iconTesting, iconVideo, iconDocument, iconDoctor, iconUpgrade, iconBook, iconServer, iconPlug } from '../icons.js';
   import logoUrl from './assets/shipard-logo.svg';
   import { router, onLinkClick } from './router.svelte.js';
   import { devInfo } from './info.svelte.js';
@@ -20,6 +20,7 @@
   import ActionPage from './pages/ActionPage.svelte';
   import TestingPage from './pages/testing/TestingPage.svelte';
   import VideosPage from './pages/videos/VideosPage.svelte';
+  import BridgePage from './pages/bridge/BridgePage.svelte';
   import NotFoundPage from './pages/NotFoundPage.svelte';
 
   const route = $derived(router.route);
@@ -33,6 +34,7 @@
     doctor: 'doctor',
     upgradeAll: 'upgradeAll',
     videos: 'videos',
+    bridge: 'bridge',
   };
 
   const isTesting = $derived(route.name.startsWith('testing'));
@@ -44,6 +46,7 @@
     { id: 'logs', label: t('app.nav.logs'), icon: iconDocument, href: router.href('logs') },
     { id: 'doctor', label: t('app.nav.doctor'), icon: iconDoctor, href: router.href('doctor') },
     { id: 'upgradeAll', label: t('app.nav.upgradeAll'), icon: iconUpgrade, href: router.href('upgradeAll') },
+    { id: 'bridge', label: t('app.nav.bridge'), icon: iconPlug, href: router.href('bridge') },
   ]);
 
   const activeNav = $derived(isTesting ? 'testing' : (NAV_OF_ROUTE[route.name] ?? null));
@@ -63,6 +66,7 @@
     upgradeAll: 'app.nav.upgradeAll',
     dsUpgrade: 'app.title.dsUpgrade',
     videos: 'app.nav.videos',
+    bridge: 'app.nav.bridge',
     notFound: 'app.title.notFound',
   };
 
@@ -137,6 +141,8 @@
       <TestingPage />
     {:else if route.name === 'videos'}
       <VideosPage />
+    {:else if route.name === 'bridge'}
+      <BridgePage />
     {:else}
       <NotFoundPage />
     {/if}

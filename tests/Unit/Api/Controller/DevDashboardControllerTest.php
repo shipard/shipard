@@ -212,6 +212,7 @@ class DevDashboardControllerTest extends TestCase
 			['/_dev/ds-upgrade/?ds=abcd-1234-efgh-5678'], ['/_dev/ds-upgrade/?ds=bad!id'], ['/_dev/ds-upgrade'],
 			['/_dev/testing'], ['/_dev/testing/'], ['/_dev/testing/cz-vat-payer/runs/2026-10-16-baseline.json/'],
 			['/_dev/videos'], ['/_dev/videos/'],
+			['/_dev/bridge'], ['/_dev/bridge/'],
 		];
 	}
 

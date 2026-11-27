@@ -34,7 +34,7 @@ class DevDashboardController
 	 * Tabulka rout na klientu (`frontend/src/dev/routes.js`) si s tímto
 	 * seznamem musí odpovídat.
 	 */
-	private const array SPA_PAGES = ['logs', 'ds-create', 'doctor', 'upgrade-all', 'ds-upgrade', 'testing', 'videos'];
+	private const array SPA_PAGES = ['logs', 'ds-create', 'doctor', 'upgrade-all', 'ds-upgrade', 'testing', 'videos', 'bridge'];
 	/** Zrušení úlohy smazání: ds-delete běží sekundy, SIGTERM stačí. */
 	public const int DELETE_CANCEL_GRACE_SECONDS = 60;
 
