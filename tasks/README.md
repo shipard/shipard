@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 496 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 465.
+Celkem 497 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 465.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `dev-https.md` | naplánováno | připraveno k implementaci; rozhodnutí #183 D1–D6 a upřesnění U1–U13 potvrzená 2026-11-27 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -90,6 +91,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `ds-data-class.md` | Třída dat zdroje dat (`free` / `realCopy`, účel, původ) v `main.json`, `shpd-ds ds-class`, `shpd-server ds-list`, serverové AI podle třídy, třída v dotazu `ds-reset` a pruh „Kopie reálných dat“ (#126 D6–D12) |
 | `ds-secrets-split.md` | Tajemství zdroje dat z `main.json` do `secrets/` (heslo k databázi, relay pošty, OIDC `clientSecret`), přechodné čtení, migrace v `ds-upgrade`, `shpd-ds ds-secret`, sekce `doctor` (#126 B1, D1–D4) |
 | `ds-secrets-transition-end.md` | Konec přechodného čtení tajemství z `main.json` (hodnota se ignoruje, `doctor` chyba), migrátor podle `id` a hodnoty, fixtury, uvolnění pravidla pro AI — `main.json` číst smí, `secrets/` nikdy (#126 B2, D4–D5) |
+| `dev-https.md` | HTTPS na vývojovém serveru, fáze 1: adresování cestou podle režimu serveru (i `localhost` a jména), adresa ze schématu požadavku, tři vstupy (`http`/`https` na IP, `https` na jméno), `shpd-server dev-https` s certifikátem pro IP, nginx šablony a TLS bez HSTS, `doctor` hlídá certifikáty, přepínač Adresa v dashboardu (#183 D1–D6, U1) |
 | `unified-logging.md` | Produkční `ErrorLogger` (JSON řádky, úrovně, deploy guide, migrace `error_log()`) |
 | `ds-encrypted-secrets.md` | Šifrování citlivých sloupců (`encrypted_text`, per-DS klíč, rotace) |
 | `secrets-openssl-cipher.md` | AES-256-GCM přes OpenSSL místo libsodium — podpora ARM, formát beze změny (#96 D12) |
