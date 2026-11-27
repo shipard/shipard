@@ -221,6 +221,42 @@ class DevHttpsPlannerTest extends TestCase
         $this->assertTrue($this->plan(['host' => 'shpd.example.com'])->hostBlock);
     }
 
+    public function testUnreadableHostCertificateKeepsTheInstalledBlockWithoutRoot(): void
+    {
+        // Site vznikl pod rootem; certifikát je symlink tam, kam uživatel nedosáhne.
+        $this->env->writeHostCertificate(['shpd.example.com']);
+        $access = DevHttpsEnvironment::access(['host' => 'shpd.example.com']);
+        $this->env->installSite((string) $this->env->planner()->plan($access, $this->now)->expectedSite);
+        unlink($this->env->tlsDir . '/dev-host/fullchain.pem');
+        symlink($this->env->root . '/root-only/fullchain.pem', $this->env->tlsDir . '/dev-host/fullchain.pem');
+
+        // Bez roota: nejde posoudit → blok platí tak, jak je na disku, běh není potřeba.
+        $plan = $this->env->planner(privileged: false)->plan($access, $this->now);
+        $this->assertTrue($plan->hostBlock);
+        $this->assertTrue($plan->siteUpToDate());
+        $this->assertFalse($plan->needsRun());
+        $this->assertStringContainsString('not readable', (string) $plan->hostProblem);
+
+        // Bez site souboru se blok nedomýšlí.
+        unlink($this->env->siteLink);
+        unlink($this->env->siteFile);
+        $plan = $this->env->planner(privileged: false)->plan($access, $this->now);
+        $this->assertFalse($plan->hostBlock);
+        $this->assertFalse($plan->needsRun());
+    }
+
+    public function testUnreadableHostCertificateIsAProblemUnderRoot(): void
+    {
+        // Root dosáhne všude — nečitelný soubor je rozbitý odkaz.
+        mkdir($this->env->tlsDir . '/dev-host', 0750, true);
+        symlink($this->env->root . '/gone/fullchain.pem', $this->env->tlsDir . '/dev-host/fullchain.pem');
+
+        $plan = $this->env->planner(privileged: true)->plan(DevHttpsEnvironment::access(['host' => 'shpd.example.com']), $this->now);
+
+        $this->assertFalse($plan->hostBlock);
+        $this->assertStringContainsString('not readable', (string) $plan->hostProblem);
+    }
+
     public function testBothEntriesAndHostProblemKeepsTheIpBlock(): void
     {
         $this->env->writeIpCertificate();

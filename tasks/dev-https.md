@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — fáze 1: adresování, nginx, vstupy, certifikát pro IP (#183)
 
-**Stav:** částečně — hotové commity 1–3 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, 2026-11-27); zbývají commity 4–6 (`doctor`, dashboard, návody) a kroky s rootem
+**Stav:** částečně — hotové commity 1–4 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, sekce `doctor`, 2026-11-27); zbývají commity 5–6 (dashboard a Playwright, návody) a kroky s rootem
 
 > Task pro Claude Code (6 commitů). Design: issue #183. Tajemství serveru
 > mimo `server.json` (D7) jsou samostatný task, vlastní jména pro zdroje

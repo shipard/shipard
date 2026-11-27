@@ -122,6 +122,22 @@ Read-only health check. Vypíše:
 - **System config includes** — warn-only: živý nginx site a FPM pool
   includují verzované `shipard-common.conf` / `shipard-fpm-common.conf`
   (viz [production.md §6](operations/production.md)); nikdy nemění exit code
+- **Development HTTPS** — jen v režimu `development`, pro každý zapnutý
+  https vstup ze sekce `devAccess` (#183 U1, U11; pravidla
+  `Core\Server\DevHttpsDoctor` nad týmž rozhodnutím jako `dev-https`):
+  certifikát existuje a je čitelný; **chyba**, když vypršel, když v SAN
+  chybí adresa serveru (vstup přes IP — adresa navíc nevadí) nebo jméno
+  (vstup přes jméno), nebo když k němu nepatří klíč; **varování** méně než
+  14 dní před koncem platnosti. Jméno se na serveru musí překládat na
+  tento server (loopback nebo adresa rozhraní, i přes `/etc/hosts`) —
+  jinak chyba, testovací kolo a videa by na něj nedosáhly. Site
+  `shipard-https.conf` neaktivní nebo zastaralý = varování s příkazem
+  `sudo shpd-server dev-https`; stejně cizí `default_server` na 443 a chybná
+  hodnota v `devAccess`. Klíč je `root:root 0600`, takže shodu klíče
+  s certifikátem doctor ověří jen pod rootem; certifikát pro jméno, na
+  který bez roota nedosáhne (symlink do adresáře certbotu), hlásí varováním
+  s radou `sudo shpd-server doctor`. `devAccess` v režimu `production` =
+  varování, sekce se nepoužije.
 - **Cron** — `/etc/cron.d/shipard` existuje a marker odpovídá aktuální
   verzi šablony (zastaralá šablona = error v každém režimu, #115 U5);
   heartbeaty slotů nejsou zatuchlé (`minute` > 10 min, `two-minutes`

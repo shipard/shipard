@@ -42,7 +42,7 @@ final class DevHttpsEnvironment
         return dirname(__DIR__, 4) . '/docs/nginx/development-https.conf';
     }
 
-    public function planner(?string $socket = self::SOCKET, bool $ipv6 = false, ?string $templateFile = null): DevHttpsPlanner
+    public function planner(?string $socket = self::SOCKET, bool $ipv6 = false, ?string $templateFile = null, bool $privileged = true): DevHttpsPlanner
     {
         return new DevHttpsPlanner(
             $templateFile ?? self::templateFile(),
@@ -52,6 +52,7 @@ final class DevHttpsEnvironment
             $this->sitesEnabled,
             $ipv6,
             [$this->root . '/conf.d/*.conf'],
+            $privileged,
         );
     }
 

@@ -142,6 +142,10 @@ class DoctorCommand extends Command
         $cronErrors = $this->checkCron($output, $mode);
 
         $output->writeln('');
+        $output->writeln('<info>Development HTTPS</info>');
+        $devHttpsErrors = $this->checkDevHttps($config, $mode, $expectedSocket, $output);
+
+        $output->writeln('');
         $output->writeln('<info>PHP extensions</info>');
         $extErrors = $this->checkPhpExtensions($output);
 
@@ -179,6 +183,7 @@ class DoctorCommand extends Command
 
         $totalIssues = count($issues) + $dsErrors + $fpmErrors + $nginxErrors + $extErrors + $toolErrors
                      + $mailErrors + $cronErrors + $renderErrors + $stateErrors + $secretErrors + $authErrors
+                     + $devHttpsErrors
                      + ($poolUser !== $shipardUser ? 1 : 0);
         if ($totalIssues === 0) {
             $output->writeln('<info>✓ All checks passed.</info>');
@@ -723,6 +728,62 @@ class DoctorCommand extends Command
             $output->writeln('    <comment>→ Laptop asleep or VM stopped? Check: systemctl status cron</comment>');
         }
 
+        return $errors;
+    }
+
+    protected function getTlsDir(): string
+    {
+        return \Shipard\Core\Server\DevHttpsPlanner::TLS_DIR;
+    }
+
+    protected function getNginxSitesAvailableDir(): string
+    {
+        return '/etc/nginx/sites-available';
+    }
+
+    /** Adresy a překlad jmen tohoto serveru — šev pro testy. */
+    protected function createLocalAddresses(): \Shipard\Core\Net\LocalAddresses
+    {
+        return new \Shipard\Core\Net\LocalAddresses();
+    }
+
+    /**
+     * https vstupy vývojového serveru (#183 U1, U11): certifikáty zapnutých
+     * vstupů, překlad jména na tento server a stav site souboru — pravidla
+     * jsou v {@see \Shipard\Core\Server\DevHttpsDoctor}, rozhodování
+     * sdílí s `dev-https`. Varování exit code nemění.
+     *
+     * @param array<string, mixed> $config obsah server.json
+     * @return int number of errors
+     */
+    protected function checkDevHttps(array $config, string $mode, ?string $socket, OutputInterface $output): int
+    {
+        $local = $this->createLocalAddresses();
+        $access = \Shipard\Core\Server\DevAccess::fromSection($config['devAccess'] ?? null, $mode, $local);
+        $planner = new \Shipard\Core\Server\DevHttpsPlanner(
+            $this->getRepoRoot() . '/docs/nginx/development-https.conf',
+            $socket,
+            $this->getTlsDir(),
+            $this->getNginxSitesAvailableDir(),
+            $this->getNginxSitesEnabledDir(),
+        );
+
+        $errors = 0;
+        foreach ((new \Shipard\Core\Server\DevHttpsDoctor($planner, $local))->check($access, $this->now()) as $finding) {
+            $marker = match ($finding['level']) {
+                'ok' => '✓ ',
+                'warning' => '⚠ ',
+                'error' => '✗ ',
+                default => '',
+            };
+            $output->writeln('  ' . $marker . $finding['message']);
+            foreach ($finding['hints'] as $hint) {
+                $output->writeln('    <comment>→ ' . $hint . '</comment>');
+            }
+            if ($finding['level'] === 'error') {
+                $errors++;
+            }
+        }
         return $errors;
     }
 

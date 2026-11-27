@@ -65,6 +65,34 @@ class TestableDoctorCommand extends DoctorCommand
         return $this->fakeRepoRoot ?? parent::getRepoRoot();
     }
 
+    // ── Development HTTPS (#183) — nikdy skutečné /etc ───────────────────────
+    public ?string $fakeTlsDir = null;
+    public ?string $fakeNginxSitesAvailableDir = null;
+    /** @var list<string> adresy rozhraní „serveru“ */
+    public array $fakeInterfaces = ['127.0.0.1', '10.0.0.7'];
+    /** @var array<string, list<string>> jméno → adresy */
+    public array $fakeDns = [];
+
+    protected function getTlsDir(): string
+    {
+        return $this->fakeTlsDir ?? '/dev/null/nonexistent/tls';
+    }
+
+    protected function getNginxSitesAvailableDir(): string
+    {
+        return $this->fakeNginxSitesAvailableDir ?? '/dev/null/nonexistent';
+    }
+
+    protected function createLocalAddresses(): \Shipard\Core\Net\LocalAddresses
+    {
+        $interfaces = $this->fakeInterfaces;
+        $dns = $this->fakeDns;
+        return new \Shipard\Core\Net\LocalAddresses(
+            static fn (string $host): array => $dns[$host] ?? [],
+            static fn (): array => $interfaces,
+        );
+    }
+
     /** @var list<string> rozšíření PHP, která se tváří jako nenačtená (#146 D10) */
     public array $fakeMissingExtensions = [];
 
@@ -982,6 +1010,123 @@ class DoctorCommandTest extends TestCase
             'nginx routes to shipard socket (1 active site(s))',
             $tester->getDisplay(),
         );
+    }
+
+    // ─── Development HTTPS (#183 U1, U11) ───────────────────────────────────
+
+    /** Výřez sekce Development HTTPS. */
+    private function devHttpsSection(string $display): string
+    {
+        $start = strpos($display, 'Development HTTPS');
+        $this->assertNotFalse($start, 'sekce Development HTTPS ve výpisu chybí');
+        $end = strpos($display, 'PHP extensions', $start);
+        return substr($display, $start, $end === false ? null : $end - $start);
+    }
+
+    /** @param array<string, mixed> $devAccess */
+    private function devHttpsCommand(PermissionSpec $spec, string $mode, ?array $devAccess): TestableDoctorCommand
+    {
+        $command = $this->commandWithStubs($spec, $mode);
+        $config = ['mode' => $mode];
+        if ($devAccess !== null) {
+            $config['devAccess'] = $devAccess;
+        }
+        file_put_contents($this->tempConfigPath, json_encode($config));
+        $command->fakeTlsDir = $this->tempRoot . '/tls';
+        $command->fakeNginxSitesAvailableDir = $this->tempRoot . '/sites-available';
+        $command->fakeNginxSitesEnabledDir = $this->tempRoot . '/sites-enabled';
+        mkdir($command->fakeNginxSitesAvailableDir, 0750, true);
+        mkdir($command->fakeNginxSitesEnabledDir, 0750, true);
+        $command->fakePoolConfigGlob = $this->writeFakePoolConfig('/run/php/php8.5-fpm-shipard.sock');
+        return $command;
+    }
+
+    public function testDevHttpsSectionWithoutEntriesIsQuiet(): void
+    {
+        $command = $this->devHttpsCommand($this->makeSpec(), 'development', null);
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+
+        $section = $this->devHttpsSection($tester->getDisplay());
+        $this->assertStringContainsString('(no https entry enabled — http on the IP address only)', $section);
+        $this->assertStringNotContainsString('✗', $section);
+        $this->assertStringNotContainsString('⚠', $section);
+    }
+
+    public function testDevHttpsMissingCertificateCountsAsAnIssue(): void
+    {
+        $spec = $this->makeSpec();
+        $without = $this->devHttpsCommand($spec, 'development', null);
+        $testerWithout = new CommandTester($without);
+        $testerWithout->execute([]);
+        $baseline = $this->issuesFound($testerWithout->getDisplay());
+
+        file_put_contents($this->tempConfigPath, json_encode(['mode' => 'development', 'devAccess' => ['httpsIp' => true]]));
+        $tester = new CommandTester($without);
+        $exit = $tester->execute([]);
+
+        $section = $this->devHttpsSection($tester->getDisplay());
+        $this->assertStringContainsString('✗ https on the IP address: certificate is missing', $section);
+        $this->assertStringContainsString('→ Run: sudo shpd-server dev-https', $section);
+        $this->assertStringContainsString('⚠ nginx site shipard-https.conf is missing', $section);
+        $this->assertSame(1, $exit);
+        // Chyba se počítá, varování ne.
+        $this->assertSame($baseline + 1, $this->issuesFound($tester->getDisplay()));
+    }
+
+    public function testDevHttpsHealthyEntryPasses(): void
+    {
+        $spec = $this->makeSpec();
+        $command = $this->devHttpsCommand($spec, 'development', ['httpsIp' => true, 'host' => 'shpd.example.com']);
+        $command->fakeDns = ['shpd.example.com' => ['10.0.0.7']];
+        \Shipard\Tests\Unit\Core\Server\DevCertificateFixture::write($command->fakeTlsDir . '/dev-ip', ['10.0.0.7']);
+        \Shipard\Tests\Unit\Core\Server\DevCertificateFixture::write($command->fakeTlsDir . '/dev-host', [], ['shpd.example.com']);
+
+        // Site soubor přesně podle toho, co by zapsal dev-https.
+        $planner = new \Shipard\Core\Server\DevHttpsPlanner(
+            dirname(__DIR__, 4) . '/docs/nginx/development-https.conf',
+            '/run/php/php8.5-fpm-shipard.sock',
+            $command->fakeTlsDir,
+            $command->fakeNginxSitesAvailableDir,
+            $command->fakeNginxSitesEnabledDir,
+        );
+        $access = \Shipard\Core\Server\DevAccess::fromSection(
+            ['httpsIp' => true, 'host' => 'shpd.example.com'],
+            'development',
+            new \Shipard\Core\Net\LocalAddresses(static fn (): array => [], static fn (): array => ['127.0.0.1', '10.0.0.7']),
+        );
+        $plan = $planner->plan($access, new \DateTimeImmutable('now'));
+        file_put_contents($plan->siteFile, (string) $plan->expectedSite);
+        symlink($plan->siteFile, $plan->siteLink);
+
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+
+        $section = $this->devHttpsSection($tester->getDisplay());
+        $this->assertStringContainsString('✓ https on the IP address: certificate valid for', $section);
+        $this->assertStringContainsString('✓ https on shpd.example.com: certificate valid for', $section);
+        $this->assertStringContainsString('✓ https on shpd.example.com: resolves to this server (10.0.0.7)', $section);
+        $this->assertStringContainsString('✓ nginx site shipard-https.conf is enabled and up to date', $section);
+        $this->assertStringNotContainsString('✗', $section);
+        $this->assertStringNotContainsString('⚠', $section);
+    }
+
+    public function testDevAccessInProductionIsAWarningOnly(): void
+    {
+        $spec = $this->makeSpec();
+        $plain = $this->devHttpsCommand($spec, 'production', null);
+        $testerPlain = new CommandTester($plain);
+        $testerPlain->execute([]);
+        $this->assertStringContainsString('(development servers only — skipped)', $this->devHttpsSection($testerPlain->getDisplay()));
+        $baseline = $this->issuesFound($testerPlain->getDisplay());
+
+        file_put_contents($this->tempConfigPath, json_encode(['mode' => 'production', 'devAccess' => ['httpsIp' => true]]));
+        $tester = new CommandTester($plain);
+        $tester->execute([]);
+
+        $section = $this->devHttpsSection($tester->getDisplay());
+        $this->assertStringContainsString("⚠ 'devAccess' is set in server.json, but the server runs in production mode", $section);
+        $this->assertSame($baseline, $this->issuesFound($tester->getDisplay()));
     }
 
     // ─── System config includes (warn-only) ─────────────────────────────────

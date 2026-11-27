@@ -24,6 +24,7 @@ final class DevHttpsPlanner
      * @param ?string $socket socket poolu shipard ({@see FpmPool::shipardSocket()}); null = pool není
      * @param ?bool $ipv6 zapnuté IPv6; null = podle `/proc/net/if_inet6`
      * @param list<string> $extraNginxGlobs další konfigurace nginx mimo sites-enabled (hledání cizího default_server)
+     * @param ?bool $privileged proces čte i soubory jen pro root; null = podle euid
      */
     public function __construct(
         private readonly string $templateFile,
@@ -33,6 +34,7 @@ final class DevHttpsPlanner
         private readonly string $sitesEnabledDir = '/etc/nginx/sites-enabled',
         private readonly ?bool $ipv6 = null,
         private readonly array $extraNginxGlobs = ['/etc/nginx/conf.d/*.conf'],
+        private readonly ?bool $privileged = null,
     ) {
     }
 
@@ -93,6 +95,13 @@ final class DevHttpsPlanner
             $hostProblem = $this->hostProblem($hostCertificate, $host);
         }
         $hostBlock = $host !== null && $hostProblem === null;
+        // Bez roota nejde nečitelný certifikát posoudit (symlink do adresáře
+        // jen pro root, U4) — blok se bere tak, jak je na disku, aby `--check`
+        // a `doctor` nehlásily zastaralý site soubor jen kvůli právům.
+        if ($host !== null && !$this->isPrivileged() && $hostCertificate?->status === DevCertificate::UNREADABLE) {
+            $hostBlock = $currentSite !== null
+                && str_contains(preg_replace('/#[^\n]*/', '', $currentSite) ?? '', 'server_name ' . $host . ';');
+        }
 
         // ── site soubor ─────────────────────────────────────────────────────
         $expectedSite = null;
@@ -164,6 +173,11 @@ final class DevHttpsPlanner
             $certificate->matchesKeyFile($keyFile) === false => "private key {$keyFile} does not match the certificate",
             default => null,
         };
+    }
+
+    private function isPrivileged(): bool
+    {
+        return $this->privileged ?? (function_exists('posix_geteuid') && posix_geteuid() === 0);
     }
 
     private function ipv6Enabled(): bool
