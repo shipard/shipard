@@ -86,18 +86,34 @@ class DevAccessTest extends TestCase
         $this->assertStringContainsString("'devAccess.preferred' is 'https-host'", $access->problems[0]);
     }
 
-    public function testAddressesComeFromInterfacesIpv4First(): void
+    public function testAddressesAreIpv4OnlyByDefault(): void
     {
+        // #183 D8, U25: server má i globální IPv6, bez `ipv6` se nepoužije.
         $access = $this->access(['httpsIp' => true]);
 
+        $this->assertFalse($access->ipv6);
+        $this->assertFalse($access->wantsIpv6());
+        $this->assertSame(['10.0.0.7'], $access->addresses());
+        $this->assertSame('10.0.0.7', $access->linkAddress());
+        $this->assertSame([], $access->problems);
+
+        $this->assertFalse($this->access(['httpsIp' => true, 'ipv6' => false])->wantsIpv6());
+    }
+
+    public function testIpv6AddressesComeOnRequestIpv4First(): void
+    {
+        $access = $this->access(['httpsIp' => true, 'ipv6' => true]);
+
+        $this->assertTrue($access->wantsIpv6());
         $this->assertSame(['10.0.0.7', '2001:db8::7'], $access->addresses());
         $this->assertSame('10.0.0.7', $access->linkAddress());
+        $this->assertSame([], $access->problems);
     }
 
     public function testIpOverrideIsUsedForLinksAndKeptInAddresses(): void
     {
         // Přepis mezi adresami rozhraní: jen mění odkazy.
-        $access = $this->access(['httpsIp' => true, 'ip' => '2001:DB8::7']);
+        $access = $this->access(['httpsIp' => true, 'ipv6' => true, 'ip' => '2001:DB8::7']);
         $this->assertSame('2001:db8::7', $access->linkAddress());
         $this->assertSame(['10.0.0.7', '2001:db8::7'], $access->addresses());
         $this->assertSame('https://[2001:db8::7]', $access->origin(DevAccess::HTTPS_IP));
@@ -106,7 +122,42 @@ class DevAccessTest extends TestCase
         // Přepis mimo rozhraní (NAT): patří i do certifikátu.
         $access = $this->access(['httpsIp' => true, 'ip' => '203.0.113.9']);
         $this->assertSame('203.0.113.9', $access->linkAddress());
+        $this->assertSame(['203.0.113.9', '10.0.0.7'], $access->addresses());
+
+        $access = $this->access(['httpsIp' => true, 'ipv6' => true, 'ip' => '203.0.113.9']);
         $this->assertSame(['203.0.113.9', '10.0.0.7', '2001:db8::7'], $access->addresses());
+    }
+
+    public function testIpv6OverrideWithoutIpv6IsAProblemAndIsNotUsed(): void
+    {
+        // U25: bez `ipv6` Shipard na IPv6 neposlouchá — odkaz by nikam nevedl.
+        $access = $this->access(['httpsIp' => true, 'ip' => '2001:db8::7']);
+
+        $this->assertCount(1, $access->problems);
+        $this->assertStringContainsString("'devAccess.ip' is an IPv6 address, but 'devAccess.ipv6' is not true", $access->problems[0]);
+        $this->assertNull($access->ipOverride);
+        $this->assertSame('10.0.0.7', $access->linkAddress());
+        $this->assertSame(['10.0.0.7'], $access->addresses());
+        $this->assertSame('https://10.0.0.7', $access->origin(DevAccess::HTTPS_IP));
+
+        // Totéž s adresou mimo rozhraní a s `ipv6: false`.
+        $access = $this->access(['ip' => '2001:db8::99', 'ipv6' => false]);
+        $this->assertCount(1, $access->problems);
+        $this->assertSame(['10.0.0.7'], $access->addresses());
+    }
+
+    public function testServerWithIpv6AddressesOnlyNeedsIpv6(): void
+    {
+        $local = $this->local(['127.0.0.1', 'fe80::1%eth0', '2001:db8::7']);
+
+        $access = $this->access(['httpsIp' => true], 'development', $local);
+        $this->assertSame([], $access->addresses());
+        $this->assertNull($access->linkAddress());
+        $this->assertSame([], $access->enabledKinds());
+
+        $access = $this->access(['httpsIp' => true, 'ipv6' => true], 'development', $local);
+        $this->assertSame(['2001:db8::7'], $access->addresses());
+        $this->assertSame('https://[2001:db8::7]', $access->origin(DevAccess::HTTPS_IP));
     }
 
     public function testServerWithoutReachableAddressHasNoIpEntries(): void
@@ -125,6 +176,7 @@ class DevAccessTest extends TestCase
 
         $this->assertTrue($access->isIgnoredInProduction());
         $this->assertFalse($access->wantsHttpsIp());
+        $this->assertFalse($this->access(['httpsIp' => true, 'ipv6' => true], 'production')->wantsIpv6());
         $this->assertNull($access->httpsHost());
         $this->assertFalse($access->hasHttpsEntry());
         $this->assertSame([], $access->enabledKinds());
@@ -144,6 +196,8 @@ class DevAccessTest extends TestCase
             'sekce není objekt' => ['yes', "'devAccess' must be an object"],
             'sekce je seznam' => [['a', 'b'], "'devAccess' must be an object"],
             'httpsIp text' => [['httpsIp' => 'true'], "'devAccess.httpsIp'"],
+            'ipv6 text' => [['ipv6' => 'true'], "'devAccess.ipv6' must be true or false"],
+            'ipv6 číslo' => [['ipv6' => 1], "'devAccess.ipv6' must be true or false"],
             'host s mezerou' => [['host' => 'shpd example.com'], "'devAccess.host'"],
             'host se středníkem' => [['host' => 'shpd.example.com; include /etc/passwd'], "'devAccess.host'"],
             'host zástupný znak' => [['host' => '*.example.com'], "'devAccess.host'"],
@@ -163,6 +217,8 @@ class DevAccessTest extends TestCase
         $this->assertStringContainsString($expectedProblem, $access->problems[0]);
         // Chybná hodnota = výchozí chování, žádný https vstup navíc.
         $this->assertFalse($access->wantsHttpsIp());
+        $this->assertFalse($access->wantsIpv6());
+        $this->assertSame(['10.0.0.7'], $access->addresses());
         $this->assertNull($access->httpsHost());
         $this->assertNull($access->ipOverride);
         $this->assertSame(DevAccess::HTTP_IP, $access->preferredKind());

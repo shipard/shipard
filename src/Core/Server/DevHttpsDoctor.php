@@ -17,7 +17,11 @@ use Shipard\Core\Net\LocalAddresses;
  *   pravidlo #103 D97) — jinak by na něj nedosáhlo testovací kolo ani videa;
  * - site `shipard-https.conf` je aktivní a odpovídá konfiguraci, jinak
  *   varování s příkazem;
- * - `devAccess` v režimu `production` → varování, sekce se nepoužije.
+ * - `devAccess` v režimu `production` → varování, sekce se nepoužije;
+ * - Shipard poslouchá na IPv6 a server má globální IPv6 adresu → varování
+ *   (#183 D8, U27): vývojářský dashboard nemá přihlášení. Platí i při
+ *   `devAccess.ipv6: true`, i pro ručně upravený http site a i bez
+ *   zapnutého https vstupu.
  *
  * Jen čte. Shodu klíče s certifikátem ověří jen tam, kde klíč přečte (root).
  *
@@ -26,6 +30,8 @@ use Shipard\Core\Net\LocalAddresses;
 final class DevHttpsDoctor
 {
     private const string RUN_HINT = 'Run: sudo shpd-server dev-https';
+    /** Kolik globálních IPv6 adres vypsat (SLAAC s dočasnými adresami jich dává víc). */
+    private const int MAX_LISTED_ADDRESSES = 3;
 
     public function __construct(
         private readonly DevHttpsPlanner $planner,
@@ -50,13 +56,14 @@ final class DevHttpsDoctor
         }
 
         $plan = $this->planner->plan($access, $now);
+        $ipv6 = $this->checkIpv6($plan);
 
         if (!$access->hasHttpsEntry()) {
             $findings[] = self::finding('info', '(no https entry enabled — http on the IP address only)');
             if (!$plan->siteUpToDate()) {
                 $findings[] = self::finding('warning', 'nginx site ' . DevHttpsSite::FILE_NAME . ' is still installed', [self::RUN_HINT . ' (removes it)']);
             }
-            return $findings;
+            return [...$findings, ...$ipv6];
         }
 
         if ($access->wantsHttpsIp()) {
@@ -82,6 +89,47 @@ final class DevHttpsDoctor
             }
         }
 
+        return [...$findings, ...$ipv6];
+    }
+
+    /**
+     * IPv6 (#183 D8, U26, U27): Shipard na IPv6 při globální IPv6 adrese
+     * serveru a `devAccess.ipv6` bez IPv6 v jádře. Bez `listen` na IPv6,
+     * s adresami jen ULA nebo link-local → bez nálezu.
+     *
+     * @return list<array{level: string, message: string, hints: list<string>}>
+     */
+    private function checkIpv6(DevHttpsPlan $plan): array
+    {
+        $findings = [];
+        if ($plan->ipv6Unavailable) {
+            $findings[] = self::finding('warning', 'devAccess.ipv6 is on, but IPv6 is not enabled on this server — the https entries listen on IPv4 only', [
+                'Enable IPv6 on the server, or set devAccess.ipv6 to false.',
+            ]);
+        }
+
+        $global = $this->local->globalIpv6();
+        if ($plan->ipv6ListenSites === [] || $global === []) {
+            return $findings;
+        }
+
+        $shown = array_slice($global, 0, self::MAX_LISTED_ADDRESSES);
+        $more = count($global) - count($shown);
+        $hints = ['The network (router, firewall) must block incoming connections from the internet to this server.'];
+        foreach ($plan->ipv6ListenSites as $site) {
+            $hints[] = match (true) {
+                $site !== DevHttpsSite::FILE_NAME => "{$site} was edited by hand — remove its IPv6 listen lines and reload nginx to keep http on IPv4 only.",
+                $plan->access->wantsIpv6() => 'https on IPv6 is on by devAccess.ipv6 — set it to false and run sudo shpd-server dev-https to go back to IPv4 only.',
+                default => 'https is meant to be on IPv4 only (devAccess.ipv6 is off) — ' . lcfirst(self::RUN_HINT),
+            };
+        }
+        $findings[] = self::finding(
+            'warning',
+            'Shipard listens on IPv6 (' . implode(', ', $plan->ipv6ListenSites) . ') and this server has a global IPv6 address ('
+                . implode(', ', $shown) . ($more > 0 ? " and {$more} more" : '')
+                . ') — the developer dashboard has no login',
+            $hints,
+        );
         return $findings;
     }
 
@@ -95,7 +143,7 @@ final class DevHttpsDoctor
             ])];
         }
         if (!$plan->ipBlock) {
-            return [self::finding('error', "{$label}: no address of this server found", ['Set devAccess.ip in /etc/shipard/server.json.'])];
+            return [self::finding('error', "{$label}: no address of this server found", ['Set devAccess.ip in /etc/shipard/server.json (a server with IPv6 addresses only needs devAccess.ipv6).'])];
         }
 
         $certificate = $plan->ipCertificate;

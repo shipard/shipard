@@ -12,7 +12,7 @@ use Shipard\Core\Net\LocalAddresses;
  * v `server.json`:
  *
  *     "devAccess": { "httpsIp": true, "host": "shpd.example.com",
- *                    "preferred": "https-host", "ip": "10.0.0.7" }
+ *                    "preferred": "https-host", "ip": "10.0.0.7", "ipv6": false }
  *
  * - `httpsIp` — https na IP (self-signed certifikát vyrábí `dev-https`);
  *   chybějící sekce = `false`, stávající servery se bez zásahu nemění;
@@ -20,7 +20,11 @@ use Shipard\Core\Net\LocalAddresses;
  * - `preferred` — `http-ip` | `https-ip` | `https-host`; výchozí je nejvyšší
  *   zapnutý vstup;
  * - `ip` — volitelný přepis adresy pro odkazy (server s víc rozhraními);
- *   jinak první dosažitelná adresa rozhraní ({@see LocalAddresses::reachable()}).
+ *   jinak první dosažitelná adresa rozhraní ({@see LocalAddresses::reachable()});
+ * - `ipv6` — https i na IPv6 (#183 D8); výchozí `false`: https bloky
+ *   poslouchají jen na IPv4 a adresy serveru ({@see addresses()}) jsou jen
+ *   IPv4. Vývojářský dashboard nemá přihlášení a globální IPv6 adresa bývá
+ *   dosažitelná z internetu — proto jen na výslovné vyžádání.
  *
  * Třída **nikdy nehází**: chybná hodnota se nepoužije a skončí
  * v {@see $problems} (hlásí `doctor`). V režimu `production` se sekce
@@ -39,13 +43,14 @@ final class DevAccess
     private const array KINDS_BY_PREFERENCE = [self::HTTPS_HOST, self::HTTPS_IP, self::HTTP_IP];
 
     /**
-     * @param list<string> $addresses dosažitelné adresy serveru (kanonické, IPv4 první)
+     * @param list<string> $addresses adresy serveru pro vstupy (kanonické, IPv4 první; IPv6 jen s `ipv6`)
      * @param list<string> $problems věty o chybných hodnotách sekce
      */
     private function __construct(
         public readonly bool $development,
         public readonly bool $configured,
         public readonly bool $httpsIp,
+        public readonly bool $ipv6,
         public readonly ?string $host,
         public readonly ?string $ipOverride,
         private readonly ?string $preferredConfigured,
@@ -67,6 +72,7 @@ final class DevAccess
         $development = $mode === 'development';
         $problems = [];
         $httpsIp = false;
+        $ipv6 = false;
         $host = null;
         $ip = null;
         $preferred = null;
@@ -86,6 +92,14 @@ final class DevAccess
             }
         }
 
+        if (array_key_exists('ipv6', $section)) {
+            if (is_bool($section['ipv6'])) {
+                $ipv6 = $section['ipv6'];
+            } else {
+                $problems[] = "'devAccess.ipv6' must be true or false";
+            }
+        }
+
         if (isset($section['host'])) {
             $candidate = is_string($section['host']) ? strtolower(trim($section['host'])) : null;
             if ($candidate !== null && self::isHostName($candidate)) {
@@ -97,10 +111,13 @@ final class DevAccess
 
         if (isset($section['ip'])) {
             $candidate = is_string($section['ip']) ? LocalAddresses::normalizeIp($section['ip']) : null;
-            if ($candidate !== null) {
-                $ip = $candidate;
-            } else {
+            if ($candidate === null) {
                 $problems[] = "'devAccess.ip' must be an IPv4 or IPv6 address";
+            } elseif (!$ipv6 && !LocalAddresses::isIpv4($candidate)) {
+                // Bez `ipv6` Shipard na IPv6 neposlouchá — odkaz by nikam nevedl (U25).
+                $problems[] = "'devAccess.ip' is an IPv6 address, but 'devAccess.ipv6' is not true";
+            } else {
+                $ip = $candidate;
             }
         }
 
@@ -115,6 +132,9 @@ final class DevAccess
         $addresses = [];
         if ($development) {
             $addresses = ($local ?? new LocalAddresses())->reachable();
+            if (!$ipv6) {
+                $addresses = array_values(array_filter($addresses, LocalAddresses::isIpv4(...)));
+            }
             if ($ip !== null && !in_array($ip, $addresses, true)) {
                 // Přepis může být adresa, kterou rozhraní nenese (NAT) — do
                 // certifikátu patří, odkazy na ni vedou.
@@ -122,10 +142,10 @@ final class DevAccess
             }
         }
 
-        $self = new self($development, $configured, $httpsIp, $host, $ip, $preferred, $addresses, $problems);
+        $self = new self($development, $configured, $httpsIp, $ipv6, $host, $ip, $preferred, $addresses, $problems);
         if ($preferred !== null && $development && !in_array($preferred, $self->enabledKinds(), true)) {
             $problems[] = "'devAccess.preferred' is '{$preferred}', but that entry is not enabled";
-            $self = new self($development, $configured, $httpsIp, $host, $ip, null, $addresses, $problems);
+            $self = new self($development, $configured, $httpsIp, $ipv6, $host, $ip, null, $addresses, $problems);
         }
         return $self;
     }
@@ -142,6 +162,12 @@ final class DevAccess
         return $this->development && $this->httpsIp;
     }
 
+    /** https má poslouchat i na IPv6 (jen ve vývoji, #183 D8). */
+    public function wantsIpv6(): bool
+    {
+        return $this->development && $this->ipv6;
+    }
+
     /** Jméno pro https vstup (jen ve vývoji), jinak null. */
     public function httpsHost(): ?string
     {
@@ -154,8 +180,8 @@ final class DevAccess
     }
 
     /**
-     * Adresy, které má nést certifikát pro IP: všechny dosažitelné adresy
-     * rozhraní (IPv4 i IPv6) a přepis `ip`.
+     * Adresy, které má nést certifikát pro IP: dosažitelné adresy rozhraní
+     * a přepis `ip` — bez `ipv6` jen IPv4 (#183 U25).
      *
      * @return list<string>
      */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Server;
 
 /**
- * Rozhodnutí `shpd-server dev-https` (#183 U3–U6, U20, U21) bez vedlejších
+ * Rozhodnutí `shpd-server dev-https` (#183 U3–U6, U20, U21, U26) bez vedlejších
  * účinků — jen čte: certifikáty na pevných cestách, šablonu site souboru,
  * site soubor na disku a ostatní weby nginx. Běží i bez roota (`--check`,
  * `doctor`); shodu klíče s certifikátem ověří jen tam, kde klíč přečte.
@@ -19,10 +19,13 @@ final class DevHttpsPlanner
     public const string HOST_DIR = 'dev-host';
     public const string CERT_FILE = 'fullchain.pem';
     public const string KEY_FILE = 'privkey.pem';
+    /** Site soubory Shipardu na vývojovém serveru: http (`install-packages.sh`) a https (`dev-https`). */
+    public const array SHIPARD_SITES = ['shipard.conf', DevHttpsSite::FILE_NAME];
 
     /**
      * @param ?string $socket socket poolu shipard ({@see FpmPool::shipardSocket()}); null = pool není
-     * @param ?bool $ipv6 zapnuté IPv6; null = podle `/proc/net/if_inet6`
+     * @param ?bool $ipv6 jádro má IPv6; null = podle `/proc/net/if_inet6`. Řádky `listen [::]`
+     *                    vzniknou, jen když to navíc chce `devAccess.ipv6` (#183 D8, U26)
      * @param list<string> $extraNginxGlobs další konfigurace nginx mimo sites-enabled (hledání cizího default_server)
      * @param ?bool $privileged proces čte i soubory jen pro root; null = podle euid
      */
@@ -79,7 +82,8 @@ final class DevHttpsPlanner
                 $warnings[] = "another nginx site already is the default server on port 443 ({$ipConflict}) — "
                     . 'the https entry on the IP address is not created; remove default_server there, or set devAccess.httpsIp to false';
             } elseif ($access->addresses() === []) {
-                $blockers[] = 'no address of this server found for the https entry on the IP address (set devAccess.ip)';
+                $blockers[] = 'no address of this server found for the https entry on the IP address '
+                    . '(set devAccess.ip; a server with IPv6 addresses only needs devAccess.ipv6)';
             } else {
                 $ipBlock = true;
                 $ipCertRenewal = $this->ipRenewalReason($ipCertificate, $access->addresses(), $now);
@@ -103,6 +107,14 @@ final class DevHttpsPlanner
                 && str_contains(preg_replace('/#[^\n]*/', '', $currentSite) ?? '', 'server_name ' . $host . ';');
         }
 
+        // ── IPv6 jen na vyžádání a jen s IPv6 v jádře (D8, U26) ─────────────
+        $ipv6Unavailable = $access->hasHttpsEntry() && $access->wantsIpv6() && !$this->kernelIpv6();
+        if ($ipv6Unavailable) {
+            $warnings[] = 'devAccess.ipv6 is on, but IPv6 is not enabled on this server (/proc/net/if_inet6 is missing) — '
+                . 'the https entries listen on IPv4 only';
+        }
+        $ipv6Listen = $access->wantsIpv6() && !$ipv6Unavailable;
+
         // ── site soubor ─────────────────────────────────────────────────────
         $expectedSite = null;
         if ($ipBlock || $hostBlock) {
@@ -113,7 +125,7 @@ final class DevHttpsPlanner
                 $blockers[] = 'PHP-FPM pool "shipard" not found (' . FpmPool::CONFIG_GLOB . ') — run scripts/install-packages.sh first';
             } else {
                 try {
-                    $expectedSite = DevHttpsSite::render($template, $ipBlock, $hostBlock ? $host : null, $this->socket, $this->ipv6Enabled());
+                    $expectedSite = DevHttpsSite::render($template, $ipBlock, $hostBlock ? $host : null, $this->socket, $ipv6Listen);
                 } catch (\InvalidArgumentException $e) {
                     $blockers[] = 'nginx template cannot be rendered: ' . $e->getMessage();
                 }
@@ -125,6 +137,7 @@ final class DevHttpsPlanner
             $ipBlock, $ipConflict, $ipCertificate, $ipCertRenewal,
             $hostBlock, $hostCertificate, $hostProblem,
             $expectedSite, $currentSite, $siteLinked, $siteFile, $siteLink,
+            $ipv6Unavailable, $this->ipv6ListenSites(),
         );
     }
 
@@ -180,9 +193,33 @@ final class DevHttpsPlanner
         return $this->privileged ?? (function_exists('posix_geteuid') && posix_geteuid() === 0);
     }
 
-    private function ipv6Enabled(): bool
+    private function kernelIpv6(): bool
     {
         return $this->ipv6 ?? file_exists('/proc/net/if_inet6');
+    }
+
+    /**
+     * Site soubory Shipardu, které nginx načítá a které mají `listen` na
+     * IPv6 — `[::]` i konkrétní adresa (#183 U27). Čte se `sites-enabled`
+     * (to, co nginx skutečně použije), i ručně upravený http site.
+     *
+     * @return list<string> jména souborů
+     */
+    private function ipv6ListenSites(): array
+    {
+        $out = [];
+        foreach (self::SHIPARD_SITES as $name) {
+            $file = $this->sitesEnabledDir . '/' . $name;
+            $content = is_file($file) ? @file_get_contents($file) : false;
+            if ($content === false) {
+                continue;
+            }
+            $stripped = preg_replace('/#[^\n]*/', '', $content) ?? $content;
+            if (preg_match('/\blisten\s+\[[^\]]*\]/', $stripped) === 1) {
+                $out[] = $name;
+            }
+        }
+        return $out;
     }
 
     /**

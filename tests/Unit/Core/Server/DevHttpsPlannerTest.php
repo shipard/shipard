@@ -11,6 +11,8 @@ use Shipard\Core\Server\DevHttpsSite;
 /** Rozhodnutí `dev-https` bez vedlejších účinků (#183 U3–U6, U20, U21). */
 class DevHttpsPlannerTest extends TestCase
 {
+    private const string HOST = 'shpd.example.com';
+
     private DevHttpsEnvironment $env;
     private \DateTimeImmutable $now;
 
@@ -284,13 +286,114 @@ class DevHttpsPlannerTest extends TestCase
         $this->assertSame(['nginx site ' . DevHttpsSite::FILE_NAME . ' is not enabled'], $plan->pendingActions());
     }
 
-    public function testIpv6ListenFollowsTheServer(): void
+    // ── IPv6 jen na vyžádání (#183 D8, U25–U27) ─────────────────────────────
+
+    public function testSiteHasNoIpv6ListenWithoutTheKeyEvenWithIpv6InTheKernel(): void
     {
         $this->env->writeIpCertificate();
-        $access = DevHttpsEnvironment::access(['httpsIp' => true]);
+        $this->env->writeHostCertificate([self::HOST]);
 
-        $this->assertStringContainsString('[::]:443', (string) $this->env->planner(ipv6: true)->plan($access, $this->now)->expectedSite);
-        $this->assertStringNotContainsString('[::]', (string) $this->env->planner(ipv6: false)->plan($access, $this->now)->expectedSite);
+        foreach ([['httpsIp' => true, 'host' => self::HOST], ['httpsIp' => true, 'host' => self::HOST, 'ipv6' => false]] as $section) {
+            $plan = $this->env->planner(ipv6: true)->plan(DevHttpsEnvironment::access($section), $this->now);
+
+            $this->assertStringContainsString('listen 443 ssl default_server;', (string) $plan->expectedSite);
+            $this->assertStringContainsString('server_name ' . self::HOST . ';', (string) $plan->expectedSite);
+            $this->assertStringNotContainsString('[::]', (string) $plan->expectedSite);
+            $this->assertFalse($plan->ipv6Unavailable);
+            $this->assertSame([], $plan->warnings);
+        }
+    }
+
+    public function testSiteListensOnIpv6WithTheKeyAndIpv6InTheKernel(): void
+    {
+        $this->env->writeIpCertificate();
+        $this->env->writeHostCertificate([self::HOST]);
+
+        $plan = $this->env->planner(ipv6: true)
+            ->plan(DevHttpsEnvironment::access(['httpsIp' => true, 'host' => self::HOST, 'ipv6' => true]), $this->now);
+
+        $this->assertStringContainsString('listen [::]:443 ssl default_server;', (string) $plan->expectedSite);
+        $this->assertStringContainsString("listen [::]:443 ssl;\n", (string) $plan->expectedSite);
+        $this->assertFalse($plan->ipv6Unavailable);
+        $this->assertSame([], $plan->warnings);
+    }
+
+    public function testIpv6KeyWithoutIpv6InTheKernelIsAWarningAndBlocksStayOnIpv4(): void
+    {
+        $this->env->writeIpCertificate();
+
+        $plan = $this->env->planner(ipv6: false)->plan(DevHttpsEnvironment::access(['httpsIp' => true, 'ipv6' => true]), $this->now);
+
+        $this->assertStringNotContainsString('[::]', (string) $plan->expectedSite);
+        $this->assertTrue($plan->ipv6Unavailable);
+        $this->assertCount(1, $plan->warnings);
+        $this->assertStringContainsString('devAccess.ipv6 is on, but IPv6 is not enabled on this server', $plan->warnings[0]);
+        $this->assertSame([], $plan->blockers);
+
+        // Bez https vstupu klíč nic neřídí — bez varování.
+        $plan = $this->env->planner(ipv6: false)->plan(DevHttpsEnvironment::access(['ipv6' => true]), $this->now);
+        $this->assertFalse($plan->ipv6Unavailable);
+        $this->assertSame([], $plan->warnings);
+    }
+
+    public function testIpCertificateCarriesIpv6OnlyOnRequest(): void
+    {
+        // U25: server má 10.0.0.7 a 2001:db8::7, certifikát jen IPv4.
+        $this->env->writeIpCertificate(['10.0.0.7']);
+        $this->assertNull($this->plan(['httpsIp' => true])->ipCertRenewal);
+        $this->assertSame('does not cover 2001:db8::7', $this->plan(['httpsIp' => true, 'ipv6' => true])->ipCertRenewal);
+
+        // Certifikát z fáze 1 s IPv6 navíc se po vypnutí neobnovuje (U20).
+        $this->env->writeIpCertificate(['10.0.0.7', '2001:db8::7']);
+        $this->assertNull($this->plan(['httpsIp' => true])->ipCertRenewal);
+    }
+
+    public function testSiteFromPhaseOneWithIpv6ListenIsOutdated(): void
+    {
+        // U26: po nasazení má server starý site s `[::]` — běh ho přegeneruje.
+        $this->env->writeIpCertificate();
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+
+        $plan = $this->env->planner(ipv6: true)->plan(DevHttpsEnvironment::access(['httpsIp' => true]), $this->now);
+
+        $this->assertFalse($plan->siteUpToDate());
+        $this->assertTrue($plan->needsRun());
+        $this->assertSame(['nginx site ' . DevHttpsSite::FILE_NAME . ' is outdated'], $plan->pendingActions());
+        $this->assertSame([DevHttpsSite::FILE_NAME], $plan->ipv6ListenSites);
+
+        // Se zapnutým `ipv6` je tentýž soubor aktuální.
+        $this->env->writeIpCertificate(DevHttpsEnvironment::ADDRESSES);
+        $plan = $this->env->planner(ipv6: true)->plan(DevHttpsEnvironment::access(['httpsIp' => true, 'ipv6' => true]), $this->now);
+        $this->assertTrue($plan->siteUpToDate());
+        $this->assertFalse($plan->needsRun());
+    }
+
+    public function testIpv6ListenSitesAreReadFromEnabledShipardSites(): void
+    {
+        // Nic nainstalováno, cizí web s IPv6 se nepočítá.
+        $this->env->writeForeignSite('other.conf', "server { listen [::]:8443 ssl; }\n");
+        $this->assertSame([], $this->plan(null)->ipv6ListenSites);
+
+        // Ručně upravený http site: `[::]` i konkrétní adresa.
+        $this->env->writeForeignSite('shipard.conf', "server {\n    listen 80;\n    listen [::]:80;\n}\n");
+        $this->assertSame(['shipard.conf'], $this->plan(null)->ipv6ListenSites);
+        $this->env->writeForeignSite('shipard.conf', "server {\n    listen 80;\n    listen   [2001:db8::7]:80 default_server;\n}\n");
+        $this->assertSame(['shipard.conf'], $this->plan(null)->ipv6ListenSites);
+
+        // Zakomentovaný řádek ani http jen na IPv4 se nepočítá.
+        $this->env->writeForeignSite('shipard.conf', "server {\n    listen 80;\n    # listen [::]:80;\n}\n");
+        $this->assertSame([], $this->plan(null)->ipv6ListenSites);
+
+        // Oba soubory.
+        $this->env->writeForeignSite('shipard.conf', "server { listen [::]:80; }\n");
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+        $this->assertSame(['shipard.conf', DevHttpsSite::FILE_NAME], $this->plan(null)->ipv6ListenSites);
+
+        // Site bez `[::]` (to, co běh zapíše bez `ipv6`).
+        @unlink($this->env->sitesEnabled . '/shipard.conf');
+        $this->env->writeIpCertificate();
+        $this->env->installSite((string) $this->plan(['httpsIp' => true])->expectedSite);
+        $this->assertSame([], $this->plan(['httpsIp' => true])->ipv6ListenSites);
     }
 
     public function testBlockers(): void

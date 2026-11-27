@@ -76,6 +76,26 @@ final class LocalAddresses
     }
 
     /**
+     * Globální IPv6 adresy rozhraní (#183 U27) — adresy, na které může
+     * dosáhnout internet, pokud je síť nefiltruje: IPv6 bez loopbacku,
+     * link-local a ULA (`fc00::/7`).
+     *
+     * @return list<string>
+     */
+    public function globalIpv6(): array
+    {
+        $out = [];
+        foreach ($this->all() as $address) {
+            if (self::isIpv4($address) || self::isLoopback($address)
+                || self::isLinkLocal($address) || self::isUniqueLocal($address)) {
+                continue;
+            }
+            $out[] = $address;
+        }
+        return $out;
+    }
+
+    /**
      * Adresy hostu v kanonickém tvaru, bez opakování: IP literál je sám
      * sebou, jméno přeloží resolver (A i AAAA). Prázdný seznam = jméno
      * nejde přeložit.
@@ -133,6 +153,13 @@ final class LocalAddresses
         $binary = @inet_pton($ip);
         return is_string($binary) && strlen($binary) === 16
             && ord($binary[0]) === 0xfe && (ord($binary[1]) & 0xc0) === 0x80;
+    }
+
+    /** Unikátní lokální adresa IPv6 (ULA, `fc00::/7`; adresa už normalizovaná). */
+    public static function isUniqueLocal(string $ip): bool
+    {
+        $binary = @inet_pton($ip);
+        return is_string($binary) && strlen($binary) === 16 && (ord($binary[0]) & 0xfe) === 0xfc;
     }
 
     public static function isIpv4(string $ip): bool

@@ -21,6 +21,8 @@ class TestableDevHttpsCommand extends DevHttpsCommand
     public \DateTimeImmutable $now;
     /** @var list<string> */
     public array $addresses = DevHttpsEnvironment::ADDRESSES;
+    /** Jádro „serveru“ má IPv6 (`/proc/net/if_inet6`). */
+    public bool $kernelIpv6 = true;
     public int $nginxTestExit = 0;
     public int $nginxReloadExit = 0;
     public int $opensslExit = 0;
@@ -67,7 +69,7 @@ class TestableDevHttpsCommand extends DevHttpsCommand
 
     protected function createPlanner(): DevHttpsPlanner
     {
-        return $this->env->planner();
+        return $this->env->planner(ipv6: $this->kernelIpv6);
     }
 
     protected function detectShipardUser(string $mode): string
@@ -204,9 +206,10 @@ class DevHttpsCommandTest extends TestCase
         $this->assertSame(0, $exit, $out);
         $this->assertSame(['openssl', 'nginx -t', 'reload'], $command->calls);
 
-        // Certifikát pro IP: všechny adresy serveru, klíč jen pro root.
+        // Certifikát pro IP: adresy serveru bez IPv6 (#183 D8 — server má
+        // i 2001:db8::7), klíč jen pro root.
         $certificate = DevCertificate::read($this->ipCert());
-        $this->assertSame(DevHttpsEnvironment::ADDRESSES, $certificate->ips);
+        $this->assertSame(['10.0.0.7'], $certificate->ips);
         $this->assertTrue($certificate->matchesKeyFile($this->ipKey()));
         $this->assertSame(0600, fileperms($this->ipKey()) & 0777);
         $this->assertSame(0644, fileperms($this->ipCert()) & 0777);
@@ -228,6 +231,7 @@ class DevHttpsCommandTest extends TestCase
         $this->assertSame($this->env->siteFile, readlink($this->env->siteLink));
         $site = (string) file_get_contents($this->env->siteFile);
         $this->assertStringContainsString('listen 443 ssl default_server;', $site);
+        $this->assertStringNotContainsString('[::]', $site, 'bez devAccess.ipv6 jen IPv4, i když jádro IPv6 má');
         $this->assertStringContainsString('fastcgi_pass unix:' . DevHttpsEnvironment::SOCKET . ';', $site);
         $this->assertStringNotContainsString('dev-host', $site);
 
@@ -268,13 +272,62 @@ class DevHttpsCommandTest extends TestCase
         [$exit, $out] = $this->run_($command);
         $this->assertSame(0, $exit, $out);
         $this->assertStringContainsString('does not cover 192.168.5.1', $out);
-        $this->assertSame(['10.0.0.7', '192.168.5.1', '2001:db8::7'], DevCertificate::read($this->ipCert())->ips);
+        $this->assertSame(['10.0.0.7', '192.168.5.1'], DevCertificate::read($this->ipCert())->ips);
 
         // Adresa zanikla → certifikát ji nese navíc, bez obnovy (U20).
         $command = $this->command(['httpsIp' => true]);
         $command->addresses = ['10.0.0.7'];
         $this->run_($command);
         $this->assertSame([], $command->calls);
+    }
+
+    // ── IPv6 jen na vyžádání (#183 D8) ──────────────────────────────────────
+
+    public function testIpv6OnRequestListensOnIpv6AndCertificateCarriesIt(): void
+    {
+        $command = $this->command(['httpsIp' => true, 'ipv6' => true]);
+        [$exit, $out] = $this->run_($command);
+
+        $this->assertSame(0, $exit, $out);
+        $this->assertSame(DevHttpsEnvironment::ADDRESSES, DevCertificate::read($this->ipCert())->ips);
+        $site = (string) file_get_contents($this->env->siteFile);
+        $this->assertStringContainsString('listen 443 ssl default_server;', $site);
+        $this->assertStringContainsString('listen [::]:443 ssl default_server;', $site);
+        $this->assertStringNotContainsString('⚠', $out);
+    }
+
+    public function testIpv6OnRequestWithoutIpv6InTheKernelWarnsAndStaysOnIpv4(): void
+    {
+        $command = $this->command(['httpsIp' => true, 'ipv6' => true]);
+        $command->kernelIpv6 = false;
+        [$exit, $out] = $this->run_($command);
+
+        $this->assertSame(0, $exit, $out);
+        $this->assertStringContainsString('⚠ devAccess.ipv6 is on, but IPv6 is not enabled on this server', $out);
+        $this->assertStringNotContainsString('[::]', (string) file_get_contents($this->env->siteFile));
+    }
+
+    public function testSiteFromPhaseOneIsRegeneratedWithoutIpv6AndCertificateStays(): void
+    {
+        // Server po nasazení D8: site s `[::]`, certifikát nese i IPv6.
+        $this->env->writeIpCertificate();
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+        $certificate = (string) file_get_contents($this->ipCert());
+
+        $check = $this->command(['httpsIp' => true]);
+        [$exit, $out] = $this->run_($check, ['--check' => true], OutputInterface::VERBOSITY_VERBOSE);
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('shipard-https.conf is outdated', $out);
+
+        $command = $this->command(['httpsIp' => true]);
+        [$exit, $out] = $this->run_($command);
+        $this->assertSame(0, $exit, $out);
+        $this->assertSame(['nginx -t', 'reload'], $command->calls, 'certifikát s adresou navíc se neobnovuje (U20)');
+        $this->assertSame($certificate, (string) file_get_contents($this->ipCert()));
+        $this->assertStringNotContainsString('[::]', (string) file_get_contents($this->env->siteFile));
+
+        [$exit] = $this->run_($this->command(['httpsIp' => true]), ['--check' => true]);
+        $this->assertSame(0, $exit);
     }
 
     public function testFailedOpensslLeavesEverythingAsItWas(): void

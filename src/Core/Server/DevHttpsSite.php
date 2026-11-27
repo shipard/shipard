@@ -10,7 +10,8 @@ namespace Shipard\Core\Server;
  *
  * - blok mezi řádky `# >>> https-ip` / `# <<< https-ip` zůstane, jen když
  *   je zapnutý vstup přes IP; `https-host` jen se jménem;
- * - řádky končící `# ipv6` jen se zapnutým IPv6;
+ * - řádky končící `# ipv6` jen s `devAccess.ipv6` a IPv6 v jádře (#183 D8,
+ *   rozhoduje {@see DevHttpsPlanner});
  * - `__SERVER_NAME__` → jméno, `fastcgi_pass unix:/run/php/…;` → socket
  *   poolu shipard (stejné pravidlo jako `install-packages.sh`).
  *

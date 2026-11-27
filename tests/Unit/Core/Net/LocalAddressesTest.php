@@ -40,6 +40,18 @@ class LocalAddressesTest extends TestCase
         $this->assertSame(['10.0.0.7', '192.168.5.1', '2001:db8::7', 'fd00::5'], $local->reachable());
     }
 
+    public function testGlobalIpv6SkipsIpv4LoopbackLinkLocalAndUla(): void
+    {
+        $local = $this->local([
+            '127.0.0.1', '::1', '10.0.0.7', '203.0.113.9',
+            'fe80::1%eth0', 'fd00::5', 'fc00::1',
+            '2001:db8::7', '2001:DB8:0:0:0:0:0:7', '2a00:db8::1',
+        ]);
+
+        $this->assertSame(['2001:db8::7', '2a00:db8::1'], $local->globalIpv6());
+        $this->assertSame([], $this->local(['127.0.0.1', '10.0.0.7', 'fe80::1%eth0', 'fd00::5'])->globalIpv6());
+    }
+
     public function testReachableIsEmptyWithLoopbackOnly(): void
     {
         $this->assertSame([], $this->local(['127.0.0.1', '::1'])->reachable());
@@ -77,6 +89,14 @@ class LocalAddressesTest extends TestCase
         $this->assertFalse(LocalAddresses::isLinkLocal('fec0::1'));
         $this->assertFalse(LocalAddresses::isLinkLocal('fd00::1'));
         $this->assertFalse(LocalAddresses::isLinkLocal('10.0.0.7'));
+
+        // ULA fc00::/7 (#183 U27) — ne link-local, ne globální adresy.
+        $this->assertTrue(LocalAddresses::isUniqueLocal('fd00::5'));
+        $this->assertTrue(LocalAddresses::isUniqueLocal('fc00::1'));
+        $this->assertTrue(LocalAddresses::isUniqueLocal('fdff:ffff::1'));
+        $this->assertFalse(LocalAddresses::isUniqueLocal('fe80::1'));
+        $this->assertFalse(LocalAddresses::isUniqueLocal('2001:db8::7'));
+        $this->assertFalse(LocalAddresses::isUniqueLocal('10.0.0.7'));
 
         $this->assertTrue(LocalAddresses::isIpv4('10.0.0.7'));
         $this->assertFalse(LocalAddresses::isIpv4('2001:db8::7'));

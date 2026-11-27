@@ -33,21 +33,21 @@ class DevHttpsDoctorTest extends TestCase
      * @param array<string, mixed>|null $section
      * @return list<array{level: string, message: string, hints: list<string>}>
      */
-    private function check(?array $section, string $mode = 'development', ?\DateTimeImmutable $now = null, bool $privileged = true, array $addresses = DevHttpsEnvironment::ADDRESSES): array
+    private function check(?array $section, string $mode = 'development', ?\DateTimeImmutable $now = null, bool $privileged = true, array $addresses = DevHttpsEnvironment::ADDRESSES, bool $kernelIpv6 = false): array
     {
         $dns = $this->dns;
         $local = new LocalAddresses(
             static fn (string $host): array => $dns[$host] ?? [],
             static fn (): array => ['127.0.0.1', ...$addresses],
         );
-        return (new DevHttpsDoctor($this->env->planner(privileged: $privileged), $local))
+        return (new DevHttpsDoctor($this->env->planner(ipv6: $kernelIpv6, privileged: $privileged), $local))
             ->check(DevHttpsEnvironment::access($section, $mode, $addresses), $now ?? $this->now);
     }
 
     /** Nainstaluje site soubor, který pro konfiguraci vyrobí `dev-https`. */
-    private function installExpectedSite(array $section): void
+    private function installExpectedSite(array $section, bool $kernelIpv6 = false): void
     {
-        $plan = $this->env->planner()->plan(DevHttpsEnvironment::access($section), $this->now);
+        $plan = $this->env->planner(ipv6: $kernelIpv6)->plan(DevHttpsEnvironment::access($section), $this->now);
         $this->env->installSite((string) $plan->expectedSite);
     }
 
@@ -123,7 +123,9 @@ class DevHttpsDoctorTest extends TestCase
 
         $this->assertSame(['ok'], self::levels($findings));
         $this->assertFinding('ok', 'https on the IP address: certificate valid for', $findings);
-        $this->assertFinding('ok', 'covers 10.0.0.7, 2001:db8::7', $findings);
+        // #183 D8: server má i 2001:db8::7, bez `ipv6` se do certifikátu nepočítá.
+        $finding = $this->assertFinding('ok', 'covers 10.0.0.7', $findings);
+        $this->assertStringNotContainsString('2001:db8::7', $finding['message']);
         $this->assertFinding('ok', 'shipard-https.conf is enabled and up to date', $findings);
     }
 
@@ -165,15 +167,21 @@ class DevHttpsDoctorTest extends TestCase
 
     public function testIpCertificateThatDoesNotCoverAnAddressIsAnError(): void
     {
+        $addresses = ['10.0.0.7', '192.168.5.1', '2001:db8::7'];
         $this->env->writeIpCertificate(['10.0.0.7']);
         $this->installExpectedSite(['httpsIp' => true]);
 
-        $findings = $this->check(['httpsIp' => true]);
-        $this->assertFinding('error', 'certificate does not cover 2001:db8::7', $findings);
+        $findings = $this->check(['httpsIp' => true], addresses: $addresses);
+        $this->assertFinding('error', 'certificate does not cover 192.168.5.1', $findings);
 
         // U20: adresa v certifikátu navíc chybou není.
-        $this->env->writeIpCertificate(['10.0.0.7', '2001:db8::7', '2001:db8::dead']);
-        $this->assertNotContains('error', self::levels($this->check(['httpsIp' => true])));
+        $this->env->writeIpCertificate(['10.0.0.7', '192.168.5.1', '2001:db8::7', '2001:db8::dead']);
+        $this->assertNotContains('error', self::levels($this->check(['httpsIp' => true], addresses: $addresses)));
+
+        // #183 U25: IPv6 adresa serveru v SAN chybí jen se zapnutým `ipv6`.
+        $this->env->writeIpCertificate(['10.0.0.7', '192.168.5.1']);
+        $this->assertNotContains('error', self::levels($this->check(['httpsIp' => true], addresses: $addresses)));
+        $this->assertFinding('error', 'certificate does not cover 2001:db8::7', $this->check(['httpsIp' => true, 'ipv6' => true], addresses: $addresses, kernelIpv6: true));
     }
 
     public function testIpKeyMismatchIsAnErrorWhereTheKeyIsReadable(): void
@@ -303,6 +311,131 @@ class DevHttpsDoctorTest extends TestCase
         $finding = $this->assertFinding('warning', 'shipard-https.conf is outdated', $findings);
         $this->assertSame(['Run: sudo shpd-server dev-https'], $finding['hints']);
         $this->assertNotContains('error', self::levels($findings));
+    }
+
+    // ── IPv6 (#183 D8, U26, U27) ────────────────────────────────────────────
+
+    private const string IPV6_FINDING = 'Shipard listens on IPv6';
+
+    /** @param list<array{level: string, message: string, hints: list<string>}> $findings */
+    private function assertNoIpv6Finding(array $findings): void
+    {
+        foreach (self::lines($findings) as $line) {
+            $this->assertStringNotContainsString(self::IPV6_FINDING, $line);
+        }
+    }
+
+    public function testHttpsSiteOnIpv6WithAGlobalAddressIsAWarning(): void
+    {
+        // Server po nasazení: site z fáze 1 s `[::]`, konfigurace bez `ipv6`.
+        $this->env->writeIpCertificate();
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+
+        $findings = $this->check(['httpsIp' => true], kernelIpv6: true);
+
+        $finding = $this->assertFinding('warning', self::IPV6_FINDING . ' (shipard-https.conf) and this server has a global IPv6 address (2001:db8::7)', $findings);
+        $this->assertStringContainsString('the developer dashboard has no login', $finding['message']);
+        $this->assertStringContainsString('must block incoming connections from the internet', $finding['hints'][0]);
+        $this->assertStringContainsString('devAccess.ipv6 is off', $finding['hints'][1]);
+        $this->assertStringContainsString('sudo shpd-server dev-https', $finding['hints'][1]);
+        $this->assertFinding('warning', 'shipard-https.conf is outdated', $findings);
+        $this->assertNotContains('error', self::levels($findings));
+
+        // Po běhu `dev-https` je sekce čistá.
+        $this->installExpectedSite(['httpsIp' => true], kernelIpv6: true);
+        $this->assertSame(['ok'], self::levels($this->check(['httpsIp' => true], kernelIpv6: true)));
+    }
+
+    public function testHandEditedHttpSiteOnIpv6IsAWarningEvenWithoutAnHttpsEntry(): void
+    {
+        $this->env->writeForeignSite('shipard.conf', "server {\n    listen 80;\n    listen [::]:80;\n}\n");
+
+        $findings = $this->check(null);
+
+        $this->assertSame('info: (no https entry enabled — http on the IP address only)', self::lines($findings)[0]);
+        $finding = $this->assertFinding('warning', self::IPV6_FINDING . ' (shipard.conf)', $findings);
+        $this->assertStringContainsString('2001:db8::7', $finding['message']);
+        $this->assertStringContainsString('shipard.conf was edited by hand', $finding['hints'][1]);
+
+        // Konkrétní adresa místo `[::]`, oba soubory najednou.
+        $this->env->writeForeignSite('shipard.conf', "server { listen [2001:db8::7]:80; }\n");
+        $this->env->writeIpCertificate();
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+        $finding = $this->assertFinding('warning', self::IPV6_FINDING . ' (shipard.conf, shipard-https.conf)', $this->check(['httpsIp' => true], kernelIpv6: true));
+        $this->assertCount(3, $finding['hints']);
+    }
+
+    public function testIpv6ListenWithoutAGlobalAddressIsQuiet(): void
+    {
+        $this->env->writeIpCertificate(['10.0.0.7']);
+        $this->env->installSite($this->env->siteWithIpv6Listen());
+        $this->env->writeForeignSite('shipard.conf', "server { listen [::]:80; }\n");
+
+        // ULA, jen link-local, bez IPv6.
+        foreach ([['10.0.0.7', 'fd00::5'], ['10.0.0.7', 'fe80::1%eth0'], ['10.0.0.7']] as $addresses) {
+            $this->assertNoIpv6Finding($this->check(['httpsIp' => true], addresses: $addresses, kernelIpv6: true));
+            $this->assertNoIpv6Finding($this->check(null, addresses: $addresses));
+        }
+    }
+
+    public function testGlobalAddressWithoutIpv6ListenIsQuiet(): void
+    {
+        $this->env->writeForeignSite('shipard.conf', "server {\n    listen 80;\n    # listen [::]:80;\n}\n");
+        $this->env->writeForeignSite('other.conf', "server { listen [::]:8443 ssl; }\n");
+        $this->env->writeIpCertificate();
+        $this->installExpectedSite(['httpsIp' => true], kernelIpv6: true);
+
+        $findings = $this->check(['httpsIp' => true], kernelIpv6: true);
+
+        $this->assertNoIpv6Finding($findings);
+        $this->assertSame(['ok'], self::levels($findings));
+        $this->assertNoIpv6Finding($this->check(null));
+    }
+
+    public function testIpv6OnRequestStillWarnsWithAGlobalAddress(): void
+    {
+        $section = ['httpsIp' => true, 'ipv6' => true];
+        $this->env->writeIpCertificate();
+        $this->installExpectedSite($section, kernelIpv6: true);
+
+        $findings = $this->check($section, kernelIpv6: true);
+
+        // Záměr, ale připomínka zůstává — a nic dalšího sekce nehlásí.
+        $this->assertFinding('ok', 'covers 10.0.0.7, 2001:db8::7', $findings);
+        $this->assertFinding('ok', 'shipard-https.conf is enabled and up to date', $findings);
+        $finding = $this->assertFinding('warning', self::IPV6_FINDING . ' (shipard-https.conf)', $findings);
+        $this->assertStringContainsString('on by devAccess.ipv6', $finding['hints'][1]);
+        $this->assertCount(1, array_filter($findings, static fn (array $f): bool => $f['level'] !== 'ok'));
+    }
+
+    public function testIpv6OnRequestWithoutIpv6InTheKernelIsAWarning(): void
+    {
+        $section = ['httpsIp' => true, 'ipv6' => true];
+        $this->env->writeIpCertificate();
+        $this->installExpectedSite($section, kernelIpv6: false);
+
+        $findings = $this->check($section, kernelIpv6: false);
+
+        $finding = $this->assertFinding('warning', 'devAccess.ipv6 is on, but IPv6 is not enabled on this server', $findings);
+        $this->assertStringContainsString('set devAccess.ipv6 to false', $finding['hints'][0]);
+        $this->assertFinding('ok', 'shipard-https.conf is enabled and up to date', $findings);
+        $this->assertNoIpv6Finding($findings);
+        $this->assertNotContains('error', self::levels($findings));
+    }
+
+    public function testLongListOfGlobalAddressesIsShortened(): void
+    {
+        $this->env->writeForeignSite('shipard.conf', "server { listen [::]:80; }\n");
+
+        $findings = $this->check(null, addresses: ['10.0.0.7', '2001:db8::1', '2001:db8::2', '2001:db8::3', '2001:db8::4', '2001:db8::5']);
+
+        $this->assertFinding('warning', '(2001:db8::1, 2001:db8::2, 2001:db8::3 and 2 more)', $findings);
+    }
+
+    public function testInvalidIpv6ValueAndIpv6OverrideAreConfigWarnings(): void
+    {
+        $this->assertFinding('warning', "server.json: 'devAccess.ipv6' must be true or false", $this->check(['ipv6' => 'yes']));
+        $this->assertFinding('warning', "server.json: 'devAccess.ip' is an IPv6 address", $this->check(['ip' => '2001:db8::7']));
     }
 
     public function testBothEntriesReportEachOnItsOwn(): void

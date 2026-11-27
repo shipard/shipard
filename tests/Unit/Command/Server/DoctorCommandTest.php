@@ -1053,6 +1053,40 @@ class DoctorCommandTest extends TestCase
         $this->assertStringNotContainsString('⚠', $section);
     }
 
+    public function testDevHttpsWarnsAboutShipardOnAGlobalIpv6Address(): void
+    {
+        // #183 U27: ručně upravený http site, žádný https vstup — kontrola
+        // proběhne i tak; varování exit code nemění.
+        $command = $this->devHttpsCommand($this->makeSpec(), 'development', null);
+        $command->fakeInterfaces = ['127.0.0.1', '10.0.0.7', 'fe80::1%eth0', '2001:db8::7'];
+        $site = $command->fakeNginxSitesEnabledDir . '/shipard.conf';
+        $body = "    location ~ \\.php\$ {\n        fastcgi_pass unix:/run/php/php8.5-fpm-shipard.sock;\n    }\n}\n";
+
+        // http jen na IPv4 — globální adresa sama nález nedělá.
+        file_put_contents($site, "server {\n    listen 80;\n" . $body);
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $baseline = $this->issuesFound($tester->getDisplay());
+        $this->assertStringNotContainsString('Shipard listens on IPv6', $this->devHttpsSection($tester->getDisplay()));
+
+        file_put_contents($site, "server {\n    listen 80;\n    listen [::]:80;\n" . $body);
+        $command->fakeInterfaces = ['127.0.0.1', '10.0.0.7', 'fe80::1%eth0', '2001:db8::7'];
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+
+        $section = $this->devHttpsSection($tester->getDisplay());
+        $this->assertStringContainsString('⚠ Shipard listens on IPv6 (shipard.conf) and this server has a global IPv6 address (2001:db8::7) — the developer dashboard has no login', $section);
+        $this->assertStringContainsString('→ The network (router, firewall) must block incoming connections from the internet', $section);
+        $this->assertStringNotContainsString('✗', $section);
+        $this->assertSame($baseline, $this->issuesFound($tester->getDisplay()));
+
+        // Jen ULA → bez nálezu.
+        $command->fakeInterfaces = ['127.0.0.1', '10.0.0.7', 'fd00::5'];
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+        $this->assertStringNotContainsString('Shipard listens on IPv6', $this->devHttpsSection($tester->getDisplay()));
+    }
+
     public function testDevHttpsMissingCertificateCountsAsAnIssue(): void
     {
         $spec = $this->makeSpec();

@@ -18,6 +18,8 @@ final class DevHttpsPlan
      * @param ?string $hostProblem proč blok pro jméno nevznikne (certifikát chybí, nesedí); null = v pořádku nebo vstup vypnutý
      * @param ?string $expectedSite obsah, který má site soubor mít; null = soubor nemá existovat
      * @param ?string $currentSite obsah site souboru na disku; null = neexistuje
+     * @param bool $ipv6Unavailable `devAccess.ipv6` je zapnuté, ale jádro IPv6 nemá — bloky jsou bez IPv6 (U26)
+     * @param list<string> $ipv6ListenSites site soubory Shipardu v sites-enabled s `listen` na IPv6 (U27)
      */
     public function __construct(
         public readonly DevAccess $access,
@@ -35,6 +37,8 @@ final class DevHttpsPlan
         public readonly bool $siteLinked,
         public readonly string $siteFile,
         public readonly string $siteLink,
+        public readonly bool $ipv6Unavailable = false,
+        public readonly array $ipv6ListenSites = [],
     ) {
     }
 

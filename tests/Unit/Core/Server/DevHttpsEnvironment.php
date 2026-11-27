@@ -88,6 +88,12 @@ final class DevHttpsEnvironment
         return $file;
     }
 
+    /** Site soubor, jaký vyráběla fáze 1 na serveru s IPv6 — s `listen [::]:443` (#183 D8). */
+    public function siteWithIpv6Listen(?string $host = null): string
+    {
+        return (string) DevHttpsSite::render((string) file_get_contents(self::templateFile()), true, $host, self::SOCKET, true);
+    }
+
     public function installSite(string $content): void
     {
         file_put_contents($this->siteFile, $content);
