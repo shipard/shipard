@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 499 tasků: **naplánováno** 8 · **částečně** 26 · **zrušeno** 1 · **hotovo** 464.
+Celkem 499 tasků: **naplánováno** 7 · **částečně** 27 · **zrušeno** 1 · **hotovo** 464.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,7 +27,6 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
-| `buildings-phase1.md` | naplánováno | design #174 D16–D27 schválen 2026-11-26; předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26 |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
@@ -39,6 +38,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `ai-bedrock-eu.md` | částečně | kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); ověření 1–7 s reálným klíčem odloženo: přihlášení klíčem i tvar chyb ověřeny, ale testovací účet AWS nemá přístup k žádnému modelu Anthropicu (403 „not available for this account“ i přímo v konzoli AWS) — řeší se na straně AWS; po zpřístupnění stačí `shpd-ds ai-test` a body 2–5, 7, výsledek do #85 |
+| `buildings-phase1.md` | částečně | commit 0 (provisionery modulů, D28) hotov 2026-11-27, zbývají commity 1–4; design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26 |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |

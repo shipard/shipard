@@ -458,6 +458,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `formTabs` | object[] | Ne | Ne | Záložka formuláře cizí tabulky (#172 D17, viz níže): `{table, class, order?}`, třída dědí `Shipard\Core\Form\ModuleFormTab` |
 | `rowDecorators` | object[] | Ne | Ne | Štítky řádku seznamu cizí tabulky (#172 D18, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\RowDecorator` |
 | `recordActions` | object[] | Ne | Ne | Akce záznamu s obsluhou v modulu (#172 D12–D15, viz níže): `{id, table, class, admin?, order?}`, třída implementuje `Shipard\Core\RecordAction\RecordAction` |
+| `provisioners` | object[] | Ne | Ne | Výchozí data modulu zakládaná v `ds-upgrade` (#174 D28, viz níže): `{class, order?}`, třída implementuje `Shipard\Core\Module\ModuleProvisioner` |
 
 ### Pole `commands`, `serverCommands` a `cronJobs`
 
@@ -1140,6 +1141,56 @@ Datové sady tytéž klíče nenesou (`SetupExporter::SETTINGS_EXCLUDED`,
 [docs/datasets.md](datasets.md)); test parity hlídá, že konstanta odpovídá
 deklaracím modulů.
 
+### Pole `provisioners`
+
+Volitelné pole objektů `{class, order?}` (#174 D28): **výchozí data, bez
+kterých modul ve zdroji dat nejde používat** — typicky seedové druhy
+číselníku. Modul je zakládá sám; `ds-upgrade` žádný modul nejmenuje, takže
+stejně zakládá svá data jádro, doplněk i modul z dalšího kořene.
+
+```jsonc
+// modules/facility/buildings/module.jsonc — výchozí druhy smluv
+"provisioners": [
+    { "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsProvisioner" }
+]
+```
+
+Třída implementuje `Shipard\Core\Module\ModuleProvisioner`:
+
+```php
+public function provision(ModuleProvisionContext $context): array;
+// → ['contract kinds' => ['created' => 7, 'existing' => 0]]
+```
+
+`ModuleProvisionContext` nese spojení zdroje dat (`db`), jeho konfiguraci
+(`dsConfig`) a zkompilovanou konfiguraci modulů v jazyce zdroje dat
+(`config`; `null`, když kompilát nejde načíst — provisioner pak nic
+nezakládá odhadem). Návratová hodnota jsou počty po skupinách záznamů,
+klíč je anglický popisek do výpisu `ds-upgrade`.
+
+Pravidla:
+
+- **Běží vždy** — po synchronizaci schématu, i pod `skipProvisioning`
+  a po `ds-reset` (ten `ds-upgrade` volá). Proto sem nepatří nic, co se
+  u převáděného zdroje dat přenáší ze starého systému; referenční data
+  jádra, která `skipProvisioning` vypíná (jednotky, osnova, fiskální roky,
+  číselné řady), zůstávají v `DsUpgradeCommand`.
+- **Idempotence** — druhý běh nic nezaloží a nic nepřepíše. Existující
+  záznam se pozná podle stabilního klíče (`system_code`) v jakémkoli stavu;
+  archivovaný ani smazaný se nevrací a uživatelem upravený se nemění.
+- Jen **aktivní moduly** zdroje dat, v pořadí resolvovaných modulů
+  (závislost před závislým) a `order` v modulu (výchozí 500).
+- Třída leží v namespace svého modulu a jde vytvořit bez argumentů
+  konstruktoru; neznámý klíč položky nebo třída uvedená dvakrát je chyba
+  načtení modulu. Hlídá `ModuleProvisionerRules` nad stromem.
+- **Výjimka ukončí `ds-upgrade` chybou** se jménem modulu a třídy — na
+  rozdíl od rozšíření UI se nepřeskakuje, modul by zůstal bez dat, která
+  potřebuje. `ds-module enable` v tom případě nechává modul zapsaný
+  v `main.json`; po opravě stačí `ds-upgrade` znovu.
+
+Provisionery jádra z doby před tímto polem (druhy míst, AI funkce, pravidla
+předzpracování pošty…) zůstávají volané napevno z `DsUpgradeCommand`.
+
 ### Pole `settingsItems`
 
 Položky, které modul přidává do navigačního stromu režimu **Nastavení**.
@@ -1550,7 +1601,7 @@ shpd-ds ds-module disable <id>         # jen přímo zapnutý modul mimo install
 
 Příkaz zapíše `modules` v `config/main.json` a ve stejném procesu spustí `ds-upgrade` — jinak by `main.json` tvrdil aktivní modul bez tabulek a dispatcher periodických úloh, který aktivní moduly čte z `main.json`, by pouštěl jeho úlohy. Vypnutí nechává tabulky modulu v databázi (viz Deaktivace modulu). Stránka Doplňky v Nastavení, kde doplněk zapne admin zdroje dat, je cílový stav — zatím jen CLI.
 
-**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `periodicInvoicingSources`, `periodicInvoicingContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators`, akce jejího záznamu přes `recordActions` (#172) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
+**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `periodicInvoicingSources`, `periodicInvoicingContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators`, akce jejího záznamu přes `recordActions` (#172), výchozí data přes `provisioners` (#174 D28) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
 
 **Dokumentace doplňku** žije u modulu: `README.md` podle [documentation.md](documentation.md) a specifikace v `modules/{skupina}/{modul}/docs/` (vzor `modules/core/mail/docs/`) — do kořenového `docs/` patří jen obecná pravidla. Uživatelská dokumentace zůstává v `help/`, zadání v `tasks/`. Přehled všech modulů po druzích je v generovaném rozcestníku [`modules/README.md`](../modules/README.md) (`php scripts/modules-index.php`, `--check` běží v pre-commit hooku).
 

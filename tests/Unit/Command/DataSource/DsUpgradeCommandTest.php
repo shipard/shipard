@@ -11,9 +11,12 @@ use Shipard\Core\Ai\AiFunctionRegistry;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Module\ModuleClassLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Test\Provisioners\FixtureKindsProvisioner;
+use Shipard\Module\Test\Provisioners\FixtureLateProvisioner;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -124,6 +127,12 @@ class DsUpgradeCommandTest extends TestCase
     protected function tearDown(): void
     {
         DsSecretCipher::resetCache();
+        // Fixturová třída je načtená jen v testech provisionerů modulů.
+        if (class_exists(FixtureKindsProvisioner::class, false)) {
+            FixtureKindsProvisioner::$calls = [];
+            FixtureKindsProvisioner::$failWith = null;
+        }
+        ModuleClassLoader::register(new ModulePathResolver([dirname(__DIR__, 4) . '/modules']));
         $this->rmdirRecursive($this->tempDir);
     }
 
@@ -673,6 +682,98 @@ class DsUpgradeCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Provisioning disabled via config', $display);
         $this->assertStringContainsString('[CREATE] place kinds — created: 2, existing: 0', $display);
+    }
+
+    /**
+     * Modul `test.provisioners` ve stromu testu — třídy jeho provisionerů
+     * leží ve fixturách (`tests/Fixtures/modules/test/provisioners`).
+     */
+    private function createProvisionersFixtureModule(): void
+    {
+        ModuleClassLoader::register(new ModulePathResolver([
+            dirname(__DIR__, 4) . '/modules',
+            dirname(__DIR__, 3) . '/Fixtures/modules',
+        ]));
+        FixtureKindsProvisioner::$calls = [];
+
+        $moduleDir = $this->modulesPath . '/test/provisioners';
+        mkdir($moduleDir, 0755, true);
+        file_put_contents($moduleDir . '/module.jsonc', json_encode([
+            'id'           => 'test.provisioners',
+            'name'         => 'test.provisioners',
+            'dependencies' => [],
+            'provisioners' => [
+                ['class' => FixtureLateProvisioner::class],
+                ['class' => FixtureKindsProvisioner::class, 'order' => 10],
+            ],
+        ]));
+    }
+
+    public function testModuleProvisionersRunUnderSkipProvisioning(): void
+    {
+        // #174 D28: výchozí data modulu nejsou migrovaná data — provisionery
+        // deklarované v module.jsonc běží i na migrovaném zdroji dat.
+        $this->createProvisionersFixtureModule();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'test.provisioners']);
+
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Provisioning disabled via config', $display);
+        $this->assertStringContainsString('[CREATE] fixture kinds — created: 2, existing: 1', $display);
+        $this->assertStringContainsString('[CREATE] fixture late — created: 1, existing: 0', $display);
+        $this->assertStringNotContainsString('fixture extras', $display, 'skupina bez nových záznamů je jen ve verbose výpisu');
+
+        $this->assertSame(
+            [FixtureKindsProvisioner::class, FixtureLateProvisioner::class],
+            array_column(FixtureKindsProvisioner::$calls, 'class'),
+            'pořadí v modulu řídí order, ne pořadí deklarace',
+        );
+        $context = FixtureKindsProvisioner::$calls[0]['context'];
+        $this->assertSame($this->dsConnection, $context->db);
+        $this->assertSame($this->dsConfig, $context->dsConfig);
+    }
+
+    public function testProvisionerOfInactiveModuleIsNotCalled(): void
+    {
+        // Modul je ve stromu, ale zdroj dat ho nemá zapnutý.
+        $this->createProvisionersFixtureModule();
+
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame([], FixtureKindsProvisioner::$calls);
+        $this->assertStringNotContainsString('fixture kinds', $tester->getDisplay());
+    }
+
+    public function testFailingModuleProvisionerFailsTheUpgrade(): void
+    {
+        $this->createProvisionersFixtureModule();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'test.provisioners']);
+        FixtureKindsProvisioner::$failWith = 'seed table is missing';
+
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            "Module 'test.provisioners': provisioner '" . FixtureKindsProvisioner::class
+            . "' failed: seed table is missing",
+        );
+
+        $this->createCommandTester()->execute([]);
     }
 
     public function testMailAiProvisionedUnderSkipProvisioning(): void

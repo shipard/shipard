@@ -1778,4 +1778,56 @@ class ModuleDefinitionTest extends TestCase
             'neznámý stav'        => [[$valid + ['states' => ['active', 'readonly']]], 'cronJobs[0].states has an unknown state'],
         ];
     }
+
+    // ── provisioners (#174 D28) ─────────────────────────────────────────────
+
+    public function testProvisionersDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT']);
+
+        $this->assertSame([], $def->provisioners);
+    }
+
+    public function testProvisionersAreParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'facility.buildings',
+            'name' => 'Buildings',
+            'provisioners' => [
+                ['class' => '\\Shipard\\Module\\Facility\\Buildings\\KindsProvisioner'],
+                ['order' => 10, 'class' => 'Shipard\\Module\\Facility\\Buildings\\OtherProvisioner'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['class' => 'Shipard\\Module\\Facility\\Buildings\\KindsProvisioner', 'order' => 500],
+            ['class' => 'Shipard\\Module\\Facility\\Buildings\\OtherProvisioner', 'order' => 10],
+        ], $def->provisioners, 'výchozí order je 500, úvodní lomítko třídy se zahodí, pořadí deklarace zůstává');
+    }
+
+    /** @param mixed $value */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidProvisioners')]
+    public function testInvalidProvisionerThrows(mixed $value, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': provisioners" . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', 'provisioners' => $value]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidProvisioners(): array
+    {
+        $valid = ['class' => 'Shipard\\Module\\Economy\\Vat\\SeedProvisioner'];
+
+        return [
+            'objekt místo pole'    => [$valid, ' must be a JSON array'],
+            'řetězec místo položky' => [[$valid['class']], '[0] must be an object'],
+            'pole místo položky'   => [[[$valid['class']]], '[0] must be an object'],
+            'neznámý klíč'         => [[$valid + ['skip' => true]], "[0] has unknown key 'skip'"],
+            'bez třídy'            => [[['order' => 10]], '[0].class must be a non-empty class name'],
+            'prázdná třída'        => [[['class' => '\\']], '[0].class must be a non-empty class name'],
+            'order řetězcem'       => [[$valid + ['order' => '10']], '[0].order must be an integer'],
+            'třída dvakrát'        => [[$valid, ['class' => '\\' . $valid['class']]], " lists 'Shipard\\Module\\Economy\\Vat\\SeedProvisioner' twice"],
+        ];
+    }
 }

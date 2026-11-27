@@ -1,0 +1,14 @@
+// Fixture pro testy provisionerů z modulů (#174 D28): modul se dvěma
+// provisionery, `order` určuje pořadí v modulu.
+{
+    "id": "test.provisioners",
+    "name": "Test provisioners",
+    "description": "Fixture module: provisioners declared in module.jsonc.",
+
+    "dependencies": [],
+
+    "provisioners": [
+        {"class": "Shipard\\Module\\Test\\Provisioners\\FixtureLateProvisioner"},
+        {"class": "Shipard\\Module\\Test\\Provisioners\\FixtureKindsProvisioner", "order": 10}
+    ]
+}

@@ -21,6 +21,9 @@ class ModuleDefinition
     /** Výchozí pořadí rozšíření UI (`detailExtensions` / `formTabs` / `rowDecorators` → `order`, #172 D19). */
     public const int UI_EXTENSION_DEFAULT_ORDER = 500;
 
+    /** Výchozí pořadí provisioneru modulu (`provisioners[].order`, #174 D28). */
+    public const int PROVISIONER_DEFAULT_ORDER = 500;
+
     /** Cesta sekce `server.json` (`serverConfig[].key`, #172 D10): segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou. */
     public const string SERVER_CONFIG_KEY_PATTERN = '/^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*$/';
 
@@ -82,6 +85,8 @@ class ModuleDefinition
         public readonly array $rowDecorators = [],
         /** @var list<array{id: string, table: string, class: class-string, admin: bool, order: int}> akce záznamu s obsluhou v modulu (#172 D12) */
         public readonly array $recordActions = [],
+        /** @var list<array{class: class-string, order: int}> provisionery výchozích dat modulu (#174 D28) */
+        public readonly array $provisioners = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -907,6 +912,11 @@ class ModuleDefinition
         // a navíc `id` akce a příznak `admin`.
         $recordActions = self::parseUiExtensions($data, 'recordActions', withAction: true);
 
+        // provisioners — výchozí data modulu zakládaná v `ds-upgrade`
+        // (#174 D28). Tady jen tvar; třídu, rozhraní a namespace hlídá
+        // ModuleProvisionerRules nad celým stromem.
+        $provisioners = self::parseProvisioners($data);
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -953,6 +963,7 @@ class ModuleDefinition
             formTabs: $formTabs,
             rowDecorators: $rowDecorators,
             recordActions: $recordActions,
+            provisioners: $provisioners,
         );
     }
 
@@ -1032,6 +1043,59 @@ class ModuleDefinition
             $extensions[] = $action + ['table' => $table, 'class' => ltrim($class, '\\')] + $admin + ['order' => $order];
         }
         return $extensions;
+    }
+
+
+    /**
+     * Provisionery modulu (`provisioners`, #174 D28): seznam `{class, order?}`
+     * — `class` třída s rozhraním `ModuleProvisioner`, `order` celé číslo
+     * (výchozí {@see self::PROVISIONER_DEFAULT_ORDER}) pro pořadí v rámci
+     * modulu. Neznámý klíč položky je chyba, třída smí být v seznamu jednou.
+     * Třída se tu nenačítá.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array{class: class-string, order: int}>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseProvisioners(array $data): array
+    {
+        if (!array_key_exists('provisioners', $data)) {
+            return [];
+        }
+        if (!is_array($data['provisioners']) || !array_is_list($data['provisioners'])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': provisioners must be a JSON array");
+        }
+
+        $provisioners = [];
+        $seen = [];
+        foreach ($data['provisioners'] as $idx => $raw) {
+            $where = "Module '{$data['id']}': provisioners[{$idx}]";
+            if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+                throw new \InvalidArgumentException("{$where} must be an object");
+            }
+            $unknown = array_diff(array_keys($raw), ['class', 'order']);
+            if ($unknown !== []) {
+                throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $class = $raw['class'] ?? null;
+            if (!is_string($class) || ltrim($class, '\\') === '') {
+                throw new \InvalidArgumentException("{$where}.class must be a non-empty class name");
+            }
+            $class = ltrim($class, '\\');
+            if (isset($seen[$class])) {
+                throw new \InvalidArgumentException("Module '{$data['id']}': provisioners lists '{$class}' twice");
+            }
+            $seen[$class] = true;
+
+            $order = $raw['order'] ?? self::PROVISIONER_DEFAULT_ORDER;
+            if (!is_int($order)) {
+                throw new \InvalidArgumentException("{$where}.order must be an integer");
+            }
+
+            $provisioners[] = ['class' => $class, 'order' => $order];
+        }
+        return $provisioners;
     }
 
     /**

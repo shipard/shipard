@@ -268,6 +268,17 @@ smí názvy nést — tam jsou potřeba k práci.
   `economy.periodicInvoicing`, deklarace u zdroje). Kontext akce nese
   nepovinně i `documents` / `tables` / `dispatcher` pro akce, které
   zakládají doklady (jen při provedení, ne při vykreslení detailu; #175 U3)
+- **Výchozí data modulu** (#174 D28): seedové záznamy, bez kterých modul
+  nejde používat (druhy číselníku), zakládá modul sám — pole `provisioners`
+  v `module.jsonc` (`{class, order?}`) a třída s rozhraním
+  `Core\Module\ModuleProvisioner` (`provision(ModuleProvisionContext)` →
+  počty po skupinách). `ds-upgrade` je volá u aktivních modulů **vždy**,
+  i pod `skipProvisioning` a po `ds-reset` — proto idempotentně podle
+  stabilního klíče a nikdy migrovaná data. Výjimka ukončí `ds-upgrade`
+  chybou. Nový provisioner modulu se **nepřidává do `DsUpgradeCommand`**
+  (tam zůstávají jen dosavadní provisionery jádra). Pravidla hlídá
+  `ModuleProvisionerRules` nad stromem. Viz `docs/modules.md` kap. 5 →
+  Pole `provisioners`
 - Nastavení v `core_system_settings`, které drží id řádku tabulky zahazované
   resetem (např. id řady dokladů), se deklaruje v `clearSettingsOnReset`
   v `module.jsonc` — `ds-reset` ho smaže spolu s tabulkou a provisioner ho

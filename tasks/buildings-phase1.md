@@ -1,8 +1,8 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** naplánováno — design #174 D16–D27 schválen 2026-11-26; předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
+**Stav:** částečně — commit 0 (provisionery modulů, D28) hotov 2026-11-27, zbývají commity 1–4; design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
 
-> Task pro Claude Code (4 commity). Design: issue #174. První doplněk
+> Task pro Claude Code (5 commitů — 0 až 4). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez
 > fakturace (D16); fakturace (řádky předpisu, šablona řádků, `inv_*`,
 > evidence období) je fáze 2 nad #175, napojení na Místa fáze 3.
@@ -76,6 +76,11 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
 - **D26** — `ds-module enable` / `disable` naostro na volném zdroji dat.
 - **D27** — ikony v `icons.js` pod obecnými názvy; nápověda
   `help/budovy/smlouvy.md`.
+- **D28** — výchozí data modulu přes bod rozšíření jádra: pole
+  `provisioners` v `module.jsonc` + rozhraní `ModuleProvisioner`;
+  `ds-upgrade` volá provisionery aktivních modulů vždy (i pod
+  `skipProvisioning`). Doplněno 2026-11-27 — `PlaceKindsProvisioner` je
+  v `DsUpgradeCommand` zapojený napevno, což doplněk použít nesmí.
 
 ## Před implementací přečti
 
@@ -89,6 +94,20 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
 - `docs/help-authoring.md`
 
 ## Kroky
+
+### Commit 0 — jádro: provisionery modulů (D28)
+
+- `ModuleDefinition`: pole `provisioners` `[{class, order?}]`; rozhraní
+  `Shipard\Core\Module\ModuleProvisioner` a kontext
+  `ModuleProvisionContext` (spojení, konfigurace zdroje dat, kompilát
+  v jazyce zdroje dat).
+- `DsUpgradeCommand::provisionModules()` — mimo bránu `skipProvisioning`,
+  jen aktivní moduly, pořadí modulů a `order`; výjimka = chyba `ds-upgrade`.
+- `ModuleProvisionerRules` nad stromem (namespace modulu, rozhraní,
+  konstruktor bez argumentů).
+- Testy: tvar deklarace, pravidla, `ds-upgrade` s fixture modulem
+  `test.provisioners` (běh pod `skipProvisioning`, neaktivní modul,
+  selhání). `docs/modules.md` kap. 5 a §9, `CLAUDE.md`.
 
 ### Commit 1 — `base.places`: filtr typů v lookupu (D23)
 
@@ -131,8 +150,8 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
   (`%C` vyžaduje kód), typ po opuštění Konceptu jen ke čtení, do koše
   jen nepoužitý druh (smlouva mimo koš), přechody stavů přes dokument.
 - `ContractKindsProvisioner` — D19, druh se pozná podle `system_code`
-  (= klíč typu), existující se nemění; běží v `ds-upgrade` i pod
-  `skipProvisioning` jako `PlaceKindsProvisioner` (#169 D19).
+  (= klíč typu), existující se nemění; deklarovaný v `provisioners`
+  modulu (D28), takže běží v `ds-upgrade` i pod `skipProvisioning`.
 - `ContractDocument`:
   - druh povinný; `type` vždy z druhu; druh jen v Konceptu měnitelný;
   - `date_end ≥ date_start`; místa: duplicita, místo v koši, typ místa
@@ -242,7 +261,8 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
 - **Varování ≠ chyba.** Překryv nesmí zablokovat uložení ani potvrzení
   (sdílená místa, přechod nájemců).
 - **Provisioner pod `skipProvisioning`** — výchozí druhy musí vzniknout
-  i v datové sadě a po `ds-reset` (vzor `PlaceKindsProvisioner`).
+  i v datové sadě a po `ds-reset`; zapojení přes `provisioners` modulu
+  (D28), nikdy metodou v `DsUpgradeCommand`.
 - **Ověření jen na volném zdroji dat** — zdroje `realCopy` se
   `ds-module enable` nedotýkat (zápis do `main.json` i `ds-upgrade` jsou
   mutace).
