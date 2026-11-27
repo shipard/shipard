@@ -1,6 +1,6 @@
 # Upozornění — skupinová karta feedu per check a sekce (#181)
 
-**Stav:** hotovo — 2026-11-27 (#181 D1–D5); ověřeno unit testy a sběrem feedu nad volným zdrojem dat s demo sadou a doplňkem Budovy (nálezy dvou sekcí vložené v transakci a vrácené)
+**Stav:** hotovo — 2026-11-27 (#181 D1–D5); ověřeno unit testy, voláním `GET /_ui/section-badges` přes HTTP a v headless prohlížeči na volném zdroji dat s demo sadou a doplňkem Budovy (odznak u Zakázek i Budov; pokusné nálezy dvou sekcí po ověření smazané)
 
 > Design: issue #181. Náprava omezení nalezeného při ověření
 > `tasks/buildings-phase2.md`. Navazuje na `tasks/dashboard-alert-grouping.md` (skupinové karty)
@@ -75,4 +75,13 @@ tvar dotazů). Na volném zdroji dat `kdb4-4` (`ds-upgrade`,
 kódem jako `GET /_ui/section-badges` (`FeedCollector::collect()` →
 `sectionBadges()`) vrátil odznak `workOrders` i `buildings` a karty
 „10 upozornění · Zakázky“ / „5 upozornění · Budovy“; transakce vrácena.
-Volání endpointu přes HTTP a pohled do sidebaru v prohlížeči neproběhly.
+
+Přes HTTP a v prohlížeči (po commitu, tentýž zdroj dat): tytéž pokusné
+nálezy uložené do tabulky upozornění, session uživatele `e2e`. Při
+10 nálezech Zakázek a 1 nálezu Budov i při 10 a 5 nálezech vrátil
+`GET /_ui/section-badges` `workOrders {count: 1, severity: warning}`
+a `buildings {count: 1, severity: warning}`, filtr
+`GET /_ui/dashboard?section=` dal každé sekci její kartu (skupinovou, pod
+prahem individuální) a sidebar aplikace v headless Chromiu ukázal odznak
+„1“ u sekcí Zakázky i Budovy. Pokusné nálezy jsem pak smazala, session
+zneplatnila a uživatele `e2e` vrátila do neaktivního stavu.
