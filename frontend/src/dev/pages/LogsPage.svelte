@@ -122,7 +122,7 @@
     </select>
   </span>
   <span class="dev-field" style="flex: 1; min-width: 12.5rem">
-    <input type="search" placeholder={t('logs.searchPlaceholder')} bind:value={search} />
+    <input type="search" placeholder={t('logs.searchPlaceholder')} bind:value={search} autocorrect="off" autocapitalize="off" spellcheck="false" />
   </span>
 </div>
 

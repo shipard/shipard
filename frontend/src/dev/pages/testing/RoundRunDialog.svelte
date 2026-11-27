@@ -148,7 +148,7 @@
           </div>
           <div class="dev-field">
             <label for="round-repeat">{t('testing.evalRun.repeat')}</label>
-            <input id="round-repeat" type="number" min="1" max={options?.maxRepeat ?? 5} bind:value={repeat} disabled={estimating || starting} onchange={invalidate} />
+            <input id="round-repeat" type="number" min="1" max={options?.maxRepeat ?? 5} bind:value={repeat} disabled={estimating || starting} onchange={invalidate} autocorrect="off" autocapitalize="off" spellcheck="false" />
           </div>
         </div>
         <div class="dev-btnrow">
@@ -167,7 +167,7 @@
           </div>
           <div class="dev-field" class:has-error={!(capValue > 0)}>
             <label for="round-cap">{t('testing.round.cap')}</label>
-            <input id="round-cap" type="number" min="0.01" step="0.01" bind:value={maxCost} disabled={starting} />
+            <input id="round-cap" type="number" min="0.01" step="0.01" bind:value={maxCost} disabled={starting} autocorrect="off" autocapitalize="off" spellcheck="false" />
             {#if !(capValue > 0)}<div class="dev-field__error">{t('testing.round.capError')}</div>{/if}
             <div class="dev-field__hint">{t('testing.round.capHint')}</div>
           </div>

@@ -148,6 +148,7 @@
           disabled={loading}
           bind:value={forgotIdentifier}
           onkeydown={handleForgotKeydown}
+          autocorrect="off" autocapitalize="off" spellcheck="false"
         />
       </div>
       <button
@@ -176,6 +177,7 @@
         disabled={loading}
         bind:value={loginName}
         onkeydown={handleKeydown}
+        autocorrect="off" autocapitalize="off" spellcheck="false"
       />
     </div>
 

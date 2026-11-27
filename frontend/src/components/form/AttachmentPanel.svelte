@@ -254,6 +254,7 @@
                   bind:value={renameValue}
                   onkeydown={handleRenameKeydown}
                   onblur={confirmRename}
+                  autocorrect="off" autocapitalize="off" spellcheck="false"
                 />
               {:else}
                 <span class="shpd-attachments__name" title={att.name}>

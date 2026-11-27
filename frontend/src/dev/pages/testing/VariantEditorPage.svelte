@@ -178,17 +178,17 @@
       <form class="dev-form" onsubmit={(e) => { e.preventDefault(); save(false); }} novalidate>
         <div class="dev-field" class:has-error={isNew && form.name !== '' && !nameOk}>
           <label for="v-name">{t('dsCreate.name')} <span class="dev-muted">({t('testing.variantEditor.file')} <code>{form.name || t('testing.variantEditor.fileNamePlaceholder')}.jsonc</code>)</span></label>
-          <input id="v-name" type="text" bind:value={form.name} disabled={!isNew || busy} placeholder={t('testing.variantEditor.namePlaceholder')} autocomplete="off" />
+          <input id="v-name" type="text" bind:value={form.name} disabled={!isNew || busy} placeholder={t('testing.variantEditor.namePlaceholder')} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           {#if isNew && form.name !== '' && !nameOk}<div class="dev-field__error">{t('testing.variantEditor.nameRule')}</div>{/if}
         </div>
         <div class="dev-field">
           <label for="v-desc">{t('testing.variants.col.description')}</label>
-          <input id="v-desc" type="text" bind:value={form.description} disabled={busy} autocomplete="off" />
+          <input id="v-desc" type="text" bind:value={form.description} disabled={busy} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
         </div>
         <div class="dev-form__row">
           <div class="dev-field">
             <label for="v-profile">{t('testing.variantEditor.profile')}</label>
-            <input id="v-profile" type="text" list="v-profiles" bind:value={form.profile} disabled={busy} autocomplete="off" />
+            <input id="v-profile" type="text" list="v-profiles" bind:value={form.profile} disabled={busy} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
             <datalist id="v-profiles">{#each options?.profiles ?? [] as p (p.code)}<option value={p.code}>{p.name}</option>{/each}</datalist>
           </div>
           <div class="dev-field">
@@ -213,14 +213,14 @@
           </div>
           <div class="dev-field">
             <label for="v-model">{t('testing.variantEditor.model')}</label>
-            <input id="v-model" type="text" list="v-models" bind:value={form.call.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} />
+            <input id="v-model" type="text" list="v-models" bind:value={form.call.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} autocorrect="off" autocapitalize="off" spellcheck="false" />
             <datalist id="v-models">{#each options?.models ?? [] as m (m.id)}<option value={m.id}>{m.name}{m.tier ? ` · ${m.tier}` : ''}{m.status && m.status !== 'active' ? ` · ${m.status}` : ''}</option>{/each}</datalist>
           </div>
         </div>
         <div class="dev-form__row">
           <div class="dev-field">
             <label for="v-think">Thinking</label>
-            <input id="v-think" type="text" list="v-thinking" bind:value={form.call.thinking} disabled={busy} autocomplete="off" placeholder={t('testing.variantEditor.perDeclarationFn')} />
+            <input id="v-think" type="text" list="v-thinking" bind:value={form.call.thinking} disabled={busy} autocomplete="off" placeholder={t('testing.variantEditor.perDeclarationFn')} autocorrect="off" autocapitalize="off" spellcheck="false" />
             <datalist id="v-thinking">{#each options?.thinkingModes ?? [] as t (t)}<option value={t}></option>{/each}</datalist>
           </div>
           <div class="dev-field">
@@ -232,7 +232,7 @@
           </div>
           <div class="dev-field">
             <label for="v-max">{t('testing.variantEditor.maxTokens')}</label>
-            <input id="v-max" type="number" min="1" step="1" bind:value={form.call.maxTokens} disabled={busy} placeholder={t('testing.variantEditor.perDeclaration')} />
+            <input id="v-max" type="number" min="1" step="1" bind:value={form.call.maxTokens} disabled={busy} placeholder={t('testing.variantEditor.perDeclaration')} autocorrect="off" autocapitalize="off" spellcheck="false" />
           </div>
         </div>
 
@@ -240,11 +240,11 @@
         <div class="dev-form__row">
           <div class="dev-field">
             <label for="t-model">Model</label>
-            <input id="t-model" type="text" list="v-models" bind:value={form.contentTags.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} />
+            <input id="t-model" type="text" list="v-models" bind:value={form.contentTags.model} disabled={busy} autocomplete="off" placeholder={t('testing.variants.perDataSource')} autocorrect="off" autocapitalize="off" spellcheck="false" />
           </div>
           <div class="dev-field">
             <label for="t-think">Thinking</label>
-            <input id="t-think" type="text" list="v-thinking" bind:value={form.contentTags.thinking} disabled={busy} autocomplete="off" />
+            <input id="t-think" type="text" list="v-thinking" bind:value={form.contentTags.thinking} disabled={busy} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
           </div>
           <div class="dev-field">
             <label for="t-effort">Effort</label>

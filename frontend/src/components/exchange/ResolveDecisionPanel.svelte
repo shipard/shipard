@@ -342,6 +342,7 @@
       value={searchTerm}
       oninput={handleInput}
       onkeydown={handleKeydown}
+      autocorrect="off" autocapitalize="off" spellcheck="false"
     />
 
     <div class="shpd-resolve__results">

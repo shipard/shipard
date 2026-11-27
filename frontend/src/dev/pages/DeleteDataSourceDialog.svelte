@@ -74,6 +74,7 @@
         autocomplete="off"
         spellcheck="false"
         onkeydown={(e) => { if (e.key === 'Enter') submit(); }}
+        autocorrect="off" autocapitalize="off"
       />
       <div class="dev-field__hint">{t('dsDelete.hint')}</div>
     </div>

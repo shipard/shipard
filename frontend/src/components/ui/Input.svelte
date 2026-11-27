@@ -47,6 +47,7 @@
   {onkeydown}
   {autocomplete}
   data-testid={testid}
+  autocorrect="off" autocapitalize="off" spellcheck="false"
 />
 {#if error}
   <span class="shpd-input__error">{error}</span>

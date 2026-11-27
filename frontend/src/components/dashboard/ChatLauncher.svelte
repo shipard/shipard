@@ -38,6 +38,7 @@
 
 {#if !chatPanelStore.isOpen}
   <div class="shpd-chat-launcher">
+    <!-- autocorrect-ok: otázka asistentovi je věta, ne údaj — opravy a velké písmeno pomáhají (#177 U14) -->
     <input
       type="text"
       class="shpd-chat-launcher__field"

@@ -61,6 +61,7 @@
           type="text"
           value={values[f.id] ?? ''}
           oninput={(e) => handleTextInput(f.id, e.currentTarget.value)}
+          autocorrect="off" autocapitalize="off" spellcheck="false"
         />
       </label>
     {:else if f.type === 'checkbox'}

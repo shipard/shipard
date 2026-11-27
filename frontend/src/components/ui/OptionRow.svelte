@@ -105,6 +105,7 @@
     {...rest}
   >
     <label class="shpd-option-row__main">
+      <!-- autocorrect-ok: typ je vždy radio nebo checkbox, text se nepíše -->
       <input
         class="shpd-option-row__native"
         type={safeIndicator}

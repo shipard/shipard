@@ -294,6 +294,7 @@
         placeholder={t('registry.wizard.search.placeholder')}
         autocomplete="off"
         spellcheck="false"
+        autocorrect="off" autocapitalize="off"
       />
     </div>
 

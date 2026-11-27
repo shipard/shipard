@@ -57,8 +57,8 @@
 </div>
 
 <div class="dev-toolbar">
-  <input type="search" placeholder={t('testing.jobs.filterDataset')} bind:value={filterDataset} onchange={load} />
-  <input type="search" placeholder={t('testing.jobs.filterDs')} bind:value={filterDs} onchange={load} />
+  <input type="search" placeholder={t('testing.jobs.filterDataset')} bind:value={filterDataset} onchange={load} autocorrect="off" autocapitalize="off" spellcheck="false" />
+  <input type="search" placeholder={t('testing.jobs.filterDs')} bind:value={filterDs} onchange={load} autocorrect="off" autocapitalize="off" spellcheck="false" />
   <span class="dev-small dev-muted">{t('testing.jobs.dirNote')}</span>
 </div>
 

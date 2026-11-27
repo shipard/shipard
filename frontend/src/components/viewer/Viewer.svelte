@@ -1551,6 +1551,7 @@
             placeholder={t('viewer.search.placeholder')}
             oninput={handleSearchInput}
             bind:this={searchInputEl}
+            autocorrect="off" autocapitalize="off" spellcheck="false"
           />
           {#if activeSearch}
             <button class="shpd-viewer__search-clear" onclick={handleSearchClear} aria-label={t('viewer.search.clear')}>×</button>

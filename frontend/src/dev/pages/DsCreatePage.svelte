@@ -199,14 +199,15 @@
   <form class="dev-form" onsubmit={submit} novalidate>
     <div class="dev-field" class:has-error={fieldErrors.name}>
       <label for="ds-name">{t('dsCreate.name')}</label>
-      <input id="ds-name" type="text" bind:value={form.name} maxlength="200" disabled={busy} autocomplete="off" />
+      <input id="ds-name" type="text" bind:value={form.name} maxlength="200" disabled={busy} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       {#if fieldErrors.name}<div class="dev-field__error">{fieldErrors.name}</div>{/if}
     </div>
 
     <div class="dev-field" class:has-error={fieldErrors.purpose}>
       <label for="ds-purpose">{t('dsCreate.purpose')} <span class="dev-muted">{t('common.optional')}</span></label>
       <input id="ds-purpose" type="text" bind:value={form.purpose} maxlength="200" disabled={busy} autocomplete="off"
-        placeholder={t('dsCreate.purposePlaceholder')} />
+        placeholder={t('dsCreate.purposePlaceholder')}
+        autocorrect="off" autocapitalize="off" spellcheck="false" />
       {#if fieldErrors.purpose}
         <div class="dev-field__error">{fieldErrors.purpose}</div>
       {:else}
@@ -293,7 +294,7 @@
     <div class="dev-form__row">
       <div class="dev-field" class:has-error={fieldErrors.login}>
         <label for="ds-login">{t('dsCreate.login')}</label>
-        <input id="ds-login" type="text" bind:value={form.login} maxlength="64" disabled={busy} autocomplete="off" />
+        <input id="ds-login" type="text" bind:value={form.login} maxlength="64" disabled={busy} autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
         {#if fieldErrors.login}<div class="dev-field__error">{fieldErrors.login}</div>{/if}
       </div>
       <div class="dev-field" class:has-error={fieldErrors.password}>
@@ -305,6 +306,7 @@
             bind:value={form.password}
             disabled={busy}
             autocomplete="new-password"
+            autocorrect="off" autocapitalize="off" spellcheck="false"
           />
           <Button
             label={showPassword ? t('dsCreate.hide') : t('dsCreate.show')}

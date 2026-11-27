@@ -45,6 +45,7 @@
   {required}
   {disabled}
   {onchange}
+  autocorrect="off" autocapitalize="off" spellcheck="false"
 />
 <datalist id={listId}>
   {#each options as option}

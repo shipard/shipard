@@ -359,6 +359,7 @@
       oninput={handleInput}
       onfocus={handleFocus}
       onkeydown={handleKeydown}
+      autocorrect="off" autocapitalize="off" spellcheck="false"
     />
     <div class="shpd-lookup__actions">
       {#if canEdit}

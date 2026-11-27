@@ -94,12 +94,12 @@
       </div>
       <div class="dev-field">
         <label for="eval-repeat">{t('testing.evalRun.repeat')}</label>
-        <input id="eval-repeat" type="number" min="1" max="5" bind:value={form.repeat} disabled={estimating || starting} onchange={() => (estimate = null)} />
+        <input id="eval-repeat" type="number" min="1" max="5" bind:value={form.repeat} disabled={estimating || starting} onchange={() => (estimate = null)} autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
     </div>
     <div class="dev-field">
       <label for="eval-only">{t('testing.evalRun.only')} <span class="dev-muted">{t('testing.evalRun.onlyHint')}</span></label>
-      <input id="eval-only" type="text" bind:value={form.only} placeholder={t('testing.evalRun.onlyPlaceholder')} disabled={estimating || starting} onchange={() => (estimate = null)} />
+      <input id="eval-only" type="text" bind:value={form.only} placeholder={t('testing.evalRun.onlyPlaceholder')} disabled={estimating || starting} onchange={() => (estimate = null)} autocorrect="off" autocapitalize="off" spellcheck="false" />
     </div>
 
     <div class="dev-btnrow">
@@ -137,7 +137,7 @@
       </div>
       <div class="dev-field" class:has-error={!(capValue > 0)}>
         <label for="eval-cap">{t('testing.evalRun.cap')}</label>
-        <input id="eval-cap" type="number" min="0.01" step="0.01" bind:value={maxCost} disabled={starting} />
+        <input id="eval-cap" type="number" min="0.01" step="0.01" bind:value={maxCost} disabled={starting} autocorrect="off" autocapitalize="off" spellcheck="false" />
         {#if !(capValue > 0)}<div class="dev-field__error">{t('testing.evalRun.capError')}</div>{/if}
         <div class="dev-field__hint">{t('testing.evalRun.capHint', { set })}</div>
       </div>

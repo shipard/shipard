@@ -47,6 +47,7 @@
   {disabled}
   onfocus={handleFocus}
   onblur={handleBlur}
+  autocorrect="off" autocapitalize="off" spellcheck="false"
 />
 {#if error}
   <span class="shpd-input__error">{error}</span>

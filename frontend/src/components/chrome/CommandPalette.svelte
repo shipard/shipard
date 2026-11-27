@@ -102,6 +102,7 @@
         aria-activedescendant={activeDescendant}
         autocomplete="off"
         spellcheck="false"
+        autocorrect="off" autocapitalize="off"
       />
     </div>
 
