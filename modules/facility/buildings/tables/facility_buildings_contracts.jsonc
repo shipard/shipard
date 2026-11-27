@@ -5,8 +5,13 @@
     // a kalendářní rok zahájení (`number_year`, u průběžného čítače NULL);
     // importované číslo zůstává. Místa smlouvy jsou v child tabulce
     // facility_buildings_contract_places (dataKey `places`, prvek
-    // `multilookup` ve formuláři). Fakturační pole, měna, VS a středisko
-    // přijdou ve fázi 2.
+    // `multilookup` ve formuláři).
+    //
+    // Fáze 2 (#174 D29, D30, D36): fakturační předpis — periodicita,
+    // fakturovat od, text dokladu, měna, pevný VS, středisko a přepisy
+    // výchozích hodnot druhu (`inv_*`, prázdné = z druhu). Řádky předpisu
+    // jsou sub-tabulka facility_buildings_contract_rows, ne child tabulka:
+    // uložení hlavičky na ně nesahá.
     //
     // Vlastní sada stavů s Ukončená a Zrušená; přechody stavu jdou přes
     // Document lifecycle (číslo při potvrzení, datum ukončení).
@@ -42,6 +47,12 @@
             "name": "Validity",
             "name:cs": "Platnost",
             "name:en": "Validity"
+        },
+        {
+            "id": "invoicing",
+            "name": "Invoicing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing"
         }
     ],
 
@@ -158,6 +169,151 @@
             "type": "text",
             "nullable": true,
             "group": "identity"
+        },
+
+        // --- fakturace (#174 D29, D36) ---
+
+        {
+            // Nepovinná (D36) — smlouva bez periodicity se nefakturuje.
+            "id": "inv_periodicity",
+            "name": "Periodicity",
+            "name:cs": "Periodicita",
+            "name:en": "Periodicity",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "economy.periodicInvoicing.periodicities",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // První fakturované období = období obsahující toto datum; prázdné
+            // doplní ContractDocument zahájením, dřív než zahájení být nesmí.
+            "id": "inv_from",
+            "name": "Invoice from",
+            "name:cs": "Fakturovat od",
+            "name:en": "Invoice from",
+            "type": "date",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // Text dokladu s proměnnou {období}; prázdný = název smlouvy a období.
+            "id": "inv_doc_text",
+            "name": "Document text",
+            "name:cs": "Text dokladu",
+            "name:en": "Document text",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // Prázdná = domácí měna zdroje dat (doplní ContractDocument).
+            "id": "currency",
+            "name": "Currency",
+            "name:cs": "Měna",
+            "name:en": "Currency",
+            "type": "enumString",
+            "length": 3,
+            "cfgItem": "world.base.currencies",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // Pevný variabilní symbol — ponesou ho všechny faktury smlouvy.
+            "id": "payment_reference",
+            "name": "Payment reference",
+            "name:cs": "Variabilní symbol",
+            "name:en": "Payment reference",
+            "type": "varchar",
+            "length": 35,
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // Středisko dokladů smlouvy (dimenze costCenter).
+            "id": "cost_center",
+            "name": "Cost center",
+            "name:cs": "Středisko",
+            "name:en": "Cost center",
+            "type": "int",
+            "reference": "economy_codebooks_cost_centers",
+            "nullable": true,
+            "group": "invoicing"
+        },
+
+        // Přepisy výchozích hodnot druhu (stejné názvy sloupců jako na
+        // facility_buildings_contract_kinds); NULL = z druhu.
+        {
+            "id": "inv_doc_type",
+            "name": "Invoice document type",
+            "name:cs": "Typ dokladu",
+            "name:en": "Invoice document type",
+            "type": "enumString",
+            "length": 20,
+            "cfgItem": "docs.core.docTypes",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_number_series",
+            "name": "Document number series",
+            "name:cs": "Řada dokladů",
+            "name:en": "Document number series",
+            "type": "int",
+            "reference": "docs_core_number_series",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_due_days",
+            "name": "Due days",
+            "name:cs": "Splatnost (dny)",
+            "name:en": "Due days",
+            "type": "smallint",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_timing",
+            "name": "Invoicing timing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing timing",
+            "type": "enumString",
+            "length": 5,
+            "cfgItem": "economy.periodicInvoicing.invoiceTimings",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_vat_mode",
+            "name": "VAT mode",
+            "name:cs": "Režim DPH",
+            "name:en": "VAT mode",
+            "type": "enumInt",
+            "cfgItem": "docs.core.vatModes",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_payment_method",
+            "name": "Payment method",
+            "name:cs": "Způsob platby",
+            "name:en": "Payment method",
+            "type": "enumInt",
+            "cfgItem": "docs.core.paymentMethods",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_bank_account",
+            "name": "Our bank account",
+            "name:cs": "Bankovní účet",
+            "name:en": "Our bank account",
+            "type": "int",
+            "reference": "economy_codebooks_bank_accounts",
+            "nullable": true,
+            "group": "invoicing"
         },
 
         // --- doc state (systémové) ---

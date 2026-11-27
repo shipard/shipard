@@ -6,6 +6,10 @@
     // druh a kalendářní rok zahájení smlouvy
     // (facility_buildings_number_counters). `system_code` nese jen seed
     // (= klíč typu, ContractKindsProvisioner).
+    //
+    // Fáze 2 (#174 D29, D32): výchozí hodnoty fakturace smluv druhu
+    // (sloupce `inv_*` jako u druhu zakázky) a šablona řádků předpisu
+    // v sub-tabulce facility_buildings_contract_kind_rows.
     "tableId": 472,
     "name": "Contract kinds",
     "name:cs": "Druhy smluv",
@@ -110,6 +114,80 @@
             "name:en": "System code",
             "type": "varchar",
             "length": 16,
+            "nullable": true
+        },
+
+        // --- výchozí hodnoty fakturace (#174 D29) ---
+        // Smlouva je smí přepsat stejnojmenným sloupcem; prázdné na obou =
+        // výchozí hodnota enginu (InvoicingSettingsResolver).
+
+        {
+            // invno (faktura vydaná) nebo invpo (zálohová faktura vydaná);
+            // povolené hodnoty hlídá InvoicingSettings::DOC_TYPES.
+            "id": "inv_doc_type",
+            "name": "Invoice document type",
+            "name:cs": "Typ dokladu",
+            "name:en": "Invoice document type",
+            "type": "enumString",
+            "length": 20,
+            "cfgItem": "docs.core.docTypes",
+            "nullable": true
+        },
+        {
+            // Řada dokladů; její doc_type musí odpovídat typu dokladu.
+            "id": "inv_number_series",
+            "name": "Document number series",
+            "name:cs": "Řada dokladů",
+            "name:en": "Document number series",
+            "type": "int",
+            "reference": "docs_core_number_series",
+            "nullable": true
+        },
+        {
+            "id": "inv_due_days",
+            "name": "Due days",
+            "name:cs": "Splatnost (dny)",
+            "name:en": "Due days",
+            "type": "smallint",
+            "nullable": true
+        },
+        {
+            // start = fakturace na počátku období, end = na konci.
+            "id": "inv_timing",
+            "name": "Invoicing timing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing timing",
+            "type": "enumString",
+            "length": 5,
+            "cfgItem": "economy.periodicInvoicing.invoiceTimings",
+            "nullable": true
+        },
+        {
+            "id": "inv_vat_mode",
+            "name": "VAT mode",
+            "name:cs": "Režim DPH",
+            "name:en": "VAT mode",
+            "type": "enumInt",
+            "cfgItem": "docs.core.vatModes",
+            "nullable": true
+        },
+        {
+            "id": "inv_payment_method",
+            "name": "Payment method",
+            "name:cs": "Způsob platby",
+            "name:en": "Payment method",
+            "type": "enumInt",
+            "cfgItem": "docs.core.paymentMethods",
+            "nullable": true
+        },
+        {
+            // Prázdné = výchozí účet dokladu.
+            "id": "inv_bank_account",
+            "name": "Our bank account",
+            "name:cs": "Bankovní účet",
+            "name:en": "Our bank account",
+            "type": "int",
+            "reference": "economy_codebooks_bank_accounts",
             "nullable": true
         },
 

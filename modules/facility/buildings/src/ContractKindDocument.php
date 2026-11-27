@@ -8,6 +8,7 @@ use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Numbering\NumberPattern;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
 
 /**
  * Druh smlouvy (facility_buildings_contract_kinds, #174 D4, D15, D18).
@@ -69,6 +70,7 @@ class ContractKindDocument extends Document
         }
 
         $this->validateNumbering($data, $id, $result);
+        $this->validateInvoicing($data, $result);
 
         $newState = (int) ($data['docState'] ?? $original['docState'] ?? self::STATE_DRAFT);
         $oldState = (int) ($original['docState'] ?? 0);
@@ -122,6 +124,44 @@ class ContractKindDocument extends Document
         }
     }
 
+    /**
+     * Výchozí hodnoty fakturace smluv druhu (#174 D29) — jen tvar: typ
+     * dokladu z povolených, řada patří typu dokladu, známý okamžik
+     * fakturace, splatnost ≥ 0. Povinné nejsou — periodicita smlouvy je
+     * nepovinná a chybějící hodnotu hlásí až potvrzení smlouvy.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validateInvoicing(array $data, ValidationResult $result): void
+    {
+        $docType = $data['inv_doc_type'] ?? null;
+        $hasDocType = $docType !== null && $docType !== '';
+        if ($hasDocType && !InvoicingSettings::isDocType($docType)) {
+            $result->addError('inv_doc_type', 'Periodická fakturace vystavuje jen faktury a zálohové faktury vydané.', 'invalid');
+            $hasDocType = false;
+        }
+
+        $seriesId = (int) ($data['inv_number_series'] ?? 0);
+        if ($seriesId > 0) {
+            $series = $this->loadDocSeries($seriesId);
+            if ($series === null) {
+                if ($this->db !== null) {
+                    $result->addError('inv_number_series', 'Řada dokladů neexistuje', 'not_found');
+                }
+            } elseif ($hasDocType && (string) ($series['doc_type'] ?? '') !== (string) $docType) {
+                $result->addError('inv_number_series', 'Řada dokladů musí být stejného typu jako typ dokladu.', 'series_type_mismatch');
+            }
+        }
+
+        if (isset($data['inv_due_days']) && $data['inv_due_days'] !== '' && (int) $data['inv_due_days'] < 0) {
+            $result->addError('inv_due_days', 'Splatnost nesmí být záporná.', 'invalid');
+        }
+        $timing = $data['inv_timing'] ?? null;
+        if ($timing !== null && $timing !== '' && !InvoicingSettings::isTiming($timing)) {
+            $result->addError('inv_timing', 'Neznámý okamžik fakturace.', 'invalid');
+        }
+    }
+
     /** Česká hláška k nálezu {@see NumberPattern::validate()}; neznámý kód nechá zprávu enginu. */
     private static function patternMessage(string $code, string $fallback): string
     {
@@ -149,6 +189,16 @@ class ContractKindDocument extends Document
     }
 
     // ── DB přístup (přepsatelný v testech) ──────────────────────────────────
+
+    /** Řada dokladů (id, doc_type, docState), null = neexistuje. */
+    protected function loadDocSeries(int $seriesId): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch('SELECT [id], [doc_type], [docState] FROM [docs_core_number_series] WHERE [id] = %i', $seriesId);
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
 
     /** Uložený řádek druhu (id, type, docState), null = neexistuje. */
     protected function loadKindRow(int $id): ?array

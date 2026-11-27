@@ -46,7 +46,7 @@ class BuildingsModuleTest extends TestCase
 
         $this->assertSame('facility.buildings', $module->id);
         $this->assertSame(ModuleKind::Addon, $module->kind);
-        foreach (['core.system', 'core.attachments', 'base.persons', 'base.places'] as $dependency) {
+        foreach (['core.system', 'core.attachments', 'base.persons', 'base.places', 'economy.codebooks', 'docs.core', 'economy.periodicInvoicing'] as $dependency) {
             $this->assertContains($dependency, $module->dependencies, $dependency);
         }
 
@@ -58,6 +58,8 @@ class BuildingsModuleTest extends TestCase
             [
                 'facility_buildings_contract_kinds' => 472, 'facility_buildings_number_counters' => 473,
                 'facility_buildings_contracts' => 474, 'facility_buildings_contract_places' => 475,
+                'facility_buildings_contract_kind_rows' => 477, 'facility_buildings_contract_rows' => 476,
+                'facility_buildings_contract_periods' => 478,
             ],
             $ids,
         );

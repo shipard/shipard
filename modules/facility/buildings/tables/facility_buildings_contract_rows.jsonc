@@ -1,0 +1,163 @@
+{
+    // Řádky předpisu smlouvy (#174 D30) ve tvaru řádku předpisu periodické
+    // fakturace (#175 U2, modules/economy/periodicInvoicing/README.md).
+    // Řádek se na fakturu použije, když jeho platnost pokrývá den fakturace
+    // období (valid_from ≤ den ≤ valid_to, NULL = neomezeno) — změna ceny
+    // k datu bez zásahu do starých řádků; platnost řádku musí ležet uvnitř
+    // platnosti smlouvy (D36). Pohyb smí být prázdný = výchozí pohyb
+    // cílového dokladu. `contributor` = id registrovaného přispěvatele
+    // obsahu, NULL = pevný řádek.
+    //
+    // Sub-tabulka smlouvy (tab Řádky), ne child tabulka — uložení hlavičky
+    // na řádky nesahá. Řídí se stavem smlouvy: úprava jen v Konceptu
+    // a V opravě, jinak jen ke čtení — server hlídá ContractRowLockProvider
+    // (documentLockProviders). Nová smlouva dostane řádky ze šablony druhu
+    // (facility_buildings_contract_kind_rows, D32).
+    "tableId": 476,
+    "name": "Contract rows",
+    "name:cs": "Řádky smluv",
+    "name:en": "Contract rows",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{description}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "contract",
+            "name": "Contract",
+            "name:cs": "Smlouva",
+            "name:en": "Contract",
+            "type": "int",
+            "nullable": false,
+            "reference": "facility_buildings_contracts"
+        },
+        {
+            "id": "order_pos",
+            "name": "Sort order",
+            "name:cs": "Pořadí",
+            "name:en": "Sort order",
+            "type": "smallint",
+            "default": 0
+        },
+
+        // --- obsah řádku ---
+
+        {
+            "id": "item",
+            "name": "Item",
+            "name:cs": "Položka",
+            "name:en": "Item",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_items"
+        },
+        {
+            "id": "description",
+            "name": "Description",
+            "name:cs": "Popis",
+            "name:en": "Description",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true
+        },
+        {
+            "id": "quantity",
+            "name": "Quantity",
+            "name:cs": "Množství",
+            "name:en": "Quantity",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            "id": "unit",
+            "name": "Unit",
+            "name:cs": "Jednotka",
+            "name:en": "Unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_units"
+        },
+        {
+            "id": "unit_price",
+            "name": "Unit price",
+            "name:cs": "Cena/jednotka",
+            "name:en": "Unit price",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            // Kód DPH je na řádku — položka sazbu nenese.
+            "id": "vat_code",
+            "name": "VAT code",
+            "name:cs": "Kód DPH",
+            "name:en": "VAT code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "operation",
+            "name": "Operation",
+            "name:cs": "Pohyb",
+            "name:en": "Operation",
+            "type": "enumString",
+            "length": 40,
+            "cfgItem": "docs.core.rowOperations",
+            "nullable": true
+        },
+
+        // --- platnost ---
+
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true
+        },
+
+        // --- přispěvatel obsahu ---
+
+        {
+            "id": "contributor",
+            "name": "Content contributor",
+            "name:cs": "Přispěvatel obsahu",
+            "name:en": "Content contributor",
+            "type": "varchar",
+            "length": 60,
+            "nullable": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_contract",
+            "type": "index",
+            "columns": [
+                {"column": "contract"},
+                {"column": "order_pos"}
+            ]
+        }
+    ]
+}

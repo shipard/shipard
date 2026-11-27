@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Facility\Buildings;
 
 use Shipard\Core\Document\Document;
+use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\I18n\DisplayDate;
 use Shipard\Core\Numbering\NumberContext;
@@ -14,6 +15,8 @@ use Shipard\Core\Numbering\SequenceStorage;
 use Shipard\Module\Base\Places\PlaceDocument;
 use Shipard\Module\Base\Places\PlaceKindDocument;
 use Shipard\Module\Base\Places\PlaceTypes;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
 
 /**
  * Smlouva (facility_buildings_contracts, #174 D6, D7, D20–D22).
@@ -39,7 +42,23 @@ use Shipard\Module\Base\Places\PlaceTypes;
  *     zůstává a potvrzená smlouva se do Konceptu nevrací;
  *   - přechod do Ukončená / Zrušená doplní prázdné datum ukončení dneškem;
  *   - fyzicky smazat jde jen koncept, i z koše (do koše vede sada stavů jen
- *     z Konceptu); s ním odejdou i vazby míst.
+ *     z Konceptu); s ním odejdou i vazby míst a řádky předpisu.
+ *
+ * Fakturace (fáze 2, #174 D29, D32, D36):
+ *   - fakturační předpis jako u zakázky — periodicita, fakturovat od, text
+ *     dokladu a přepisy výchozích hodnot druhu (`inv_*`, prázdné = z druhu;
+ *     efektivní hodnoty skládá jen InvoicingSettingsResolver). Periodicita
+ *     je nepovinná — smlouva bez ní se nefakturuje;
+ *   - prázdné „fakturovat od“ se doplní zahájením a dřív než zahájení být
+ *     nesmí; měna prázdná = domácí měna zdroje dat;
+ *   - potvrzení smlouvy **s periodicitou** vyžaduje „fakturovat od“,
+ *     efektivní typ dokladu a řadu dokladů (smlouva → druh), aspoň jeden
+ *     řádek předpisu a platnost každého řádku uvnitř platnosti smlouvy;
+ *   - šablona řádků druhu (D32) se zkopíruje do konceptu bez řádků **jen
+ *     při vložení nebo změně druhu** — uživatel, který řádky smaže a smlouvu
+ *     uloží, je znovu nedostane. Kopie běží v `afterPersist`, tedy
+ *     v transakci uložení; že jde o vložení / změnu druhu, si dokument
+ *     poznamená v `beforeSave` (jen tam má originál).
  *
  * Číslo se čerpá v beforeSave — před transakcí gateway, čítač má vlastní
  * (uvnitř vnější transakce volajícího se vlastní neotevírá).
@@ -49,6 +68,10 @@ class ContractDocument extends Document
     public const TABLE = 'facility_buildings_contracts';
     public const COUNTERS_TABLE = 'facility_buildings_number_counters';
     public const PLACES_TABLE = 'facility_buildings_contract_places';
+    /** Řádky předpisu smlouvy — sub-tabulka, ne child tabulka (D30). */
+    public const ROWS_TABLE = 'facility_buildings_contract_rows';
+    /** Šablona řádků na druhu (D32). */
+    public const KIND_ROWS_TABLE = 'facility_buildings_contract_kind_rows';
     /** Klíč child setu míst v datech dokumentu (`childTables[].dataKey`). */
     public const PLACES_KEY = 'places';
     /** cfgItem stavů smlouvy (config/docStates.jsonc) — jediný zdroj id. */
@@ -66,8 +89,17 @@ class ContractDocument extends Document
     /** Platné smlouvy — jen ty se počítají do překryvu míst (D22). */
     public const VALID_STATES = [self::STATE_CONFIRMED, self::STATE_EDIT];
 
+    public const HOME_CURRENCY_SETTING = 'economy.homeCurrency';
+    public const DEFAULT_HOME_CURRENCY = 'czk';
+
     /** Jazyk hlášek validace — česká věta bez jazyka požadavku. */
     private const MESSAGE_LANGUAGE = 'cs';
+
+    /**
+     * Druh, jehož šablonu řádků má `afterPersist` zkopírovat (D32): nastaví
+     * `beforeSave` při vložení nebo změně druhu konceptu, jinak null.
+     */
+    private ?int $templateKind = null;
 
     public function validate(array &$data): ValidationResult
     {
@@ -83,6 +115,7 @@ class ContractDocument extends Document
         }
 
         $kindId = (int) ($data['kind'] ?? 0);
+        $kind = null;
         if ($kindId <= 0) {
             $result->addError('kind', 'Druh smlouvy je povinný', 'required');
         } elseif (!$wasDraft && $kindId !== (int) ($original['kind'] ?? 0)) {
@@ -102,6 +135,7 @@ class ContractDocument extends Document
         } else {
             // Potvrzená smlouva: druh se nemění, typ zůstává uložený.
             $data['type'] = (string) ($original['type'] ?? $data['type'] ?? '');
+            $kind = $this->loadKind($kindId);
         }
         $type = (string) ($data['type'] ?? '');
 
@@ -117,6 +151,8 @@ class ContractDocument extends Document
         if ($start !== null && $end !== null && $end < $start) {
             $result->addError('date_end', 'Datum ukončení nesmí být dříve než zahájení.', 'invalid_range');
         }
+
+        $this->validateInvoicing($data, $result, $id, $kind, $start, $end, $confirming);
 
         // Místa: z dat, jinak uložená (uložení bez klíče na vazby nesahá,
         // pravidla ale platí pro smlouvu jako celek).
@@ -135,6 +171,96 @@ class ContractDocument extends Document
         }
 
         return $result;
+    }
+
+    /**
+     * Fakturační předpis (D29, D36): tvar hodnot vždy; prázdné „fakturovat
+     * od“ se doplní zahájením a dřív než zahájení být nesmí. Potvrzení
+     * smlouvy s periodicitou navíc vyžaduje „fakturovat od“, efektivní typ
+     * dokladu a řadu (smlouva → druh), aspoň jeden řádek předpisu a platnost
+     * řádků uvnitř platnosti smlouvy.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $kind řádek druhu se sloupci `inv_*`
+     */
+    private function validateInvoicing(
+        array &$data,
+        ValidationResult $result,
+        ?int $id,
+        ?array $kind,
+        ?string $start,
+        ?string $end,
+        bool $confirming,
+    ): void {
+        $periodicity = $data['inv_periodicity'] ?? null;
+        $hasPeriodicity = $periodicity !== null && $periodicity !== '';
+        if ($hasPeriodicity && !InvoicingSettings::isPeriodicity($periodicity)) {
+            $result->addError('inv_periodicity', 'Neznámá periodicita.', 'invalid');
+        }
+        $docType = $data['inv_doc_type'] ?? null;
+        if ($docType !== null && $docType !== '' && !InvoicingSettings::isDocType($docType)) {
+            $result->addError('inv_doc_type', 'Periodická fakturace vystavuje jen faktury a zálohové faktury vydané.', 'invalid');
+        }
+        $timing = $data['inv_timing'] ?? null;
+        if ($timing !== null && $timing !== '' && !InvoicingSettings::isTiming($timing)) {
+            $result->addError('inv_timing', 'Neznámý okamžik fakturace.', 'invalid');
+        }
+        if (isset($data['inv_due_days']) && $data['inv_due_days'] !== '' && (int) $data['inv_due_days'] < 0) {
+            $result->addError('inv_due_days', 'Splatnost nesmí být záporná.', 'invalid');
+        }
+
+        // D36: fakturovat od = zahájení, když je prázdné; ne dřív. Doplnění
+        // je tady, ne v beforeSave — potvrzení by jinak spadlo na povinné
+        // pole dřív, než se doplní.
+        $invFrom = self::isoDate($data['inv_from'] ?? null);
+        if ($invFrom === null && $start !== null) {
+            $data['inv_from'] = $start;
+            $invFrom = $start;
+        } elseif ($invFrom !== null && $start !== null && $invFrom < $start) {
+            $result->addError('inv_from', 'Fakturovat od nesmí být dříve než zahájení smlouvy.', 'before_start');
+        }
+
+        $settings = InvoicingSettingsResolver::resolve($data, $kind);
+        $seriesId = (int) ($data['inv_number_series'] ?? 0);
+        if ($seriesId > 0) {
+            $series = $this->loadDocSeries($seriesId);
+            if ($series === null) {
+                if ($this->db !== null) {
+                    $result->addError('inv_number_series', 'Řada dokladů neexistuje', 'not_found');
+                }
+            } elseif ($settings->docType !== null && (string) ($series['doc_type'] ?? '') !== $settings->docType) {
+                $result->addError('inv_number_series', 'Řada dokladů musí být stejného typu jako typ dokladu.', 'series_type_mismatch');
+            }
+        }
+
+        if (!$confirming || !$hasPeriodicity) {
+            return;
+        }
+        if ($invFrom === null) {
+            $result->addError('inv_from', 'Fakturovat od je povinné při potvrzení smlouvy s periodicitou.', 'required');
+        }
+        if ($settings->docType === null) {
+            $result->addError('inv_doc_type', 'Smlouva ani její druh nemají typ dokladu — doplň ho před potvrzením.', 'required');
+        }
+        if ($settings->numberSeries === null) {
+            $result->addError('inv_number_series', 'Smlouva ani její druh nemají řadu dokladů — doplň ji před potvrzením.', 'required');
+        }
+
+        $rows = $id !== null ? $this->loadPrescriptionRows($id) : [];
+        if ($rows === []) {
+            $result->addError(
+                ValidationError::FIELD_FORM,
+                'Smlouva s periodicitou potřebuje aspoň jeden řádek předpisu — co se má fakturovat.',
+                'rows_required',
+            );
+            return;
+        }
+        foreach ($rows as $row) {
+            foreach (ContractRowDocument::validityProblems($row, $start, $end) as $message) {
+                $label = trim((string) ($row['description'] ?? '')) ?: ('#' . (int) ($row['id'] ?? 0));
+                $result->addError(ValidationError::FIELD_FORM, "Řádek „{$label}“: {$message}", 'row_outside_contract');
+            }
+        }
     }
 
     /**
@@ -262,11 +388,27 @@ class ContractDocument extends Document
     {
         $this->trackStateChange($data, $originalData);
 
-        foreach (['title', 'number', 'internal_note'] as $col) {
+        foreach (['title', 'number', 'internal_note', 'payment_reference', 'inv_doc_text'] as $col) {
             if (array_key_exists($col, $data) && $data[$col] !== null) {
                 $trimmed = trim((string) $data[$col]);
                 $data[$col] = $trimmed === '' ? null : $trimmed;
             }
+        }
+
+        // Měna: prázdná = domácí měna zdroje dat (jako u zakázek). Úprava
+        // bez klíče měny na uloženou hodnotu nesahá.
+        if (($originalData === null || array_key_exists('currency', $data)) && !self::hasValue($data['currency'] ?? null)) {
+            $data['currency'] = $this->homeCurrency();
+        }
+
+        // D32: šablona řádků jen při vložení nebo změně druhu konceptu —
+        // podmínka „smlouva nemá řádky“ sama nestačí (viz afterPersist).
+        $this->templateKind = null;
+        $kindId = (int) ($data['kind'] ?? $originalData['kind'] ?? 0);
+        $state = (int) ($data['docState'] ?? $originalData['docState'] ?? self::STATE_DRAFT);
+        $kindChanged = $originalData === null || $kindId !== (int) ($originalData['kind'] ?? 0);
+        if ($kindId > 0 && $kindChanged && $state === self::STATE_DRAFT) {
+            $this->templateKind = $kindId;
         }
 
         $t = $this->stateTransition;
@@ -284,6 +426,22 @@ class ContractDocument extends Document
         }
     }
 
+    /**
+     * Šablona řádků druhu (D32): po vložení nebo změně druhu konceptu, který
+     * žádné řádky nemá, se do něj zkopírují řádky šablony — v transakci
+     * uložení. Druh bez šablony nic nevloží.
+     */
+    public function afterPersist(array $data): void
+    {
+        $kindId = $this->templateKind;
+        $this->templateKind = null;
+        $id = (int) ($data['id'] ?? 0);
+        if ($kindId === null || $id <= 0 || $this->countPrescriptionRows($id) > 0) {
+            return;
+        }
+        $this->copyTemplateRows($id, $kindId);
+    }
+
     public function beforeDelete(array $data): void
     {
         $state = (int) ($data['docState'] ?? self::STATE_DRAFT);
@@ -297,6 +455,7 @@ class ContractDocument extends Document
         $id = (int) ($data['id'] ?? 0);
         if ($id > 0) {
             $this->deletePlaceRows($id);
+            $this->deletePrescriptionRows($id);
         }
     }
 
@@ -378,18 +537,93 @@ class ContractDocument extends Document
         return $row === null || $row === false ? null : iterator_to_array($row);
     }
 
-    /** Druh (id, type, number_code, number_pattern, reset_scope, docState), null = neexistuje. */
+    /**
+     * Druh (id, type, number_code, number_pattern, reset_scope, docState
+     * a výchozí hodnoty fakturace `inv_*`), null = neexistuje.
+     */
     protected function loadKind(int $kindId): ?array
     {
         if ($this->db === null) {
             return null;
         }
         $row = $this->db->fetch(
-            'SELECT [id], [type], [number_code], [number_pattern], [reset_scope], [docState]'
+            'SELECT [id], [type], [number_code], [number_pattern], [reset_scope], [docState], '
+            . implode(', ', array_map(static fn (string $c): string => "[{$c}]", InvoicingSettings::COLUMNS))
             . ' FROM [' . ContractKindDocument::TABLE . '] WHERE [id] = %i',
             $kindId,
         );
         return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /** Řada dokladů (id, doc_type, docState), null = neexistuje. */
+    protected function loadDocSeries(int $seriesId): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch('SELECT [id], [doc_type], [docState] FROM [docs_core_number_series] WHERE [id] = %i', $seriesId);
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /**
+     * Řádky předpisu smlouvy pro kontrolu při potvrzení (id, description,
+     * valid_from, valid_to) v pořadí.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function loadPrescriptionRows(int $contractId): array
+    {
+        if ($this->db === null) {
+            return [];
+        }
+        $rows = $this->db->fetchAll(
+            'SELECT [id], [description], [valid_from], [valid_to] FROM [' . self::ROWS_TABLE . ']'
+            . ' WHERE [contract] = %i ORDER BY [order_pos], [id]',
+            $contractId,
+        );
+        return array_map(static fn ($row): array => iterator_to_array($row), $rows);
+    }
+
+    /** Počet řádků předpisu smlouvy. */
+    protected function countPrescriptionRows(int $contractId): int
+    {
+        if ($this->db === null) {
+            return 0;
+        }
+        return (int) $this->db->fetchSingle(
+            'SELECT COUNT(*) FROM [' . self::ROWS_TABLE . '] WHERE [contract] = %i',
+            $contractId,
+        );
+    }
+
+    /**
+     * Zkopíruje řádky šablony druhu do smlouvy — pořadí šablony, platnost
+     * prázdná (šablona ji nemá). Jeden příkaz v transakci uložení; druh bez
+     * šablony nevloží nic (query je final — seam pro testy).
+     */
+    protected function copyTemplateRows(int $contractId, int $kindId): void
+    {
+        $columns = '[order_pos], [item], [description], [quantity], [unit], [unit_price], [vat_code], [operation], [contributor]';
+        $this->db?->query(
+            'INSERT INTO [' . self::ROWS_TABLE . '] ([contract], ' . $columns . ')'
+            . ' SELECT %i, ' . $columns . ' FROM [' . self::KIND_ROWS_TABLE . ']'
+            . ' WHERE [kind] = %i ORDER BY [order_pos], [id]',
+            $contractId,
+            $kindId,
+        );
+    }
+
+    /** Smaže řádky předpisu smazaného konceptu (query je final — seam pro testy). */
+    protected function deletePrescriptionRows(int $contractId): void
+    {
+        $this->db?->query('DELETE FROM [' . self::ROWS_TABLE . '] WHERE [contract] = %i', $contractId);
+    }
+
+    /** Domácí měna zdroje dat ze settings `economy.homeCurrency`. */
+    protected function homeCurrency(): string
+    {
+        $value = $this->settings?->get(self::HOME_CURRENCY_SETTING);
+        return is_string($value) && $value !== '' ? $value : self::DEFAULT_HOME_CURRENCY;
     }
 
     /**

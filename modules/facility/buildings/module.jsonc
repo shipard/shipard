@@ -15,13 +15,20 @@
 
     "kind": "addon",
 
-    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places"],
+    // Fáze 2 (#174 D29–D34): smlouvy jsou zdroj periodické fakturace —
+    // předpis a řádky dědí ze společného základu enginu
+    // economy.periodicInvoicing, řady dokladů a střediska jsou z docs.core
+    // a economy.codebooks.
+    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places", "economy.codebooks", "docs.core", "economy.periodicInvoicing"],
 
     "tables": [
         "facility_buildings_contract_kinds",
         "facility_buildings_number_counters",
         "facility_buildings_contracts",
-        "facility_buildings_contract_places"
+        "facility_buildings_contract_places",
+        "facility_buildings_contract_kind_rows",
+        "facility_buildings_contract_rows",
+        "facility_buildings_contract_periods"
     ],
 
     // Vlastní sekce sidebaru a Nastavení (#174 D1, #170 D13) — vedle Zakázek.
@@ -82,6 +89,29 @@
         {
             "table": "facility_buildings_contracts",
             "class": "Shipard\\Module\\Facility\\Buildings\\ContractDocument"
+        },
+        {
+            "table": "facility_buildings_contract_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowDocument"
+        },
+        {
+            "table": "facility_buildings_contract_kind_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowDocument"
+        }
+    ],
+
+    // Řádky předpisu se řídí stavem smlouvy, šablona řádků stavem druhu
+    // (#174 D30, D32): u rodiče ve stavu s readOnly jsou jen ke čtení,
+    // úprava přes V opravě. Jádro providery vynucuje na uložení, mazání
+    // i generickém CRUD; stavy čtou z cfgItem sady stavů rodiče.
+    "documentLockProviders": [
+        {
+            "table": "facility_buildings_contract_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowLockProvider"
+        },
+        {
+            "table": "facility_buildings_contract_kind_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowLockProvider"
         }
     ],
 

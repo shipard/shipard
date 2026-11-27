@@ -1,0 +1,140 @@
+{
+    // Šablona řádků předpisu na druhu smlouvy (#174 D32, D33): tvar řádku
+    // předpisu periodické fakturace (#175 U2) bez platnosti. Kopii do
+    // facility_buildings_contract_rows dělá ContractDocument při uložení
+    // konceptu bez řádků — při vložení a při změně druhu. Šablona nese
+    // i výchozí kód DPH řádků druhu (byt osvobozeně, kancelář se základní
+    // sazbou) — typ smlouvy žádnou takovou vlastnost nemá.
+    //
+    // Sub-tabulka druhu (tab Šablona řádků). Řídí se stavem druhu: úprava
+    // v Konceptu a V opravě, jinak jen ke čtení — server hlídá
+    // ContractKindRowLockProvider (documentLockProviders).
+    "tableId": 477,
+    "name": "Contract kind row template",
+    "name:cs": "Šablona řádků druhu smlouvy",
+    "name:en": "Contract kind row template",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{description}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "kind",
+            "name": "Contract kind",
+            "name:cs": "Druh smlouvy",
+            "name:en": "Contract kind",
+            "type": "int",
+            "nullable": false,
+            "reference": "facility_buildings_contract_kinds"
+        },
+        {
+            "id": "order_pos",
+            "name": "Sort order",
+            "name:cs": "Pořadí",
+            "name:en": "Sort order",
+            "type": "smallint",
+            "default": 0
+        },
+
+        // --- obsah řádku ---
+
+        {
+            "id": "item",
+            "name": "Item",
+            "name:cs": "Položka",
+            "name:en": "Item",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_items"
+        },
+        {
+            "id": "description",
+            "name": "Description",
+            "name:cs": "Popis",
+            "name:en": "Description",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true
+        },
+        {
+            "id": "quantity",
+            "name": "Quantity",
+            "name:cs": "Množství",
+            "name:en": "Quantity",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            "id": "unit",
+            "name": "Unit",
+            "name:cs": "Jednotka",
+            "name:en": "Unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_units"
+        },
+        {
+            "id": "unit_price",
+            "name": "Unit price",
+            "name:cs": "Cena/jednotka",
+            "name:en": "Unit price",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            // Kód DPH je na řádku — položka sazbu nenese.
+            "id": "vat_code",
+            "name": "VAT code",
+            "name:cs": "Kód DPH",
+            "name:en": "VAT code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "operation",
+            "name": "Operation",
+            "name:cs": "Pohyb",
+            "name:en": "Operation",
+            "type": "enumString",
+            "length": 40,
+            "cfgItem": "docs.core.rowOperations",
+            "nullable": true
+        },
+
+        // --- přispěvatel obsahu ---
+
+        {
+            "id": "contributor",
+            "name": "Content contributor",
+            "name:cs": "Přispěvatel obsahu",
+            "name:en": "Content contributor",
+            "type": "varchar",
+            "length": 60,
+            "nullable": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_kind",
+            "type": "index",
+            "columns": [
+                {"column": "kind"},
+                {"column": "order_pos"}
+            ]
+        }
+    ]
+}
