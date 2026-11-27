@@ -97,11 +97,21 @@ class BuildingsFormsTest extends TestCase
     {
         $def = $this->contractsForm()->buildFormDefinition([], true);
 
-        $this->assertSame(['basic', 'attachments'], array_map(static fn ($tab) => $tab->id, $def->tabs));
-        $this->assertSame('attachments', $def->tabs[1]->type);
+        $this->assertSame(['basic', 'rows', 'attachments'], array_map(static fn ($tab) => $tab->id, $def->tabs));
+        $this->assertSame('subtable', $def->tabs[1]->type);
+        $this->assertSame('attachments', $def->tabs[2]->type);
         $this->assertSame(
-            ['kind', 'number', 'title', 'customer', 'date_start', 'date_end', 'places', 'internal_note'],
-            array_map(static fn (FormElement $el): ?string => $el->column, $def->tabs[0]->sections[0]->columns[0]->elements),
+            [
+                'kind', 'number', 'title', 'customer', 'date_start', 'date_end', 'places',
+                // Fakturace a přepisy výchozích hodnot druhu (fáze 2) — za oddělovači.
+                'inv_periodicity', 'inv_from', 'inv_doc_text', 'currency', 'payment_reference', 'cost_center',
+                'inv_doc_type', 'inv_number_series', 'inv_due_days', 'inv_timing', 'inv_vat_mode', 'inv_payment_method', 'inv_bank_account',
+                'internal_note',
+            ],
+            array_values(array_filter(array_map(
+                static fn (FormElement $el): ?string => $el->column,
+                $def->tabs[0]->sections[0]->columns[0]->elements,
+            ))),
         );
 
         $kind = $this->element($def, 'kind');

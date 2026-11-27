@@ -11,5 +11,9 @@
     "group.note": { "name": "Note", "name:cs": "Poznámka", "name:en": "Note" },
     "group.numbering": { "name": "Numbering", "name:cs": "Číslování", "name:en": "Numbering" },
     "heading.places": { "name": "Places", "name:cs": "Místa", "name:en": "Places" },
-    "label.sampleNumber": { "name": "Number example", "name:cs": "Ukázka čísla", "name:en": "Number example" }
+    "label.sampleNumber": { "name": "Number example", "name:cs": "Ukázka čísla", "name:en": "Number example" },
+
+    // --- zdroj periodické fakturace (ContractInvoicingSource, #174 D34) ---
+    "source.recordNoun": { "name": "Contract", "name:cs": "Smlouva", "name:en": "Contract" },
+    "source.openAction": { "name": "Open contract", "name:cs": "Otevřít smlouvu", "name:en": "Open contract" }
 }

@@ -143,6 +143,6 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 | Modul | Název | Popis |
 |-------|-------|-------|
 | [`economy.salesRegistration`](economy/salesRegistration/README.md) | Evidence tržeb | Evidence tržeb u správce daně (česká EET 2.0): registrace, evidenční jednotky, pokladní certifikát, pojistka serveru a odesílání zpráv |
-| [`facility.buildings`](facility/buildings/README.md) | Budovy | Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování |
+| [`facility.buildings`](facility/buildings/README.md) | Budovy | Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování, periodická fakturace smluv |
 
 <!-- MODULY:END -->

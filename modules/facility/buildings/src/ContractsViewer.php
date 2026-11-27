@@ -7,6 +7,9 @@ namespace Shipard\Module\Facility\Buildings;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Module\Base\Places\PlaceDocument;
 use Shipard\Module\Base\Places\PlaceTree;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\Source\PeriodicInvoicingSource;
+use Shipard\Module\Economy\PeriodicInvoicing\Viewer\InvoicingDetailTab;
 
 /**
  * Viewer smluv (sekce Budovy, #174 D5, D25).
@@ -18,13 +21,18 @@ use Shipard\Module\Base\Places\PlaceTree;
  * Řádek: název, číslo, nájemce, místa (první dvě zkráceným názvem a „+N“),
  * platnost a štítek stavu. Detail: Přehled (druh, typ, nájemce, platnost,
  * interní poznámka) a tabulka Místa s umístěním (cesta ve stromu míst)
- * a proklikem do detailu místa; přílohy na konci Přehledu.
+ * a proklikem do detailu místa; přílohy na konci Přehledu. Smlouva
+ * s periodicitou má navíc záložku Fakturace — společnou záložku enginu
+ * periodické fakturace (`InvoicingDetailTab`, #174 D34) nad zdrojem smluv;
+ * akce Vystavit dlužná období / Přegenerovat / Obnovit jsou akce záznamu
+ * (`recordActions` v module.jsonc), ne akce vieweru.
  */
 class ContractsViewer extends BuildingsViewerBase
 {
     protected ?string $docStatesCfgItem = ContractDocument::DOC_STATES_CFG_ITEM;
 
     /** Viewer míst — cíl odkazů z tabulky Místa (`open_detail`). */
+    public const VIEWER_ID = ContractInvoicingSource::VIEWER_ID;
     public const PLACES_VIEWER = 'base.places.places';
     /** Kolik míst řádek seznamu vypíše, zbytek je „+N“. */
     public const ROW_PLACES = 2;
@@ -218,7 +226,7 @@ class ContractsViewer extends BuildingsViewerBase
         );
     }
 
-    /** Přehled a pod ním tabulka míst smlouvy. */
+    /** Přehled a pod ním tabulka míst smlouvy; u smlouvy s periodicitou záložka Fakturace. */
     protected function detailTabs(array $record): array
     {
         $overview = $this->propertiesTab($this->overviewGroups($record));
@@ -232,7 +240,54 @@ class ContractsViewer extends BuildingsViewerBase
             ]];
         }
 
-        return [$overview];
+        $tabs = [$overview];
+        if (trim((string) ($record['inv_periodicity'] ?? '')) !== '') {
+            $tabs[] = $this->invoicingTab($record);
+        }
+        return $tabs;
+    }
+
+    /**
+     * Záložka Fakturace smlouvy s periodicitou — evidence období a doklady.
+     *
+     * @param array<string, mixed> $record
+     * @return array<string, mixed> tab detailu
+     */
+    private function invoicingTab(array $record): array
+    {
+        return (new InvoicingDetailTab(
+            $this->invoicingSource(),
+            $this->periodRepository(),
+            $this->config,
+            $this->language ?? 'en',
+            $this->today(),
+        ))->build($record);
+    }
+
+    /** Evidence období smluv (přepsatelné v testech). */
+    protected function periodRepository(): PeriodRepository
+    {
+        return new PeriodRepository(
+            $this->db->getDibiConnection(),
+            ContractInvoicingSource::PERIODS_TABLE,
+            ContractInvoicingSource::PERIODS_RECORD_COLUMN,
+        );
+    }
+
+    /** Zdroj fakturace smluv (přepsatelné v testech). */
+    protected function invoicingSource(): PeriodicInvoicingSource
+    {
+        $source = new ContractInvoicingSource();
+        $source->setDb($this->db->getDibiConnection());
+        if ($this->config !== null) {
+            $source->setConfig($this->config);
+        }
+        return $source;
+    }
+
+    protected function today(): string
+    {
+        return date('Y-m-d');
     }
 
     /**

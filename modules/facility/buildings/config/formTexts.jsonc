@@ -88,6 +88,115 @@
             "name": "Search for a place…",
             "name:cs": "Hledat místo…",
             "name:en": "Search for a place…"
+        },
+
+        // --- druh: výchozí hodnoty fakturace (#174 D29) ---
+        "kind.invDocTypeHint": {
+            "name": "Invoice or advance invoice; a contract may override it.",
+            "name:cs": "Faktura, nebo zálohová faktura; smlouva smí přepsat.",
+            "name:en": "Invoice or advance invoice; a contract may override it."
+        },
+        "kind.invSeriesNoTypeHint": {
+            "name": "Choose the document type first.",
+            "name:cs": "Nejdřív vyber typ dokladu.",
+            "name:en": "Choose the document type first."
+        },
+        "kind.invSeriesHint": {
+            "name": "A number series of the document type.",
+            "name:cs": "Řada typu dokladu.",
+            "name:en": "A number series of the document type."
+        },
+        "kind.invDueDaysHint": {
+            "name": "Empty = {days} days.",
+            "name:cs": "Prázdné = {days} dní.",
+            "name:en": "Empty = {days} days."
+        },
+        "kind.invTimingHint": {
+            "name": "Issue date and tax point date of the document; empty = at the start of the period.",
+            "name:cs": "Datum vystavení a DUZP dokladu; prázdné = na počátku období.",
+            "name:en": "Issue date and tax point date of the document; empty = at the start of the period."
+        },
+        "kind.invVatModeHint": {
+            "name": "Prices on prescription rows without VAT (from the base) or with VAT (from the total); empty = from the base.",
+            "name:cs": "Ceny na řádcích předpisu bez DPH (ze základu), nebo s DPH (z ceny celkem); prázdné = ze základu.",
+            "name:en": "Prices on prescription rows without VAT (from the base) or with VAT (from the total); empty = from the base."
+        },
+        "kind.invPaymentMethodHint": {
+            "name": "Empty = bank transfer.",
+            "name:cs": "Prázdné = převodem.",
+            "name:en": "Empty = bank transfer."
+        },
+        "kind.invBankAccountHint": {
+            "name": "Empty = the default account of the document.",
+            "name:cs": "Prázdné = výchozí účet dokladu.",
+            "name:en": "Empty = the default account of the document."
+        },
+
+        // --- smlouva: fakturace a přepisy hodnot druhu (#174 D29, D37) ---
+        "contract.periodicityHint": {
+            "name": "Calendar period; empty = the contract is not invoiced.",
+            "name:cs": "Kalendářní období; prázdné = smlouva se nefakturuje.",
+            "name:en": "Calendar period; empty = the contract is not invoiced."
+        },
+        "contract.invFromHint": {
+            "name": "The first invoiced period is the one containing this date; empty = the start date, it may not be earlier.",
+            "name:cs": "První fakturované období je to, které obsahuje toto datum; prázdné = zahájení, dřív být nesmí.",
+            "name:en": "The first invoiced period is the one containing this date; empty = the start date, it may not be earlier."
+        },
+        "contract.docTextPlaceholder": {
+            "name": "Empty = contract title and period",
+            "name:cs": "Prázdné = název smlouvy a období",
+            "name:en": "Empty = contract title and period"
+        },
+        "contract.docTextHint": {
+            "name": "The {období} variable is replaced with the period in the language of the tenant, e.g. October 2026.",
+            "name:cs": "Proměnná {období} se nahradí obdobím v jazyce nájemce, např. říjen 2026.",
+            "name:en": "The {období} variable is replaced with the period in the language of the tenant, e.g. October 2026."
+        },
+        "contract.currencyHint": {
+            "name": "Empty = the home currency.",
+            "name:cs": "Prázdná = domácí měna.",
+            "name:en": "Empty = the home currency."
+        },
+        "contract.paymentReferenceHint": {
+            "name": "Fixed payment reference — every invoice of the contract carries it.",
+            "name:cs": "Pevný variabilní symbol — ponesou ho všechny faktury smlouvy.",
+            "name:en": "Fixed payment reference — every invoice of the contract carries it."
+        },
+        "contract.costCenterPlaceholder": {
+            "name": "Search for a cost center…",
+            "name:cs": "Hledat středisko…",
+            "name:en": "Search for a cost center…"
+        },
+        "contract.costCenterHint": {
+            "name": "Cost center of the documents of this contract.",
+            "name:cs": "Středisko dokladů smlouvy.",
+            "name:en": "Cost center of the documents of this contract."
+        },
+        "contract.fromKind": {
+            "name": "From the kind: {value}",
+            "name:cs": "Z druhu: {value}",
+            "name:en": "From the kind: {value}"
+        },
+        "contract.seriesNoTypeHint": {
+            "name": "Choose the document type first — here or on the kind.",
+            "name:cs": "Nejdřív vyber typ dokladu — tady nebo na druhu.",
+            "name:en": "Choose the document type first — here or on the kind."
+        },
+        "contract.dueDaysKindHint": {
+            "name": "From the kind: {days} days",
+            "name:cs": "Z druhu: {days} dní",
+            "name:en": "From the kind: {days} days"
+        },
+        "contract.dueDaysDefaultHint": {
+            "name": "Empty = {days} days.",
+            "name:cs": "Prázdné = {days} dní.",
+            "name:en": "Empty = {days} days."
+        },
+        "contract.bankAccountHint": {
+            "name": "Empty on both the contract and the kind = the default account of the document.",
+            "name:cs": "Prázdné na smlouvě i druhu = výchozí účet dokladu.",
+            "name:en": "Empty on both the contract and the kind = the default account of the document."
         }
     }
 }

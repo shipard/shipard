@@ -1,17 +1,17 @@
 {
     // Budovy (#174): doplněk pro správu budovy. Fáze 1 = evidence nájemních
     // smluv s místy z číselníku míst (base.places) — druhy smluv s typem,
-    // číslování per druh, stavy Ukončená / Zrušená. Fakturace smluv
-    // (fáze 2, zdroj periodické fakturace #175) a napojení na Místa (fáze 3)
-    // přijdou později. Doplněk: jádro o něm neví, ve zdroji dat se zapíná
+    // číslování per druh, stavy Ukončená / Zrušená. Fáze 2 = fakturace smluv:
+    // smlouvy jsou zdroj periodické fakturace (#175) s předpisem, řádky
+    // a šablonou řádků na druhu. Napojení na Místa (fáze 3) přijde později. Doplněk: jádro o něm neví, ve zdroji dat se zapíná
     // `shpd-ds ds-module enable facility.buildings`.
     "id": "facility.buildings",
     "name": "Buildings",
     "name:cs": "Budovy",
     "name:en": "Buildings",
-    "description": "Building management: lease contracts with places, contract kinds and numbering",
-    "description:cs": "Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování",
-    "description:en": "Building management: lease contracts with places, contract kinds and numbering",
+    "description": "Building management: lease contracts with places, contract kinds and numbering, periodic invoicing of contracts",
+    "description:cs": "Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování, periodická fakturace smluv",
+    "description:en": "Building management: lease contracts with places, contract kinds and numbering, periodic invoicing of contracts",
 
     "kind": "addon",
 
@@ -20,6 +20,22 @@
     // economy.periodicInvoicing, řady dokladů a střediska jsou z docs.core
     // a economy.codebooks.
     "dependencies": ["core.system", "core.attachments", "base.persons", "base.places", "economy.codebooks", "docs.core", "economy.periodicInvoicing"],
+
+    // Zdroj periodické fakturace (#174 D34): smlouvy V pořádku s periodicitou
+    // a „fakturovat od“; evidence období facility_buildings_contract_periods.
+    "periodicInvoicingSources": [
+        {"id": "buildingContracts", "class": "Shipard\\Module\\Facility\\Buildings\\ContractInvoicingSource"}
+    ],
+
+    // Akce záložky Fakturace — akce záznamu se společnými třídami enginu
+    // periodické fakturace, deklarované nad tabulkou smluv; zdroj si akce
+    // najde podle tabulky. Globální id facility.buildings.issueDue /
+    // .regenerate / .restore.
+    "recordActions": [
+        {"id": "issueDue",   "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\IssueDueAction",   "order": 100},
+        {"id": "regenerate", "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RegenerateAction", "order": 110},
+        {"id": "restore",    "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RestoreAction",    "order": 120}
+    ],
 
     "tables": [
         "facility_buildings_contract_kinds",
@@ -78,6 +94,18 @@
         {
             "table": "facility_buildings_contracts",
             "class": "Shipard\\Module\\Facility\\Buildings\\ContractsForm"
+        },
+        {
+            // Řádek předpisu — sub-formulář tabu Řádky smlouvy (D30).
+            "table": "facility_buildings_contract_rows",
+            "id": "facility.buildings.contractRows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowsForm"
+        },
+        {
+            // Řádek šablony — sub-formulář tabu Šablona řádků druhu (D32).
+            "table": "facility_buildings_contract_kind_rows",
+            "id": "facility.buildings.contractKindRows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowsForm"
         }
     ],
 

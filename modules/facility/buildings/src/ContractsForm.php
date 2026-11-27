@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Facility\Buildings;
 
+use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\FormDefinition;
+use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
 use Shipard\Module\Base\Places\PlaceDocument;
 use Shipard\Module\Base\Places\PlacesLookup;
 use Shipard\Module\Base\Places\PlaceTypes;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingFormOptions;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\Rows\PrescriptionRowsSubtable;
 
 /**
  * Formulář smlouvy (#174 D24): druh, číslo, název, nájemce, zahájení,
@@ -24,9 +30,25 @@ use Shipard\Module\Base\Places\PlaceTypes;
  *
  * Místa jsou prvek `multilookup` nad child tabulkou
  * `facility_buildings_contract_places` (klíč `places`).
+ *
+ * Fakturace (#174 D29, D30, D37): sekce Fakturace (periodicita, fakturovat
+ * od, text dokladu, měna, pevný VS, středisko) a přepisy výchozích hodnot
+ * druhu — prázdné pole ukazuje hodnotu druhu jako zástupný text „Z druhu: …“
+ * (InvoicingSettingsResolver; nabídky sdílí s formulářem zakázky,
+ * InvoicingFormOptions). Tab Řádky = sub-tabulka řádků předpisu
+ * (ContractRowsForm) mezi hlavní záložkou a Přílohami: je to jiný
+ * mechanismus než Místa — uložení smlouvy na řádky nesahá, ukládá je dialog
+ * řádku. Řídí se stavem smlouvy (server hlídá ContractRowLockProvider).
  */
 class ContractsForm extends TableForm
 {
+    use InvoicingFormOptions;
+
+    public const CURRENCIES_CFG_ITEM = 'world.base.currencies';
+    public const PERIODICITIES_CFG_ITEM = 'economy.periodicInvoicing.periodicities';
+    public const ROWS_TAB = 'rows';
+    public const ROWS_FORM_ID = 'facility.buildings.contractRows';
+
     public function applyNewRecordDefaults(array &$data): void
     {
         $kindId = (int) ($data['kind'] ?? 0);
@@ -55,6 +77,22 @@ class ContractsForm extends TableForm
                 'types' => $this->placeTypeLabels($placeTypes),
             ])
             : $this->formText('facility.buildings.formTexts', 'contract.placesAnyHint', 'Places of any type.');
+
+        // Předpis: hodnoty druhu jako zástupný text prázdných přepisů.
+        $kind = $kindId > 0 ? $this->loadKindRow($kindId) : null;
+        $kindValues = InvoicingSettingsResolver::kindValues($kind);
+        $effectiveDocType = InvoicingSettingsResolver::resolve($data, $kind)->docType;
+        $fromKind = fn (string $column, array $options): ?string => isset($kindValues[$column])
+            ? $this->formText('facility.buildings.formTexts', 'contract.fromKind', 'From the kind: {value}', [
+                'value' => $this->optionLabel($options, $kindValues[$column]),
+            ])
+            : null;
+        $docTypeOptions = $this->invoiceDocTypeOptions();
+        $seriesOptions = $this->invoiceSeriesOptions($effectiveDocType, $data['inv_number_series'] ?? null);
+        $timingOptions = $this->invoiceTimingOptions();
+        $vatModeOptions = $this->invoiceVatModeOptions();
+        $paymentOptions = $this->invoicePaymentMethodOptions();
+        $bankOptions = $this->invoiceBankAccountOptions();
 
         $tab = $this->tab('basic', 'Smlouva')
             ->section()
@@ -103,14 +141,104 @@ class ContractsForm extends TableForm
                         hidden: $placesMode === ContractTypes::PLACES_NONE,
                         hint: $placesHint,
                     )
+                    ->separator('Fakturace')
+                    ->select(
+                        'inv_periodicity',
+                        options: $this->periodicityOptions(),
+                        required: false,
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.periodicityHint', 'Calendar period; empty = the contract is not invoiced.'),
+                    )
+                    ->date(
+                        'inv_from',
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.invFromHint', 'The first invoiced period is the one containing this date; empty = the start date, it may not be earlier.'),
+                    )
+                    ->input(
+                        'inv_doc_text',
+                        placeholder: $this->formText('facility.buildings.formTexts', 'contract.docTextPlaceholder', 'Empty = contract title and period'),
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.docTextHint', 'The {období} variable is replaced with the period in the language of the tenant, e.g. October 2026.'),
+                    )
+                    ->select(
+                        'currency',
+                        options: $this->currencyOptions(),
+                        required: false,
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.currencyHint', 'Empty = the home currency.'),
+                    )
+                    ->input(
+                        'payment_reference',
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.paymentReferenceHint', 'Fixed payment reference — every invoice of the contract carries it.'),
+                    )
+                    ->lookup(
+                        'cost_center',
+                        table: 'economy_codebooks_cost_centers',
+                        placeholder: $this->formText('facility.buildings.formTexts', 'contract.costCenterPlaceholder', 'Search for a cost center…'),
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.costCenterHint', 'Cost center of the documents of this contract.'),
+                    )
+                    ->separator('Přepisy výchozích hodnot druhu')
+                    ->select(
+                        'inv_doc_type',
+                        options: $docTypeOptions,
+                        required: false,
+                        triggers: 'reload',
+                        placeholder: $fromKind('inv_doc_type', $docTypeOptions),
+                    )
+                    ->select(
+                        'inv_number_series',
+                        options: $seriesOptions,
+                        required: false,
+                        placeholder: $fromKind('inv_number_series', $seriesOptions),
+                        hint: $effectiveDocType === null
+                            ? $this->formText('facility.buildings.formTexts', 'contract.seriesNoTypeHint', 'Choose the document type first — here or on the kind.')
+                            : null,
+                    )
+                    ->number(
+                        'inv_due_days',
+                        hint: isset($kindValues['inv_due_days'])
+                            ? $this->formText('facility.buildings.formTexts', 'contract.dueDaysKindHint', 'From the kind: {days} days', ['days' => (int) $kindValues['inv_due_days']])
+                            : $this->formText('facility.buildings.formTexts', 'contract.dueDaysDefaultHint', 'Empty = {days} days.', ['days' => InvoicingSettings::DEFAULT_DUE_DAYS]),
+                    )
+                    ->select(
+                        'inv_timing',
+                        options: $timingOptions,
+                        required: false,
+                        placeholder: $fromKind('inv_timing', $timingOptions),
+                    )
+                    ->select(
+                        'inv_vat_mode',
+                        options: $vatModeOptions,
+                        required: false,
+                        placeholder: $fromKind('inv_vat_mode', $vatModeOptions),
+                    )
+                    ->select(
+                        'inv_payment_method',
+                        options: $paymentOptions,
+                        required: false,
+                        placeholder: $fromKind('inv_payment_method', $paymentOptions),
+                    )
+                    ->select(
+                        'inv_bank_account',
+                        options: $bankOptions,
+                        required: false,
+                        placeholder: $fromKind('inv_bank_account', $bankOptions),
+                        hint: $this->formText('facility.buildings.formTexts', 'contract.bankAccountHint', 'Empty on both the contract and the kind = the default account of the document.'),
+                    )
+                    ->separator('Poznámka')
                     ->textarea('internal_note')
             ->build();
+
+        $rows = $this->subtableTab(
+            self::ROWS_TAB,
+            'Řádky',
+            ContractDocument::ROWS_TABLE,
+            'contract',
+            formId: self::ROWS_FORM_ID,
+            orderColumn: PrescriptionRowsSubtable::ORDER_COLUMN,
+        );
 
         return new FormDefinition(
             table: $this->table,
             title: 'Smlouva',
             titleNew: 'Nová smlouva',
-            tabs: [$tab, $this->attachmentsTab()],
+            tabs: [$tab, $rows, $this->attachmentsTab()],
         );
     }
 
@@ -120,7 +248,61 @@ class ContractsForm extends TableForm
             $kindId = (int) ($data['kind'] ?? 0);
             $data['type'] = $kindId > 0 ? $this->kindType($kindId) : null;
         }
+        if ($changedColumn === 'inv_doc_type') {
+            // Řada patří typu dokladu — po změně typu se vybírá znovu.
+            $data['inv_number_series'] = null;
+        }
         return new RecalculateResult($this->buildFormDefinition($data, empty($data['id'])), $data);
+    }
+
+    /**
+     * Sub-tabulka řádků předpisu: popis, množství, jednotka, cena, DPH,
+     * platnost (společný PrescriptionRowsSubtable). Ostatní taby default.
+     */
+    public function renderSubtable(FormTab $tab, array $rows, array $parentData): array
+    {
+        if ($tab->id !== self::ROWS_TAB) {
+            return parent::renderSubtable($tab, $rows, $parentData);
+        }
+        $table = ContractDocument::ROWS_TABLE;
+
+        return PrescriptionRowsSubtable::render(
+            $rows,
+            fn (string $column, string $fallback): string => $this->subtableLabel($table, $column, $fallback),
+            PrescriptionRowsSubtable::unitShortcuts($this->db),
+            $this->language,
+        );
+    }
+
+    /**
+     * Druh se sloupci fakturačního předpisu (`inv_*`), null = neexistuje
+     * (přepsatelné v testech).
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function loadKindRow(int $kindId): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        return $this->db->fetchRow(
+            'SELECT * FROM `' . ContractKindDocument::TABLE . '` WHERE `id` = %i',
+            $kindId,
+        );
+    }
+
+    /** @return list<array{value: string, label: string}> */
+    private function currencyOptions(): array
+    {
+        $cfg = $this->config?->cfgItem(self::CURRENCIES_CFG_ITEM);
+        return is_array($cfg) ? EnumOptionsHelper::fromCfgData($cfg, 'enumString', self::CURRENCIES_CFG_ITEM) : [];
+    }
+
+    /** @return list<array{value: string, label: string}> */
+    private function periodicityOptions(): array
+    {
+        $cfg = $this->config?->cfgItem(self::PERIODICITIES_CFG_ITEM);
+        return is_array($cfg) ? EnumOptionsHelper::fromCfgData($cfg, 'enumString') : [];
     }
 
     /**
