@@ -6,6 +6,7 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
+use Shipard\Api\RequestBaseUrl;
 use Shipard\Api\Response;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -54,7 +55,7 @@ class HostingOidcController
 
     public function __construct(
         private readonly DataSourceConfig $config,
-        private readonly bool $devMode,
+        private readonly bool $pathAddressed,
         private readonly ?OpKeyStore $keyStore = null,
         private readonly ?DsSecretCipher $cipher = null,
     ) {}
@@ -404,12 +405,10 @@ class HostingOidcController
         return Response::raw(['error' => 'invalid_grant'], 400);
     }
 
-    /** Absolutní base URL požadavku vč. dev prefixu `/{ds-id}`. */
+    /** Absolutní base URL požadavku — schéma z požadavku, prefix `/{ds-id}` při adresování cestou. */
     private function baseUrl(Request $request): string
     {
-        $scheme = $this->devMode ? 'http' : 'https';
-        $prefix = $this->devMode ? '/' . $this->config->getId() : '';
-        return $scheme . '://' . $request->getHost() . $prefix;
+        return RequestBaseUrl::of($request, $this->config->getId(), $this->pathAddressed);
     }
 
     private function appUrl(Request $request): string

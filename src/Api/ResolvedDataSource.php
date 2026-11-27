@@ -19,15 +19,20 @@ readonly class ResolvedDataSource
 		public DataSourceConfig $config,
 		public DataSourceConnection $connection,
 		public string $normalizedPath,
-		private bool $devMode = false,
+		private bool $pathAddressed = false,
 		?DataSourceState $state = null,
 	) {
 		$this->state = $state ?? DataSourceState::active();
 	}
 
-	public function isDevMode(): bool
+	/**
+	 * Zdroj dat je adresovaný ID v cestě (`/<ID>/…`, jen režim `development`,
+	 * #183 D1) — adresy aplikace pak nesou prefix `/<ID>`. O schématu ani
+	 * o režimu serveru neříká nic ({@see RequestBaseUrl}).
+	 */
+	public function isPathAddressed(): bool
 	{
-		return $this->devMode;
+		return $this->pathAddressed;
 	}
 
 	/** Efektivní stav `read_only` — pipeline vynucuje ReadOnlyPolicy (fáze 2). */

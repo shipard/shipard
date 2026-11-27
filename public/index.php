@@ -96,7 +96,8 @@ try {
 	}
 
 	// ── 3. Resolve data source ────────────────────────────────────────────────
-	$resolver = new DataSourceResolver($serverConfig->getDomainsFile(), $serverConfig->getDataSourcesDir());
+	// Adresování cestou (/<ID>/…) řídí režim serveru, ne host (#183 D1).
+	$resolver = new DataSourceResolver($serverConfig->getDomainsFile(), $serverConfig->getDataSourcesDir(), $serverConfig->getMode());
 	$resolved = $resolver->resolve($request->getHost(), $request->getPath());
 
 	// DS is now known — propagate to logger
@@ -227,11 +228,10 @@ try {
 	);
 
 	// ── 9. Dispatch to controller ─────────────────────────────────────────────
-	$host     = $request->getHost();
 	$response = dispatch(
 		$route, $request, $auth, $tables,
 		$resolved->connection, $openApiPublic,
-		$host, $resolved, $modulePathResolver,
+		$resolved, $modulePathResolver,
 		$viewerRegistry, $configRuntime, $formRegistry, $documentRegistry,
 		$lookupRegistry, $alertCheckRegistry, $serverConfig,
 		$documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors,
@@ -328,7 +328,6 @@ function dispatch(
 	array $tables,
 	\Shipard\Core\Database\DataSourceConnection $db,
 	bool $openApiPublic,
-	string $host,
 	\Shipard\Api\ResolvedDataSource $resolved,
 	ModulePathResolver $modulePathResolver,
 	ViewerRegistry $viewerRegistry,
@@ -343,9 +342,7 @@ function dispatch(
 	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
 	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
-	$baseUrl = $resolved->isDevMode()
-		? 'http://' . $host . '/' . $resolved->config->getId()
-		: 'https://' . $host;
+	$baseUrl = \Shipard\Api\RequestBaseUrl::for($request, $resolved);
 
 	return match ($route->controller) {
 		'auth'    => dispatchAuth($route->action, $request, $auth, $db, $resolved),
@@ -357,7 +354,7 @@ function dispatch(
 		'ui'      => dispatchUi($route->action, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $auth, $tables, $resolved->isReadOnly()),
 		'dashboard' => dispatchDashboard($route, $db, $configRuntime, resolveLanguage($request, $resolved->config), $resolved->config, $alertCheckRegistry, $tables, $auth, $request, $resolved->isReadOnly()),
 		'settings' => dispatchSettings($route, $request, $auth, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $tables),
-		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState(), $serverConfig, $resolved->state->isCronEnabled()),
+		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isPathAddressed(), $resolved->state->getEffectiveState(), $serverConfig, $resolved->state->isCronEnabled()),
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
 		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver, $serverConfig),
@@ -730,7 +727,7 @@ function dispatchHostingOidc(
 	array $tables,
 	\Shipard\Api\ResolvedDataSource $resolved,
 ): Response {
-	$ctrl = new \Shipard\Api\Controller\HostingOidcController($resolved->config, $resolved->isDevMode());
+	$ctrl = new \Shipard\Api\Controller\HostingOidcController($resolved->config, $resolved->isPathAddressed());
 	return match ($route->action) {
 		'discovery' => $ctrl->discovery($request, $db, $tables),
 		'jwks'      => $ctrl->jwks($db, $tables),
@@ -1522,7 +1519,7 @@ function dispatchAuth(
 	\Shipard\Api\ResolvedDataSource $resolved,
 ): Response {
 	if (str_starts_with($action, 'oidc')) {
-		$oidc = new \Shipard\Api\Controller\OidcController($resolved->config, $resolved->isDevMode());
+		$oidc = new \Shipard\Api\Controller\OidcController($resolved->config, $resolved->isPathAddressed());
 		return match ($action) {
 			'oidcStart'    => $oidc->start($request, $db),
 			'oidcCallback' => $oidc->callback($request, $db),
@@ -1547,7 +1544,7 @@ function dispatchPassword(
 	\Shipard\Core\Database\DataSourceConnection $db,
 	\Shipard\Api\ResolvedDataSource $resolved,
 ): Response {
-	$ctrl = new \Shipard\Api\Controller\PasswordController($resolved->config, $resolved->isDevMode());
+	$ctrl = new \Shipard\Api\Controller\PasswordController($resolved->config, $resolved->isPathAddressed());
 	return match ($route->action) {
 		'forgot'               => $ctrl->forgot($request, $db),
 		'reset'                => $ctrl->reset($request, $db),
@@ -1733,7 +1730,7 @@ function dispatchApp(
 	\Shipard\Core\Database\DataSourceConnection $db,
 	\Shipard\Core\Config\DataSourceConfig $config,
 	array $tables = [],
-	bool $devMode = false,
+	bool $pathAddressed = false,
 	string $dsState = \Shipard\Core\Config\DataSourceState::ACTIVE,
 	?ServerConfig $serverConfig = null,
 	bool $cronEnabled = true,
@@ -1743,13 +1740,13 @@ function dispatchApp(
 		\Shipard\Core\Mail\MailSafetyConfig::forServer($serverConfig),
 	);
 	// Pruh „Kopie reálných dat“ (#126 D12): jen na serveru v režimu
-	// development (ServerConfig, ne $devMode — ten je adresování přes IP)
+	// development (ServerConfig, ne $pathAddressed — ten je adresování cestou)
 	// u třídy realCopy vč. výchozí; v produkci nikdy. Jen boolean (U5).
 	$realCopy = $serverConfig?->getMode() === 'development' && !$config->isFree();
 	$slot = (string) $route->table;
 	return match ($route->action) {
 		'info'           => $ctrl->info($dsState, $cronEnabled, $realCopy),
-		'manifest'       => $ctrl->manifest($devMode),
+		'manifest'       => $ctrl->manifest($pathAddressed),
 		'brandingGet'    => $ctrl->brandingGet($slot),
 		'brandingUpload' => $ctrl->brandingUpload($slot, $auth),
 		'brandingDelete' => $ctrl->brandingDelete($slot, $auth),

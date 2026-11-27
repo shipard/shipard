@@ -84,19 +84,22 @@ class DataSourceResolverTest extends TestCase
 		file_put_contents($dsDir . '/main.json', json_encode(array_merge($defaults, $data)));
 	}
 
-	private function makeResolver(string $domainsFile): TestableDataSourceResolver
+	private function makeResolver(string $domainsFile, string $mode = 'production'): TestableDataSourceResolver
 	{
 		return new TestableDataSourceResolver(
 			$domainsFile,
 			$this->tempDir . '/data-sources',
+			$mode,
 		);
 	}
 
-	private function makeResolverNoDomains(): TestableDataSourceResolver
+	/** Vývojový server bez `domains.json` — zdroj dat jen z cesty. */
+	private function makeResolverNoDomains(string $mode = 'development'): TestableDataSourceResolver
 	{
 		return new TestableDataSourceResolver(
 			$this->tempDir . '/nonexistent-domains.json',
 			$this->tempDir . '/data-sources',
+			$mode,
 		);
 	}
 
@@ -169,9 +172,9 @@ class DataSourceResolverTest extends TestCase
 		$resolver->resolve('demo.shipard.cz', '/api/v1/users');
 	}
 
-	// ── Mode detection ───────────────────────────────────────────────────────
+	// ── Adresování podle režimu serveru (#183 D1) ───────────────────────────
 
-	public function testDomainHostUsesProductionMode(): void
+	public function testDomainHostIsNotPathAddressed(): void
 	{
 		$dsId = 'a3f2-b8c1-d4e7-f9a0';
 		$domainsFile = $this->writeDomains(['demo.shipard.cz' => $dsId]);
@@ -180,30 +183,136 @@ class DataSourceResolverTest extends TestCase
 		$resolver = $this->makeResolver($domainsFile);
 		$result = $resolver->resolve('demo.shipard.cz', '/api/v1/users');
 
-		$this->assertFalse($result->isDevMode());
+		$this->assertFalse($result->isPathAddressed());
 		$this->assertSame('/api/v1/users', $result->normalizedPath);
 	}
 
-	public function testIpHostUsesDevMode(): void
+	/** @return array<string, array{string}> */
+	public static function developmentHosts(): array
 	{
-		$dsId = 'abcd-efgh-ijkl-mnop';
-		$this->writeDsConfig($dsId);
-
-		$resolver = $this->makeResolverNoDomains();
-		$result = $resolver->resolve('192.168.1.1', '/abcd-efgh-ijkl-mnop/api/v1/users');
-
-		$this->assertTrue($result->isDevMode());
+		return [
+			'IP'             => ['192.168.1.1'],
+			'127.0.0.1'      => ['127.0.0.1'],
+			'localhost'      => ['localhost'],
+			'jméno'          => ['dev.example.com'],
+			'jméno s portem' => ['dev.example.com:8443'],
+			'IPv6'           => ['[2001:db8::7]'],
+		];
 	}
 
-	public function testLocalhostIpUsesDevMode(): void
+	#[\PHPUnit\Framework\Attributes\DataProvider('developmentHosts')]
+	public function testDevelopmentResolvesIdInPathForAnyHost(string $host): void
 	{
 		$dsId = 'abcd-efgh-ijkl-mnop';
 		$this->writeDsConfig($dsId);
 
 		$resolver = $this->makeResolverNoDomains();
-		$result = $resolver->resolve('127.0.0.1', '/abcd-efgh-ijkl-mnop/api/v1/users');
+		$result = $resolver->resolve($host, '/abcd-efgh-ijkl-mnop/api/v1/users');
 
-		$this->assertTrue($result->isDevMode());
+		$this->assertTrue($result->isPathAddressed());
+		$this->assertSame($dsId, $result->config->getId());
+		$this->assertSame('/api/v1/users', $result->normalizedPath);
+	}
+
+	public function testDevelopmentNameWithoutIdInPathUsesDomainsFile(): void
+	{
+		$dsId = 'a3f2-b8c1-d4e7-f9a0';
+		$domainsFile = $this->writeDomains(['firma.dev.example.com' => $dsId]);
+		$this->writeDsConfig($dsId);
+
+		$resolver = $this->makeResolver($domainsFile, 'development');
+		$result = $resolver->resolve('firma.dev.example.com', '/api/v1/users');
+
+		$this->assertFalse($result->isPathAddressed());
+		$this->assertSame($dsId, $result->config->getId());
+		$this->assertSame('/api/v1/users', $result->normalizedPath);
+	}
+
+	public function testDevelopmentIdInPathWinsOverDomainsFile(): void
+	{
+		$byHost = 'a3f2-b8c1-d4e7-f9a0';
+		$byPath = 'abcd-efgh-ijkl-mnop';
+		$domainsFile = $this->writeDomains(['firma.dev.example.com' => $byHost]);
+		$this->writeDsConfig($byHost);
+		$this->writeDsConfig($byPath);
+
+		$resolver = $this->makeResolver($domainsFile, 'development');
+		$result = $resolver->resolve('firma.dev.example.com', '/abcd-efgh-ijkl-mnop/app/');
+
+		$this->assertTrue($result->isPathAddressed());
+		$this->assertSame($byPath, $result->config->getId());
+	}
+
+	public function testDomainsLookupIgnoresPortAndCase(): void
+	{
+		$dsId = 'a3f2-b8c1-d4e7-f9a0';
+		$domainsFile = $this->writeDomains(['firma.dev.example.com' => $dsId]);
+		$this->writeDsConfig($dsId);
+
+		$resolver = $this->makeResolver($domainsFile, 'development');
+		$result = $resolver->resolve('Firma.Dev.Example.com:8443', '/api/v1/users');
+
+		$this->assertSame($dsId, $result->config->getId());
+	}
+
+	public function testHostWithoutPort(): void
+	{
+		$this->assertSame('dev.example.com', DataSourceResolver::hostWithoutPort('dev.example.com:8443'));
+		$this->assertSame('dev.example.com', DataSourceResolver::hostWithoutPort('DEV.example.com'));
+		$this->assertSame('10.0.0.7', DataSourceResolver::hostWithoutPort('10.0.0.7:80'));
+		$this->assertSame('[::1]', DataSourceResolver::hostWithoutPort('[::1]:8080'));
+		$this->assertSame('[2001:db8::7]', DataSourceResolver::hostWithoutPort('[2001:DB8::7]'));
+		$this->assertSame('', DataSourceResolver::hostWithoutPort(''));
+	}
+
+	public function testProductionIgnoresIdInPathForIpHost(): void
+	{
+		// V produkci se cestou neadresuje nikdy — ani pro IP v hostu.
+		$this->writeDsConfig('abcd-efgh-ijkl-mnop');
+
+		$resolver = $this->makeResolverNoDomains('production');
+
+		$this->expectException(UnknownHostException::class);
+		$resolver->resolve('192.168.1.1', '/abcd-efgh-ijkl-mnop/api/v1/users');
+	}
+
+	public function testProductionIgnoresIdInPathForMappedHost(): void
+	{
+		// Cesta ve tvaru ID je v produkci běžná cesta zdroje dat z domains.json.
+		$dsId = 'a3f2-b8c1-d4e7-f9a0';
+		$domainsFile = $this->writeDomains(['demo.shipard.cz' => $dsId]);
+		$this->writeDsConfig($dsId);
+		$this->writeDsConfig('abcd-efgh-ijkl-mnop');
+
+		$resolver = $this->makeResolver($domainsFile);
+		$result = $resolver->resolve('demo.shipard.cz', '/abcd-efgh-ijkl-mnop/api/v1/users');
+
+		$this->assertFalse($result->isPathAddressed());
+		$this->assertSame($dsId, $result->config->getId());
+		$this->assertSame('/abcd-efgh-ijkl-mnop/api/v1/users', $result->normalizedPath);
+	}
+
+	public function testUnknownModeBehavesAsProduction(): void
+	{
+		$this->writeDsConfig('abcd-efgh-ijkl-mnop');
+
+		$resolver = $this->makeResolverNoDomains('staging');
+
+		$this->expectException(UnknownHostException::class);
+		$resolver->resolve('127.0.0.1', '/abcd-efgh-ijkl-mnop/api/v1/users');
+	}
+
+	public function testDefaultModeIsProduction(): void
+	{
+		$this->writeDsConfig('abcd-efgh-ijkl-mnop');
+
+		$resolver = new TestableDataSourceResolver(
+			$this->tempDir . '/nonexistent-domains.json',
+			$this->tempDir . '/data-sources',
+		);
+
+		$this->expectException(UnknownHostException::class);
+		$resolver->resolve('127.0.0.1', '/abcd-efgh-ijkl-mnop/api/v1/users');
 	}
 
 	// ── Dev mode ─────────────────────────────────────────────────────────────
@@ -245,9 +354,10 @@ class DataSourceResolverTest extends TestCase
 
 	public function testDevModeInvalidDsIdFormat(): void
 	{
+		// První segment nemá tvar ID → rozhoduje host přes domains.json.
 		$resolver = $this->makeResolverNoDomains();
 
-		$this->expectException(UnknownDataSourceException::class);
+		$this->expectException(UnknownHostException::class);
 		$resolver->resolve('10.12.100.1', '/not-a-valid-id/api/v1/users');
 	}
 
@@ -262,10 +372,10 @@ class DataSourceResolverTest extends TestCase
 
 	public function testDevModeMissingDsId(): void
 	{
-		// Path starts with 'api' which does not match DS ID format
+		// Cesta začíná 'api' — to není tvar ID, rozhoduje host přes domains.json.
 		$resolver = $this->makeResolverNoDomains();
 
-		$this->expectException(UnknownDataSourceException::class);
+		$this->expectException(UnknownHostException::class);
 		$resolver->resolve('10.12.100.1', '/api/v1/users');
 	}
 
@@ -375,7 +485,7 @@ class DataSourceResolverTest extends TestCase
 		$this->writeDsConfig($dsId);
 		$this->writeDsState($dsId, ['state' => 'read_only']);
 
-		$result = $this->makeResolver($this->writeDomains([]))->resolve('127.0.0.1', '/' . $dsId . '/api/v1/users');
+		$result = $this->makeResolver($this->writeDomains([]), 'development')->resolve('127.0.0.1', '/' . $dsId . '/api/v1/users');
 		$this->assertTrue($result->isReadOnly());
 	}
 

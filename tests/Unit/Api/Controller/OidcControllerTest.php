@@ -134,7 +134,7 @@ class OidcControllerTest extends TestCase
 		$this->github = new StubGithubClient();
 		$this->controller = new OidcController(
 			new DataSourceConfig($this->dsDir),
-			devMode: true,
+			pathAddressed: true,
 			client: $this->client,
 			github: $this->github,
 		);
@@ -156,14 +156,15 @@ class OidcControllerTest extends TestCase
 		return $ref->getProperty('status')->getValue($response);
 	}
 
-	private function req(string $method, string $path, array $query = [], array $body = []): Request
+	/** @param array<string, string> $server přepis proměnných serveru (host, `HTTPS`) */
+	private function req(string $method, string $path, array $query = [], array $body = [], array $server = []): Request
 	{
 		return Request::fromArray(
 			$method,
 			'/api/v1' . $path,
 			$query,
 			$body === [] ? '' : json_encode($body),
-			['HTTP_HOST' => '127.0.0.1', 'REMOTE_ADDR' => '10.0.0.1'],
+			$server + ['HTTP_HOST' => '127.0.0.1', 'REMOTE_ADDR' => '10.0.0.1'],
 		);
 	}
 
@@ -189,12 +190,30 @@ class OidcControllerTest extends TestCase
 		// challenge = S256(verifier)
 		$expectedChallenge = rtrim(strtr(base64_encode(hash('sha256', $txn['pkce_verifier'], true)), '+/', '-_'), '=');
 		$this->assertSame($expectedChallenge, $params['code_challenge']);
-		// Dev mód: redirect URI nese /{ds-id} prefix a http scheme.
+		// Adresování cestou: redirect URI nese /{ds-id} prefix; schéma je z požadavku.
 		$this->assertSame(
 			'http://127.0.0.1/' . self::DS_ID . '/api/v1/_auth/oidc/callback',
 			$params['redirect_uri'],
 		);
 		$this->assertGreaterThan(time(), strtotime((string) $txn['expires']));
+	}
+
+	public function testStartRedirectUriFollowsRequestSchemeAndHost(): void
+	{
+		// #183 D2: https vstup vývojového serveru (jméno i port) → https redirect URI.
+		$response = $this->controller->start(
+			$this->req('GET', '/_auth/oidc/start', ['provider' => 'test'], [], [
+				'HTTP_HOST' => 'dev.example.com:8443',
+				'HTTPS'     => 'on',
+			]),
+			$this->db,
+		);
+
+		parse_str((string) parse_url($response->getHeaders()['Location'], PHP_URL_QUERY), $params);
+		$this->assertSame(
+			'https://dev.example.com:8443/' . self::DS_ID . '/api/v1/_auth/oidc/callback',
+			$params['redirect_uri'],
+		);
 	}
 
 	public function testStartWithUnknownProviderReturns404(): void

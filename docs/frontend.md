@@ -2270,7 +2270,7 @@ soubor: `GET /api/v1/_app/manifest` (`AppController::manifest()`, veřejný —
 - `name`/`short_name` — `app.name`/`app.shortName` s fallbacky jako
   `/_app/info` (sdílený helper `resolveNames()`).
 - `id`/`start_url`/`scope` — `/app/` v prod, `/{ds-id}/app/` v dev. Režim
-  rozhoduje `ResolvedDataSource::isDevMode()` (předává `dispatchApp()`),
+  rozhoduje `ResolvedDataSource::isPathAddressed()` (předává `dispatchApp()`),
   žádné vlastní parsování URL.
 - `icons` — **absolutní cesty** s týmž prefixem; relativní by se resolvovaly
   proti URL manifestu (`/api/v1/…`), ne proti `scope`.

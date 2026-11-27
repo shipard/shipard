@@ -9,30 +9,65 @@ use Shipard\Api\Exception\UnknownHostException;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Utils\IdGenerator;
 
+/**
+ * Zdroj dat požadavku (#183 D1). **Adresování cestou řídí režim serveru,
+ * ne host:** v režimu `development` se zdroj dat vezme z prvního segmentu
+ * cesty, má-li tvar ID ({@see IdGenerator::ID_PATTERN}) — pro jakýkoli host
+ * (IP, `localhost`, jméno). Jinak, a v režimu `production` vždy, rozhoduje
+ * host přes `domains.json`; host s IP adresou tak v produkci končí
+ * `UnknownHostException`. Neznámý režim se chová jako `production`.
+ */
 class DataSourceResolver
 {
+	public const string MODE_DEVELOPMENT = 'development';
+
 	public function __construct(
 		private string $domainsFile = '/etc/shipard/domains.json',
 		private string $dataSourcesDir = '/opt/shipard/data-sources',
+		private string $mode = 'production',
 	) {}
 
 	public function resolve(string $host, string $path): ResolvedDataSource
 	{
-		if ($this->isIpAddress($host)) {
-			return $this->resolveDevMode($path);
+		if ($this->mode === self::MODE_DEVELOPMENT) {
+			$dsId = self::pathDataSourceId($path);
+			if ($dsId !== null) {
+				return $this->resolveByPath($dsId, $path);
+			}
 		}
-		return $this->resolveProductionMode($host, $path);
+		return $this->resolveByHost($host, $path);
 	}
 
-	private function isIpAddress(string $host): bool
+	/** První segment cesty, má-li tvar ID zdroje dat; jinak null. */
+	public static function pathDataSourceId(string $path): ?string
 	{
-		return (bool) preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host);
+		$trimmed = ltrim($path, '/');
+		$slashPos = strpos($trimmed, '/');
+		$segment = $slashPos !== false ? substr($trimmed, 0, $slashPos) : $trimmed;
+
+		return preg_match(IdGenerator::ID_PATTERN, $segment) === 1 ? $segment : null;
 	}
 
-	private function resolveProductionMode(string $host, string $path): ResolvedDataSource
+	/**
+	 * Host pro `domains.json`: malými písmeny a bez portu (`dev.example:8443`
+	 * → `dev.example`, `[::1]:8080` → `[::1]`). Prohlížeč port posílá
+	 * a vývojové šablony nginx ho PHP předávají (`$http_host`).
+	 */
+	public static function hostWithoutPort(string $host): string
+	{
+		$host = strtolower(trim($host));
+		if (preg_match('/^(\[[^\]]*\]|[^:]*):\d+$/', $host, $m) === 1) {
+			return $m[1];
+		}
+		return $host;
+	}
+
+	private function resolveByHost(string $host, string $path): ResolvedDataSource
 	{
 		$map = $this->loadDomainsFile();
+		$host = self::hostWithoutPort($host);
 
 		if (!isset($map[$host])) {
 			throw new UnknownHostException($host);
@@ -46,17 +81,8 @@ class DataSourceResolver
 		return new ResolvedDataSource($config, $connection, $path, false, $state);
 	}
 
-	private function resolveDevMode(string $path): ResolvedDataSource
+	private function resolveByPath(string $dsId, string $path): ResolvedDataSource
 	{
-		// Extract first path segment: /abcd-efgh-ijkl-mnop/api/v1/users → abcd-efgh-ijkl-mnop
-		$trimmed = ltrim($path, '/');
-		$slashPos = strpos($trimmed, '/');
-		$dsId = $slashPos !== false ? substr($trimmed, 0, $slashPos) : $trimmed;
-
-		if (!preg_match(\Shipard\Core\Utils\IdGenerator::ID_PATTERN, $dsId)) {
-			throw new UnknownDataSourceException($dsId);
-		}
-
 		$configFile = $this->dataSourcesDir . '/' . $dsId . '/config/main.json';
 		if (!file_exists($configFile)) {
 			throw new UnknownDataSourceException($dsId);
@@ -66,8 +92,9 @@ class DataSourceResolver
 		$config = $this->createDataSourceConfig($dsId);
 		$connection = $this->createConnection($config);
 
-		// normalizedPath = everything after /{dsId}, defaulting to /
-		$rest = $slashPos !== false ? substr($trimmed, $slashPos) : '/';
+		// normalizedPath = vše za /{dsId}, výchozí /
+		// (/abcd-efgh-ijkl-mnop/api/v1/users → /api/v1/users)
+		$rest = substr(ltrim($path, '/'), strlen($dsId));
 		$normalizedPath = $rest !== '' ? $rest : '/';
 
 		return new ResolvedDataSource($config, $connection, $normalizedPath, true, $state);

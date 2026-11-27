@@ -5,6 +5,7 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
+use Shipard\Api\RequestBaseUrl;
 use Shipard\Api\Response;
 use Shipard\Api\SessionService;
 use Shipard\Core\Auth\AuthTokenService;
@@ -38,7 +39,7 @@ class PasswordController
 {
 	public function __construct(
 		private readonly DataSourceConfig $config,
-		private readonly bool $devMode,
+		private readonly bool $pathAddressed,
 		private readonly SessionService $sessions = new SessionService(),
 	) {}
 
@@ -302,13 +303,10 @@ class PasswordController
 		);
 	}
 
-	/** Absolutní link na set-password obrazovku vč. dev prefixu `/{ds-id}`. */
+	/** Absolutní link na set-password obrazovku — schéma z požadavku, prefix `/{ds-id}` při adresování cestou. */
 	private function setPasswordUrl(Request $request, string $token): string
 	{
-		$scheme = $this->devMode ? 'http' : 'https';
-		$prefix = $this->devMode ? '/' . $this->config->getId() : '';
-
-		return $scheme . '://' . $request->getHost() . $prefix
+		return RequestBaseUrl::of($request, $this->config->getId(), $this->pathAddressed)
 			. '/app/?auth_action=set-password&token=' . rawurlencode($token);
 	}
 

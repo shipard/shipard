@@ -40,10 +40,10 @@ class TestablePasswordController extends PasswordController
 {
 	public function __construct(
 		DataSourceConfig $config,
-		bool $devMode,
+		bool $pathAddressed,
 		public CapturingOutbox $outbox,
 	) {
-		parent::__construct($config, $devMode);
+		parent::__construct($config, $pathAddressed);
 	}
 
 	protected function mailService(DataSourceConnection $db): MailOutboxService
@@ -78,7 +78,7 @@ class PasswordControllerTest extends TestCase
 		$this->outbox = CapturingOutbox::create();
 		$this->controller = new TestablePasswordController(
 			new DataSourceConfig($this->dsDir),
-			devMode: true,
+			pathAddressed: true,
 			outbox: $this->outbox,
 		);
 	}
@@ -103,14 +103,15 @@ class PasswordControllerTest extends TestCase
 		return $response->getPayload()['error']['code'] ?? null;
 	}
 
-	private function req(string $method, string $path, array $body = []): Request
+	/** @param array<string, string> $server přepis proměnných serveru (host, `HTTPS`) */
+	private function req(string $method, string $path, array $body = [], array $server = []): Request
 	{
 		return Request::fromArray(
 			$method,
 			'/api/v1' . $path,
 			[],
 			$body === [] ? '' : json_encode($body),
-			['HTTP_HOST' => '127.0.0.1', 'REMOTE_ADDR' => '10.0.0.1'],
+			$server + ['HTTP_HOST' => '127.0.0.1', 'REMOTE_ADDR' => '10.0.0.1'],
 		);
 	}
 
@@ -157,6 +158,26 @@ class PasswordControllerTest extends TestCase
 		$this->assertCount(0, $this->db->authTokens);
 	}
 
+	public function testForgotLinkFollowsRequestSchemeAndHost(): void
+	{
+		// #183 D2: https vstup vývojového serveru → https odkaz v e-mailu.
+		$this->addUser();
+
+		$this->controller->forgot(
+			$this->req('POST', '/_auth/password/forgot', ['identifier' => 'jan'], [
+				'HTTP_HOST'              => '10.0.0.7',
+				'HTTP_X_FORWARDED_PROTO' => 'https',
+			]),
+			$this->db,
+		);
+
+		$this->assertCount(1, $this->outbox->sent);
+		$this->assertStringContainsString(
+			'https://10.0.0.7/' . self::DS_ID . '/app/?auth_action=set-password&token=',
+			(string) $this->outbox->sent[0]->bodyText,
+		);
+	}
+
 	public function testForgotByLoginSendsOneMail(): void
 	{
 		$this->addUser();
@@ -170,7 +191,7 @@ class PasswordControllerTest extends TestCase
 		$this->assertCount(1, $this->outbox->sent);
 		$mail = $this->outbox->sent[0];
 		$this->assertSame('jan@example.com', $mail->to);
-		// Dev mód: link nese http scheme a /{ds-id} prefix.
+		// Adresování cestou: link nese /{ds-id} prefix; schéma je z požadavku.
 		$this->assertStringContainsString(
 			'http://127.0.0.1/' . self::DS_ID . '/app/?auth_action=set-password&token=',
 			(string) $mail->bodyText,

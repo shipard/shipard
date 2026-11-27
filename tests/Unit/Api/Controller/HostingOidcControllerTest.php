@@ -52,9 +52,9 @@ class StubOpDiscovery extends OidcDiscovery
 class HostingOidcControllerTest extends TestCase
 {
     private const DS_ID = 'abcd-efgh-ijkl-mnop';
-    private const CLIENT_DS_ID = 'wxyz-wxyz-wxyz-wxyz';
+    private const CLIENT_DS_ID = 'wwww-xxxx-yyyy-zzzz';
     private const ISSUER = 'http://127.0.0.1/abcd-efgh-ijkl-mnop/api/v1/_hosting/oidc';
-    private const REDIRECT_URI = 'http://127.0.0.1/wxyz-wxyz-wxyz-wxyz/api/v1/_auth/oidc/callback';
+    private const REDIRECT_URI = 'http://127.0.0.1/wwww-xxxx-yyyy-zzzz/api/v1/_auth/oidc/callback';
     private const CLIENT_SECRET = 'topsecret-client-value';
 
     private static string $dsDir;
@@ -114,7 +114,7 @@ class HostingOidcControllerTest extends TestCase
         $config = new DataSourceConfig(self::$dsDir);
         $this->controller = new HostingOidcController(
             $config,
-            devMode: true,
+            pathAddressed: true,
             keyStore: OpKeyStore::forConfig($config),
             cipher: $this->cipher,
         );
@@ -185,7 +185,7 @@ class HostingOidcControllerTest extends TestCase
     public function testAuthorizeUnknownClientIs400WithoutRedirect(): void
     {
         $resp = $this->controller->authorize(
-            $this->authorizeRequest(['client_id' => 'nope-nope-nope-nope']),
+            $this->authorizeRequest(['client_id' => 'nnnn-oooo-pppp-eeee']),
             $this->db,
             $this->tables(),
         );
@@ -433,7 +433,7 @@ class HostingOidcControllerTest extends TestCase
     public function testTokenWrongClientIdIsInvalidGrant(): void
     {
         $form = $this->tokenForm();
-        $form['client_id'] = 'jine-dsds-dsds-dsds';
+        $form['client_id'] = 'jjjj-dddd-ssss-dddd';
         $resp = $this->controller->token($this->req('POST', '/x'), $form, $this->db, $this->tables());
         $this->assertSame(400, $this->getStatus($resp));
     }

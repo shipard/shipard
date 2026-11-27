@@ -32,95 +32,83 @@ Subdoména se mapuje na ID zdroje dat přes konfigurační soubor `/etc/shipard/
 
 URL: `https://demo.shipard.cz/api/v1/{tabulka}`
 
-### Development mód — IP adresa + DS ID v URL
+### Development mód — DS ID v cestě
 
-Pro snazší onboarding vývojářů bez nutnosti konfigurovat domény a SSL certifikáty. DS ID je první segment cesty, zbytek je standardní API cesta:
+Pro vývoj bez domén: DS ID je první segment cesty, zbytek je standardní API cesta.
+**Adresování cestou řídí režim serveru (`mode` v `server.json`), ne host** (#183 D1) —
+v režimu `development` funguje pro jakýkoli host:
 
 ```
 http://10.12.100.1/abcd-efgh-ijkl-mnop/api/v1/{tabulka}
-                   ├── DS ID ──────────┤├── API cesta ──┤
+https://10.12.100.1/abcd-efgh-ijkl-mnop/api/v1/{tabulka}
+https://dev.example.com/abcd-efgh-ijkl-mnop/api/v1/{tabulka}
+http://localhost/abcd-efgh-ijkl-mnop/api/v1/{tabulka}
+                 ├── DS ID ──────────┤├── API cesta ──┤
 ```
 
-V dev módu není potřeba `domains.json` — DS ID je přímo v URL a resolver ověří existenci adresáře v `data-sources/`.
+Pro cestu s DS ID není potřeba `domains.json` — resolver ověří existenci adresáře
+v `data-sources/`. Cesta, jejíž první segment tvar ID nemá, se i ve vývoji řeší
+hostem přes `domains.json` (vlastní jméno pro zdroj dat tak zůstává možné).
+
+Vývojový server má tři druhy vstupu (#183 D3); každý je jiný origin, takže
+přihlášení ani nastavení v prohlížeči se mezi nimi nesdílejí:
+
+| Vstup | Certifikát | Kdy |
+|---|---|---|
+| `http://<IP>/<ID>/` | žádný | vždy |
+| `https://<IP>/<ID>/` | self-signed s adresami serveru, vyrobí ho server | volitelně, výchozí v nových instalacích |
+| `https://<jméno>/<ID>/` | dodá vývojář | volitelně |
+
+`http://localhost/<ID>/` (WSL) je pro prohlížeč zabezpečený kontext i bez
+certifikátu. Vstupy přes https zapíná konfigurace serveru a `shpd-server
+dev-https` (`docs/cli.md`, `docs/dev/linux-install.md`).
+
+### Schéma adres
+
+Absolutní adresy, které server skládá (redirect URI přihlášení OIDC, odkaz na
+nastavení hesla v e-mailu, `servers` v OpenAPI), berou **schéma a host
+z požadavku** — `Request::getScheme()` (`X-Forwarded-Proto`, jinak `HTTPS`)
+a hlavička `Host` i s portem — a při adresování cestou prefix `/<ID>`. Jediné
+místo je `Shipard\Api\RequestBaseUrl` (#183 D2); schéma se nikdy neodvozuje
+z režimu serveru ani z tvaru hostu.
 
 ### Porovnání módů
 
 | | Produkce | Development |
 |---|---|---|
-| URL | `https://demo.shipard.cz/api/v1/users` | `http://10.12.100.1/abcd-efgh-ijkl-mnop/api/v1/users` |
-| Resolve DS | Subdoména → `domains.json` → DS ID | První segment URL = DS ID → přímo `data-sources/{id}/` |
-| SSL | Vyžadováno | Volitelné (HTTP) |
+| URL | `https://demo.shipard.cz/api/v1/users` | `http(s)://<host>/abcd-efgh-ijkl-mnop/api/v1/users` |
+| Resolve DS | Subdoména → `domains.json` → DS ID | První segment cesty ve tvaru ID → přímo `data-sources/{id}/`; jinak host → `domains.json` |
+| DS ID v cestě | Nepoužije se nikdy (ani pro IP v hostu) | Pro jakýkoli host |
+| SSL | Vyžadováno | Volitelné |
 | Doména | Nutná | Není potřeba |
 | `domains.json` | Nutný | Nepotřebný |
 
 ### Nginx konfigurace
 
-Dva server blocky — produkční a development:
+Šablony jsou v `docs/nginx/`: `production.conf` (subdoména + SSL)
+a `development.conf` (http, DS ID v cestě). Site soubor z nich při instalaci
+generuje `scripts/install-packages.sh`; společné parametry
+(`shipard-common.conf`, `shipard-tls.conf`) si site includuje z checkoutu.
 
-```nginx
-# Produkce — subdoména + SSL
-server {
-    listen 443 ssl;
-    server_name *.shipard.cz;
+### Rozhodnutí v `DataSourceResolver`
 
-    root /opt/shipard/shpd/public;
-    index index.php;
+Resolver dostává režim serveru, host a cestu:
 
-    location / {
-        try_files $uri /index.php$is_args$args;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/run/php/php-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param HTTP_HOST $host;
-        fastcgi_param REQUEST_URI $request_uri;
-        include fastcgi_params;
-    }
-}
-
-# Development — IP adresa + DS ID v URL
-server {
-    listen 80;
-    server_name ~^(\d+\.\d+\.\d+\.\d+)$;
-
-    root /opt/shipard/shpd/public;
-    index index.php;
-
-    location / {
-        try_files $uri /index.php$is_args$args;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/run/php/php-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param HTTP_HOST $host;
-        fastcgi_param REQUEST_URI $request_uri;
-        include fastcgi_params;
-    }
-}
-```
-
-V dev prostředí stačí aktivovat pouze druhý block. V produkci typicky jen první. Lze mít oba současně.
-
-### Detekce módu v `DataSourceResolver`
-
-Resolver rozhodne automaticky podle `HTTP_HOST`:
-
-1. Host je IP adresa (regex `^\d+\.\d+\.\d+\.\d+$`) → **dev mód**:
-   - Vezme první segment z URL cesty jako DS ID
-   - Ověří existenci `data-sources/{id}/config/main.json`
-   - Odstraní DS ID prefix z cesty a předá zbytek routeru
-2. Host je doménové jméno → **produkční mód**:
-   - Vyhledá host v `domains.json`
-   - Celá cesta jde do routeru beze změny
+1. Režim `development` a první segment cesty má tvar DS ID → **adresování cestou**:
+   - ověří existenci `data-sources/{id}/config/main.json` (jinak `404 UNKNOWN_DATASOURCE`),
+   - odstraní DS ID prefix z cesty a předá zbytek routeru,
+   - `ResolvedDataSource::isPathAddressed()` vrací `true` — adresy aplikace nesou prefix `/<ID>`.
+2. Jinak (a v režimu `production` vždy) → **host přes `domains.json`**:
+   - host se hledá malými písmeny a bez portu; neznámý host = `404 UNKNOWN_HOST`
+     (v produkci tedy i host s IP adresou),
+   - celá cesta jde do routeru beze změny.
 
 ### Entry point
 
 Soubor `/opt/shipard/shpd/public/index.php` — společný pro všechny zdroje dat i oba módy:
 
 1. Přečte `HTTP_HOST` a `REQUEST_URI` z requestu
-2. `DataSourceResolver` detekuje mód a resolve DS ID
+2. `DataSourceResolver` podle režimu serveru, hostu a cesty určí DS ID
 3. Načte `config/main.json` daného zdroje dat
 4. Připojí se k databázi zdroje dat
 5. Zpracuje API request (s normalizovanou cestou bez DS ID prefixu)

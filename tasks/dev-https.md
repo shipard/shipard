@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — fáze 1: adresování, nginx, vstupy, certifikát pro IP (#183)
 
-**Stav:** naplánováno — připraveno k implementaci; rozhodnutí #183 D1–D6 a upřesnění U1–U13 potvrzená 2026-11-27
+**Stav:** částečně — hotový commit 1 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, 2026-11-27); zbývají commity 2–6 (nginx, `devAccess` + `dev-https`, `doctor`, dashboard, návody) a kroky s rootem
 
 > Task pro Claude Code (6 commitů). Design: issue #183. Tajemství serveru
 > mimo `server.json` (D7) jsou samostatný task, vlastní jména pro zdroje
@@ -220,6 +220,42 @@ Dashboard vstupy nabídne a `doctor` hlídá certifikáty (U1).
   cíl je vždy ověřený a připíchnutý `LocalBaseUrl` na tento server, takže
   výjimka nemůže odnést session jinam. Předání přes proměnnou prostředí
   do `tests/e2e/playwright.config.mjs` a do video runneru.
+
+## Upřesnění při implementaci (potvrzená 2026-11-27)
+
+Vyplynula z porovnání zadání s kódem; U20–U22 rozhodl člověk.
+
+- **U14 — port.** Šablony nginx předávaly PHP `HTTP_HOST` z `$host`, tedy
+  bez portu, a U9 by port nikdy neviděla. Bloky PHP vývojových šablon
+  předávají `$http_host`; resolver hledá v `domains.json` host malými
+  písmeny a bez portu. Stávající vygenerovaný `shipard.conf` zůstává
+  u `$host` do přegenerování.
+- **U15 — pravidlo lokální adresy v jádře.** `LocalBaseUrl` žije v modulu
+  `core.exchange`, `DevAccess` a `doctor` v jádře. Adresy rozhraní,
+  normalizace IP a pravidlo „jméno míří na tento server“ se přesunou do
+  `Shipard\Core\Net\LocalAddresses`; `LocalBaseUrl` na ně deleguje.
+- **U16 — základní adresa v kontrolerech.** Kontrolery nemají
+  `ResolvedDataSource`, jen konfiguraci a příznak. `RequestBaseUrl` má
+  proto `for(Request, ResolvedDataSource)` a `of(Request, string $dsId,
+  bool $pathAddressed)`. Cesta bez tvaru ID se ve vývoji řeší hostem —
+  i pro IP tedy `UNKNOWN_HOST` místo dřívějšího `UNKNOWN_DATASOURCE`.
+- **U17 — sonda před prohlížečem.** `E2ePreflight::httpStatus()` sahá na
+  `--base-url` přes curl dřív než Playwright; výjimka z ověření certifikátu
+  podle U13 platí i pro ni (stejné zdůvodnění — cíl je připíchnutý).
+- **U18 — stránka Most.** Hlášku o zabezpečeném kontextu dnes nese jen
+  simulace v aplikaci (`native.mock.insecure`), která vstupy nezná. Stránka
+  Most v dashboardu dostane vlastní `Notice` s odkazem na https vstup.
+- **U19 — práva `dev-host/`.** `PermissionSpec` hlídá adresáře `tls/`
+  a soubory `dev-ip/`; soubory v `dev-host/` ne, aby `fix-permissions`
+  nesahal na cíle symlinků.
+- **U20 — obnova certifikátu pro IP kvůli adresám.** Jen když některá
+  aktuální adresa serveru v SAN **chybí**; adresa navíc (zaniklá dočasná
+  IPv6) obnovu nespustí. Totéž pravidlo má `doctor` (upřesňuje U5 a U11).
+- **U21 — cizí `default_server` na 443.** `dev-https` blok pro IP
+  nevytvoří, vypíše varování a skončí úspěšně; `--check` konflikt nepočítá
+  jako potřebu běhu. Trvale ho hlásí `doctor` varováním.
+- **U22 — selhání `dev-https` v `upgrade`.** Upgrade se nepřeruší:
+  selhání se vypíše v souhrnu, `doctor` proběhne a upgrade skončí nenulově.
 
 ## Rozsah
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
+use Shipard\Api\RequestBaseUrl;
 use Shipard\Api\Response;
 use Shipard\Api\SessionService;
 use Shipard\Core\Auth\GithubOauthClient;
@@ -38,7 +39,7 @@ class OidcController
 
 	public function __construct(
 		private readonly DataSourceConfig $config,
-		private readonly bool $devMode,
+		private readonly bool $pathAddressed,
 		private readonly SessionService $sessions = new SessionService(),
 		private readonly IdentityMapper $mapper = new IdentityMapper(),
 		private readonly ?OidcClient $client = null,
@@ -242,12 +243,10 @@ class OidcController
 		return $this->github ?? new GithubOauthClient();
 	}
 
-	/** Absolutní base URL požadavku vč. dev prefixu `/{ds-id}`. */
+	/** Absolutní base URL požadavku — schéma z požadavku, prefix `/{ds-id}` při adresování cestou. */
 	private function baseUrl(Request $request): string
 	{
-		$scheme = $this->devMode ? 'http' : 'https';
-		$prefix = $this->devMode ? '/' . $this->config->getId() : '';
-		return $scheme . '://' . $request->getHost() . $prefix;
+		return RequestBaseUrl::of($request, $this->config->getId(), $this->pathAddressed);
 	}
 
 	private function callbackUri(Request $request): string

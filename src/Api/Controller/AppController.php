@@ -141,7 +141,7 @@ class AppController
      * GET /_app/manifest — web app manifest (PWA, tasks/pwa-v1.md, #52).
      *
      * Manifest-only (bez service workeru). Per-DS jméno, ikony zatím statická
-     * defaultní sada z buildu. `$devMode` = DS ID v cestě (`/{ds-id}/app/`),
+     * defaultní sada z buildu. `$pathAddressed` = DS ID v cestě (`/{ds-id}/app/`),
      * prod bez prefixu (`/app/`) — rozhoduje DataSourceResolver, ne parsování
      * URL tady.
      *
@@ -149,12 +149,12 @@ class AppController
      * resolvoval proti URL manifestu (`…/api/v1/_app/manifest`), ne proti
      * `scope`. `start_url`/`scope`/`id` musí být absolutní ze stejného důvodu.
      */
-    public function manifest(bool $devMode): Response
+    public function manifest(bool $pathAddressed): Response
     {
         $values = $this->settings->getMany(['app.name', 'app.shortName']);
         [$name, $shortName] = $this->resolveNames($values);
 
-        $base = $devMode ? '/' . $this->config->getId() : '';
+        $base = $pathAddressed ? '/' . $this->config->getId() : '';
         $app  = $base . '/app/';
 
         $icon = static fn (string $file, string $size, ?string $purpose = null): array => array_filter([
