@@ -1,6 +1,6 @@
 # Nativní aplikace — task 1: kontrakt mostu a dokumentace (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci
+**Stav:** hotovo — dokumentace hotová 2026-11-27 ve čtyřech commitech (#177 D21–D32, U1–U10, U16); odchylky od osnovy odsouhlasené při plánování jsou na konci zadání
 
 > Task pro Claude Code (4 commity). **Jen dokumentace, žádný kód.**
 > Design: issue #177 — D1–D20 v těle issue, D21–D31 v komentáři.
@@ -432,16 +432,47 @@ tiskové úlohy a ESC/POS (4), aplikace (5), profily a PIN (6),
 
 ## Hotovo když
 
-- [ ] `docs/native-bridge.md` existuje se statusem, verzí 1 a historií
+- [x] `docs/native-bridge.md` existuje se statusem, verzí 1 a historií
       změn; pokrývá všechny metody a události D22 + U1, U2, registr
       capabilities, chybové kódy, tiskovou úlohu, profily tiskáren,
       podepsaná volání a endpointy zařízení, profily / zařazení / PIN /
       zamčení, bezpečnost a stav implementace
-- [ ] tvary JSON v dokumentu odpovídají tomuto tasku; žádné pole bez popisu
-- [ ] `docs/services.md` má kategorii Klientská aplikace jako kap. 11a,
+- [x] tvary JSON v dokumentu odpovídají tomuto tasku; žádné pole bez popisu
+- [x] `docs/services.md` má kategorii Klientská aplikace jako kap. 11a,
       stávající kapitoly nepřečíslované, řádek `shipard-app` v kap. 14
-- [ ] roadmapa a přehled funkcí podle U9 a U10, záznam v Historii revizí
-- [ ] `docs/README.md`, `CLAUDE.md` a `tasks/README.md` odkazují na nový
+- [x] roadmapa a přehled funkcí podle U9 a U10, záznam v Historii revizí
+- [x] `docs/README.md`, `CLAUDE.md` a `tasks/README.md` odkazují na nový
       dokument a novou oblast
-- [ ] `python3 scripts/tasks-index.py --check` projde
-- [ ] žádné názvy reálných zdrojů dat, firem ani osob (`scripts/check-sensitive.py`)
+- [x] `python3 scripts/tasks-index.py --check` projde
+- [x] žádné názvy reálných zdrojů dat, firem ani osob (`scripts/check-sensitive.py`)
+
+## Odchylky od osnovy
+
+Odsouhlasené při plánování 2026-11-27:
+
+- **`POST /_devices/challenge` podle U20**, ne „veřejné, omezení
+  četnosti“: účel `register` jen se session administrátora, ostatní účely
+  jen registrovanému aktivnímu zařízení, nejvýš 5 nevyužitých výzev
+  (`RATE_LIMITED`), výzva 32 bajtů v base64url. U20 je schválené s taskem 3
+  a kontrakt by se jinak hned přepisoval.
+- **HTTP stavy chybových kódů zařízení** (§7.2) — osnova je neuváděla.
+  Jsou to návrhy kontraktu, ne rozhodnutí z #177; task 3 a 6 je buď
+  dodrží, nebo kontrakt změní s novým záznamem v Historii změn.
+- **Doplněné hodnoty a tvary**, které osnova neurčila a „žádné pole bez
+  popisu“ je žádá: `state` v `GET /_devices/self` (ve verzi 1 jen
+  `active`), `symbology` (malými písmeny, otevřený seznam), odpovědi
+  `POST /_devices/register` (`{deviceId, name, mode, state}`),
+  `PUT /_devices/self/peripherals` (`{count}`) a `POST /_devices/enroll`
+  (`{status: "enrolled"}`), `errorCode` výsledku tiskové úlohy, pravidlo
+  pro chyby serveru na mostu (jmenovaný kód projde, ostatní
+  `SERVER_ERROR` s `details`).
+- **Označení rozhodnutí** v commitu 1 a v řádku `tasks/README.md` je
+  D21–D32 a U16 (zadání uvádělo D21–D31), shodně s Historií změn.
+- Hodnoty `mock` pro `platform` a `keyStorage` kontrakt neuvádí — doplní
+  je task 2 v oddílu Simulace pro vývoj; kontrakt jen říká, že se obě
+  strany vyrovnají s neznámou hodnotou výčtu (§2.4).
+
+**Otevřené pro další tasky:** kontrakt neříká, jak se registrace chová
+u zařízení v režimu `personal`, které pracuje s víc zdroji dat (D13 mluví
+o výběru zdroje dat přes portál, `info.mode` je jedna hodnota). Patří do
+návrhu tasku 5.

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 496 tasků: **naplánováno** 7 · **částečně** 26 · **zrušeno** 1 · **hotovo** 462.
+Celkem 496 tasků: **naplánováno** 6 · **částečně** 26 · **zrušeno** 1 · **hotovo** 463.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
-| `native-bridge-contract.md` | naplánováno | rozhodnutí #177 D1–D32 a upřesnění U1–U10, U16 (schválená 2026-11-26), připraveno k implementaci |
 | `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
 | `native-frontend-bridge.md` | naplánováno | rozhodnutí #177 D6, D10, D21, D22, D29, D32, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -294,6 +293,18 @@ referenční dokument `docs/prints.md` (od Fáze 1).
 | `prints-look.md` | — | Vzhled tisku dokladů podle typografických rolí designového systému, bez rámečku Odběratele, kontakty vlastní firmy v zápatí s přepínači na stránce Tisky, typ pole `checkbox` v nastavení, web a datová schránka ve snapshotu strany (#162 D125–D134, přebírá #100) |
 | `prints-look-fixes.md` | — | Úpravy vzhledu tisku po prokliku: světlejší čáry, tučná hodnota splatnosti a VS, větší nadpisy stran, mezinadpis `section` na stránkách nastavení, web a datová schránka vedle sebe ve formuláři Osoby (#162 D135–D140) |
 | `persons-document-options.md` | — | Jazyk dokumentů na osobě (odvození podle země, živě), spojování příloh, příznak přílohy „odeslat s dokladem“ (#94 D1–D11) |
+
+## Nativní aplikace (#177)
+
+Nativní aplikace Shipardu pro macOS a iPadOS: okno s WebView, ve kterém
+běží běžný Shipard, a device hub pro periferie (POS tiskárny, čtečky,
+sdílená pracoviště s PINem). Aplikace žije v repu `shipard-app`, webová
+strana a server tady. Design issue #177, kontrakt mezi oběma stranami
+`docs/native-bridge.md`.
+
+| Task | Č. | Co řeší |
+|------|----|---------|
+| `native-bridge-contract.md` | 1 | Kontrakt mostu a zařízení verze 1, kategorie Klientská aplikace ve standardu komponent, roadmapa a přehled funkcí (#177 D21–D32, U1–U10, U16) |
 
 ## Výměnný formát a import ze starého Shipardu
 
