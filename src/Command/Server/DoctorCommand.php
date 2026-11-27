@@ -753,16 +753,7 @@ class DoctorCommand extends Command
      */
     protected function detectShipardSocket(): ?string
     {
-        foreach (glob($this->getPoolConfigGlob()) ?: [] as $file) {
-            $content = @file_get_contents($file);
-            if ($content === false) {
-                continue;
-            }
-            if (preg_match('/^\s*listen\s*=\s*(\S+)/m', $content, $m)) {
-                return $m[1];
-            }
-        }
-        return null;
+        return \Shipard\Core\Server\FpmPool::shipardSocket($this->getPoolConfigGlob());
     }
 
     protected function getRepoRoot(): string

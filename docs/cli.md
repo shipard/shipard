@@ -94,6 +94,13 @@ mode 0640), vygeneruje admin DB credentials (uživatel pro `CREATE DATABASE` /
 `CREATE USER`). Spouští se **jednou** při instalaci serveru, typicky po
 `scripts/install-packages.sh`.
 
+Nová instalace v režimu `development` dostane do `server.json` sekci
+`"devAccess": {"httpsIp": true}` — https na IP adrese serveru (#183 D3);
+certifikát a site nginx pak vyrobí `sudo shpd-server dev-https`. Ve WSL se
+sekce nezapíše (prohlížeč ve Windows chodí přes `localhost`, který je
+zabezpečený kontext i bez certifikátu). Existující `server.json` příkaz
+nemění, takže stávající servery zůstávají u http, dokud sekci nedoplníš.
+
 | Opce | Význam |
 |------|--------|
 | `--mode <development\|production>` | Operační režim. Zapíše se do `server.json` jako `mode`. Default: `development`. |
@@ -346,7 +353,9 @@ neexistuje, je to první instalace a vypne cron existujícím zdrojům dat,
 bash completion obou binárek) → reload služeb (jen při změně verzovaných
 systémových confů: `docs/nginx/**` → `nginx -t && systemctl reload nginx`,
 `docs/php/**` → `systemctl reload php<ver>-fpm`; jen pod rootem, jinak
-vypíše ruční příkazy) → `doctor`.
+vypíše ruční příkazy) → `dev-https` (jen v režimu `development` a pod
+rootem — obnova certifikátu pro IP a site souboru https vstupů, #183 U3)
+→ `doctor`.
 Každý krok běží jako subproces — příkaz aktualizuje kód, ze kterého sám běží,
 takže orchestrátor od pullu dál nenačítá žádné nové třídy; `ds-upgrade-all`
 i `doctor` už běží z nové verze.
@@ -357,6 +366,9 @@ vypíše příchozí commity. Bez příchozích commitů (a bez `--full`) skonč
 selhání doctoru vrátí FAILURE, ale kód zůstává nasazený. Selhání reload
 kroku (typicky `nginx -t` nad rozbitým site configem) taky — kód je
 nasazený, rozbitý je jen config služby; příkaz vypíše ruční reload příkazy.
+Selhání kroku `dev-https` běh **nepřeruší** (typicky jen chybí certifikát
+pro jméno): `doctor` proběhne, souhrn se vypíše a upgrade skončí FAILURE
+s radou `sudo shpd-server dev-https` (#183 U22).
 Summary: `Upgraded <old> → <new> (<N> commits)`.
 
 Uživatelé: pod rootem běží kroky přes `sudo -u shipard -H`, doctor přímo.
@@ -504,6 +516,79 @@ existujícího souboru (nová šablona, jiné cesty) je nemění.
 | `--dry-run` | Vypíše cíl a rendrovaný obsah; u první instalace mimo produkci i seznam zdrojů dat (`cron on → off` / `cron off (unchanged)` / `state.json unusable — skipped`). Nic nezapíše. Lze bez sudo. |
 | `--check` | Pro skripty (`dev-update.sh`): exit `0` = soubor existuje a odpovídá šabloně, `1` = chybí nebo se liší. Bez výstupu, bez sudo; má přednost před `--dry-run`. |
 | `--keep-ds-cron` | První instalace mimo produkci nesáhne na zdroje dat (stroj jen s ukázkovými daty, skripty). |
+
+### `dev-https [--check]`
+
+```bash
+sudo shpd-server dev-https               # certifikát pro IP, site shipard-https.conf, nginx -t + reload
+shpd-server dev-https --check            # pro skripty: exit 1 = běh by něco změnil; bez výstupu, bez sudo
+shpd-server dev-https --check -v         # totéž s důvody
+```
+
+https vstupy vývojového serveru (#183 D3, D4, D6). Jen režim `development`,
+běží jako root, idempotentní. Řídí ho sekce `devAccess`
+v `/etc/shipard/server.json` (výklad `Shipard\Core\Server\DevAccess`):
+
+```json
+"devAccess": {
+    "httpsIp": true,
+    "host": "shpd.example.com",
+    "preferred": "https-host",
+    "ip": "10.0.0.7"
+}
+```
+
+| Klíč | Význam |
+|------|--------|
+| `httpsIp` | `https://<IP>/<ID>/` se self-signed certifikátem. Chybějící sekce = `false`; `server-init --mode=development` ho v nové instalaci mimo WSL zapíše jako `true`. |
+| `host` | Volitelné jméno pro `https://<jméno>/<ID>/`. Certifikát dodává vývojář. |
+| `preferred` | `http-ip` \| `https-ip` \| `https-host` — který vstup nabízet jako výchozí; bez klíče nejvyšší zapnutý (`https-host` → `https-ip` → `http-ip`). |
+| `ip` | Volitelný přepis adresy pro odkazy (server s víc rozhraními, NAT). Jinak první dosažitelná adresa rozhraní, IPv4 před IPv6. |
+
+`http://<IP>/<ID>/` funguje vždy. Chybná hodnota se nepoužije a hlásí ji
+příkaz i `doctor`; v režimu `production` se sekce nepoužije vůbec.
+
+Co běh dělá:
+
+1. **Certifikát pro IP** (`/etc/shipard/tls/dev-ip/fullchain.pem`
+   + `privkey.pem`): klíč EC P-256, SAN = všechny dosažitelné adresy
+   rozhraní serveru (IPv4 i IPv6, bez loopbacku a link-local) a přepis
+   `ip`, `CA:FALSE`, `serverAuth`, CN `Shipard dev <hostname>`, platnost
+   397 dní; vyrábí ho `openssl` CLI z vlastního konfiguračního souboru.
+   **Obnoví se**, když zbývá méně než 30 dní, když některá adresa serveru
+   v SAN **chybí** (adresa v certifikátu navíc obnovu nespouští — zaniklá
+   dočasná IPv6, U20), nebo když chybí či nesedí klíč. Nový certifikát
+   znamená v prohlížeči nové varování — jednou ho proklikni.
+2. **Certifikát pro jméno** (`/etc/shipard/tls/dev-host/`, oba soubory smí
+   být symlink — certbot apod.) příkaz nevyrábí, jen ověří: existuje, sedí
+   ke klíči a SAN nese jméno (i zástupným znakem pro jeden štítek). Když
+   ne, blok pro jméno **nevznikne**, příkaz vypíše, kam soubory dát,
+   a skončí `FAILURE`; vstup přes IP tím dotčený není.
+3. **Site soubor** `/etc/nginx/sites-available/shipard-https.conf` ze
+   šablony `docs/nginx/development-https.conf` (`Core\Server\DevHttpsSite`):
+   blok pro IP (`default_server` na 443) a blok pro jméno podle zapnutých
+   vstupů, `listen [::]:443` jen se zapnutým IPv6, socket poolu `shipard`
+   stejně jako `install-packages.sh`; odkaz v `sites-enabled`. Bez
+   zapnutého https vstupu odkaz i soubor **odstraní**.
+4. `nginx -t` a reload — jen když se něco změnilo. Při chybě `nginx -t`
+   vrátí předchozí stav site souboru a skončí `FAILURE`; http na IP běží dál.
+
+Když už jiný web na serveru má `default_server` na portu 443, blok pro IP
+nevznikne, příkaz to ohlásí a skončí **úspěšně** (U21); trvale to hlásí
+`doctor`. Řešení: odebrat `default_server` u toho webu, nebo vypnout
+`httpsIp`.
+
+`--check` nic nemění a root nepotřebuje: exit `1`, když by běh něco udělal
+(certifikát pro IP chybí, expiruje nebo nenese adresu serveru; site soubor
+chybí, je zastaralý nebo přebývá), jinak `0`. Chybějící certifikát pro
+jméno ani cizí `default_server` nepočítá — běh je nespraví. Mimo režim
+`development` vždy `0`. Rozhodování je společné s `doctor`
+(`Core\Server\DevHttpsPlanner`).
+
+Kdo ho volá: `scripts/dev-bootstrap.sh` po `server-init`, `shpd-server
+upgrade` ve vývoji před `doctor`; `scripts/dev-update.sh` jen vypíše
+připomínku, když `--check` selže. Po změně `devAccess` nebo po změně adresy
+stroje (Multipass) ho spusť ručně.
 
 ### `completion-install`
 
@@ -2904,6 +2989,10 @@ selže — `sudo shpd-server cron-install`; u chybějícího cron souboru
 s větou, že první instalace vypne cron existujícím zdrojům dat a vypíše je
 (#115 D6, U2). Připomínku potlačí proměnná `SHPD_DEV_UPDATE_NO_CRON_HINT=1`
 (nastavuje ji `dev-bootstrap.sh`, který cron instaluje sám o dva kroky dál).
+Stejně připomene `sudo shpd-server dev-https`, když `shpd-server dev-https
+--check` selže — certifikát pro IP chybí, expiruje nebo nenese adresu
+stroje, nebo je zastaralý site soubor https vstupů (#183 U3). Bez sekce
+`devAccess` kontrola projde a nic se nevypíše.
 
 Pro automatizaci přes git hooks:
 
@@ -2976,7 +3065,7 @@ curl -fsSL … | bash -s -- --with-ssh --ssh-pubkey-file <cesta>
 
 Vývojové prostředí jedním příkazem — skládá za sebe kroky z [`dev/linux-install.md`](dev/linux-install.md):
 checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
-`server-init` → `cron-install` → `git config core.hooksPath .githooks` →
+`server-init` → `cron-install` → `dev-https` → `git config core.hooksPath .githooks` →
 volitelné části (`--with-render`, `--with-testing`, `--with-ssh`) →
 `shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
 (Multipass, cloud-init `scripts/multipass/shipard-dev.yaml`) a Windows (WSL):

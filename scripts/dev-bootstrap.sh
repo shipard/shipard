@@ -4,7 +4,7 @@
 #
 # Glues the steps of docs/dev/linux-install.md together, it does not replace
 # them — fixes belong to install-packages.sh and docs/dev/linux-install.md:
-#   checkout → install-packages.sh → dev-update.sh → server-init → cron-install
+#   checkout → install-packages.sh → dev-update.sh → server-init → cron-install → dev-https
 #   → git hooks → render service (--with-render) → testing tools: ffmpeg,
 #   Playwright + Chromium for tests/e2e and tools/video-runner (--with-testing,
 #   implies --with-render) → SSH for remote-dev-bridge (--with-ssh) → doctor
@@ -581,7 +581,7 @@ run_doctor() {
 
 # ─── 12. Summary ─────────────────────────────────────────────────────────────
 print_summary() {
-    local host="localhost" ips=""
+    local host="localhost" ips="" scheme="http" https_note=""
 
     # WSL forwards localhost from Windows; elsewhere the first address of the
     # machine (Multipass: the address `multipass info` shows).
@@ -593,11 +593,21 @@ print_summary() {
         fi
     fi
 
+    # https on the IP address is active when dev-https enabled its nginx site
+    # with the default_server block (#183 D3).
+    if [ "$host" != "localhost" ] \
+        && grep -qs 'default_server' /etc/nginx/sites-enabled/shipard-https.conf; then
+        scheme="https"
+        https_note="
+                (self-signed certifikát — varování prohlížeče jednou proklikni;
+                 bez https a bez varování: http://$host/_dev/)"
+    fi
+
     cat <<EOF
 
 ==> Hotovo — vývojové prostředí Shipardu běží.
 
-    Dashboard:  http://$host/_dev/
+    Dashboard:  $scheme://$host/_dev/$https_note
     Checkout:   $TARGET_DIR
 
     Co dál:
@@ -667,6 +677,13 @@ main() {
     # visible in the run, the summary points to `shpd-server ds-cron`.
     step "Periodic jobs (shpd-server cron-install)"
     sudo shpd-server cron-install
+
+    # ─── 6b. https entries (#183 D3, D6). A new installation gets https on the
+    # IP address from server-init (not in WSL — localhost is a secure context
+    # there); the command makes the self-signed certificate and the nginx
+    # https site. Idempotent; with no https entry enabled it does nothing.
+    step "https entries (shpd-server dev-https)"
+    sudo shpd-server dev-https
 
     # ─── 7. pre-commit checks, dev-update.sh after git pull ──────────────────
     step "Git hooks"

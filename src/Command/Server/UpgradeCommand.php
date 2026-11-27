@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Orchestrace nasazení nové verze: git pull → composer → frontend build →
- * ds-upgrade-all → doctor. Tenký orchestrátor — každý krok běží jako
+ * ds-upgrade-all → (ve vývoji dev-https) → doctor. Tenký orchestrátor — každý krok běží jako
  * subproces (passthru), protože příkaz aktualizuje kód, ze kterého sám
  * běží: od `git pull` dál se v tomto procesu nesmí lazy-loadovat žádné
  * další třídy (nová verze na disku ≠ stará verze v paměti). Vše potřebné
@@ -269,6 +269,14 @@ class UpgradeCommand extends Command
             $euid !== 0 => '  [skip] php-fpm reload (not running as root)',
             default => '  [run]  php-fpm reload' . ($full ? ' (--full)' : ' (docs/php/ changed)'),
         });
+        // https vstupy vývojového serveru (#183 U3): obnova certifikátu pro IP
+        // a site souboru — jen ve vývoji, jen pod rootem.
+        $runDevHttps = $euid === 0 && $mode === 'development';
+        if ($mode === 'development') {
+            $output->writeln($runDevHttps
+                ? '  [run]  dev https'
+                : '  [skip] dev https (not running as root)');
+        }
         $output->writeln($runDoctor
             ? '  [run]  doctor'
             : '  [skip] doctor (not running as root)');
@@ -360,6 +368,17 @@ class UpgradeCommand extends Command
 
         $newHash = trim($this->git('rev-parse --short HEAD', $root, $sudoUser)['lines'][0] ?? '');
 
+        // Poslední krok před doctorem. Selhání upgrade nepřeruší (U22) —
+        // kód je nasazený, rozbitý je nejvýš https vstup; doctor proběhne.
+        $devHttpsFailed = false;
+        if ($runDevHttps) {
+            $this->writeStepBanner($output, 'dev https');
+            $devHttpsFailed = $this->runStep($shpdServer . ' dev-https') !== 0;
+            if (!$devHttpsFailed) {
+                $executed[] = 'dev https';
+            }
+        }
+
         $doctorFailed = false;
         if ($runDoctor) {
             $this->writeStepBanner($output, 'doctor');
@@ -393,6 +412,9 @@ class UpgradeCommand extends Command
             $output->writeln('<comment>Root-only steps skipped — run manually as root:</comment>');
             $output->writeln('  sudo shpd-server cron-install');
             $output->writeln('  sudo shpd-server completion-install');
+            if ($mode === 'development') {
+                $output->writeln('  sudo shpd-server dev-https');
+            }
             if ($plan['nginxReload']) {
                 $output->writeln('  sudo nginx -t && sudo systemctl reload nginx');
             }
@@ -401,8 +423,14 @@ class UpgradeCommand extends Command
             }
         }
 
+        if ($devHttpsFailed) {
+            $output->writeln('<error>Code deployed, but dev-https failed — the https entries of this development server need attention:</error>');
+            $output->writeln('  sudo shpd-server dev-https');
+        }
         if ($doctorFailed) {
             $output->writeln('<error>Code deployed, but doctor reported issues — inspect the output above.</error>');
+        }
+        if ($devHttpsFailed || $doctorFailed) {
             return Command::FAILURE;
         }
 

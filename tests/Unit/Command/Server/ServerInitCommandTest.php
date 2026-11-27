@@ -27,6 +27,7 @@ class TestableServerInitCommand extends ServerInitCommand
 {
     public bool $rootResult = false;
     public bool $mysqladminResult = true;
+    public bool $wsl = false;
     public ?string $lastMysqladminPassword = null;
     /** @var list<array{path: string, owner: string, group: string, mode: int}> */
     public array $ownershipApplied = [];
@@ -47,6 +48,11 @@ class TestableServerInitCommand extends ServerInitCommand
     protected function isRunningAsRoot(): bool
     {
         return $this->rootResult;
+    }
+
+    protected function isWsl(): bool
+    {
+        return $this->wsl;
     }
 
     protected function generatePassword(): string
@@ -201,6 +207,9 @@ class ServerInitCommandTest extends TestCase
         $this->assertSame('root', $config['admin_user']);
         $this->assertSame('development', $config['mode']);
         $this->assertSame('TestPassword1234567890!@#$%^&*', $config['admin_password']);
+        // Nová vývojová instalace mimo WSL dostane https na IP (#183 D3, U2).
+        $this->assertSame(['httpsIp' => true], $config['devAccess']);
+        $this->assertStringContainsString('sudo shpd-server dev-https', $tester->getDisplay());
 
         // Ownership was applied: config dir + config file, owner=root, group=user
         $applied = $command->ownershipApplied;
@@ -220,6 +229,48 @@ class ServerInitCommandTest extends TestCase
             'group' => $byPath[$this->tempConfigPath]['group'],
             'mode' => $byPath[$this->tempConfigPath]['mode'],
         ]);
+    }
+
+    public function testDevelopmentInitInWslLeavesHttpsOff(): void
+    {
+        // U12: ve WSL chodí prohlížeč přes localhost — zabezpečený kontext bez certifikátu.
+        $command = new TestableServerInitCommand($this->tempConfigPath);
+        $command->rootResult = true;
+        $command->wsl = true;
+
+        $tester = $this->createTester($command);
+        $this->assertSame(0, $tester->execute(['--mode' => 'development', '--user' => $this->existingUser()]));
+
+        $config = json_decode(file_get_contents($this->tempConfigPath), true);
+        $this->assertArrayNotHasKey('devAccess', $config);
+        $this->assertStringNotContainsString('dev-https', $tester->getDisplay());
+    }
+
+    public function testProductionInitHasNoDevAccess(): void
+    {
+        $command = new TestableServerInitCommand($this->tempConfigPath);
+        $command->rootResult = true;
+
+        $tester = $this->createTester($command);
+        $this->assertSame(0, $tester->execute(['--mode' => 'production', '--user' => $this->existingUser()]));
+
+        $config = json_decode(file_get_contents($this->tempConfigPath), true);
+        $this->assertSame('production', $config['mode']);
+        $this->assertArrayNotHasKey('devAccess', $config);
+    }
+
+    public function testAlreadyInitializedServerKeepsItsConfig(): void
+    {
+        // Stávající server se bez zásahu nezmění — žádné devAccess dodatečně.
+        file_put_contents($this->tempConfigPath, '{"host":"127.0.0.1","port":3306,"admin_user":"root","admin_password":"x","mode":"development"}');
+        $before = file_get_contents($this->tempConfigPath);
+        $command = new TestableServerInitCommand($this->tempConfigPath);
+        $command->rootResult = true;
+
+        $tester = $this->createTester($command);
+        $this->assertSame(0, $tester->execute(['--mode' => 'development', '--user' => $this->existingUser()]));
+
+        $this->assertSame($before, file_get_contents($this->tempConfigPath));
     }
 
     public function testInitInstallsShellCompletion(): void

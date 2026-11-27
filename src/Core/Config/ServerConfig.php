@@ -20,7 +20,7 @@ class ServerConfig
     public const array CORE_KEYS = [
         'host', 'port', 'admin_user', 'admin_password', 'mode',
         'domainsFile', 'dataSources', 'logFile', 'logLevel', 'extraModulesPath',
-        'mail', 'render', 'devAi', 'hosting',
+        'mail', 'render', 'devAi', 'hosting', 'devAccess',
     ];
 
     private array $data = [];
@@ -206,6 +206,17 @@ class ServerConfig
             throw new \RuntimeException("Server config 'devAi' must be an object");
         }
         return DevAiConfig::fromArray($devAi);
+    }
+
+    /**
+     * Vstupy vývojového serveru (#183 D3, U2) — surová volitelná sekce
+     * `devAccess`; null = sekce chybí. Vykládá ji jen
+     * {@see \Shipard\Core\Server\DevAccess} (výchozí hodnoty, chybné
+     * hodnoty, režim serveru), proto tady bez kontroly typu.
+     */
+    public function getDevAccess(): mixed
+    {
+        return $this->data['devAccess'] ?? null;
     }
 
     /**

@@ -35,7 +35,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `ai-bedrock-eu.md` | částečně | kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); ověření 1–7 s reálným klíčem odloženo: přihlášení klíčem i tvar chyb ověřeny, ale testovací účet AWS nemá přístup k žádnému modelu Anthropicu (403 „not available for this account“ i přímo v konzoli AWS) — řeší se na straně AWS; po zpřístupnění stačí `shpd-ds ai-test` a body 2–5, 7, výsledek do #85 |
-| `dev-https.md` | částečně | hotové commity 1–2 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, 2026-11-27); zbývají commity 3–6 (`devAccess` + `dev-https`, `doctor`, dashboard, návody) a kroky s rootem |
+| `dev-https.md` | částečně | hotové commity 1–3 ze 6 (resolver podle režimu serveru, `RequestBaseUrl`, šablony nginx a TLS bez HSTS, `devAccess` a `shpd-server dev-https`, 2026-11-27); zbývají commity 4–6 (`doctor`, dashboard, návody) a kroky s rootem |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |

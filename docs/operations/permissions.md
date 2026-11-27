@@ -29,6 +29,11 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/etc/shipard/server.json` | `root` | shipard-user | `0640` | admin DB credentials |
 | `/etc/shipard/secrets/` | shipard-user | shipard-user | `0700` | (volitelné — jen vývojový server) serverové klíče pro vývoj; obsah nejvýš `0600` |
 | `/etc/shipard/secrets/dev-ai-<platforma>.key` | shipard-user | shipard-user | `0600` | serverový AI klíč pro vývojové DS (`shpd-server dev-ai-key`, #103 D40); čte ho runtime, proto shipard-user, ne root |
+| `/etc/shipard/tls/` | `root` | shipard-user | `0750` | (volitelné — jen vývojový server) certifikáty https vstupů, #183 U4 |
+| `/etc/shipard/tls/dev-ip/` | `root` | shipard-user | `0750` | self-signed certifikát pro IP; vyrábí a obnovuje ho `shpd-server dev-https` |
+| `/etc/shipard/tls/dev-ip/fullchain.pem` | `root` | shipard-user | `0644` | čte ho `doctor` a `dev-https --check` bez roota |
+| `/etc/shipard/tls/dev-ip/privkey.pem` | `root` | `root` | `0600` | čte ho jen nginx master (root) |
+| `/etc/shipard/tls/dev-host/` | `root` | shipard-user | `0750` | certifikát pro jméno dodává vývojář; `fullchain.pem` a `privkey.pem` smí být symlink (certbot) — soubory uvnitř kontrakt nehlídá |
 | `/opt/shipard/` | shipard-user | shipard-user | `0751` | root datový adresář; `others=x` aby nginx mohl traversovat do `/opt/shipard/shpd/public` |
 | `/opt/shipard/data-sources/` | shipard-user | shipard-user | `0750` | parent všech DS |
 | `/opt/shipard/data-sources/<id>/` | shipard-user | shipard-user | `0750` | per-DS root |
@@ -140,6 +145,19 @@ zůstává, [hosting.md](../hosting.md) §5.2). Soubory zakládané `SecretsFile
 (`secrets.key` při `ds-create` / `ds-upgrade`, klíče hostingu) srovnává
 jeho `alignOwnership()` podle kořene zdroje dat — pod rootem chownuje,
 jinak jen varuje.
+
+### Certifikáty https vstupů vývojového serveru
+
+`/etc/shipard/tls/` zakládá `sudo shpd-server dev-https` (#183 U4). Klíč
+certifikátu pro IP je `root:root 0600` — PHP-FPM ani CLI pod shipard-userem
+ho nečtou, potřebuje ho jen nginx master. Proto `doctor` bez roota čte jen
+`fullchain.pem` (platnost, SAN) a shodu klíče s certifikátem ověřuje jen
+pod rootem; při běhu ji hlídá `dev-https` a `nginx -t`.
+
+Soubory v `dev-host/` jsou věc vývojáře a smí to být symlinky do adresáře,
+kam shipard-user nedosáhne (certbot `live/`). `fix-permissions` na ně
+nesahá — hlídá jen adresář. Certifikát, který kvůli tomu `doctor` nepřečte,
+hlásí jako varování s radou spustit `sudo shpd-server doctor`.
 
 ### Recursive ownership
 

@@ -76,6 +76,13 @@ class ServerInitCommand extends Command
             'admin_password' => $password,
             'mode'           => $mode,
         ];
+        // Nová vývojová instalace dostane https na IP (#183 D3, U2). Ve WSL
+        // ne — prohlížeč ve Windows chodí přes localhost, a ten je
+        // zabezpečený kontext sám o sobě (U12). Existující server.json se
+        // nemění (větev výše), takže stávající servery zůstávají u http.
+        if ($mode === 'development' && !$this->isWsl()) {
+            $config['devAccess'] = ['httpsIp' => true];
+        }
         file_put_contents($this->serverConfigPath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         $this->applyConfigOwnership($user, $output);
@@ -85,12 +92,22 @@ class ServerInitCommand extends Command
         $output->writeln("  Mode:    <comment>{$mode}</comment>");
         $output->writeln("  User:    <comment>{$user}</comment>");
         $output->writeln("  Config:  <comment>{$this->serverConfigPath}</comment>");
+        if (isset($config['devAccess'])) {
+            $output->writeln('  https:   <comment>devAccess.httpsIp is on — finish with: sudo shpd-server dev-https</comment>');
+        }
         return Command::SUCCESS;
     }
 
     protected function isRunningAsRoot(): bool
     {
         return posix_getuid() === 0;
+    }
+
+    /** WSL podle jádra (`microsoft` / `wsl` v osrelease) — stejné pravidlo jako `dev-bootstrap.sh`. */
+    protected function isWsl(): bool
+    {
+        $release = @file_get_contents('/proc/sys/kernel/osrelease');
+        return is_string($release) && preg_match('/microsoft|wsl/i', $release) === 1;
     }
 
     protected function defaultShipardUser(string $mode): ?string

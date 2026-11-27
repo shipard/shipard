@@ -107,3 +107,15 @@ if [ -z "${SHPD_DEV_UPDATE_NO_CRON_HINT:-}" ] && command -v shpd-server >/dev/nu
     fi
     echo ""
 fi
+
+# https entries of the development server (#183 U3): the certificate for the
+# IP address is missing, expiring or does not cover an address of this machine,
+# or the nginx https site is outdated → remind. The check is silent and needs
+# no root; without devAccess in server.json (or without server.json) it passes.
+if command -v shpd-server >/dev/null 2>&1 && ! shpd-server dev-https --check >/dev/null 2>&1; then
+    echo "==> https vstupy vývojového serveru potřebují obnovit (certifikát pro IP"
+    echo "    nebo site soubor nginx) — spusť:"
+    echo ""
+    echo "        sudo shpd-server dev-https"
+    echo ""
+fi

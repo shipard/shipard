@@ -376,14 +376,81 @@ class UpgradeCommandTest extends TestCase
         $tester = new CommandTester($cmd);
 
         $this->assertSame(0, $tester->execute([]));
-        // pull, ds-upgrade-all, cron install, completion install, nginx reload, fpm reload, doctor
-        $this->assertCount(7, $cmd->stepLog);
+        // pull, ds-upgrade-all, cron install, completion install, nginx reload, fpm reload,
+        // dev https (development — poslední krok před doctorem, #183 U3), doctor
+        $this->assertCount(8, $cmd->stepLog);
         $this->assertStringContainsString('ds-upgrade-all', $cmd->stepLog[1]);
         $this->assertStringContainsString('cron-install', $cmd->stepLog[2]);
         $this->assertStringContainsString('completion-install', $cmd->stepLog[3]);
         $this->assertSame('nginx -t && systemctl reload nginx', $cmd->stepLog[4]);
         $this->assertSame('systemctl reload php8.5-fpm', $cmd->stepLog[5]);
-        $this->assertStringContainsString('doctor', $cmd->stepLog[6]);
+        $this->assertStringEndsWith("/bin/shpd-server' dev-https", $cmd->stepLog[6]);
+        $this->assertStringNotContainsString('sudo', $cmd->stepLog[6]);
+        $this->assertStringContainsString('doctor', $cmd->stepLog[7]);
+    }
+
+    // --- dev https (#183 U3, U22) ---
+
+    public function testDevelopmentRootRunsDevHttpsRightBeforeDoctor(): void
+    {
+        $cmd = new TestableUpgradeCommand($this->repoRoot, euid: 0, currentUser: 'root', shipardUser: 'dev');
+        $cmd->captureMap = $this->happyCaptureMap();
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(0, $tester->execute([]));
+        $count = count($cmd->stepLog);
+        $this->assertStringEndsWith("/bin/shpd-server' dev-https", $cmd->stepLog[$count - 2]);
+        $this->assertStringEndsWith("/bin/shpd-server' doctor", $cmd->stepLog[$count - 1]);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('[run]  dev https', $display);
+        $this->assertMatchesRegularExpression('/Steps: .*dev https, doctor/', $display);
+    }
+
+    public function testProductionNeverRunsDevHttps(): void
+    {
+        $cmd = new TestableUpgradeCommand($this->repoRoot, 'production', euid: 0, currentUser: 'root', shipardUser: 'shipard');
+        $cmd->captureMap = $this->happyCaptureMap();
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(0, $tester->execute([]));
+        foreach ($cmd->stepLog as $step) {
+            $this->assertStringNotContainsString('dev-https', $step);
+        }
+        $this->assertStringNotContainsString('dev https', $tester->getDisplay());
+    }
+
+    public function testDevelopmentNonRootSkipsDevHttpsAndPrintsHint(): void
+    {
+        $cmd = new TestableUpgradeCommand($this->repoRoot);
+        $cmd->captureMap = $this->happyCaptureMap();
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(0, $tester->execute([]));
+        foreach ($cmd->stepLog as $step) {
+            $this->assertStringNotContainsString('dev-https', $step);
+        }
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('[skip] dev https (not running as root)', $display);
+        $this->assertStringContainsString('sudo shpd-server dev-https', $display);
+    }
+
+    public function testDevHttpsFailureDoesNotStopTheUpgrade(): void
+    {
+        // U22: doctor proběhne, souhrn se vypíše, upgrade skončí nenulově.
+        $cmd = new TestableUpgradeCommand($this->repoRoot, euid: 0, currentUser: 'root', shipardUser: 'dev');
+        $cmd->captureMap = $this->happyCaptureMap();
+        $cmd->stepExitCodes = ['dev-https' => 1];
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(1, $tester->execute([]));
+        $this->assertStringEndsWith("/bin/shpd-server' doctor", $cmd->stepLog[count($cmd->stepLog) - 1]);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Upgraded abc1234', $display);
+        $this->assertStringContainsString('Code deployed, but dev-https failed', $display);
+        $this->assertStringContainsString('sudo shpd-server dev-https', $display);
+        $this->assertStringNotContainsString('upgrade aborted', $display);
+        $this->assertStringNotContainsString('doctor reported issues', $display);
+        $this->assertDoesNotMatchRegularExpression('/Steps: .*dev https/', $display);
     }
 
     public function testNonRootSkipsReloadAndPrintsHint(): void

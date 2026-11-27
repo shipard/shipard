@@ -45,6 +45,15 @@ final class PermissionSpec
             // Serverové klíče pro vývoj (dev-ai-<platforma>.key, tasks/testing-phase4.md D40):
             // čte je runtime, proto shipard-user; optional — produkce je nemá.
             ['path' => $this->configDir . '/secrets',     'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0700, 'optional' => true, 'recurse' => true, 'contentsMaxMode' => 0600],
+            // Certifikáty https vstupů vývojového serveru (#183 U4, U19): adresáře
+            // a pár pro IP vyrábí `dev-https`. Soubory v dev-host/ dodává vývojář
+            // a smí to být symlinky (certbot) — do kontraktu nepatří, jinak by
+            // fix-permissions sahal na jejich cíle. Klíč čte jen nginx master (root).
+            ['path' => $this->configDir . '/tls',                        'type' => 'dir',  'owner' => 'root', 'group' => 'user', 'mode' => 0750, 'optional' => true],
+            ['path' => $this->configDir . '/tls/dev-ip',                 'type' => 'dir',  'owner' => 'root', 'group' => 'user', 'mode' => 0750, 'optional' => true],
+            ['path' => $this->configDir . '/tls/dev-ip/fullchain.pem',   'type' => 'file', 'owner' => 'root', 'group' => 'user', 'mode' => 0644, 'optional' => true],
+            ['path' => $this->configDir . '/tls/dev-ip/privkey.pem',     'type' => 'file', 'owner' => 'root', 'group' => 'root', 'mode' => 0600, 'optional' => true],
+            ['path' => $this->configDir . '/tls/dev-host',               'type' => 'dir',  'owner' => 'root', 'group' => 'user', 'mode' => 0750, 'optional' => true],
             // /opt/shipard is 0751 (not 0750) so that nginx (www-data) can traverse
             // into /opt/shipard/shpd/public for SPA assets. Contents (data-sources,
             // log) keep 0750 so data is not readable by others.

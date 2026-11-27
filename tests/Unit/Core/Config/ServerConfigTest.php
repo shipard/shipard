@@ -116,6 +116,24 @@ class ServerConfigTest extends TestCase
         $this->assertSame($expected, $read);
     }
 
+    public function testGetDevAccessReturnsTheRawSection(): void
+    {
+        // #183 U2 — výklad dělá jen DevAccess, getter vrací surovou hodnotu.
+        $config = new ServerConfig($this->createConfig($this->baseConfig()));
+        $config->load();
+        $this->assertNull($config->getDevAccess());
+
+        $section = ['httpsIp' => true, 'host' => 'shpd.example.com', 'preferred' => 'https-host'];
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['devAccess' => $section]));
+        $config->load();
+        $this->assertSame($section, $config->getDevAccess());
+        $this->assertContains('devAccess', ServerConfig::CORE_KEYS);
+
+        $config = new ServerConfig($this->createConfig($this->baseConfig() + ['devAccess' => 'broken']));
+        $config->load();
+        $this->assertSame('broken', $config->getDevAccess(), 'chybný typ neshodí načtení — hlásí ho DevAccess');
+    }
+
     public function testGetDevAiDefaultsToAnthropicAndReadsTheSection(): void
     {
         // tasks/testing-phase4.md D40
