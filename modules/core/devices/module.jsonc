@@ -30,6 +30,20 @@
         "core_devices_peripherals"
     ],
 
+    // Příkazy `shpd-ds` (#177 U22): přehled zařízení a zneplatnění bez UI
+    // (ztracené zařízení, nedostupná aplikace); úklid výzev pro cron.
+    "commands": [
+        "Shipard\\Module\\Core\\Devices\\Command\\DeviceListCommand",
+        "Shipard\\Module\\Core\\Devices\\Command\\DeviceRevokeCommand",
+        "Shipard\\Module\\Core\\Devices\\Command\\DeviceChallengesPruneCommand"
+    ],
+
+    // Výzvy vznikají i v režimu jen pro čtení (zařízení se musí ověřit),
+    // proto se uklízejí i tam (U20).
+    "cronJobs": [
+        { "command": "device-challenges-prune", "slot": "five-minutes", "states": ["active", "read_only"] }
+    ],
+
     // Nastavení → Zařízení (#177 D13): panel Toto zařízení (registrace
     // z nativní aplikace nebo ze simulace mostu) a přehled zařízení. Viewer
     // nemá `navSection` — do hlavní navigace nepatří.

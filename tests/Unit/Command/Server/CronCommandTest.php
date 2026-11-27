@@ -133,7 +133,7 @@ class CronCommandTest extends TestCase
             'sales-registration-run',
         ],
         'two-minutes'  => [],
-        'five-minutes' => ['exchange-rates-download', 'sales-registration-reconcile', 'alerts-run'],
+        'five-minutes' => ['device-challenges-prune', 'exchange-rates-download', 'sales-registration-reconcile', 'alerts-run'],
         'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
         'weekly'       => ['alerts-prune'],
     ];
@@ -204,6 +204,9 @@ class CronCommandTest extends TestCase
                 ['command' => 'alerts-run', 'slot' => 'five-minutes', 'order' => 900],
                 ['command' => 'alerts-prune', 'slot' => 'weekly', 'states' => $cleanup],
             ]],
+            'core/devices'       => ['core.devices', ['core.system'], [
+                ['command' => 'device-challenges-prune', 'slot' => 'five-minutes', 'states' => $cleanup],
+            ]],
             'core/mail'          => ['core.mail', ['core.system'], [
                 ['command' => 'mail-outbox-run', 'slot' => 'minute'],
                 ['command' => 'mail-analysis-reap', 'slot' => 'minute'],
@@ -225,7 +228,7 @@ class CronCommandTest extends TestCase
                 ['command' => 'sales-registration-reconcile', 'slot' => 'five-minutes'],
             ]],
             'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts'], []],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.devices', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
         ];
         foreach ($defs as $path => [$id, $deps, $cronJobs]) {
             mkdir($root . '/' . $path, 0755, true);
@@ -514,7 +517,12 @@ class CronCommandTest extends TestCase
 
         [$cmd, $tester] = $this->makeTester();
         $tester->execute(['--slot' => 'five-minutes']);
-        $this->assertSame([], $cmd->callLog, 'alerts-run is active-only');
+        // Výzvy zařízení vznikají i v režimu jen pro čtení (#177 U20) —
+        // jejich úklid je tu jediná úloha; alerts-run a ostatní jen active.
+        $this->assertSame(
+            [['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'device-challenges-prune']],
+            $cmd->callLog,
+        );
 
         [$cmd, $tester] = $this->makeTester();
         $tester->execute(['--slot' => 'daily']);

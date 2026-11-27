@@ -35,6 +35,9 @@ class CronJobRegistryTest extends TestCase
         ],
         'two-minutes' => [],
         'five-minutes' => [
+            // úklid výzev zařízení (#177 U20) — i v režimu jen pro čtení,
+            // výzvy tam vznikají také
+            ['device-challenges-prune', 'core.devices', ['active', 'read_only']],
             // stahování kurzů před upozorněními — čerstvý zdroj dat nedostane
             // nález dřív, než poprvé stáhne
             ['exchange-rates-download', 'economy.exchangeRates', ['active']],
