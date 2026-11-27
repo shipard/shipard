@@ -47,7 +47,7 @@ final class ModuleProvisionerRules
 
     /**
      * Namespace tříd modulu (s koncovým zpětným lomítkem):
-     * `facility.buildings` → `Shipard\Module\Facility\Buildings\`.
+     * `economy.workOrders` → `Shipard\Module\Economy\WorkOrders\`.
      */
     public static function moduleNamespace(string $moduleId): string
     {

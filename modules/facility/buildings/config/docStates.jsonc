@@ -1,0 +1,113 @@
+{
+    // facility.buildings.docStates
+    //
+    // Stavy smlouvy (facility_buildings_contracts, #174 D9, D21) — sada jako
+    // u zakázek (economy.workOrders.docStates) s texty v rodě smlouvy. Dva
+    // koncové stavy v archivní skupině: Ukončená (doběhla) a Zrušená
+    // (nerealizovaná); oba mají mainState 4.
+    //
+    // Stavový automat:
+    //   Koncept   → V pořádku | Smazaná
+    //   V opravě  → V pořádku | Ukončená | Zrušená
+    //   V pořádku → V opravě | Ukončená | Zrušená
+    //   Ukončená  → V opravě
+    //   Zrušená   → V opravě
+    //   Smazaná   → Koncept
+    //
+    // Potvrzená smlouva se do Konceptu nevrací — číslo jí zůstává. Smazat
+    // jde jen koncept. Číslo přiděluje přechod Koncept → V pořádku
+    // (ContractDocument, D15); přechod do Ukončená / Zrušená doplní prázdné
+    // datum ukončení.
+
+    "10": {
+        "stateName": "Draft",
+        "stateName:cs": "Koncept",
+        "stateName:en": "Draft",
+        "actionName": "Save as draft",
+        "actionName:cs": "Uložit jako koncept",
+        "actionName:en": "Save as draft",
+        "stateStyle": "concept",
+        "mainState": 1,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 90]
+    },
+
+    "80": {
+        "stateName": "Being edited",
+        "stateName:cs": "V opravě",
+        "stateName:en": "Being edited",
+        "actionName": "Edit",
+        "actionName:cs": "Opravit",
+        "actionName:en": "Edit",
+        "stateStyle": "edit",
+        "mainState": 2,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 70, 30]
+    },
+
+    "40": {
+        "stateName": "Confirmed",
+        "stateName:cs": "V pořádku",
+        "stateName:en": "Confirmed",
+        "actionName": "Confirm",
+        "actionName:cs": "V pořádku",
+        "actionName:en": "Confirm",
+        "stateStyle": "done",
+        // Štítek stavu v hlavičce detailu se neukazuje (#136 D20): běžný
+        // stav bez proužku v seznamu, štítek by jen šuměl; formulář ho
+        // ukazuje dál.
+        "detailBadge": false,
+        "mainState": 3,
+        "viewGroup": "active",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80, 70, 30]
+    },
+
+    "70": {
+        "stateName": "Finished",
+        "stateName:cs": "Ukončená",
+        "stateName:en": "Finished",
+        "actionName": "Finish",
+        "actionName:cs": "Ukončit",
+        "actionName:en": "Finish",
+        "stateStyle": "archive",
+        "mainState": 4,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80]
+    },
+
+    "30": {
+        "stateName": "Cancelled",
+        "stateName:cs": "Zrušená",
+        "stateName:en": "Cancelled",
+        "actionName": "Cancel",
+        "actionName:cs": "Zrušit",
+        "actionName:en": "Cancel",
+        "stateStyle": "cancelled",
+        "mainState": 4,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80]
+    },
+
+    "90": {
+        "stateName": "Deleted",
+        "stateName:cs": "Smazaná",
+        "stateName:en": "Deleted",
+        "actionName": "Delete",
+        "actionName:cs": "Smazat",
+        "actionName:en": "Delete",
+        "stateStyle": "trash",
+        "mainState": 5,
+        "viewGroup": "trash",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [10]
+    }
+}

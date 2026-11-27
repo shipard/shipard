@@ -1,0 +1,56 @@
+{
+    // facility.buildings.contractTypes
+    //
+    // Typy smluv (#174 D4, D17). Typ je systémový, druh smlouvy
+    // (facility_buildings_contract_kinds) je uživatelský číselník, který typ
+    // nese. Čte jen ContractTypes — kód se nikdy neptá na klíč typu, jen na
+    // vlastnosti:
+    //
+    //   icon       klíč ikony (frontend iconMap) — řádek seznamu a druh
+    //   places     místa na smlouvě: required (povinná při potvrzení),
+    //              optional, none (smlouva místa nemá, pole je skryté)
+    //   placeTypes povolené typy míst (base.places.types); null = libovolné
+    //   seedCode   kód výchozího druhu (%C ve vzorci čísla) — typ bez něj
+    //              provisioner nezakládá (D19)
+    //   order      pořadí v nabídce
+    //
+    // Výchozí kód DPH řádků přibude ve fázi 2 (fakturace).
+
+    "office": {
+        "name": "Office", "name:cs": "Kancelář", "name:en": "Office",
+        "icon": "contract-office", "places": "required",
+        "placeTypes": ["room", "section"], "seedCode": "KA", "order": 10
+    },
+    "flat": {
+        "name": "Flat", "name:cs": "Byt", "name:en": "Flat",
+        "icon": "contract-flat", "places": "required",
+        "placeTypes": ["section", "room"], "seedCode": "BY", "order": 20
+    },
+    "retail": {
+        "name": "Retail space", "name:cs": "Obchodní prostor", "name:en": "Retail space",
+        "icon": "contract-retail", "places": "required",
+        "placeTypes": ["section", "room", "outdoor"], "seedCode": "OP", "order": 30
+    },
+    "storage": {
+        "name": "Storage", "name:cs": "Sklad", "name:en": "Storage",
+        "icon": "contract-storage", "places": "required",
+        "placeTypes": ["room", "section", "outdoor"], "seedCode": "SK", "order": 40
+    },
+    "parking": {
+        "name": "Parking", "name:cs": "Parkování", "name:en": "Parking",
+        "icon": "contract-parking", "places": "required",
+        "placeTypes": ["spot", "outdoor"], "seedCode": "PA", "order": 50
+    },
+    // Virtuální kancelář má místo — budovu nebo areál (místo s adresou),
+    // kvůli zařazení při více budovách na různých adresách (D13).
+    "virtualOffice": {
+        "name": "Virtual office", "name:cs": "Virtuální kancelář", "name:en": "Virtual office",
+        "icon": "contract-virtual-office", "places": "required",
+        "placeTypes": ["building", "site"], "seedCode": "VK", "order": 60
+    },
+    "other": {
+        "name": "Other", "name:cs": "Ostatní", "name:en": "Other",
+        "icon": "contract", "places": "optional",
+        "placeTypes": null, "seedCode": "OS", "order": 70
+    }
+}

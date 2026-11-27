@@ -1,0 +1,62 @@
+{
+    // Čítače čísel smluv (#174 D15, D18) — stejný model jako
+    // economy_work_orders_number_counters: řádek per (druh, rok), rok NULL
+    // = průběžný čítač druhu. Rok je kalendářní rok zahájení smlouvy. Čte
+    // a zapisuje jen SequenceCounter z ContractDocument; uživatel tabulku
+    // nevidí.
+    "tableId": 473,
+    "name": "Contract number counters",
+    "name:cs": "Počítadla čísel smluv",
+    "name:en": "Contract number counters",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{kind}/{year}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "kind",
+            "name": "Contract kind",
+            "name:cs": "Druh smlouvy",
+            "name:en": "Contract kind",
+            "type": "int",
+            "nullable": false,
+            "reference": "facility_buildings_contract_kinds"
+        },
+        {
+            "id": "year",
+            "name": "Year",
+            "name:cs": "Rok",
+            "name:en": "Year",
+            "type": "int",
+            "nullable": true
+        },
+        {
+            "id": "last_assigned",
+            "name": "Last assigned",
+            "name:cs": "Poslední přidělené",
+            "name:en": "Last assigned",
+            "type": "int",
+            "nullable": false,
+            "default": 0
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_kind_year",
+            "type": "unique",
+            "columns": [
+                {"column": "kind"},
+                {"column": "year"}
+            ]
+        }
+    ]
+}

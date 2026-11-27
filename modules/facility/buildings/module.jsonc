@@ -1,0 +1,63 @@
+{
+    // Budovy (#174): doplněk pro správu budovy. Fáze 1 = evidence nájemních
+    // smluv s místy z číselníku míst (base.places) — druhy smluv s typem,
+    // číslování per druh, stavy Ukončená / Zrušená. Fakturace smluv
+    // (fáze 2, zdroj periodické fakturace #175) a napojení na Místa (fáze 3)
+    // přijdou později. Doplněk: jádro o něm neví, ve zdroji dat se zapíná
+    // `shpd-ds ds-module enable facility.buildings`.
+    "id": "facility.buildings",
+    "name": "Buildings",
+    "name:cs": "Budovy",
+    "name:en": "Buildings",
+    "description": "Building management: lease contracts with places, contract kinds and numbering",
+    "description:cs": "Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování",
+    "description:en": "Building management: lease contracts with places, contract kinds and numbering",
+
+    "kind": "addon",
+
+    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places"],
+
+    "tables": [
+        "facility_buildings_contract_kinds",
+        "facility_buildings_number_counters",
+        "facility_buildings_contracts",
+        "facility_buildings_contract_places"
+    ],
+
+    // Vlastní sekce sidebaru a Nastavení (#174 D1, #170 D13) — vedle Zakázek.
+    "navSections": [
+        { "id": "buildings", "name": "Buildings", "name:cs": "Budovy", "name:en": "Buildings", "icon": "city", "order": 34 }
+    ],
+    "settingsSections": [
+        { "id": "buildings", "name": "Buildings", "name:cs": "Budovy", "name:en": "Buildings", "icon": "city", "order": 13 }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindDocument"
+        },
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractDocument"
+        }
+    ],
+
+    "lookups": [
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsLookup"
+        }
+    ],
+
+    // Výchozí druhy smluv (#174 D19, D28) — jeden druh na typ se seedovým kódem.
+    "provisioners": [
+        { "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsProvisioner" }
+    ],
+
+    "config": [
+        { "id": "facility.buildings.contractTypes", "file": "config/contractTypes.jsonc" },
+        { "id": "facility.buildings.docStates",     "file": "config/docStates.jsonc" },
+        { "id": "facility.buildings.resetScopes",   "file": "config/resetScopes.jsonc" }
+    ]
+}

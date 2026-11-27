@@ -1,0 +1,68 @@
+{
+    // Místa smlouvy (#174 D6, D20) — vazba smlouva × místo, víc míst na
+    // smlouvu. Child tabulka smlouvy (dataKey `places`), ve formuláři ji
+    // spravuje prvek `multilookup` (#176): pořadí drží `order_pos`. Tabulka,
+    // ne JSON sloupec — kvůli dotazům na obsazenost místa (překryv smluv,
+    // později záložka Smlouvy v detailu místa); proto index nad `place`.
+    "tableId": 475,
+    "name": "Contract places",
+    "name:cs": "Místa smlouvy",
+    "name:en": "Contract places",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{contract}/{place}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "contract",
+            "name": "Contract",
+            "name:cs": "Smlouva",
+            "name:en": "Contract",
+            "type": "int",
+            "nullable": false,
+            "reference": "facility_buildings_contracts"
+        },
+        {
+            "id": "place",
+            "name": "Place",
+            "name:cs": "Místo",
+            "name:en": "Place",
+            "type": "int",
+            "nullable": false,
+            "reference": "base_places_places"
+        },
+        {
+            "id": "order_pos",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "int",
+            "nullable": false,
+            "default": 0
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_contract",
+            "type": "index",
+            "columns": [
+                {"column": "contract"},
+                {"column": "order_pos"}
+            ]
+        },
+        {
+            "id": "idx_place",
+            "type": "index",
+            "columns": [{"column": "place"}]
+        }
+    ]
+}

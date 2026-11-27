@@ -1,0 +1,215 @@
+{
+    // Smlouva (#174 D6, D20–D22) — hlavička nájemní smlouvy. Druh je povinný
+    // a měnit jde jen v Konceptu; typ se z něj denormalizuje při uložení.
+    // Číslo přidělí potvrzení přes společný engine čísel — čítač per druh
+    // a kalendářní rok zahájení (`number_year`, u průběžného čítače NULL);
+    // importované číslo zůstává. Místa smlouvy jsou v child tabulce
+    // facility_buildings_contract_places (dataKey `places`, prvek
+    // `multilookup` ve formuláři). Fakturační pole, měna, VS a středisko
+    // přijdou ve fázi 2.
+    //
+    // Vlastní sada stavů s Ukončená a Zrušená; přechody stavu jdou přes
+    // Document lifecycle (číslo při potvrzení, datum ukončení).
+    "tableId": 474,
+    "name": "Contracts",
+    "name:cs": "Smlouvy",
+    "name:en": "Contracts",
+
+    "displayPattern": "{number} — {title}",
+    "exchangeKey": "number",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "facility.buildings.docStates"
+    },
+
+    "stateTransitionsRunDocumentHooks": true,
+
+    "childTables": [
+        { "table": "facility_buildings_contract_places", "foreignKey": "contract", "dataKey": "places" }
+    ],
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "validity",
+            "name": "Validity",
+            "name:cs": "Platnost",
+            "name:en": "Validity"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            // Po opuštění Konceptu neměnný — číslo, rok čítače a typ jsou
+            // od druhu odvozené.
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "int",
+            "nullable": false,
+            "reference": "facility_buildings_contract_kinds",
+            "group": "identity"
+        },
+        {
+            // Denormalizováno z druhu při uložení (ContractDocument).
+            "id": "type",
+            "name": "Contract type",
+            "name:cs": "Typ smlouvy",
+            "name:en": "Contract type",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "facility.buildings.contractTypes",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            // Prázdné u konceptu; UNIQUE v celém zdroji.
+            "id": "number",
+            "name": "Number",
+            "name:cs": "Číslo",
+            "name:en": "Number",
+            "type": "varchar",
+            "length": 50,
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "sequence_number",
+            "name": "Sequence number",
+            "name:cs": "Pořadové číslo",
+            "name:en": "Sequence number",
+            "type": "int",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            // Rozsah čítače, ze kterého je pořadí: kalendářní rok zahájení
+            // u druhu s ročním restartem, jinak NULL.
+            "id": "number_year",
+            "name": "Counter year",
+            "name:cs": "Rok čítače",
+            "name:en": "Counter year",
+            "type": "int",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "title",
+            "name": "Title",
+            "name:cs": "Název",
+            "name:en": "Title",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            // Povinný při potvrzení.
+            "id": "customer",
+            "name": "Tenant",
+            "name:cs": "Nájemce",
+            "name:en": "Tenant",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "identity"
+        },
+        {
+            // Povinné při potvrzení; jeho kalendářní rok určuje čítač čísla.
+            "id": "date_start",
+            "name": "Start date",
+            "name:cs": "Zahájení",
+            "name:en": "Start date",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            // Prázdné = doba neurčitá. Přechod do Ukončená / Zrušená doplní
+            // prázdné datum dneškem.
+            "id": "date_end",
+            "name": "End date",
+            "name:cs": "Ukončení",
+            "name:en": "End date",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            "id": "internal_note",
+            "name": "Internal note",
+            "name:cs": "Interní poznámka",
+            "name:en": "Internal note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_number",
+            "type": "unique",
+            "columns": [{"column": "number"}]
+        },
+        {
+            // SequenceCounter::maxSequence + výpis druhu.
+            "id": "idx_kind_year",
+            "type": "index",
+            "columns": [
+                {"column": "kind"},
+                {"column": "number_year"},
+                {"column": "sequence_number"}
+            ]
+        },
+        {
+            "id": "idx_customer",
+            "type": "index",
+            "columns": [{"column": "customer"}]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "number", "order": "DESC"}
+            ]
+        }
+    ]
+}

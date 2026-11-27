@@ -1,0 +1,155 @@
+{
+    // Druh smlouvy (#174 D4, D15, D18): uživatelský číselník v Nastavení →
+    // Budovy. Nese typ smlouvy (cfgItem facility.buildings.contractTypes —
+    // po opuštění Konceptu jen ke čtení, hlídá ContractKindDocument)
+    // a číslování: kód (%C), vzorec čísla a restart čítače. Čítač je per
+    // druh a kalendářní rok zahájení smlouvy
+    // (facility_buildings_number_counters). `system_code` nese jen seed
+    // (= klíč typu, ContractKindsProvisioner).
+    "tableId": 472,
+    "name": "Contract kinds",
+    "name:cs": "Druhy smluv",
+    "name:en": "Contract kinds",
+
+    "displayPattern": "{name}",
+
+    // Přechody stavu jdou přes ContractKindDocument — jinak by tlačítko
+    // Smazat minulo kontrolu, že druh nepoužívá žádná smlouva (D18).
+    "stateTransitionsRunDocumentHooks": true,
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "numbering",
+            "name": "Numbering",
+            "name:cs": "Číslování",
+            "name:en": "Numbering"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "type",
+            "name": "Contract type",
+            "name:cs": "Typ smlouvy",
+            "name:en": "Contract type",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "facility.buildings.contractTypes",
+            "nullable": false
+        },
+        {
+            "id": "notice",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "id": "number_code",
+            "name": "Kind code (%C)",
+            "name:cs": "Kód druhu (%C)",
+            "name:en": "Kind code (%C)",
+            "type": "varchar",
+            "length": 10,
+            "nullable": true,
+            "group": "numbering"
+        },
+        {
+            "id": "number_pattern",
+            "name": "Contract number pattern",
+            "name:cs": "Vzorec čísla smlouvy",
+            "name:en": "Contract number pattern",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "group": "numbering"
+        },
+        {
+            // continuous = průběžně, yearly = restart každý kalendářní rok
+            // zahájení smlouvy.
+            "id": "reset_scope",
+            "name": "Counter reset",
+            "name:cs": "Restart počítadla",
+            "name:en": "Counter reset",
+            "type": "enumString",
+            "length": 15,
+            "cfgItem": "facility.buildings.resetScopes",
+            "default": "yearly",
+            "nullable": false,
+            "group": "numbering"
+        },
+        {
+            // Jen seed: klíč typu, podle kterého provisioner pozná, že druh
+            // už jednou založil (i když ho uživatel přejmenoval nebo vyřadil).
+            "id": "system_code",
+            "name": "System code",
+            "name:cs": "Systémový kód",
+            "name:en": "System code",
+            "type": "varchar",
+            "length": 16,
+            "nullable": true
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_system_code",
+            "type": "unique",
+            "columns": [
+                {"column": "system_code"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        }
+    ]
+}
