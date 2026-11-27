@@ -110,7 +110,7 @@ class PlacesLookupTest extends TestCase
 
     public function testAllowedFilterKeys(): void
     {
-        $this->assertSame(['childType', 'exclude'], $this->lookup()->getAllowedFilterKeys());
+        $this->assertSame(['childType', 'exclude', 'types'], $this->lookup()->getAllowedFilterKeys());
     }
 
     public function testSearchQueriesLivePlacesByNameShortNameAndCode(): void
@@ -195,6 +195,60 @@ class PlacesLookupTest extends TestCase
         $names = $this->names($this->lookup()->search('', ['childType' => 'floor', 'exclude' => 4], 50));
         sort($names);
         $this->assertSame(['Areál firmy', 'Budova A', 'Křídlo', 'Ostatní prostory'], $names);
+    }
+
+    public function testTypesFilterOffersOnlyPlacesOfTheListedTypes(): void
+    {
+        // #174 D23: hodnota z query stringu je řetězec oddělený čárkami.
+        $names = $this->names($this->lookup()->search('', ['types' => 'room,section'], 50));
+        sort($names);
+
+        $this->assertSame(['Kancelář 101', 'Křídlo'], $names);
+    }
+
+    public function testTypesFilterAcceptsAListAndIgnoresSpacesAndRepeats(): void
+    {
+        $fromList = $this->names($this->lookup()->search('', ['types' => ['spot', 'outdoor']], 50));
+        $fromText = $this->names($this->lookup()->search('', ['types' => ' spot , outdoor,,spot '], 50));
+        sort($fromList);
+
+        $this->assertSame(['Parkoviště', 'Stání 1', 'Stůl u okna'], $fromList);
+        $this->assertEqualsCanonicalizing($fromList, $fromText);
+    }
+
+    public function testEmptyTypesFilterDoesNotRestrict(): void
+    {
+        $all = $this->names($this->lookup()->search('', [], 50));
+
+        $this->assertSame($all, $this->names($this->lookup()->search('', ['types' => ''], 50)));
+        $this->assertSame($all, $this->names($this->lookup()->search('', ['types' => []], 50)));
+        $this->assertSame($all, $this->names($this->lookup()->search('', ['types' => ' , '], 50)));
+    }
+
+    public function testTypesFilterOfAnUnknownTypeOffersNothing(): void
+    {
+        $this->assertSame([], $this->lookup()->search('', ['types' => 'cellar'], 50));
+    }
+
+    public function testTypesFilterCombinesWithChildTypeAndExclude(): void
+    {
+        // Pod místnost smí areál, budova, část budovy a podlaží (+ ostatní);
+        // z nich jen budovy a části budovy, bez podstromu Křídla.
+        $names = $this->names($this->lookup()->search(
+            '',
+            ['childType' => 'room', 'types' => 'building,section', 'exclude' => '3'],
+            50,
+        ));
+
+        $this->assertSame(['Budova A'], $names);
+    }
+
+    public function testTypesFilterValueForAFormDeclaration(): void
+    {
+        $this->assertSame('room,section', PlacesLookup::typesFilter(['room', 'section']));
+        $this->assertSame('spot', PlacesLookup::typesFilter([' spot ', '', 'spot']));
+        $this->assertNull(PlacesLookup::typesFilter(null), 'null = libovolný typ, filtr se neposílá');
+        $this->assertNull(PlacesLookup::typesFilter([]));
     }
 
     public function testArchivedPlaceIsNotOfferedAndLimitApplies(): void

@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** částečně — commit 0 (provisionery modulů, D28) hotov 2026-11-27, zbývají commity 1–4; design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
+**Stav:** částečně — commity 0 (provisionery modulů, D28) a 1 (filtr `types` v lookupu míst) hotové 2026-11-27, zbývají commity 2–4; design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
 
 > Task pro Claude Code (5 commitů — 0 až 4). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez

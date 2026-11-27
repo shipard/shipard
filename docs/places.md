@@ -162,6 +162,13 @@ znovu. Lookup **Nadřazené místo** dostává filtr spočítaný z dat:
 |---|---|
 | `childType` | typ zvoleného druhu — lookup nabídne jen místa, pod která typ smí (`PlaceTypes::canBeParent()`) |
 | `exclude` | id záznamu — lookup vynechá místo a celý jeho podstrom |
+| `types` | seznam typů míst — lookup nabídne jen místa těchto typů; prázdné = bez omezení |
+
+Filtry se kombinují. `childType` a `exclude` posílá pole Nadřazené místo;
+`types` je obecný filtr pro formuláře jiných modulů, které vybírají místa
+jen některých typů (#174 D23). Lookup filtr nese jen skaláry, takže seznam
+typů jde jako řetězec oddělený čárkami — hodnotu pro deklaraci pole skládá
+`PlacesLookup::typesFilter()` (`null` = libovolný typ, filtr se neposílá).
 
 Nový záznam s předvyplněným `parent` a `kind` (akce Přidat podřízené ho
 otevírá přes `open_form` s `preset`, § 6) nepotřebuje další kód.

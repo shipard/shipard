@@ -14,12 +14,15 @@ use Shipard\Core\Form\Lookup\TableLookup;
  * cesta · druh (místo nejvyšší úrovně jen druh). Řadí podle cesty a názvu,
  * takže místa jedné budovy drží pohromadě.
  *
- * Filtry (pole Nadřazené místo je posílá z přepočtu formuláře):
+ * Filtry (formulář je posílá z přepočtu; kombinují se):
  *
  *  - `childType` — jen místa, jejichž typ smí být nadřazený danému typu
  *    ({@see PlaceTypes::canBeParent()})
  *  - `exclude` — vynechá místo a celý jeho podstrom (jinak by šel postavit
  *    cyklus)
+ *  - `types` — jen místa vyjmenovaných typů (#174 D23): seznam klíčů typů
+ *    jako pole, nebo řetězec oddělený čárkami (z query stringu projde jen
+ *    skalár — {@see self::typesFilter()} ho skládá); prázdné = bez omezení
  *
  * Hledání dělá SQL, filtry a řazení PHP nad {@see PlaceTree} — typ
  * i podstrom jsou vlastnosti stromu, ne řádku. `resolve()` filtry nezná:
@@ -29,12 +32,51 @@ class PlacesLookup extends TableLookup
 {
     public const FILTER_CHILD_TYPE = 'childType';
     public const FILTER_EXCLUDE = 'exclude';
+    public const FILTER_TYPES = 'types';
 
     private ?PlaceTree $tree = null;
 
     public function getAllowedFilterKeys(): array
     {
-        return [self::FILTER_CHILD_TYPE, self::FILTER_EXCLUDE];
+        return [self::FILTER_CHILD_TYPE, self::FILTER_EXCLUDE, self::FILTER_TYPES];
+    }
+
+    /**
+     * Hodnota filtru `types` pro deklaraci pole ve formuláři: lookup filtr
+     * nese jen skaláry, seznam typů proto jde jako řetězec oddělený čárkami.
+     * Prázdný seznam (`null` = libovolný typ) vrací `null` — filtr se
+     * neposílá.
+     *
+     * @param list<string>|null $types
+     */
+    public static function typesFilter(?array $types): ?string
+    {
+        $types = self::parseTypes($types ?? []);
+        return $types !== [] ? implode(',', $types) : null;
+    }
+
+    /**
+     * Seznam typů z hodnoty filtru — pole, nebo řetězec oddělený čárkami.
+     * Mezery kolem klíčů a prázdné položky se zahodí, opakování také.
+     *
+     * @return list<string>
+     */
+    private static function parseTypes(mixed $value): array
+    {
+        if (is_string($value)) {
+            $value = explode(',', $value);
+        }
+        if (!is_array($value)) {
+            return [];
+        }
+        $types = [];
+        foreach ($value as $type) {
+            $type = is_scalar($type) ? trim((string) $type) : '';
+            if ($type !== '') {
+                $types[$type] = true;
+            }
+        }
+        return array_map(strval(...), array_keys($types));
     }
 
     public function search(string $q, array $filter, int $limit): array
@@ -48,6 +90,7 @@ class PlacesLookup extends TableLookup
         $childType = trim((string) ($filter[self::FILTER_CHILD_TYPE] ?? ''));
         $excludeId = (int) ($filter[self::FILTER_EXCLUDE] ?? 0);
         $excluded = $excludeId > 0 ? array_flip($tree->subtreeIds($excludeId)) : [];
+        $onlyTypes = array_flip(self::parseTypes($filter[self::FILTER_TYPES] ?? []));
 
         $found = [];
         foreach ($this->matchingIds(trim($q)) as $id) {
@@ -56,6 +99,9 @@ class PlacesLookup extends TableLookup
                 continue;
             }
             if ($childType !== '' && !$types->canBeParent((string) ($node['kind_type'] ?? ''), $childType)) {
+                continue;
+            }
+            if ($onlyTypes !== [] && !isset($onlyTypes[(string) ($node['kind_type'] ?? '')])) {
                 continue;
             }
             $found[] = ['node' => $node, 'path' => $tree->pathText($id)];
