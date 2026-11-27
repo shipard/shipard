@@ -137,7 +137,8 @@ npm run build:app        # jen aplikace; `build:dashboard` jen dashboard
 npm test                 # čisté funkce (tests/Unit/**/*.test.mjs)
 ```
 
-Nginx konfigurace: viz `docs/nginx/app.conf`.
+Nginx konfigurace: viz `docs/nginx/development.conf` (bloky `location` aplikace
+jsou v `docs/nginx/development-locations.conf`) a `docs/nginx/production.conf`.
 
 ### Vývojářský dashboard (`/_dev/`)
 

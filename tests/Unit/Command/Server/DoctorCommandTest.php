@@ -986,14 +986,16 @@ class DoctorCommandTest extends TestCase
 
     // ─── System config includes (warn-only) ─────────────────────────────────
 
-    /** Repo root fixture with all three versioned include files present. */
+    /** Repo root fixture with all versioned include files present. */
     private function makeFakeRepoRoot(): string
     {
         $dir = $this->tempRoot . '/repo';
         mkdir($dir . '/docs/nginx', 0750, true);
         mkdir($dir . '/docs/php', 0750, true);
         file_put_contents($dir . '/docs/nginx/shipard-common.conf', "client_max_body_size 128M;\n");
-        file_put_contents($dir . '/docs/nginx/shipard-tls.conf', "ssl_protocols TLSv1.3;\n");
+        file_put_contents($dir . '/docs/nginx/shipard-tls.conf', "include /opt/shipard/shpd/docs/nginx/shipard-tls-params.conf;\n");
+        file_put_contents($dir . '/docs/nginx/shipard-tls-params.conf', "ssl_protocols TLSv1.3;\n");
+        file_put_contents($dir . '/docs/nginx/development-locations.conf', "location / { try_files \$uri /index.php\$is_args\$args; }\n");
         file_put_contents($dir . '/docs/php/shipard-fpm-common.conf', "php_admin_value[post_max_size] = 130M\n");
         return $dir;
     }
@@ -1124,6 +1126,8 @@ class DoctorCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Include file missing in repo: docs/nginx/shipard-common.conf', $display);
         $this->assertStringContainsString('Include file missing in repo: docs/php/shipard-fpm-common.conf', $display);
+        $this->assertStringContainsString('Include file missing in repo: docs/nginx/shipard-tls-params.conf', $display);
+        $this->assertStringContainsString('Include file missing in repo: docs/nginx/development-locations.conf', $display);
     }
 
     // ─── PHP extensions (#146 D10) ───────────────────────────────────────────

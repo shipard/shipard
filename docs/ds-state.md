@@ -242,7 +242,8 @@ klienti čtou JSON-RPC. Viz [mcp-server.md](mcp-server.md) §5.
 
 ### 6.3 SPA — stavová obrazovka a banner
 
-SPA se servíruje staticky nginxem z `public/app/` (`docs/nginx/app.conf`),
+SPA se servíruje staticky nginxem z `public/app/` (`docs/nginx/development.conf`
+/ `production.conf`),
 `index.php` pro `/app/` neběží — stavová stránka tedy **není PHP HTML**, ale
 SPA. Boot volá veřejný `GET /_app/info`:
 

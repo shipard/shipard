@@ -85,10 +85,17 @@ z režimu serveru ani z tvaru hostu.
 
 ### Nginx konfigurace
 
-Šablony jsou v `docs/nginx/`: `production.conf` (subdoména + SSL)
-a `development.conf` (http, DS ID v cestě). Site soubor z nich při instalaci
-generuje `scripts/install-packages.sh`; společné parametry
-(`shipard-common.conf`, `shipard-tls.conf`) si site includuje z checkoutu.
+Šablony jsou v `docs/nginx/`: `production.conf` (subdoména + SSL),
+`development.conf` (http, DS ID v cestě) a `development-https.conf` (https
+vstupy vývojového serveru — blok pro IP jako `default_server` na 443 a blok pro
+jméno; site soubor z ní generuje `shpd-server dev-https`, jen když má vstup
+certifikát). Site soubor `shipard.conf` generuje při instalaci
+`scripts/install-packages.sh`. Z checkoutu si site includuje verzované soubory:
+`shipard-common.conf`, v produkci `shipard-tls.conf` (parametry TLS + HSTS),
+ve vývoji `shipard-tls-params.conf` (bez HSTS) a `development-locations.conf`
+(bloky `location` společné pro http i https). Blok PHP zůstává v site souboru —
+cesta k socketu FPM se liší podle serveru; vývojové šablony v něm předávají
+hlavičku `Host` i s portem (`$http_host`).
 
 ### Rozhodnutí v `DataSourceResolver`
 

@@ -782,6 +782,8 @@ class DoctorCommand extends Command
         $repoFiles = [
             'docs/nginx/shipard-common.conf',
             'docs/nginx/shipard-tls.conf',
+            'docs/nginx/shipard-tls-params.conf',
+            'docs/nginx/development-locations.conf',
             'docs/php/shipard-fpm-common.conf',
         ];
         foreach ($repoFiles as $rel) {

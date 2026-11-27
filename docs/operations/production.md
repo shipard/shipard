@@ -154,7 +154,10 @@ include /opt/shipard/shpd/docs/nginx/shipard-tls.conf;
   (`client_max_body_size 128M` — bez něj padají uploady příloh na 413).
 - `shipard-tls.conf` — TLS policy (TLSv1.3, session cache, HSTS).
   **Patří výhradně do 443 ssl bloků** — HSTS hlavička poslaná přes plain
-  HTTP je chyba.
+  HTTP je chyba. Parametry TLS bez HSTS si sám includuje ze
+  `shipard-tls-params.conf` (#183 D5 — vývojové https bloky berou jen ten,
+  HSTS na vývojovém jménu by znemožnil proklik přes varování certifikátu);
+  produkční site soubor se kvůli tomu nemění.
 
 Šablony include řádky už obsahují; při ruční tvorbě nebo úpravě configu
 je nezapomeň doplnit. `shpd-server doctor` chybějící include hlásí jako

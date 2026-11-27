@@ -86,7 +86,12 @@
 | [accbal.md](accbal.md) | **Designový dokument** modulu `economy.accbal`: saldokonto postavené nad účetním deníkem — nastavení skupin a účtů, generátor pohybů z deníku (předpisy/úhrady), **případ = agregát párovacího klíče** (saldokonto, období, partner, VS, SS, měna; `CaseQuery`, #69 D1), routing úhrad přes `OpenItemLookup` + přeúčtování clearingu, viewer případů a pohybů, událost `journalWritten`. Fáze 0–2 a revize #69 T1–T2 hotové; T3–T6 (efektivní symboly, opakované platby, průvodci oprav, dashboard) následují. |
 | [hosting.md](hosting.md) | **Designový dokument** modulu `hosting.core` — centrální správa zdrojů dat: portál pro uživatele s více DS, centrální identita (minimální OIDC Provider), automatické zakládání DS, napojení na mail-router a AI gateway |
 
-Nginx konfigurace jsou v [`nginx/`](nginx/) (app.conf, development.conf, production.conf).
+Nginx konfigurace jsou v [`nginx/`](nginx/): šablony site souborů `production.conf`,
+`development.conf` (http) a `development-https.conf` (https vstupy vývojového serveru,
+generuje `shpd-server dev-https`) a verzované includy `shipard-common.conf`,
+`shipard-tls.conf` (parametry TLS + HSTS, produkce), `shipard-tls-params.conf`
+(parametry TLS bez HSTS, vývoj) a `development-locations.conf` (bloky `location`
+společné pro http i https ve vývoji).
 
 ## Dokumenty k jednotlivým modulům
 
