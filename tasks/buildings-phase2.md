@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 2: fakturace smluv (#174 D29–D38)
 
-**Stav:** hotovo — 2026-11-27 ve čtyřech commitech (#174 D29–D38); ověřeno unit a integračními testy, během z CLI a v headless prohlížeči na volném zdroji dat s demo sadou (šablona řádků, potvrzení, koncepty, záložka Fakturace, Přegenerovat, Obnovit, Vystavit dlužná období, zakázky vedle smluv); odznak sekce při nálezech ze dvou zdrojů zároveň opravil `tasks/alerts-group-per-section.md` (#181)
+**Stav:** hotovo — 2026-11-27 ve čtyřech commitech (#174 D29–D38); ověřeno unit a integračními testy, během z CLI a v headless prohlížeči na volném zdroji dat s demo sadou (šablona řádků, potvrzení, koncepty, záložka Fakturace, Přegenerovat, Obnovit, Vystavit dlužná období, zakázky vedle smluv); odznak sekce při nálezech ze dvou zdrojů zároveň opravil `tasks/alerts-group-per-section.md` (#181); ruční proklik naostro 2026-11-27 (druh, šablona řádků, potvrzení, fakturace v detailu, odznaky z obou zdrojů, regrese zakázek) v pořádku — středisko na dokladu ukazuje formulář jen se zapnutým nastavením Dimenze na dokladech (#110 D21); automatické uložení kvůli šabloně řádků → průzkum #182
 
 > Task pro Claude Code (4 commity). Design: issue #174. Navazuje na fázi 1
 > (`tasks/buildings-phase1.md`) a na engine periodické fakturace
