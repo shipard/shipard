@@ -1,6 +1,6 @@
 # Evidence tržeb — fáze 3: Kontaktní platba, záložka a štítek na dokladu (#171)
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v pěti commitech (#171 D8b–D8d, D13, U13–U25), ověřeno živě proti playgroundu; zbývá ruční proklik v prohlížeči, zápis U23–U25 do #171 a nasazení
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-26 v pěti commitech (#171 D8b–D8d, D13, U13–U25), ověřeno živě proti playgroundu a ručním proklikem 2026-11-27, U23–U25 schválená a zapsaná v #171; zbývá nasazení
 
 > Task pro Claude Code (4–5 commitů). Design: issue #171 (D8b–D8d, D13)
 > a komentář s U13–U20. Staví na fázi 2 (`tasks/sales-registration-phase2.md`
@@ -341,9 +341,16 @@ frontendu nebyla potřeba; co body rozšíření neumějí, je ve specifikaci §
   se dvěma tržbami (kontaktní platba a její zrušení) — data pro proklik.
 - Ostatní zdroje dat `ds-upgrade` nepotřebují (doplněk tam není).
 
+### Ruční proklik a schválení
+
+- 2026-11-27 na `8yft-3` (člověk): akce Kontaktní platba a zrušení, záložka
+  formuláře, záložka a štítek detailu, štítky v seznamu — v pořádku.
+- U23–U25 a „Zrušit kontaktní platbu jen na dokladu V pořádku“ schválená
+  2026-11-27, zapsaná v #171; body § 8 fáze 3 v #178 (10–13).
+- Čas tržby se v agendě a záložce dokladu zobrazuje v zóně serveru, čas
+  platby místně — řeší #179 (rozhodnutí uživatele: ne obcházet v doplňku).
+
 ### Zbývá
 
-- Ruční proklik v prohlížeči (člověk): akce Kontaktní platba a zrušení,
-  záložka formuláře, záložka detailu, štítky.
-- Zapsat U23–U25 do #171 a body ze specifikace § 8 (fáze 3) do #178.
-- Nasazení: `ds-upgrade` zdrojů dat s doplňkem.
+- Nasazení: `ds-upgrade` zdrojů dat s doplňkem hned s kódem (záchranná síť
+  a upozornění bez nových sloupců padají).
