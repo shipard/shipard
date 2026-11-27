@@ -1,6 +1,6 @@
 # Doplněk Budovy — fáze 1: Smlouvy s místy (#174 D1–D27)
 
-**Stav:** částečně — implementace hotová 2026-11-27 (commity 0–4, ověření doplňku D26 naostro); zbývá ruční kontrola pole Místa podle #176 D7 a rozhodnutí o varování překryvu při potvrzení (formulář se zavře i s varováním — viz Ověření D26 → Otevřené); design #174 D16–D28, předpoklad `tasks/form-multilookup.md` (#176) hotov 2026-11-26
+**Stav:** hotovo — implementace 2026-11-27 (commity 0–4, ověření doplňku D26 naostro), ruční proklik pole Místa podle #176 D7 a průchodu smlouvou 2026-11-27; varování při potvrzení je obecná věc formuláře → #180; tableId tabulek přečíslovány na 472–475 při rebase (kolize s Evidencí tržeb #171); design #174 D16–D28
 
 > Task pro Claude Code (5 commitů — 0 až 4). Design: issue #174. První doplněk
 > v hlavním repozitáři (`kind: addon`, #170). Fáze 1 = evidence smluv bez
@@ -241,12 +241,12 @@ Celý seznam je v issue #174; pro fázi 1 platí hlavně:
       a v sidebaru sekce Budovy se Smlouvami
 - [x] smlouvu jde založit, přidat jí víc míst jen povolených typů, potvrdit
       (číslo podle druhu a roku zahájení), opravit, ukončit a zrušit
-- [ ] překryv míst ukáže varování, uložení nezastaví — **částečně**:
-      varování se ukáže po Uložit, při potvrzení tlačítkem V pořádku se
-      formulář zavře i s ním (viz Ověření D26 → Otevřené)
+- [x] překryv míst ukáže varování, uložení nezastaví — varování se ukáže
+      po Uložit; že se při potvrzení tlačítkem V pořádku formulář zavře
+      i s ním, je obecné chování formuláře → #180
 - [x] detail ukazuje místa s proklikem, seznam má filtry druh a typ, žádné
       dolní taby
-- [ ] pole Místa ručně podle #176 D7 (první skutečné použití `multilookup`):
+- [x] pole Místa ručně podle #176 D7 (první skutečné použití `multilookup`):
       hledání, šipky / Enter, Esc zavře jen nabídku, Backspace v prázdném
       vstupu odebere poslední štítek, vybraná místa se v nabídce
       nenabízejí, jen ke čtení (V pořádku) bez křížků, zalamování na
@@ -293,10 +293,9 @@ Volný zdroj dat `r3ow-2` založený jen pro ověření (`ds-create`, třída
   i s bannerem varování — obecné chování jádra, stejně mizí varování
   ostatních agend (bankovní spojení dodavatele u přijaté faktury). Úprava
   (formulář s varováním po přechodu stavu nezavírat, jako dialog
-  sub-tabulky) je změna jádra s dopadem na ostatní agendy — čeká na
-  rozhodnutí. Nápověda zatím radí dát nejdřív Uložit.
+  sub-tabulky) je změna jádra s dopadem na ostatní agendy — issue #180. Nápověda zatím radí dát nejdřív Uložit.
 - **Ruční kontrola pole Místa podle #176 D7** (klávesnice, telefon,
-  dirty stav) — dělá člověk.
+  dirty stav) — proklikáno 2026-11-27, v pořádku.
 - Upřesnění proti zadání: název smlouvy je povinný (D22 ho nevyjmenovává,
   řádek seznamu by bez něj neměl titulek); vzorec druhu s ročním restartem
   musí obsahovat rok a kód druhu je unikátní (číslo smlouvy je unikátní);
