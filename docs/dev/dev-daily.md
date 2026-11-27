@@ -134,7 +134,12 @@ Sekce v horní liště:
   dat; **Upgrade** u řádku zdroje dat spustí `shpd-ds ds-upgrade` jen pro něj.
 
 Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tím,
-že **vývojový server běží v důvěryhodné síti**. Oranžový pruh
+že **vývojový server běží v důvěryhodné síti**. Proto Shipard ve vývoji
+poslouchá jen na IPv4: globální IPv6 adresa stroje bývá dosažitelná
+z internetu. https na IPv6 se zapíná výslovně (`devAccess.ipv6`,
+[`linux-install.md`](linux-install.md#ipv6)) a `shpd-server doctor`
+v sekci *Development HTTPS* varuje, když Shipard na IPv6 poslouchá a stroj
+globální IPv6 adresu má. Oranžový pruh
 **DEVELOPMENT DASHBOARD** nahoře je připomínka, ať se prostředí neplete
 s produkčním; vpravo v něm je název serveru a **verze** s hashem commitu
 a větví (když PHP nemůže číst git, jen číslo verze). Verze je tlačítko:

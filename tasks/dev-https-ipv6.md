@@ -1,6 +1,6 @@
 # HTTPS na vývojovém serveru — IPv6 jen na vyžádání (#183 D8)
 
-**Stav:** naplánováno — připraveno k implementaci; rozhodnutí #183 D8 potvrzené 2026-11-27
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-27 (2 commity; site s IPv6 a bez něj ověřený na dočasném nginx bez roota, `doctor` a `dev-https --check` naživo na dev serveru); zbývá člověk: `sudo shpd-server dev-https` na dev serveru, `ss -ltn` (443 jen na IPv4) a čistá sekce *Development HTTPS* v `doctor`
 
 > Task pro Claude Code (2 commity). Design: issue #183 D8. Navazuje na
 > `tasks/dev-https.md` (fáze 1). **Kroky s rootem** (`sudo shpd-server
@@ -64,6 +64,26 @@ Později v #183.
 - **U28 — dashboard.** Beze změny: vstupy a odkazy vedou na `linkAddress()`,
   ta je po U25 bez `ipv6` vždy IPv4.
 
+## Upřesnění při implementaci
+
+- **U29 — odkud `doctor` čte.** Kontrola U27 čte site soubory
+  v `sites-enabled` (to, co nginx skutečně načte), ne `sites-available`.
+  Seznam souborů je `DevHttpsPlanner::SHIPARD_SITES`, nález nese plán
+  (`DevHttpsPlan::$ipv6ListenSites`) — počítá se i bez https vstupu.
+- **U30 — globální adresa.** `LocalAddresses::globalIpv6()`: IPv6 adresy
+  rozhraní bez loopbacku, link-local a ULA (`isUniqueLocal()`). Varování
+  vypíše nejvýš tři adresy a počet zbylých (SLAAC s dočasnými adresami).
+- **U31 — `ipv6: true` bez IPv6 v jádře.** Varování plánu
+  (`DevHttpsPlan::$ipv6Unavailable`) jen se zapnutým https vstupem; bez
+  něj klíč nic neřídí. `needsRun()` se tím nemění.
+- **U32 — server jen s adresami IPv6.** Bez `ipv6: true` nemá žádnou
+  adresu pro vstupy (http na portu 80 je jen na IPv4); hláška o chybějící
+  adrese proto zmiňuje i `devAccess.ipv6`.
+- **U33 — stávající testy.** Sdílená fixtura serveru nese i globální IPv6
+  adresu; očekávání testů fáze 1 bez klíče `ipv6` jsou přepsaná na IPv4
+  (je to zároveň regresní test D8), původní chování kryjí varianty
+  s `ipv6: true`.
+
 ## Testy
 
 - `DevAccessTest` — výchozí `ipv6` false, filtr adres, přepis IPv6 bez
@@ -96,14 +116,14 @@ Později v #183.
 
 ## Hotovo když
 
-- [ ] bez `devAccess.ipv6` vygenerovaný `shipard-https.conf` nemá
+- [x] bez `devAccess.ipv6` vygenerovaný `shipard-https.conf` nemá
       `listen [::]` ani na serveru s IPv6 v jádře
-- [ ] nový certifikát pro IP bez `ipv6` nese jen IPv4
-- [ ] `doctor` hlásí IPv6 listen při globální IPv6 adrese (i ručně v http
+- [x] nový certifikát pro IP bez `ipv6` nese jen IPv4
+- [x] `doctor` hlásí IPv6 listen při globální IPv6 adrese (i ručně v http
       site), při ULA a bez IPv6 listen mlčí
 - [ ] na dev serveru po `sudo shpd-server dev-https` naslouchá Shipard
       na 443 jen na IPv4 (`ss -ltn`) a `doctor` je v sekci čistý (člověk)
-- [ ] dokumentace podle oddílu Dokumentace;
+- [x] dokumentace podle oddílu Dokumentace;
       `python3 scripts/tasks-index.py --check` projde
-- [ ] žádné názvy reálných zdrojů dat, firem ani osob
+- [x] žádné názvy reálných zdrojů dat, firem ani osob
       (`scripts/check-sensitive.py`)

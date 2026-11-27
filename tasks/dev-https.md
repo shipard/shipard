@@ -130,7 +130,9 @@ Dashboard vstupy nabídne a `doctor` hlídá certifikáty (U1).
   `openssl` CLI (`req -x509 … -addext subjectAltName=…`, OpenSSL 3 je na
   podporovaných Ubuntu). `dev-https` ho obnoví, když zbývá méně než
   30 dní nebo SAN nesedí na aktuální adresy. Nový certifikát znamená
-  v prohlížeči nové varování — dokumentovat.
+  v prohlížeči nové varování — dokumentovat. *Změněno #183 D8
+  (`tasks/dev-https-ipv6.md`, U25): bez `devAccess.ipv6` nese certifikát
+  jen adresy IPv4.*
 
 - **U6 — šablony nginx.**
   - `docs/nginx/development-locations.conf` — společné bloky `location`
@@ -145,7 +147,8 @@ Dashboard vstupy nabídne a `doctor` hlídá certifikáty (U1).
     (`server_name` dosadí `dev-https`, certifikát `dev-host`). Každý blok
     je v šabloně ohraničený značkami, aby `dev-https` mohl vynechat
     vypnutý vstup. `listen [::]:443` jen při zapnutém IPv6 (existuje
-    `/proc/net/if_inet6`). Socket FPM dosazuje `dev-https` stejným
+    `/proc/net/if_inet6`) — *změněno #183 D8 (`tasks/dev-https-ipv6.md`,
+    U26): navíc jen s `devAccess.ipv6: true`.* Socket FPM dosazuje `dev-https` stejným
     pravidlem jako `install-packages.sh` (`DoctorCommand::detectShipardSocket()`).
   - `docs/nginx/app.conf` (zastaralá kombinace obou režimů) se odstraní;
     odkazy v `docs/README.md`, `docs/frontend.md` a `docs/ds-state.md`

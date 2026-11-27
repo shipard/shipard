@@ -137,7 +137,16 @@ Read-only health check. Vypíše:
   s certifikátem doctor ověří jen pod rootem; certifikát pro jméno, na
   který bez roota nedosáhne (symlink do adresáře certbotu), hlásí varováním
   s radou `sudo shpd-server doctor`. `devAccess` v režimu `production` =
-  varování, sekce se nepoužije.
+  varování, sekce se nepoužije. **Shipard na IPv6** (#183 D8, U27): když
+  některý site soubor Shipardu v `sites-enabled` (`shipard.conf`,
+  `shipard-https.conf`) má `listen` na IPv6 (`[::]` nebo konkrétní adresu)
+  **a** server má globální IPv6 adresu (ne loopback, link-local ani ULA
+  `fc00::/7`), je to varování s adresou — vývojářský dashboard nemá
+  přihlášení a síť musí blokovat příchozí spojení z internetu. Hlásí se
+  i při `devAccess.ipv6: true` (záměr, připomínka zůstává), i u ručně
+  upraveného http site a i bez zapnutého https vstupu; jen s ULA nebo bez
+  IPv6 `listen` mlčí. `devAccess.ipv6: true` na serveru bez IPv6 v jádře =
+  varování, https zůstává na IPv4.
 - **Cron** — `/etc/cron.d/shipard` existuje a marker odpovídá aktuální
   verzi šablony (zastaralá šablona = error v každém režimu, #115 U5);
   heartbeaty slotů nejsou zatuchlé (`minute` > 10 min, `two-minutes`
@@ -550,7 +559,8 @@ v `/etc/shipard/server.json` (výklad `Shipard\Core\Server\DevAccess`):
     "httpsIp": true,
     "host": "shpd.example.com",
     "preferred": "https-host",
-    "ip": "10.0.0.7"
+    "ip": "10.0.0.7",
+    "ipv6": false
 }
 ```
 
@@ -559,7 +569,8 @@ v `/etc/shipard/server.json` (výklad `Shipard\Core\Server\DevAccess`):
 | `httpsIp` | `https://<IP>/<ID>/` se self-signed certifikátem. Chybějící sekce = `false`; `server-init --mode=development` ho v nové instalaci mimo WSL zapíše jako `true`. |
 | `host` | Volitelné jméno pro `https://<jméno>/<ID>/`. Certifikát dodává vývojář. |
 | `preferred` | `http-ip` \| `https-ip` \| `https-host` — který vstup nabízet jako výchozí; bez klíče nejvyšší zapnutý (`https-host` → `https-ip` → `http-ip`). |
-| `ip` | Volitelný přepis adresy pro odkazy (server s víc rozhraními, NAT). Jinak první dosažitelná adresa rozhraní, IPv4 před IPv6. |
+| `ip` | Volitelný přepis adresy pro odkazy (server s víc rozhraními, NAT). Jinak první dosažitelná adresa rozhraní, IPv4 před IPv6. Adresa IPv6 jen s `ipv6: true` — jinak chybná hodnota a přepis se nepoužije. |
+| `ipv6` | `true` = https i na IPv6 (#183 D8). Výchozí `false`: https bloky poslouchají jen na IPv4 (jako http) a adresy serveru pro certifikát i odkazy jsou jen IPv4. Jiná hodnota než `true` / `false` = chybná hodnota, platí `false`. **Vývojářský dashboard `/_dev/` nemá přihlášení** a globální IPv6 adresa bývá dosažitelná z internetu — zapínej jen v síti, která příchozí spojení blokuje. `server-init` klíč nezapisuje. |
 
 `http://<IP>/<ID>/` funguje vždy. Chybná hodnota se nepoužije a hlásí ji
 příkaz i `doctor`; v režimu `production` se sekce nepoužije vůbec.
@@ -567,13 +578,14 @@ příkaz i `doctor`; v režimu `production` se sekce nepoužije vůbec.
 Co běh dělá:
 
 1. **Certifikát pro IP** (`/etc/shipard/tls/dev-ip/fullchain.pem`
-   + `privkey.pem`): klíč EC P-256, SAN = všechny dosažitelné adresy
-   rozhraní serveru (IPv4 i IPv6, bez loopbacku a link-local) a přepis
+   + `privkey.pem`): klíč EC P-256, SAN = dosažitelné adresy rozhraní
+   serveru (bez loopbacku a link-local; IPv6 jen s `ipv6: true`) a přepis
    `ip`, `CA:FALSE`, `serverAuth`, CN `Shipard dev <hostname>`, platnost
    397 dní; vyrábí ho `openssl` CLI z vlastního konfiguračního souboru.
    **Obnoví se**, když zbývá méně než 30 dní, když některá adresa serveru
    v SAN **chybí** (adresa v certifikátu navíc obnovu nespouští — zaniklá
-   dočasná IPv6, U20), nebo když chybí či nesedí klíč. Nový certifikát
+   dočasná IPv6 nebo IPv6 z doby před vypnutím `ipv6`, U20), nebo když
+   chybí či nesedí klíč. Nový certifikát
    znamená v prohlížeči nové varování — jednou ho proklikni.
 2. **Certifikát pro jméno** (`/etc/shipard/tls/dev-host/`, oba soubory smí
    být symlink — certbot apod.) příkaz nevyrábí, jen ověří: existuje, sedí
@@ -583,7 +595,9 @@ Co běh dělá:
 3. **Site soubor** `/etc/nginx/sites-available/shipard-https.conf` ze
    šablony `docs/nginx/development-https.conf` (`Core\Server\DevHttpsSite`):
    blok pro IP (`default_server` na 443) a blok pro jméno podle zapnutých
-   vstupů, `listen [::]:443` jen se zapnutým IPv6, socket poolu `shipard`
+   vstupů, `listen [::]:443` jen s `ipv6: true` **a** IPv6 v jádře
+   (`/proc/net/if_inet6`; `ipv6: true` bez něj = varování a bloky bez
+   IPv6), socket poolu `shipard`
    stejně jako `install-packages.sh`; odkaz v `sites-enabled`. Bez
    zapnutého https vstupu odkaz i soubor **odstraní**.
 4. `nginx -t` a reload — jen když se něco změnilo. Při chybě `nginx -t`
@@ -599,7 +613,9 @@ nevznikne, příkaz to ohlásí a skončí **úspěšně** (U21); trvale to hlá
 chybí, je zastaralý nebo přebývá), jinak `0`. Chybějící certifikát pro
 jméno ani cizí `default_server` nepočítá — běh je nespraví. Mimo režim
 `development` vždy `0`. Rozhodování je společné s `doctor`
-(`Core\Server\DevHttpsPlanner`).
+(`Core\Server\DevHttpsPlanner`). Server, kde site soubor vznikl před #183 D8
+a nese `listen [::]:443`, hlásí zastaralý site — `shpd-server upgrade` ho
+přegeneruje, ručně `sudo shpd-server dev-https`.
 
 Kdo ho volá: `scripts/dev-bootstrap.sh` po `server-init`, `shpd-server
 upgrade` ve vývoji před `doctor`; `scripts/dev-update.sh` jen vypíše

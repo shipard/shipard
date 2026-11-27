@@ -154,6 +154,31 @@ Stávající server bez sekce `devAccess` zůstává jen u http; https zapneš
 doplněním sekce a příkazem výše. Když už na stroji jiný web drží
 `default_server` na portu 443, vstup přes IP nevznikne a příkaz to řekne.
 
+### IPv6
+
+Shipard na vývojovém serveru poslouchá **jen na IPv4** — http i https,
+a certifikát pro IP nese jen adresy IPv4. Důvod: stroj za domácím nebo
+firemním routerem mívá vedle privátní IPv4 i **globální IPv6 adresu**,
+a ta je dosažitelná z internetu, pokud ji router nefiltruje. Vývojářský
+dashboard `/_dev/` přitom **nemá přihlášení** — zakládá a maže zdroje dat,
+pouští upgrady a ukazuje logy — a na stejné adrese jsou i zdroje dat
+s kopií reálných dat.
+
+https na IPv6 zapneš výslovně:
+
+```json
+"devAccess": { "httpsIp": true, "ipv6": true }
+```
+
+Smysl to dává jen v síti, kde víš, že příchozí spojení z internetu na
+stroj nedojdou (firewall na routeru nebo na stroji), nebo kde má stroj jen
+lokální IPv6 adresy (ULA `fd…`). `shpd-server doctor` na Shipard na IPv6
+při globální adrese stroje upozorňuje vždy — i když jsi `ipv6` zapnul
+záměrně, a i když sis IPv6 `listen` doplnil ručně do http site.
+
+Jméno se záznamem AAAA funguje i bez `ipv6`: prohlížeč zkusí IPv6, spojení
+se nepovede a přejde na záznam A (IPv4).
+
 ### https se jménem
 
 ```json
