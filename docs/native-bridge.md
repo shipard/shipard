@@ -39,7 +39,32 @@ bajty tiskárně a ohlásí, jak to dopadlo. Aplikace funguje **jen online**.
 | `shared` | sdílené pracoviště — víc uživatelů, profily, zamčení a PIN (§8) |
 
 Režim určuje registrace (§7.3). Zneplatnění zařízení administrátorem je
-konečné: aplikace zahodí `deviceId` i klíč a vrací se do `unregistered`.
+konečné: aplikace zahodí `deviceId` i klíč pro tento zdroj dat a vrací se
+v něm do `unregistered`.
+
+### Zařízení a zdroje dat
+
+Identita zařízení — `deviceId` a klíč — i stav registrace platí **pro jeden
+zdroj dat** (#177 D33). Osobní zařízení pracuje přes portál hostingu s víc
+zdroji dat a v každém má jinou identitu:
+
+- aplikace drží `deviceId`, klíč a registraci pro každý zdroj dat zvlášť;
+  zdroj dat rozlišuje podle **adresy jeho API** stejným pravidlem jako
+  webová aplikace (`frontend/src/api/config.js`): v produkci origin
+  (`https://firma.example.com/api/v1`), ve vývoji origin s ID zdroje dat
+  v cestě (`http://10.0.0.5/test-test-test-test/api/v1`);
+- `info` a ostatní metody pracují se zdrojem dat **aktuální stránky**;
+  `info.dataSource` vrací jeho adresu, aby webová aplikace mohla ověřit, že
+  se obě strany shodnou;
+- zneplatnění v jednom zdroji dat zruší jen identitu pro tento zdroj dat.
+
+Společný `deviceId` by dovolil propojit zdroje dat různých firem přes jedno
+zařízení a zneplatnění v jednom zdroji dat by zrušilo registraci ve všech
+ostatních. Sdílené pracoviště (`shared`) patří jednomu zdroji dat.
+
+Stránka mimo zdroj dat (vývojářský dashboard) dostane v `info`
+`dataSource` a `deviceId` `null` a `mode` `unregistered`; metody
+`device.*` tam vrací `NOT_SUPPORTED`.
 
 ### Co je ve verzi 1
 
@@ -93,14 +118,15 @@ Obecné kódy platí pro každou metodu:
 | `INVALID_PARAMS` | parametry chybí nebo neodpovídají kontraktu |
 | `NOT_SUPPORTED` | metodu aplikace zná, ale tady ji nenabízí — chybí capability nebo to nedovoluje režim zařízení |
 | `NOT_REGISTERED` | metoda potřebuje registrované zařízení |
-| `DEVICE_REVOKED` | server zařízení zneplatnil; aplikace zahodila `deviceId` i klíč |
+| `DEVICE_REVOKED` | server zařízení zneplatnil; aplikace zahodila `deviceId` i klíč pro tento zdroj dat |
 | `NETWORK_ERROR` | server nebo periferie nejsou dosažitelné |
 | `SERVER_ERROR` | server odpověděl chybou, kterou kontrakt u metody neuvádí; `details` nese `status` (HTTP) a `code` serveru |
 | `CANCELLED` | uživatel nativní dialog zavřel |
 | `INTERNAL_ERROR` | neočekávaná chyba aplikace |
 
 Kódy jednotlivých metod jsou u metod (§3). Chybu serveru z §7.2, kterou
-kontrakt u metody jmenuje, vrací most pod stejným kódem.
+kontrakt u metody jmenuje, vrací most pod stejným kódem. Výjimka:
+`DEVICE_UNKNOWN` hlásí most jako `NOT_REGISTERED`.
 
 ### 2.4 Verze
 
@@ -151,6 +177,7 @@ při startu a po `device.sync`.
   "app": { "version": "1.0.0", "build": "17" },
   "platform": "ipados",
   "osVersion": "18.2",
+  "dataSource": "https://firma.example.com/api/v1",
   "deviceId": "0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10",
   "keyStorage": "secureEnclave",
   "mode": "shared",
@@ -165,9 +192,10 @@ při startu a po `device.sync`.
 | `app.version`, `app.build` | verze a číslo sestavení aplikace — totéž, co okno O aplikaci |
 | `platform` | `macos` \| `ipados` |
 | `osVersion` | verze operačního systému |
-| `deviceId` | UUID zařízení; vzniká při prvním spuštění, po zneplatnění zařízení aplikace vytvoří nové |
+| `dataSource` | adresa API zdroje dat aktuální stránky (§1, Zařízení a zdroje dat); `null` mimo zdroj dat |
+| `deviceId` | UUID zařízení pro tento zdroj dat; vzniká při první práci se zdrojem dat, po zneplatnění aplikace vytvoří nové; `null` mimo zdroj dat |
 | `keyStorage` | kde je klíč zařízení: `secureEnclave` \| `keychain` (Mac bez Secure Enclave, §7.1) |
-| `mode` | `unregistered` \| `personal` \| `shared` (§1) |
+| `mode` | v tomto zdroji dat: `unregistered` \| `personal` \| `shared` (§1) |
 | `profile` | aktivní profil (§8); `null` mimo režim `shared` |
 | `profile.id` | UUID profilu na tomto zařízení |
 | `profile.userId` | ID uživatele ve zdroji dat; `null`, dokud uživatel profilu není zařazený |
@@ -218,8 +246,9 @@ Capability `device`. Bez parametrů. Aplikace:
 Webová aplikace ji volá po registraci a po změně zařízení v Shipardu.
 Aplikace sync spouští i sama — při startu a při změně periferií.
 
-Chyby: `NOT_REGISTERED` (server zařízení nezná), `DEVICE_REVOKED`,
-`NETWORK_ERROR`.
+Chyby: `NOT_REGISTERED` (v tomto zdroji dat zařízení registrované není —
+server odpověděl `DEVICE_UNKNOWN`), `DEVICE_REVOKED`, `NETWORK_ERROR`,
+`NOT_SUPPORTED` (stránka mimo zdroj dat).
 
 ### 3.4 `device.enroll`
 
@@ -495,8 +524,9 @@ označí varováním.
 
 ## 7. Zařízení ↔ server
 
-Podepsaná volání míří na API zdroje dat, ve kterém je zařízení
-registrované (`/api/v1`, [rest-api.md](rest-api.md) §2). Odpovědi mají
+Podepsaná volání míří na API zdroje dat aktuální stránky (`info.dataSource`,
+§1) a nesou identitu zařízení pro tento zdroj dat (`/api/v1`,
+[rest-api.md](rest-api.md) §2). Odpovědi mají
 běžnou obálku `{success, data}` / `{success, error}`
 ([rest-api.md](rest-api.md) §4); tvary níže jsou obsah `data`.
 
@@ -644,11 +674,12 @@ admin v Shipardu: „Registrovat toto zařízení“ (název, režim)
 ```
 
 Po kroku 4 vrací `info` nový režim. Zneplatnění je konečné: nová
-registrace téhož zařízení znamená nové `deviceId` a nový záznam.
+registrace téhož zařízení v tomto zdroji dat znamená nové `deviceId`
+a nový záznam; registrace v jiných zdrojích dat zůstávají.
 
 ## 8. Profily, zařazení, PIN, zamčení
 
-Platí pro režim `shared`.
+Platí pro režim `shared`. Sdílené pracoviště patří jednomu zdroji dat.
 
 ### 8.1 Profil
 
@@ -719,6 +750,7 @@ průběžně mění. WebView profilu zůstává v paměti pod nativním zámkem.
 | Vyzrazený PIN | platí jen na registrovaném zařízení a jen pro uživatele na něm zařazené; počet pokusů omezuje server |
 | Zařízení bez dozoru | zamčení zneplatní session na serveru, ne jen zakryje okno |
 | Odcizené zařízení | administrátor zařízení zneplatní; klíč uložený v Secure Enclave nejde ze zařízení vynést |
+| Propojení zdrojů dat přes zařízení | identita zařízení je pro každý zdroj dat jiná (§1) |
 | Přehrání požadavku | výzva je jednorázová, platí 60 s a je vázaná na účel a zařízení |
 | Cizí stránka v aplikaci | most jen pro povolené originy, jen v hlavním rámci, původ se kontroluje u každého volání |
 | Doplňky prohlížeče čtoucí session | do aplikace nejdou instalovat |
@@ -741,6 +773,7 @@ průběžně mění. WebView profilu zůstává v paměti pod nativním zámkem.
 | Verze | Datum | Změna |
 |---|---|---|
 | 1 | 2026-11-27 | První verze: #177 D21–D32, upřesnění U1–U10, U16, U20. |
+| 1 | 2026-11-27 | Identita a registrace zařízení pro každý zdroj dat zvlášť, `info.dataSource` (#177 D33); `DEVICE_UNKNOWN` se na mostu hlásí jako `NOT_REGISTERED`. Před implementací klienta, verze beze změny. |
 
 ---
 

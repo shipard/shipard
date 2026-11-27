@@ -1,6 +1,6 @@
 # Nativní aplikace — task 2: most ve frontendu, simulace, stránka Most, pole bez oprav (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D6, D10, D21, D22, D29, D32, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1
+**Stav:** naplánováno — rozhodnutí #177 D6, D10, D21, D22, D29, D32, D33, U2–U4 a upřesnění U11–U15 (schválená 2026-11-26), připraveno k implementaci po tasku 1
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (`tasks/native-bridge-contract.md`) — implementovat až po něm,
@@ -54,7 +54,8 @@ Webová aplikace mluví s nativní aplikací přes `window.shipardNative`
   `device.enroll`, `session.lock`, `session.take` a `auth.external` vrací
   `NOT_SUPPORTED` — doplní je tasky 6 a 7. Simulace hlásí
   `platform: "mock"` a `keyStorage: "mock"` (hodnoty jen pro vývoj,
-  dokumentované v `docs/native-bridge.md`).
+  dokumentované v `docs/native-bridge.md`). Identita simulace je pro každý
+  zdroj dat zvlášť (D33).
 - **U13** — Náhled ESC/POS je čistá funkce ve frontendu nad pevnou
   podmnožinou příkazů (níže). Neznámý příkaz se v náhledu označí, náhled
   nespadne. Kódové stránky CP852 (vlastní tabulka — prohlížeče ji
@@ -148,17 +149,22 @@ příkaz). Jen tokeny design systému.
 - **Spuštění** (`main.js`, před `mount`): když most chybí a příznak je
   `"1"`, `await import('./native/mock/install.js')` a `install()`.
 - **`install.js`** — vytvoří `window.shipardNative` s `call()` podle
-  kontraktu a označením `__mock: true`; parametry kontroluje jako
+  kontraktu a označením `__mock: true`; `info.dataSource` je
+  `location.origin + API_BASE_URL` (D33); parametry kontroluje jako
   skutečná aplikace (`INVALID_PARAMS`, limity U8, `DUPLICATE_JOB` — paměť
   posledních 100 `jobId`); události vysílá jako `CustomEvent` na `window`.
 - **Stav** (`state.js`) v `localStorage` (`shpd_native_mock_state`):
-  režim (`unregistered` / `personal` / `shared`), capabilities (výchozí
+  režim pro každý zdroj dat (`unregistered` / `personal` / `shared`, D33), capabilities (výchozí
   `device`, `peripherals`, `print.escpos`, `scanner`), periferie (výchozí
   tiskárna `mock-receipt` s `profileId: "escpos-80-cp852"`, 48 znaků,
   a čtečka `mock-scanner` s `reads: ["barcode", "rfid"]`), stav periferií.
 - **Klíč zařízení** (`deviceKey.js`): `deviceId` (UUID) a pár ECDSA P-256
   z WebCrypto, uložený jako JWK v `localStorage`
-  (`shpd_native_mock_device`) — jen pro vývoj. `sign(purpose, challenge)`
+  (`shpd_native_mock_device:<adresa API>`) — jen pro vývoj. Identita je pro
+  každý zdroj dat zvlášť (D33), klíčem je `location.origin + API_BASE_URL`:
+  ve vývoji sdílejí všechny zdroje dat jeden origin, bez adresy v klíči by
+  si je simulace pletla. `DEVICE_REVOKED` ze serveru smaže jen identitu
+  tohoto zdroje dat. `sign(purpose, challenge)`
   podepíše `shipard-device-v1|<účel>|<deviceId>|<výzva>` (U4) a podpis
   WebCrypto (r‖s) převede na DER; `publicKeySpki()` → base64 SPKI DER.
 - **`device.sync`** — `POST /_devices/challenge` (účel `self`) a podepsané
@@ -172,7 +178,7 @@ příkaz). Jen tokeny design systému.
   → `PERIPHERAL_UNAVAILABLE`.
 - **Panel** `components/native/NativeMockPanel.svelte` (vykreslí `App`,
   jen když je most `__mock`): trvalý pruh „Simulace nativní aplikace“
-  a sbalitelný panel — režim, stav periferií (přepnutí vyšle
+  a sbalitelný panel — zdroj dat (`info.dataSource`), režim, stav periferií (přepnutí vyšle
   `shipard:peripheral`), čtečka (pole + výběr `barcode` / `rfid` + Enter
   vyšle `shipard:scan`; vedle počet odběratelů ze `scanRouter`), tlačítko
   **Zkušební účtenka** (přes `print.submit`), seznam náhledů tisku
@@ -191,7 +197,8 @@ příkaz). Jen tokeny design systému.
   se otevírá v nativní aplikaci (vývojová sestavení dovolí přidat origin
   dev serveru), a nabídne přepínač simulace pro aplikaci na tomto serveru
   (U11) — v dashboardu samotném se simulace nespouští.
-- **Info**: JSON `info`, capabilities jako štítky, nálezy `validateInfo`.
+- **Info**: JSON `info`, capabilities jako štítky, nálezy `validateInfo`;
+  v dashboardu (mimo zdroj dat) čeká `dataSource: null` (D33).
 - **Kontroly kontraktu** (tlačítko Spustit, nic netiskne): `info` projde
   validátorem; neznámá metoda → `UNKNOWN_METHOD`; `print.submit` bez
   parametrů → `INVALID_PARAMS`; `peripherals.list` projde validátorem;
@@ -234,7 +241,9 @@ příkaz). Jen tokeny design systému.
   `node:crypto` (`verify` s `dsaEncoding: 'der'`) proti SPKI DER; podepsaný
   řetězec přesně podle U4; převod r‖s → DER i s úvodní nulou.
 - `mock.test.mjs` — simulace projde validátory kontraktu, limity U8,
-  `DUPLICATE_JOB`, `NOT_SUPPORTED` u metod tasků 6 a 7.
+  `DUPLICATE_JOB`, `NOT_SUPPORTED` u metod tasků 6 a 7; identita pro každý
+  zdroj dat (dvě adresy API → dvě identity, `DEVICE_REVOKED` smaže jen
+  jednu, D33).
 
 `frontend/tests/Unit/dev/routes.test.mjs` — routa `bridge`. PHP
 `DevDashboardControllerTest` — `/_dev/bridge` servíruje SPA.

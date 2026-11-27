@@ -1,6 +1,6 @@
 # Nativní aplikace — task 3: modul `core.devices`, registrace zařízení a podepsaná volání (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D5, D13, D23, D24, D27, D32, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1
+**Stav:** naplánováno — rozhodnutí #177 D5, D13, D23, D24, D27, D32, D33, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (kontrakt `docs/native-bridge.md`); s taskem 2 jde souběžně —
@@ -83,6 +83,14 @@ podepsaná volání, hlášení periferií a správu zařízení v Nastavení.
   zařízení) je mimo v1 — model ji nesmí znemožnit. V UI zůstává název
   „Zařízení“ (sedí i na osobní Mac); v nápovědě a README modulu zmínit, že
   jde o obdobu pracoviště ze starého Shipardu.
+- **D33** (schváleno 2026-11-27 po tasku 1) — Identita zařízení
+  (`deviceId`, klíč) a registrace platí pro jeden zdroj dat; aplikace je
+  drží zvlášť podle adresy API zdroje dat (`info.dataSource`). Pro server to
+  znamená jen to, co tu už je — `device_id` unikátní v rámci zdroje dat,
+  stejný `deviceId` v jiném zdroji dat se nepředpokládá. Panel Toto
+  zařízení porovná `info.dataSource` s vlastní adresou API
+  (`location.origin + API_BASE_URL`) a při neshodě místo registrace ukáže
+  chybu.
 
 ## Rozsah
 
