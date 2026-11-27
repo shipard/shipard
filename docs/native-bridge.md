@@ -551,6 +551,7 @@ platných výzev. Každé podepsané volání potřebuje vlastní výzvu.
 | `X-Shipard-Device` | `deviceId` |
 | `X-Shipard-Challenge` | výzva |
 | `X-Shipard-Signature` | podpis řetězce s účelem endpointu |
+| `X-Shipard-App-Version` | nepovinná: verze aplikace (`info.app.version`) — server si ji u zařízení aktualizuje při každém ověřeném volání; hodnotu mimo tvar verze (nejvýš 40 znaků, číslice, písmena a `. + _ -`) ignoruje |
 
 Session uživatele podepsané volání nenese. Výjimka je registrace: podpis
 jde v těle požadavku a volá ji webová aplikace se session administrátora.
@@ -847,6 +848,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | První verze: #177 D21–D32, upřesnění U1–U10, U16, U20. |
 | 1 | 2026-11-27 | Identita a registrace zařízení pro každý zdroj dat zvlášť, `info.dataSource` (#177 D33); `DEVICE_UNKNOWN` se na mostu hlásí jako `NOT_REGISTERED`. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Oddíl Simulace pro vývoj (§9a, #177 U11–U13): hodnoty `mock` u `platform` a `keyStorage`, podmnožina ESC/POS pro náhled a čísla kódových stránek pro `ESC t` (18, 45). Webová strana mostu hotová (task 2). Verze beze změny. |
+| 1 | 2026-11-27 | Nepovinná hlavička `X-Shipard-App-Version` u podepsaných volání (§7.1, #177 U25) — verze aplikace na záznamu zařízení se jinak po registraci neměla jak aktualizovat. Před implementací klienta, verze beze změny. |
 
 ---
 

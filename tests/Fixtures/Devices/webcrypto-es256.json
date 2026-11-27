@@ -1,0 +1,80 @@
+{
+  "source": "WebCrypto (Node) via frontend/src/native/mock/deviceKey.js",
+  "algorithm": "ES256",
+  "deviceId": "996a32b7-a639-4b9e-8223-6630c49b7dfe",
+  "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWW3nWdkhETJVXa5HDv7W71MItK1HNI+ofuw6QGkDZV0zoqZW2NP0K9GoPeUZGpXc7oaSCxpoO+EThiOdhVjKow==",
+  "signatures": [
+    {
+      "purpose": "register",
+      "challenge": "1m97dhclDrbJGFNy8c0N3z94JSYgoCICgrN9yXzpQXQ",
+      "signingString": "shipard-device-v1|register|996a32b7-a639-4b9e-8223-6630c49b7dfe|1m97dhclDrbJGFNy8c0N3z94JSYgoCICgrN9yXzpQXQ",
+      "signature": "MEUCIQD7phIRuzrI47LIb6ZVY5JPqExU821sJklbiv8L69vXgwIgD1iOsZGzhaMA+1q4HNJeXqepwXB2MSQLsHTtM8P0NUM="
+    },
+    {
+      "purpose": "self",
+      "challenge": "uMpPq_qXHVxKp62D9wPQEe3Nmrzg3i3wQ5pjMHS1Jhk",
+      "signingString": "shipard-device-v1|self|996a32b7-a639-4b9e-8223-6630c49b7dfe|uMpPq_qXHVxKp62D9wPQEe3Nmrzg3i3wQ5pjMHS1Jhk",
+      "signature": "MEQCICwuk5hvz6DO+pGNQJexzDH/v0TUlsivFIjjblCWsBeyAiAEeXzmuLF/WfbhiUqSBidYqFHwPAjRRBEsn0VxDx0ScA=="
+    },
+    {
+      "purpose": "peripherals",
+      "challenge": "WbglhFRESf4u0ThRT43c-FPJufLQnxKwkRIbBUvmpME",
+      "signingString": "shipard-device-v1|peripherals|996a32b7-a639-4b9e-8223-6630c49b7dfe|WbglhFRESf4u0ThRT43c-FPJufLQnxKwkRIbBUvmpME",
+      "signature": "MEYCIQD/jd13j+BflPqY9fI0zpq7v3Ftn8Oyg46Cywj0UkK45AIhAMw/L32YI4EvLZHhH6IpRcw7ZYYhLWtStdFLEhK8X4u8"
+    },
+    {
+      "purpose": "register",
+      "challenge": "OPVxNNt0bbHjXj65kpjvH59tu4iobc32o976aH3_oRo",
+      "signingString": "shipard-device-v1|register|996a32b7-a639-4b9e-8223-6630c49b7dfe|OPVxNNt0bbHjXj65kpjvH59tu4iobc32o976aH3_oRo",
+      "signature": "MEUCIAmuGq+yHD9SeNaxkGg6g2feAEBqYYHu8C1MtXgqAS/DAiEAzuZbPJa6se6NWZiDTIoZ72lXYQAcOD4s+hYJrGHO28g="
+    },
+    {
+      "purpose": "self",
+      "challenge": "pPeJkdAWQTitAWCMGGREZ8Aq-yr6_niaKjOClocbFNU",
+      "signingString": "shipard-device-v1|self|996a32b7-a639-4b9e-8223-6630c49b7dfe|pPeJkdAWQTitAWCMGGREZ8Aq-yr6_niaKjOClocbFNU",
+      "signature": "MEQCIBkeL8aSHiPXhOtpwKE9TgW3mlgkmmHUH8ADGfJe2Z9dAiBwScKuOJ2NX1uVFFdtEj7j6RzXWEHegcveO+D/W9SK4A=="
+    },
+    {
+      "purpose": "peripherals",
+      "challenge": "jcJFoEpw0tWPhaMYRhhrkvtoLsS6RW8w_elZDRzAvOM",
+      "signingString": "shipard-device-v1|peripherals|996a32b7-a639-4b9e-8223-6630c49b7dfe|jcJFoEpw0tWPhaMYRhhrkvtoLsS6RW8w_elZDRzAvOM",
+      "signature": "MEUCIE8zTMsF1CExUkk2Pg2OZQ6U9dSg3l/8O/aY/g7POwUOAiEAyG0HNTz4ulp78zm1HwU1MhEJR66SdcTPslW076Qm4jA="
+    },
+    {
+      "purpose": "register",
+      "challenge": "Fmkrd06FagHS5sF8j2kAisSzuxg4DUwJedyiJVJ6zU4",
+      "signingString": "shipard-device-v1|register|996a32b7-a639-4b9e-8223-6630c49b7dfe|Fmkrd06FagHS5sF8j2kAisSzuxg4DUwJedyiJVJ6zU4",
+      "signature": "MEQCIG4/H9YOizMz2/UBJ9QraZBcM/ZxtBs64HJ8fWn5B0C4AiAdQ+WEIKXLHZ89MRMelzn8pxWKeAjXRt6kych+pkNmtg=="
+    },
+    {
+      "purpose": "self",
+      "challenge": "DEW9G9caTEnq1I6-am9asCBVk0cX91KxJPBmXmzQFG8",
+      "signingString": "shipard-device-v1|self|996a32b7-a639-4b9e-8223-6630c49b7dfe|DEW9G9caTEnq1I6-am9asCBVk0cX91KxJPBmXmzQFG8",
+      "signature": "MEUCIGmBNf3lyDK3GXd9xohLxLZ8vw8v/B12Al5iWdnglpybAiEA4ZOORmmG3h/zX0SDym/XfZ3MKxqPWwgc32J1mUn7zMc="
+    },
+    {
+      "purpose": "peripherals",
+      "challenge": "NZmq-7ggm_jC5wIHt9W0WBhVGQpzSV7JLqIC_msgAx0",
+      "signingString": "shipard-device-v1|peripherals|996a32b7-a639-4b9e-8223-6630c49b7dfe|NZmq-7ggm_jC5wIHt9W0WBhVGQpzSV7JLqIC_msgAx0",
+      "signature": "MEUCIQCWOynZi+MLXP0C0gQgqLsgNZiI1tmn1iTA5w+FOWZ85gIgP49Q1C4VMvnkGZh3J/rzxbOFThIfL+2AdyhIHDw1D3E="
+    },
+    {
+      "purpose": "register",
+      "challenge": "bkbbUMaub1vZ6gWC9y89uYtCs0PXdjUhh82dwrQSwSY",
+      "signingString": "shipard-device-v1|register|996a32b7-a639-4b9e-8223-6630c49b7dfe|bkbbUMaub1vZ6gWC9y89uYtCs0PXdjUhh82dwrQSwSY",
+      "signature": "MEUCIQDBiXA60q1TkltqUTvu8jPN91Z79BMqNWjO2pCRH63ZvwIgbQEjpNO+er5Ahoa0Ckmx+Fg9Mxffhab2nf6BQOtVy7I="
+    },
+    {
+      "purpose": "self",
+      "challenge": "rraSCwv3fnA9eHwYencSMQQBypXsyxnxNYV8b0bMCnQ",
+      "signingString": "shipard-device-v1|self|996a32b7-a639-4b9e-8223-6630c49b7dfe|rraSCwv3fnA9eHwYencSMQQBypXsyxnxNYV8b0bMCnQ",
+      "signature": "MEYCIQDAAiWSAZy1PlAG4eQjBEE5hGF4spL4F/GdQQqkpNT4gAIhANsDfMrqGyUU3EaooDfacSKiQCWKt5CY4IR7QqFJdYdi"
+    },
+    {
+      "purpose": "peripherals",
+      "challenge": "qJl7CzrUFsCpsMrQqtjy0yzyYLtHJWSfSuO9i1LD4Dk",
+      "signingString": "shipard-device-v1|peripherals|996a32b7-a639-4b9e-8223-6630c49b7dfe|qJl7CzrUFsCpsMrQqtjy0yzyYLtHJWSfSuO9i1LD4Dk",
+      "signature": "MEYCIQCFt7hPgjwS+VKve4hl3kdqrmsHMeRd4H5dsFR+m6i4fQIhAKqp2eFUoLpWRYCj38NPitGIPhuXB3+Gqx9CYTNbdoVS"
+    }
+  ]
+}

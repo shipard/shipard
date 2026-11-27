@@ -92,6 +92,18 @@ podepsaná volání, hlášení periferií a správu zařízení v Nastavení.
   (`location.origin + API_BASE_URL`) a při neshodě místo registrace ukáže
   chybu.
 
+- **U24** (schváleno 2026-11-27 při plánování) — Tělo `POST /_devices/register`
+  nese nepovinné `keyStorage` (z `info.keyStorage`); bez něj by sloupec
+  `key_storage` neměl zdroj. Přidání pole verzi kontraktu nemění.
+- **U25** (schváleno 2026-11-27 při plánování) — Verzi aplikace u zařízení
+  aktualizuje nepovinná hlavička `X-Shipard-App-Version` podepsaných volání;
+  server ji zapíše spolu s `last_seen_at`. Podepsané volání jinak verzi
+  nenese, takže „`app_version` aktualizuje `self`“ nemělo čím.
+- **U26** (schváleno 2026-11-27 při plánování) — Panel Toto zařízení čte
+  název a periferie registrovaného zařízení generickým CRUD nad tabulkami
+  modulu (`adminOnly`); most je nevrací a pátý endpoint se nezavádí.
+  Ne-administrátor vidí jen údaje z mostu (režim, platforma).
+
 ## Rozsah
 
 **V rozsahu:** modul `core.devices` (tabulky, Document třídy, viewer,
