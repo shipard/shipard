@@ -36,7 +36,13 @@ session vznikne. Mintování a invalidaci session drží `SessionService`
             "autoLinkEmail": true,       // default false
             "jitProvision": false        // default false
         }
-    ]
+    ],
+    "pin": {                             // politika PINu, default vypnuto
+        "enabled": false,
+        "minLength": 4,                  // nejméně 4
+        "maxLength": 8,                  // nejvýše 8, minLength ≤ maxLength
+        "maxAttempts": 5                 // nejméně 1
+    }
 }
 ```
 
@@ -57,6 +63,18 @@ session vznikne. Mintování a invalidaci session drží `SessionService`
   i při správném heslu; login obrazovka formulář skryje.
 - `GET /_app/info` vrací `auth: {local, providers: [{id, label}]}` — nikdy
   clientId/secret/issuer.
+- **`auth.pin`** (#177 U7, U21) — politika PINu, kterým se odemyká profil na
+  sdíleném pracovišti nativní aplikace ([native-bridge.md](native-bridge.md)
+  §8.5): `enabled` (výchozí `false` — PIN se musí výslovně zapnout),
+  `minLength` / `maxLength` (počet číslic, 4–8) a `maxAttempts` (po tolika
+  chybách jen plné přihlášení). Čte ji `Shipard\Core\Auth\PinPolicy`
+  (`AuthPolicy::$pin`, `DataSourceConfig::getPinPolicy()`) a **nikdy
+  nevyhazuje výjimku**: neplatná sekce (neznámý klíč, špatný typ, hodnota
+  mimo meze) znamená **celé výchozí hodnoty s vypnutým PINem** — i když
+  sekce říká `enabled: true` — a chybu v sekci *Data source auth policy*
+  příkazu `shpd-server doctor`. Politiku dnes vrací jen podepsané
+  `GET /_devices/self`; nastavení, ověření PINu a počítání pokusů přijdou
+  s taskem 6.
 
 ## OIDC flow
 

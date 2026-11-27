@@ -1109,7 +1109,7 @@ viz `modules/install/base/config/settingsSections.jsonc`) a odkazuje na
 
 | Pole | Typ | Povinné | Popis |
 |------|-----|---------|-------|
-| `viewer` / `table` / `page` | string | Právě jedno | ID vieweru, název tabulky, nebo ID settings page (z `settingsPages` téhož modulu) |
+| `viewer` / `table` / `page` / `panel` | string | Právě jedno | ID vieweru, název tabulky, ID settings page (z `settingsPages` téhož modulu), nebo ID panelu (z `panels` téhož modulu — klientská komponenta, mapa `panelComponents` v `ContentArea.svelte`; vzor `core.devices` → Toto zařízení, viz [app-settings.md](app-settings.md)). Panel v Nastavení `adminOnly` nečte — co smí ne-administrátor, řeší komponenta a server |
 | `section` | string | Ano | ID sekce v Nastavení |
 | `subsection` | string | Ne | ID podsekce |
 | `order` | int | Ne | Pořadí v rámci sekce |

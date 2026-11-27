@@ -1071,7 +1071,7 @@ select), prefix účtu, partner, jen chyby.
 }
 ```
 
-Pole `t1`, `i1`, `t2`, `i2`, `t3` přijímají string, objekt `{text, class?}` nebo pole objektů. `stateStyle` se mapuje na CSS třídu `docState_{stateStyle}` na řádku. Dostupné span třídy: `amount`, `muted`, `bold`, `primary`, `success`, `warning`, `danger`. `success` je klidný tón — kreslí se jako tečka před textem, text má barvu řádku (#153 D99); `muted` je `text-secondary` bez průhlednosti (D100). Řádek se `stateStyle` `archive` / `trash` má tlumený text, nic se nepřeškrtává (D101).
+Pole `t1`, `i1`, `t2`, `i2`, `t3` přijímají string, objekt `{text, class?}` nebo pole objektů. `stateStyle` se mapuje na CSS třídu `docState_{stateStyle}` na řádku. Span se značkou `nativeDevice: "<deviceId>"` se vykreslí jen na zařízení, jehož `deviceId` hlásí most nativní aplikace (štítek „toto zařízení“ v seznamu zařízení, #177 — viz Nativní most → Panel Toto zařízení); bez mostu se nevykreslí nikomu. Dostupné span třídy: `amount`, `muted`, `bold`, `primary`, `success`, `warning`, `danger`. `success` je klidný tón — kreslí se jako tečka před textem, text má barvu řádku (#153 D99); `muted` je `text-secondary` bez průhlednosti (D100). Řádek se `stateStyle` `archive` / `trash` má tlumený text, nic se nepřeškrtává (D101).
 
 **Štítky řádku z modulů** (`rowDecorators` v `module.jsonc`, #172 D18;
 deklarace v `docs/modules.md` kap. 5). Modul, který tabulku nevlastní,
@@ -2419,6 +2419,42 @@ U11–U12; co simulace umí a co ne, je v kontraktu §9a):
   účtenka** přes `print.submit`, náhledy tisku se stažením bajtů. Leží nad
   dialogy (`z-index` 1100), aby šla čtečka poslat i do otevřeného dialogu;
   není vrstva zásobníku, Esc ho nezavírá. Texty `native.mock.*`.
+
+### Panel Toto zařízení (`components/devices/`)
+
+Nastavení → Zařízení → **Toto zařízení** (`panelId` `thisDevice`, modul
+`core.devices`, #177 D13): registrace zařízení, na kterém se uživatel dívá,
+a jeho stav. Co panel ukazuje a jak registruje, jsou čisté funkce
+v `thisDeviceState.js` (testy `tests/Unit/devices/`); `ThisDevicePanel.svelte`
+je jen kreslí.
+
+| Stav (`panelState`) | Kdy | Co panel ukáže |
+|---|---|---|
+| `noBridge` | stránka nemá most | registrovat jde jen z nativní aplikace (nebo ze simulace) |
+| `otherDataSource` | `info.dataSource` ≠ `location.origin + API_BASE_URL` | chyba — most patří jinému zdroji dat (D33) |
+| `cannotSign` | neregistrováno a chybí capability `device` | simulace mimo zabezpečený kontext nemá klíč |
+| `register` / `needsAdmin` | neregistrováno, administrátor / ostatní | formulář (název, režim) / kdo registruje |
+| `registered` | `info.mode` `personal` nebo `shared` | údaje, **Synchronizovat**, administrátorovi periferie s rolemi a **Otevřít záznam zařízení** |
+
+- **Registrace** (`registerDevice`, kontrakt §7.3): `POST /_devices/challenge`
+  (účel `register`) → `device.register` → `POST /_devices/register` →
+  `device.sync` → `nativeStore.load({refresh: true})`. Formulář je vyplněný
+  předem — výzva platí 60 s. Chyba synchronizace registraci neruší.
+- **Zneplatnění:** `device.sync` skončí `DEVICE_REVOKED`, aplikace identitu
+  zahodila a `info` je zpět v `unregistered` — panel ukáže hlášku a formulář
+  nové registrace.
+- **Data registrovaného zařízení** most nevrací. Administrátor je čte
+  generickým seznamem nad tabulkami modulu (`deviceRecordPath`,
+  `peripheralsPath`; tabulky jsou `adminOnly`), ostatní vidí jen údaje
+  z mostu (#177 U26).
+- **Chyby mostu mají vlastní slovník** `devices.bridgeError.<kód>`
+  (`bridgeErrorKey`) — `INTERNAL_ERROR` a `NETWORK_ERROR` sdílejí jméno
+  s REST chybami, ale znamenají chybu aplikace. Chyby serveru jdou přes
+  `translateError` (`error.DEVICE_*`, `error.CHALLENGE_INVALID`, …).
+- **Štítek „toto zařízení“ v seznamu zařízení:** server neví, ze kterého
+  zařízení se uživatel dívá, proto span řádku nese značku `nativeDevice`
+  a `spansForDevice()` (`components/viewer/viewerSpans.js`, volá
+  `ViewerRow`) ho nechá jen na zařízení, jehož `deviceId` hlásí most.
 
 ### Pole bez automatických oprav
 

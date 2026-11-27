@@ -237,7 +237,7 @@ Shipard v prohlížeči zůstává beze změny; aplikace ho nenahrazuje.
 
 | Platforma | Stav |
 |---|---|
-| macOS a iPadOS | kontrakt mostu verze 1 zapsaný 2026-11-27 ([`native-bridge.md`](native-bridge.md), task 1); zbývá most ve frontendu, zařízení a registrace, tiskové úlohy a ESC/POS, aplikace, profily a PIN, přihlášení přes systémový prohlížeč, vydávání (#177) |
+| macOS a iPadOS | kontrakt mostu verze 1 ([`native-bridge.md`](native-bridge.md), task 1), most ve frontendu se simulací pro vývoj (task 2) a zařízení s registrací a podepsanými voláními na serveru (`core.devices`, task 3) hotové 2026-11-27; zbývá tiskové úlohy a ESC/POS, aplikace, profily a PIN, přihlášení přes systémový prohlížeč, vydávání (#177) |
 | Windows, Android | bez zadání |
 
 ---

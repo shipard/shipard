@@ -1,9 +1,11 @@
 # Nativní aplikace — kontrakt mostu a zařízení
 
-**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), server a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
+**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), na serveru zařízení, registrace a podepsaná volání (task 3); tiskové úlohy, PIN a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
 **Verze:** 1 (2026-11-27) — viz [Historie změn](#11-historie-změn)
-**Implementace:** web `frontend/src/native/` (task 2); server `core.devices`,
-`core.prints` (tasky 3, 4, 6); aplikace `shipard-app:apple/` (task 5)
+**Implementace:** web `frontend/src/native/` (task 2); server `core.devices`
+(task 3 — `modules/core/devices/README.md`, endpointy
+`src/Api/Controller/DevicesController.php`), `core.prints` (task 4), PIN
+a zamčení (task 6); aplikace `shipard-app:apple/` (task 5)
 
 Zdroj pravdy pro obě strany: webová aplikace a server žijí v tomto repu,
 nativní aplikace v repu `shipard/shipard-app`. Změna kontraktu se zapisuje
@@ -786,7 +788,7 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
 |---|---|
 | `info` | podle kontraktu; `dataSource` = `location.origin` + adresa API stránky, `profile` vždy `null` |
 | `device.register` | **skutečný** klíč ECDSA P-256 z WebCrypto a podpis podle §7.1 — server ho ověří stejně jako u aplikace |
-| `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`); režim z odpovědi si uloží. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
+| `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`, hlavička `X-Shipard-App-Version`); režim z odpovědi si uloží. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
 | `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`, 48 znaků) a čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) |
 | `print.submit` | kontrola parametrů a limitů jako aplikace (`INVALID_PARAMS`, `PAYLOAD_TOO_LARGE`, `PERIPHERAL_NOT_FOUND`, `UNSUPPORTED_FORMAT`, `DUPLICATE_JOB` s pamětí 100 `jobId`, `PERIPHERAL_UNAVAILABLE`); místo tisku náhled účtenky |
 | `shipard:scan`, `shipard:peripheral` | z ovládacího panelu simulace |
@@ -841,7 +843,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 |---|---|---|
 | Kontrakt (tento dokument) | 1 — `tasks/native-bridge-contract.md` | hotovo |
 | Most ve frontendu, simulace mostu, testovací stránka v `/_dev/` | 2 — `tasks/native-frontend-bridge.md` | hotovo |
-| `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | neimplementováno |
+| `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | hotovo — `challenge`, `register`, `self`, `self/peripherals`; `self` vrací `users: []` (task 6) |
 | Tiskové úlohy, ESC/POS, katalog profilů tiskáren | 4 | neimplementováno |
 | Aplikace pro macOS a iPadOS (`shipard-app:apple/`) | 5 | neimplementováno |
 | Profily, zařazení, PIN, zamčení | 6 | neimplementováno |
@@ -857,6 +859,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Oddíl Simulace pro vývoj (§9a, #177 U11–U13): hodnoty `mock` u `platform` a `keyStorage`, podmnožina ESC/POS pro náhled a čísla kódových stránek pro `ESC t` (18, 45). Webová strana mostu hotová (task 2). Verze beze změny. |
 | 1 | 2026-11-27 | Nepovinná hlavička `X-Shipard-App-Version` u podepsaných volání (§7.1, #177 U25) — verze aplikace na záznamu zařízení se jinak po registraci neměla jak aktualizovat. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Nepovinné pole `keyStorage` v těle `POST /_devices/register` (§7.2, #177 U24) a výčet chyb registrace. Před implementací klienta, verze beze změny. |
+| 1 | 2026-11-27 | Server pro zařízení hotový (task 3): modul `core.devices`, endpointy `challenge`, `register`, `self`, `self/peripherals`, Nastavení → Zařízení s panelem Toto zařízení. Kontrakt beze změny. |
 
 ---
 

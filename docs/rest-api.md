@@ -173,6 +173,10 @@ http://{ip-adresa}/{ds-id}/api/v1/{tabulka}
 | `POST` | `/api/v1/_auth/password/reset` | Nastavení hesla tokenem z mailu (reset i pozvánka) — **veřejné** |
 | `POST` | `/api/v1/_auth/password/change` | Změna hesla — `{currentPassword, newPassword}` (session) |
 | `POST` | `/api/v1/_users/{id}/invite` | Poslání pozvánkového mailu (admin, session) |
+| `POST` | `/api/v1/_devices/challenge` | Výzva pro podpis zařízení — `{deviceId, purpose}`; účel `register` jen se session administrátora, ostatní jen registrovanému aktivnímu zařízení, **bez session** ([native-bridge.md](native-bridge.md) §7.2) |
+| `POST` | `/api/v1/_devices/register` | Registrace zařízení nativní aplikace (session administrátora, podpis v těle) — 201 |
+| `GET` | `/api/v1/_devices/self` | Stav registrace zařízení — **bez session**, ověření podpisem v hlavičkách `X-Shipard-*` |
+| `PUT` | `/api/v1/_devices/self/peripherals` | Hlášení periferií zařízení — **bez session**, ověření podpisem |
 | `GET` | `/api/v1/_auth/sessions` | Vlastní relace — `{id, created, expires, ip_address, current}` (session) |
 | `DELETE` | `/api/v1/_auth/sessions/{id}` | Smazání vlastní relace; cizí id → 404 (session) |
 | `POST` | `/api/v1/_auth/sessions/revoke-others` | Odhlášení ostatních zařízení (session) |
@@ -522,7 +526,8 @@ Chybový formát vychází z RFC 7807 (Problem Details), adaptovaný pro obálku
 | `UNAUTHORIZED` | Chybí autentizace |
 | `FORBIDDEN` | Nedostatečná oprávnění |
 | `CONFLICT` | Porušení UNIQUE constraintu |
-| `RATE_LIMITED` | Příliš mnoho požadavků |
+| `RATE_LIMITED` | Příliš mnoho požadavků; u `/_devices/challenge` šestá nevyužitá výzva zařízení |
+| `DEVICE_UNKNOWN`, `DEVICE_REVOKED`, `DEVICE_EXISTS`, `CHALLENGE_INVALID`, `SIGNATURE_INVALID` | Chyby volání zařízení nativní aplikace (401 / 403 / 409) — [native-bridge.md](native-bridge.md) §7.2; chyby ověření podpisem nenesou podrobnosti |
 | `BAD_REQUEST` | Malformed request |
 | `INTERNAL_ERROR` | Neočekávaná chyba serveru |
 | `TABLE_NOT_FOUND` | Tabulka neexistuje nebo není přístupná přes API |

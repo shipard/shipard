@@ -89,6 +89,9 @@ CATALOG_EXTRA_AGENDAS = {
     # Evidence tržeb — doplněk economy.salesRegistration (#171): vlastní
     # sekce v Nastavení aplikace, v levém menu není.
     "Evidence tržeb",
+    # Zařízení — registrovaná zařízení nativní aplikace v Nastavení
+    # aplikace (core.devices, #177), v levém menu nejsou.
+    "Zařízení",
 }
 
 # Řádek tabulky katalogu: `| **Agenda** | …`

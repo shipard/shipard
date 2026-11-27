@@ -1,6 +1,6 @@
 # Nativní aplikace — task 3: modul `core.devices`, registrace zařízení a podepsaná volání (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D5, D13, D23, D24, D27, D32, D33, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1
+**Stav:** hotovo — implementováno 2026-11-27 v šesti commitech (upřesnění U24–U26 schválená při plánování); zbývá proklik na dev serveru s přihlášeným administrátorem: seznam zařízení se štítkem „toto zařízení“, role periferie ve formuláři a akce Zneplatnit z UI (přihlášené cesty šly ověřit jen testy a podvrženou session)
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 1** (kontrakt `docs/native-bridge.md`); s taskem 2 jde souběžně —
@@ -275,17 +275,49 @@ platforma, stav, poslední kontakt), `device-revoke <deviceId>` (potvrzení,
 
 ## Hotovo když
 
-- [ ] `shpd-ds ds-upgrade` na dev DS založí tabulky; `cash_desk` jen tam,
+- [x] `shpd-ds ds-upgrade` na dev DS založí tabulky; `cash_desk` jen tam,
       kde je `economy.codebooks`
-- [ ] cílené PHPUnit (`--filter 'Device|Challenge|AuthPolicy'`) a
+- [x] cílené PHPUnit (`--filter 'Device|Challenge|AuthPolicy'`) a
       integrační testy registrace projdou; fixture z WebCrypto ověří PHP
-- [ ] na dev serveru se simulací z tasku 2: Nastavení → Zařízení → Toto
+- [x] na dev serveru se simulací z tasku 2: Nastavení → Zařízení → Toto
       zařízení → Registrovat → záznam zařízení existuje, panel ukazuje
-      registrované zařízení, Synchronizovat nahlásí periferie simulace,
-      role `receipt` jde přiřadit jen jedné tiskárně
-- [ ] po Zneplatnit (UI i `device-revoke`) skončí `device.sync`
-      chybou `DEVICE_REVOKED`
-- [ ] podepsané volání se starou, cizí nebo použitou výzvou je odmítnuté
-- [ ] v režimu jen pro čtení `self` funguje, `register` a hlášení
+      registrované zařízení, Synchronizovat nahlásí periferie simulace —
+      ověřeno v headless prohlížeči; výzvu k registraci a registraci
+      (session administrátora) tam obsloužila služba modulu přímo
+- [ ] role `receipt` jde přiřadit jen jedné tiskárně — pravidlo hlídá
+      `PeripheralDocument` (testy), z formuláře zbývá proklik
+- [x] po `device-revoke` skončí `device.sync` chybou `DEVICE_REVOKED`
+- [ ] Zneplatnit z UI — akce je pokrytá testy, zbývá proklik
+- [x] podepsané volání se starou, cizí nebo použitou výzvou je odmítnuté
+- [x] v režimu jen pro čtení `self` funguje, `register` a hlášení
       periferií vrací `DS_READ_ONLY`
-- [ ] dokumentace a `tasks/README.md` aktualizované
+- [x] dokumentace a `tasks/README.md` aktualizované
+
+## Odchylky od zadání
+
+- Fixture interoperability je v `tests/Fixtures/Devices/` (repo má adresář
+  `tests/Fixtures`), ne `tests/fixtures/devices/`.
+- Zneplatnění je atomický podmíněný UPDATE ve službě registrace, ne
+  uložení přes dokument — událost změny stavu se nevyvolá; co má na
+  zneplatnění navázat (task 6: session zařízení), se volá ze služby.
+- Sloupce `revoked_at` a `revoked_by` navíc (audit zneplatnění).
+- Výzva, `device_id` a `peripheral_id` mají collation `utf8mb4_bin` —
+  výchozí česká collation porovnává bez ohledu na velikost písmen.
+- `auth.pin`: „vzor ostatních klíčů politiky“ pro „výchozí + nález“
+  neexistoval (ostatní klíče hází výjimku, doctor je nečetl). Politika
+  PINu má vlastní třídu, která nehází nikdy; neplatná sekce znamená
+  **celé** výchozí hodnoty (PIN vypnutý) a chybu v nové sekci doctoru.
+- Popis rout v OpenAPI se nedoplňoval — specifikace popisuje jen `_auth`,
+  `_meta` a CRUD a test pokrytí rout neexistuje.
+- Úloha cronu se jmenuje `device-challenges-prune` a běží i v režimu jen
+  pro čtení.
+
+## Zbývá mimo tento task
+
+- Anonymní požadavky sdílejí limit 60 za minutu na IP adresu a jedna
+  synchronizace jsou čtyři požadavky — víc zařízení za jednou adresou může
+  na limit narazit. Vlastní limit pro zařízení (vzor `hostingAiGateway`)
+  je na zvážení před nasazením sdílených pracovišť.
+- Generické CRUD (`PATCH`) jde mimo dokumenty, jedinečnost role `receipt`
+  hlídá jen formulář — směrování tisku (task 4) musí počítat i s víc
+  periferiemi s rolí.

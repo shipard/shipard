@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 496 tasků: **naplánováno** 5 · **částečně** 26 · **zrušeno** 1 · **hotovo** 464.
+Celkem 496 tasků: **naplánováno** 4 · **částečně** 26 · **zrušeno** 1 · **hotovo** 465.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
-| `native-devices-registration.md` | naplánováno | rozhodnutí #177 D5, D13, D23, D24, D27, D32, D33, U1, U4, U6, U7 a upřesnění U16–U23 (schválená 2026-11-26), připraveno k implementaci po tasku 1 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -305,6 +304,7 @@ strana a server tady. Design issue #177, kontrakt mezi oběma stranami
 |------|----|---------|
 | `native-bridge-contract.md` | 1 | Kontrakt mostu a zařízení verze 1, kategorie Klientská aplikace ve standardu komponent, roadmapa a přehled funkcí (#177 D21–D32, U1–U10, U16) |
 | `native-frontend-bridge.md` | 2 | Most ve frontendu: obálka `window.shipardNative`, odběr čteček, validátory kontraktu, náhled ESC/POS a zkušební účtenka, simulace mostu pro vývoj, stránka Most ve vývojářském dashboardu, jednořádková pole bez automatických oprav (#177 D6, D10, D21, D29, D33, U11–U15) |
+| `native-devices-registration.md` | 3 | Modul `core.devices`: zařízení, periferie a výzvy, registrace a podepsaná volání bez session (`/_devices/challenge`, `register`, `self`, `self/peripherals`), politika PINu `auth.pin`, Nastavení → Zařízení s panelem Toto zařízení, pokladna zařízení z `economy.codebooks`, CLI `device-list` / `device-revoke`, úklid výzev (#177 D5, D13, D24, D27, D32, U16–U26) |
 
 ## Výměnný formát a import ze starého Shipardu
 

@@ -153,6 +153,12 @@ Read-only health check. Vypíše:
   §8) na **produkčním** serveru `⚠ <id>: cron off — periodic jobs are not
   running (shpd-ds ds-state cron --on)`, jinde `· <id>: cron off` — řádek
   nezávislý na řádku o stavu, nikdy nezvyšuje počet chyb
+- **Data source auth policy** — klíč `auth.pin` zdrojů dat
+  ([auth.md](auth.md) → Auth politika per DS, #177 U21): `✗ <id>: auth.pin
+  is invalid — <co je špatně>; PIN stays disabled until config/main.json is
+  fixed` (jedna chyba za zdroj dat — platí výchozí hodnoty s vypnutým
+  PINem), jinak `All auth policies valid ✓`. Zdroj dat s nepoužitelným
+  `main.json` tu chybí, hlásí ho *Data source DB connections*
 - **Outbound mail** — řádek `Mail safety` s režimem pojistky odchozí pošty
   ([mail/outbound.md](mail/outbound.md) § Pojistka): cíl přesměrování
   a zdroj režimu (`configured` / `default`); `✗` chybná sekce `mail.safety`
@@ -382,7 +388,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 |------|---------|---------|-----------------|-------|
 | `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep`, `sales-registration-run` (fronta evidence tržeb — jen zdroj dat se zapnutým doplňkem) | `active` | `core.mail`, `economy.salesRegistration` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
-| `five-minutes` | à 5 min | `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `sales-registration-reconcile` (záchranná síť evidence tržeb — jen se zapnutým doplňkem), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `economy.exchangeRates`, `economy.salesRegistration`, `core.alerts` |
+| `five-minutes` | à 5 min | `device-challenges-prune` (úklid výzev zařízení — i v `read_only`), `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `sales-registration-reconcile` (záchranná síť evidence tržeb — jen se zapnutým doplňkem), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `core.devices`, `economy.exchangeRates`, `economy.salesRegistration`, `core.alerts` |
 | `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
@@ -1813,6 +1819,49 @@ kontrola importu ze starého Shipardu. Porovnává detailní řádky podle účt
 a součty podle popisku, sloupce v průniku dle `id`, tolerance 0,005.
 Exit 0 shoda, 1 rozdíly, 2 chyba vstupu; `--strict` odmítne stranu se
 `status: errors`. Viz [reports.md](reports.md) §7.4 a §13.
+
+#### `device-list [--json]`
+
+Modul: `core.devices`
+
+Registrovaná zařízení nativní aplikace (#177 U22): název, režim, platforma,
+stav (`active` / `revoked`), poslední kontakt a `deviceId` — argument
+příkazu `device-revoke`. `--json` vrací `{devices: [{deviceId, name, mode,
+platform, appVersion, state, registeredAt, lastSeenAt}]}`. Veřejný klíč
+zařízení příkaz nevypisuje.
+
+```bash
+shpd-ds device-list
+shpd-ds device-list --json
+```
+
+#### `device-revoke <deviceId> [--yes]`
+
+Modul: `core.devices`
+
+Zneplatnění zařízení bez UI — ztracené zařízení, nedostupná aplikace. Dělá
+totéž co akce **Zneplatnit** v Nastavení → Zařízení: zařízení přestane
+procházet podepsanými voláními (`DEVICE_REVOKED`) a jeho výzvy se smažou.
+**Zneplatnění je konečné** — zařízení se pak registruje znovu jako nové,
+s novým `deviceId`.
+
+```bash
+shpd-ds device-list                      # deviceId
+shpd-ds device-revoke 0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10
+shpd-ds device-revoke 0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10 --yes   # ze skriptu
+```
+
+Před zápisem vypíše zařízení a zeptá se; bez `--yes` v neinteraktivním
+běhu nic nezmění. Neznámé `deviceId` = exit 1; už zneplatněné zařízení je
+beze změny a exit 0.
+
+#### `device-challenges-prune`
+
+Modul: `core.devices`
+
+Smaže použité a prošlé výzvy zařízení (#177 U20) — úloha cronu
+`five-minutes`, běží i ve zdroji dat jen pro čtení (výzvy tam vznikají
+také). Když není co mazat, nic nevypíše (`-v` vypíše i nulu).
 
 #### Příkazy modulů bez vlastní kapitoly
 

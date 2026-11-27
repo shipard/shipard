@@ -108,6 +108,7 @@ je zapíná správce.
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
 | **Upozornění** | Nesrovnalosti, které našly automatické kontroly — chyba účtování, doklad dlouho v opravě, blížící se expirace dokumentu ze Spisovny. Na Dashboardu se objevují jako karty v sekci **Upozornění** | — |
+| **Zařízení** | Počítače a tablety s nativní aplikací Shipardu, jejich tiskárny účtenek, čtečky a pokladna — obdoba pracoviště. Není v levém menu: najdeš je v **Nastavení aplikace → Zařízení**. Zařízení se registruje přímo na sobě v panelu **Toto zařízení**, administrátor mu pak přiřadí tiskárně roli **Účtenky** a ztracené zařízení **Zneplatní**. **Nativní aplikace zatím není vydaná**, do té doby zůstane seznam prázdný | [Zařízení a jejich registrace](zarizeni.md) |
 
 ---
 

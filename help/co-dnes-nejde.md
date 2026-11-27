@@ -441,11 +441,14 @@ o ISDOC dodavatele požádat.
 
 ## Rozhraní
 
-- **Mobilní aplikace v App Storu ani Google Play není a nechystá se.**
-  Rozhraní je responzivní a Shipard si přidáš na plochu telefonu nebo
-  nainstaluješ do počítače přímo z prohlížeče — viz
-  [Instalace aplikace](instalace-aplikace.md). Nainstalovaná aplikace ale
-  **nefunguje bez připojení** a **neposílá notifikace do telefonu**.
+- **Nativní aplikace pro Mac a iPad zatím není vydaná; pro Android
+  a Windows se nechystá.** V Nastavení už je pro ni sekce **Zařízení**, ale
+  bez aplikace v ní zařízení nezaregistruješ — viz
+  [Zařízení a jejich registrace](zarizeni.md). Rozhraní je responzivní
+  a Shipard si přidáš na plochu telefonu nebo nainstaluješ do počítače
+  přímo z prohlížeče — viz [Instalace aplikace](instalace-aplikace.md).
+  Takto nainstalovaná aplikace ale **nefunguje bez připojení**
+  a **neposílá notifikace do telefonu**.
 - **Report nevytiskneš ani neuložíš do PDF přímo ze Shipardu.** Stáhneš ho
   jako sešit pro Excel nebo jako CSV a vytiskneš z tabulkového procesoru —
   viz [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md).

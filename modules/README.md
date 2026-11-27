@@ -79,7 +79,7 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 | [`core.alerts`](core/alerts/README.md) | Upozornění | Upozornění pro uživatele — chybějící nastavení, dlouho otevřené stavy, nespárovaná data, vybitá IoT baterie atp. |
 | [`core.attachments`](core/attachments/README.md) | Přílohy | Přílohy dokumentů — nahrávání souborů, náhledy, úložiště |
 | [`core.chat`](core/chat/module.jsonc) | Chat | Vestavěný AI asistent: perzistované konverzace a zprávy |
-| [`core.devices`](core/devices/module.jsonc) | Zařízení | Registrovaná zařízení nativní aplikace, jejich periferie a podepsaná volání zařízení |
+| [`core.devices`](core/devices/README.md) | Zařízení | Registrovaná zařízení nativní aplikace, jejich periferie a podepsaná volání zařízení |
 | [`core.exchange`](core/exchange/README.md) | Výměnné formáty | Kanonické výměnné formáty pro doklady a další entity |
 | [`core.help`](core/help/module.jsonc) | Uživatelská dokumentace | Zpřístupňuje uživatelskou dokumentaci z help/ vnitřnímu asistentovi přes čtecí MCP nástroje (help_search, help_get_page). Žádné tabulky ani obrazovky — zdrojem pravdy jsou markdown soubory v help/. |
 | [`core.mail`](core/mail/README.md) | Pošta | Došlá a odchozí pošta |
