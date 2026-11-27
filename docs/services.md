@@ -2,7 +2,7 @@
 
 Pravidla pro komponenty, které nejsou součástí repozitáře `shipard/shipard`, ale
 tvoří s ním jeden systém — dnes `mail-router`, dále generátor
-UI videa (#48) a PDF rendering (#34).
+UI videa (#48), PDF rendering (#34) a nativní aplikace `shipard-app` (#177).
 
 Cíl: vývojář (i Claude Code) přijde do libovolného repozitáře komponenty
 a najde stejnou strukturu, stejná jména dokumentů a stejnou sadu CLI příkazů
@@ -16,20 +16,21 @@ jako v `shpd`. Rozdělené repozitáře nesmí znamenat rozdělené standardy.
 
 ---
 
-## 1. Tři kategorie komponent
+## 1. Čtyři kategorie komponent
 
 Jeden kontrakt na všechno by byl zředěný o výjimky. Komponenty se proto dělí
-na tři kategorie s různými požadavky:
+na čtyři kategorie s různými požadavky:
 
 | Kategorie | Charakteristika | Dnes |
 |---|---|---|
 | **Runtime služba** | Dlouho běžící démon. Systemd unity, config v `/etc/`, systémový uživatel, stav v `/var/lib/`. | `mail-router` (`ai-analyzer` zrušen #85 D24) |
 | **Nástroj** | Spouštěný příležitostně, ručně nebo z CI. Bez systemd, bez dedikovaného uživatele, běží ze zdrojového adresáře. | generátor videa (#48) |
 | **Vendorovaná infrastruktura** | Cizí software, žádný náš kód. Jen deployment descriptor a provozní dokumentace. | Gotenberg (#34) |
+| **Klientská aplikace** | Aplikace pro koncové uživatele. Instaluje se z obchodu nebo přímým stažením, neběží na serveru — nemá CLI ani systemd. | `shipard-app` (#177) |
 
 Kapitoly 2–9 popisují **runtime službu** — nejnáročnější případ. Kapitola 10
 říká, co z toho platí pro nástroj, kapitola 11 pro vendorovanou
-infrastrukturu.
+infrastrukturu a kapitola 11a pro klientskou aplikaci.
 
 ---
 
@@ -260,11 +261,90 @@ verby. Nástroj běží ze zdrojového adresáře pod běžným uživatelem.
 
 ---
 
+## 11a. Klientská aplikace
+
+Aplikace, kterou si koncový uživatel instaluje na své zařízení — dnes
+nativní aplikace Shipardu `shipard-app` (#177). Neběží na serveru, takže
+z provozní části standardu neplatí nic; platí všechno, co drží repozitáře
+pohromadě: dokumentace, kontrakt, testy kontraktu a tasky.
+
+Kapitola nese číslo 11a, aby se nepřečíslovaly kapitoly 12–14, na které
+odkazují jiné dokumenty.
+
+### Co platí a co ne
+
+| Pravidlo | Klientská aplikace |
+|---|---|
+| `CLAUDE.md` se sekcí o vztahu k `shpd` (kap. 3) | platí |
+| `docs/README.md`, `architecture.md`, `troubleshooting.md` (kap. 2) | platí; místo `operations.md` je **`release.md`** — podepisování, notarizace, Sparkle, App Store |
+| Kontrakt v `shpd` s verzí a historií změn (kap. 12) | platí — [`native-bridge.md`](native-bridge.md) |
+| Testy kontraktu proti falešnému serveru (kap. 9) | platí, navíc **falešná tiskárna** |
+| Tasky, `scripts/tasks-index.py`, čeština (kap. 9) | platí |
+| `bin/shpd-<name>` a povinné verby (kap. 4) | neplatí |
+| Systemd, cesty `/opt`, `/etc`, `/var/lib` (kap. 2, 5, 7) | neplatí |
+| `deploy/packages.txt` (kap. 6) | neplatí |
+| Verze a git hash ve výpisu `status` (kap. 8) | místo toho **verze a číslo sestavení** v okně O aplikaci a v metodě `info` mostu |
+
+### Struktura repozitáře
+
+Jeden repozitář pro všechny platformy:
+
+```
+<repo>/
+├── apple/                     # macOS a iPadOS; později android/, windows/
+│   └── CLAUDE.md              # konvence platformy
+├── testing/                   # společné: falešná tiskárna, vzorové úlohy a bajty
+├── docs/
+│   ├── README.md              # index dokumentace (povinný)
+│   ├── architecture.md
+│   ├── release.md
+│   └── troubleshooting.md
+├── scripts/
+│   └── tasks-index.py         # kopie z shpd
+├── tasks/
+├── CLAUDE.md                  # povinný — viz kap. 3
+├── AGENTS.md -> CLAUDE.md     # symlink
+├── README.md                  # rozcestník + tabulka podpory metod mostu podle platforem
+└── LICENSE
+```
+
+Každá platforma má vlastní adresář s vlastním `CLAUDE.md`; co platí pro
+všechny (kontrakt, testovací data, dokumentace, tasky), je v kořeni.
+`README.md` nese tabulku, kterou metodu a událost mostu která platforma
+umí — kontrakt je jeden, pokrytí se liší.
+
+### Verzování a vydávání
+
+- **Verze má každá platforma zvlášť.** Tag nese prefix platformy:
+  `<platforma>-v<verze>`, například `apple-v1.2.0`.
+- **CI se spouští podle cest** — změna v `apple/` nesestavuje ostatní
+  platformy; změna v `testing/` spouští testy všech.
+- **Podpisové klíče** má každá platforma vlastní, v GitHub environments.
+  Nikdy v repozitáři — stejné pravidlo jako pro config v kap. 5.
+- Postup vydání (podepsání, notarizace, feed aktualizací, App Store)
+  popisuje `docs/release.md`.
+
+### Checklist souladu
+
+- [ ] `CLAUDE.md` v kořeni má sekci o kontraktu vůči `shpd`, každá
+      platforma má vlastní `CLAUDE.md`
+- [ ] `docs/README.md` indexuje `architecture.md`, `release.md`
+      a `troubleshooting.md`, dokumentace je česky
+- [ ] `README.md` má tabulku podpory metod mostu podle platforem
+- [ ] kontrakt mostu má test proti falešnému serveru a falešné tiskárně
+      z `testing/`
+- [ ] okno O aplikaci i `info` mostu ukazují verzi a číslo sestavení
+- [ ] tagy vydání mají prefix platformy, podpisové klíče nejsou v repozitáři
+- [ ] `tasks/README.md` a `scripts/tasks-index.py` na místě
+
+---
+
 ## 12. Kontrakty vůči `shpd`
 
 Datový kontrakt mezi `shpd` a komponentou žije **v `shpd`** — je to jeho API,
 ne API komponenty. Dokumentuje se v `shpd/docs/` (vzor:
-[`mail/api-contract.md`](mail/api-contract.md)) a `CLAUDE.md` komponenty na něj
+[`mail/api-contract.md`](mail/api-contract.md), u klientské aplikace
+[`native-bridge.md`](native-bridge.md)) a `CLAUDE.md` komponenty na něj
 odkazuje.
 
 Pravidla:
@@ -306,6 +386,7 @@ Komponenta je v souladu se standardem, když:
 | `ai-analyzer` | runtime služba | **zrušena** (#85 D24, 2026-10-10) — repozitář archivován, analýzu pošty dělá `shpd` v procesu |
 | `mail-router` | runtime služba | nesouladná — chybí `CLAUDE.md`, CLI, prázdné `tasks/` |
 | generátor videa (#48) | nástroj | nevzniklo — píše se přímo podle standardu |
+| `shipard-app` (#177) | klientská aplikace | nevzniklo — vznikne podle standardu (task 5 z #177); kontrakt [`native-bridge.md`](native-bridge.md) verze 1 je zapsaný předem |
 | Gotenberg (#34) | vendorovaná infra | dle standardu — pin + unit template `docs/render/shpd-render.service`, provoz `docs/operations/render-service.md`, klient `src/Core/Render/` (`docs/render.md`); rollout na alfě zbývá |
 
 ---
