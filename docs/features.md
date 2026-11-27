@@ -15,6 +15,7 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 - [x] Upozornění — automatické kontroly jako karty na Dashboardu
 - [x] Úkoly — samostatná evidence
 - [ ] 🟠 Anglické rozhraní — existuje, nepřeložené popisky
+- [ ] Nativní aplikace pro macOS a iPadOS — Shipard v okně aplikace, tisk na POS tiskárny, čtečky, sdílená pracoviště s PINem (#177)
 
 ## Pošta a AI vytěžení
 
@@ -77,6 +78,7 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 
 - [x] Pokladní doklady — příjmové a výdajové
 - [ ] Pokladní kniha
+- [ ] Maloobchodní kasa — prodejní obrazovka, účtenky na POS tiskárnu, čtečky (bez návrhu)
 
 ## Účtárna
 
@@ -143,10 +145,9 @@ Rozhodnuto, že se **nedělá** — ať se k tomu nevracíme.
 
 | Co | Proč |
 |---|---|
-| Maloobchod / kasa, jídelna, rezervace | mimo záběr účetní aplikace |
+| Jídelna, rezervace | mimo záběr účetní aplikace |
 | Štítky | rozhodnuto nezavádět |
 | Hromadné e-maily | mimo záběr |
-| Mobilní nativní aplikace | responzivní web pokrývá potřebu |
 
 ---
 

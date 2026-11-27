@@ -223,6 +223,25 @@ s vlastní issue, ne na míru jednomu doplňku.
 
 ---
 
+## Nativní aplikace
+
+Nativní aplikace Shipardu — okno s WebView, ve kterém běží běžný Shipard,
+a k tomu přístup k periferiím: tisk na POS tiskárny, čtečky, sdílená
+pracoviště s PINem (#177). Žije ve vlastním repozitáři `shipard-app`;
+webová strana a server v tomto. Je to **samostatný oddíl mimo milníky**,
+se stejným pravidlem jako doplňky: z pravidla prioritizace pro ni platí
+jen kategorie 1 — otevřená položka věcné správnosti blokuje i práci na
+aplikaci, kategorie 2 a 3 ne.
+
+Shipard v prohlížeči zůstává beze změny; aplikace ho nenahrazuje.
+
+| Platforma | Stav |
+|---|---|
+| macOS a iPadOS | kontrakt mostu verze 1 zapsaný 2026-11-27 ([`native-bridge.md`](native-bridge.md), task 1); zbývá most ve frontendu, zařízení a registrace, tiskové úlohy a ESC/POS, aplikace, profily a PIN, přihlášení přes systémový prohlížeč, vydávání (#177) |
+| Windows, Android | bez zadání |
+
+---
+
 ## Vědomě odložené
 
 Věci, o kterých se rozhodlo, že se **nedělají teď** — ať se k nim nevracíme
@@ -236,7 +255,6 @@ v každé diskuzi.
 | Účetní závěrka (uzávěrka roku, rozvaha, výsledovka) | není potřeba pro přechod na ostro; přijde s prvním uzavíraným rokem |
 | PostgreSQL driver | MariaDB stačí; abstrakce v `DatabaseManager` je připravená |
 | Další LLM poskytovatelé kromě Anthropic | až bude důvod, backendy jsou abstrahované |
-| Mobilní nativní aplikace | responzivní web pokrývá potřebu |
 
 ---
 
@@ -252,6 +270,9 @@ v každé diskuzi.
 
 ### Historie revizí
 
+- **27. 11. 2026:** nativní aplikace se z Vědomě odložených přesunula do
+  vlastního oddílu vedle Doplňků — mimo milníky, blokuje ji jen
+  kategorie 1 (#177).
 - **17. 11. 2026:** M1 uzavřen (#55); ověření výstupů DPH proti historii
   podání na kopiích reálných dat pokračuje v #158. Aktivní milník je M2.
 - **16. 10. 2026:** M4 „AI modely“ — výchozí modely úrovní na řadě 5
