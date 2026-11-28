@@ -20,6 +20,19 @@
         // Položka „Dnes“ ve skupině Platnost a její hodnoty.
         "today": { "name": "Today", "name:cs": "Dnes", "name:en": "Today" },
         "valid": { "name": "Valid", "name:cs": "Platí", "name:en": "Valid" },
-        "notValid": { "name": "Not valid", "name:cs": "Neplatí", "name:en": "Not valid" }
+        "notValid": { "name": "Not valid", "name:cs": "Neplatí", "name:en": "Not valid" },
+
+        // PrintJobsViewer (Tiskové úlohy, #177 U42). Popisky položek jdou
+        // z definice tabulky core_prints_jobs, druhy a stavy z
+        // core.prints.jobKinds / jobStates.
+        "jobRecord": { "name": "{print} · record {record}", "name:cs": "{print} · záznam {record}", "name:en": "{print} · record {record}" },
+        "jobAttempts": { "name": "Attempts: {count}", "name:cs": "Pokusy: {count}", "name:en": "Attempts: {count}" },
+        "jobBytes": { "name": "{count} bytes", "name:cs": "{count} bajtů", "name:en": "{count} bytes" },
+        "jobFilterDevice": { "name": "Device", "name:cs": "Zařízení", "name:en": "Device" },
+        "jobGroupTarget": { "name": "Printer", "name:cs": "Tiskárna", "name:en": "Printer" },
+        "jobGroupResult": { "name": "Result", "name:cs": "Výsledek", "name:en": "Result" },
+        "jobGroupJob": { "name": "Job", "name:cs": "Úloha", "name:en": "Job" },
+        "jobGroupWarnings": { "name": "Warnings", "name:cs": "Varování", "name:en": "Warnings" },
+        "jobPeripheralGone": { "name": "peripheral no longer exists", "name:cs": "periferie už neexistuje", "name:en": "peripheral no longer exists" }
     }
 }

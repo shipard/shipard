@@ -332,15 +332,26 @@ class ViewerController
 		// Tisk (#90 D19): generický háček nad registrem tisků — viewer o něm
 		// neví, takže tisky dalších tabulek fungují bez zásahu do něj.
 		// Tisky pro účtenkovou tiskárnu (`output: escpos`, #177 U35) sem
-		// nepatří — PDF z nich nevznikne; vlastní akci dostanou s tiskovými
-		// úlohami.
+		// nepatří — PDF z nich nevznikne; mají vlastní akci `printPos`.
+		$allPrints    = $prints?->forRecord($def->table, $record) ?? [];
 		$recordPrints = array_values(array_filter(
-			$prints?->forRecord($def->table, $record) ?? [],
+			$allPrints,
 			static fn (PrintDefinition $d): bool => !$d->isEscPos(),
 		));
 		$printAction  = self::recordPrintAction('print', $recordPrints, $config);
 		if ($printAction !== null) {
 			$detail['actions'] = [...($detail['actions'] ?? []), $printAction];
+		}
+
+		// Tisk na účtenkovou tiskárnu (#177 U40): akce jde vždy, když záznam
+		// takový tisk má. Jestli ji ukázat, rozhoduje až frontend — server
+		// neví, jestli požadavek přišel ze zařízení s mostem a tiskárnou.
+		$posAction = self::recordPrintAction('printPos', array_values(array_filter(
+			$allPrints,
+			static fn (PrintDefinition $d): bool => $d->isEscPos(),
+		)), $config);
+		if ($posAction !== null) {
+			$detail['actions'] = [...($detail['actions'] ?? []), $posAction];
 		}
 
 		// Odeslání e-mailem a Odeslaná pošta u záznamu (#90 D38, D45) —
@@ -375,10 +386,15 @@ class ViewerController
 	 * `target.languages` nese jazyky tisku pro přepínač v náhledu a v dialogu
 	 * odeslání (#90 D33) — jeden seznam pro všechny tisky.
 	 *
-	 * @param 'print'|'send' $actionId
+	 * @param 'print'|'printPos'|'send' $actionId
 	 * @param PrintDefinition[] $definitions Tisky dostupné pro záznam, už seřazené.
 	 * @return array<string, mixed>|null
 	 */
+	/** Popisky akcí bez zkompilované konfigurace — anglicky, jako holé `name` cfgItem. */
+	private const array PRINT_ACTION_FALLBACK_LABELS = [
+		'printPos' => 'Print on receipt printer',
+	];
+
 	private static function recordPrintAction(string $actionId, array $definitions, ?ConfigRuntime $config): ?array
 	{
 		if ($definitions === []) {
@@ -388,7 +404,7 @@ class ViewerController
 		$def    = ($config?->cfgItem('core.system.viewerDefaults') ?? [])['detailActions'][$actionId] ?? [];
 		$action = [
 			'id'      => $actionId,
-			'label'   => $def['name'] ?? ucfirst($actionId),
+			'label'   => $def['name'] ?? self::PRINT_ACTION_FALLBACK_LABELS[$actionId] ?? ucfirst($actionId),
 			'variant' => $def['variant'] ?? 'secondary',
 		];
 

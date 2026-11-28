@@ -34,6 +34,15 @@
             "name:en": "Print",
             "variant": "secondary"
         },
+        // Tisk na účtenkovou tiskárnu (#177 U40) — z tisků `output: escpos`.
+        // Server akci posílá vždy; frontend ji ukáže jen na registrovaném
+        // zařízení, jehož most umí `print.escpos`.
+        "printPos": {
+            "name": "Print on receipt printer",
+            "name:cs": "Tisk na účtenkovou tiskárnu",
+            "name:en": "Print on receipt printer",
+            "variant": "secondary"
+        },
         // Odeslat záznam e-mailem (#90 D38) — jen u záznamu s tiskem,
         // který má deklarovaný účel odesílání.
         "send": {

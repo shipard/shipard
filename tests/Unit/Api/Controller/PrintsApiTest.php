@@ -573,19 +573,57 @@ class PrintsApiTest extends TestCase
         return self::definition(['id' => 'test.prints.receipt', 'name' => 'Účtenka', 'output' => 'escpos', 'order' => 5]);
     }
 
-    public function testDetailOffersOnlyPrintsToPdf(): void
+    public function testPrintActionTakesOnlyPrintsToPdfAndReceiptsHaveTheirOwn(): void
     {
-        // Akce Tisk dělá PDF — tisk pro účtenkovou tiskárnu do ní nepatří.
+        // Akce Tisk dělá PDF — tisk pro účtenkovou tiskárnu má vlastní akci
+        // `printPos` (#177 U40) hned za ní.
         $detail = $this->detail(self::RECORD, self::registry(self::receiptDefinition(), self::definition()));
 
-        $this->assertCount(1, $detail['actions']);
+        $this->assertSame(['print', 'printPos'], array_column($detail['actions'], 'id'));
         $this->assertSame('button', $detail['actions'][0]['kind']);
         $this->assertSame('test.prints.card', $detail['actions'][0]['target']['printId']);
-
-        $this->assertArrayNotHasKey(
-            'actions',
-            $this->detail(self::RECORD, self::registry(self::receiptDefinition())),
+        $this->assertSame(
+            [
+                'id'      => 'printPos',
+                'label'   => 'Print on receipt printer',
+                'variant' => 'secondary',
+                'kind'    => 'button',
+                'target'  => ['printId' => 'test.prints.receipt', 'languages' => self::LANGUAGE_CODES],
+            ],
+            $detail['actions'][1],
         );
+    }
+
+    public function testReceiptPrintAloneGivesOnlyPrintPos(): void
+    {
+        $detail = $this->detail(self::RECORD, self::registry(self::receiptDefinition()));
+
+        $this->assertSame(['printPos'], array_column($detail['actions'], 'id'));
+    }
+
+    public function testMoreReceiptPrintsAreADropdown(): void
+    {
+        $detail = $this->detail(self::RECORD, self::registry(
+            self::definition(['id' => 'test.prints.slip', 'name' => 'Lístek', 'output' => 'escpos', 'order' => 30]),
+            self::receiptDefinition(),
+            self::definition(),
+        ));
+
+        $this->assertSame(['print', 'printPos'], array_column($detail['actions'], 'id'));
+        $this->assertSame('dropdown', $detail['actions'][1]['kind']);
+        $this->assertSame(
+            [['label' => 'Účtenka', 'value' => 'test.prints.receipt'], ['label' => 'Lístek', 'value' => 'test.prints.slip']],
+            $detail['actions'][1]['items'],
+        );
+    }
+
+    public function testPrintPosFollowsAvailabilityOfThePrint(): void
+    {
+        $registry = self::registry(self::receiptDefinition());
+
+        // Koncept a jiný druh záznamu tisk nemají — akce nevznikne.
+        $this->assertArrayNotHasKey('actions', $this->detail(['docState' => 10] + self::RECORD, $registry));
+        $this->assertArrayNotHasKey('actions', $this->detail(['kind' => 'b'] + self::RECORD, $registry));
     }
 
     public function testRestDoesNotServeReceiptPrinterFormats(): void

@@ -40,7 +40,9 @@
     // a texty na tiscích hned za ní.
     "settingsItems": [
         { "page": "printsAppearance",   "section": "app", "order": 20 },
-        { "viewer": "core.prints.texts", "section": "app", "order": 30 }
+        { "viewer": "core.prints.texts", "section": "app", "order": 30 },
+        // Přehled tiskových úloh patří k zařízením, která je tisknou.
+        { "viewer": "core.prints.jobs", "section": "devices", "order": 30 }
     ],
 
     "viewers": [
@@ -52,6 +54,18 @@
             "icon": "document",
             "table": "core_prints_texts",
             "class": "Shipard\\Module\\Core\\Prints\\PrintTextsViewer"
+        },
+        // Tiskové úlohy (#177 U42) — jen ke čtení, jen pro administrátora
+        // (tabulka je `adminOnly`). Zkusit znovu tu není: funguje jen na
+        // zařízení, které úlohu tisklo.
+        {
+            "id": "core.prints.jobs",
+            "name": "Print jobs",
+            "name:cs": "Tiskové úlohy",
+            "name:en": "Print jobs",
+            "icon": "print",
+            "table": "core_prints_jobs",
+            "class": "Shipard\\Module\\Core\\Prints\\PrintJobsViewer"
         }
     ],
 
@@ -77,6 +91,15 @@
         {
             "id": "core.prints.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
+        },
+        // Druhy a stavy tiskových úloh — popisky a styl stavu ve vieweru.
+        {
+            "id": "core.prints.jobKinds",
+            "file": "config/jobKinds.jsonc"
+        },
+        {
+            "id": "core.prints.jobStates",
+            "file": "config/jobStates.jsonc"
         },
         // Tisk na účtenkovou tiskárnu (#177 task 4a): bajty příkazů ESC/POS.
         {

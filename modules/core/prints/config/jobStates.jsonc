@@ -1,0 +1,14 @@
+{
+    // core.prints.jobStates — stav tiskové úlohy (kontrakt
+    // docs/native-bridge.md §5), sloupec `state` tabulky core_prints_jobs.
+    // Hodnoty = výčet Jobs\PrintJobState.
+    //
+    //   created ──výsledek──▶ sent | failed   (stav = poslední nahlášený výsledek)
+    //
+    // `created` je úloha bez výsledku: data šla klientovi, ale jestli je
+    // tiskárna převzala, server neví — proto „Neověřeno“.
+    // `stateStyle` = styl řádku a štítku ve vieweru (třídy docState_*).
+    "created": { "name": "Unverified", "name:cs": "Neověřeno", "name:en": "Unverified", "stateStyle": "edit" },
+    "sent":    { "name": "Sent",       "name:cs": "Odesláno",  "name:en": "Sent",       "stateStyle": "done" },
+    "failed":  { "name": "Failed",     "name:cs": "Chyba",     "name:en": "Failed",     "stateStyle": "cancelled" }
+}

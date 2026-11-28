@@ -1,0 +1,7 @@
+{
+    // core.prints.jobKinds — druh tiskové úlohy (#177 U36), sloupec `kind`
+    // tabulky core_prints_jobs. Hodnoty = výčet Jobs\PrintJobKind.
+    "print":  { "name": "Record print",  "name:cs": "Tisk záznamu",      "name:en": "Record print" },
+    "test":   { "name": "Test receipt",  "name:cs": "Zkušební účtenka",  "name:en": "Test receipt" },
+    "drawer": { "name": "Cash drawer",   "name:cs": "Otevření šuplíku",  "name:en": "Cash drawer" }
+}
