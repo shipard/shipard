@@ -123,6 +123,13 @@ class SqlGeneratorTest extends TestCase
         }
     }
 
+    public function testBinaryType(): void
+    {
+        $col = $this->makeCol(['id' => 'data', 'type' => 'mediumblob', 'sensitive' => true]);
+
+        $this->assertSame('ALTER TABLE `t` ADD COLUMN `data` MEDIUMBLOB NOT NULL', SqlGenerator::generateAddColumn('t', $col));
+    }
+
     public function testEncryptedTextNullable(): void
     {
         $col = $this->makeCol(['id' => 'api_key', 'type' => 'encrypted_text', 'nullable' => true]);

@@ -27,6 +27,7 @@ class SqlGenerator
             'enumInt'    => 'SMALLINT',
             'enumString' => "CHAR({$col->length}) CHARACTER SET ascii",
             'encrypted_text' => 'TEXT',
+            'mediumblob' => 'MEDIUMBLOB',
             default      => throw new \InvalidArgumentException("Unknown column type: '{$col->type}'"),
         };
     }

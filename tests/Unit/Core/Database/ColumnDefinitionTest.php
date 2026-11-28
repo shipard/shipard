@@ -169,4 +169,46 @@ class ColumnDefinitionTest extends TestCase
             'schema' => 'economy.vat.filingProfileCz',
         ]);
     }
+
+    public function testBinaryColumnIsSensitive(): void
+    {
+        $col = ColumnDefinition::fromArray([
+            'id' => 'data',
+            'name' => 'Data',
+            'type' => 'mediumblob',
+            'sensitive' => true,
+        ]);
+
+        $this->assertSame('mediumblob', $col->type);
+        $this->assertTrue($col->sensitive);
+    }
+
+    public function testBinaryColumnWithoutSensitiveThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("type 'mediumblob' requires 'sensitive': true");
+
+        ColumnDefinition::fromArray(['id' => 'data', 'name' => 'Data', 'type' => 'mediumblob']);
+    }
+
+    public function testBinaryColumnCannotHaveDefault(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("type 'mediumblob' cannot have a default value");
+
+        ColumnDefinition::fromArray([
+            'id' => 'data', 'name' => 'Data', 'type' => 'mediumblob', 'sensitive' => true, 'default' => '',
+        ]);
+    }
+
+    public function testCollationOnBinaryColumnThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("attribute 'collation' is allowed only for types");
+
+        ColumnDefinition::fromArray([
+            'id' => 'data', 'name' => 'Data', 'type' => 'mediumblob', 'sensitive' => true,
+            'collation' => 'utf8mb4_bin',
+        ]);
+    }
 }

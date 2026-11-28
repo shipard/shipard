@@ -1,0 +1,248 @@
+{
+    "tableId": 475,
+    "name": "Print jobs",
+    "name:cs": "Tiskové úlohy",
+    "name:en": "Print jobs",
+
+    // Tiskové úlohy pro účtenkové tiskárny (#177 D4, D25, U36–U39, kontrakt
+    // docs/native-bridge.md §5). Úloha je záznam na serveru pro obě cesty
+    // doručení; ve verzi 1 ji tiskárně předává webová aplikace přes most.
+    // Bez Document třídy — řádky zakládá a mění jen `PrintJobService`
+    // (stav podmíněným UPDATE), staré maže úloha cronu `print-jobs-prune`.
+    // Mimo `keepOnReset`: úlohy odkazují na záznamy, `ds-reset` je zahodí.
+    //
+    // `job_id` má collation `utf8mb4_bin`: UUID se porovnává přesně. `data`
+    // jsou bajty pro tiskárnu (ne base64) — binární sloupec je `sensitive`,
+    // generické cesty ho nevracejí.
+
+    "hideFromNavigation": true,
+    "adminOnly": true,
+    "systemManaged": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "job_id",
+            "name": "Job ID",
+            "name:cs": "ID úlohy",
+            "name:en": "Job ID",
+            "type": "varchar",
+            "length": 36,
+            "collation": "utf8mb4_bin",
+            "nullable": false,
+            "system": true
+        },
+        {
+            // print = tisk záznamu, test = zkušební účtenka profilu,
+            // drawer = otevření šuplíku (`PrintJobKind`).
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "system": true
+        },
+        {
+            // Jen druh `print`: id tisku z deklarace `prints`.
+            "id": "print_id",
+            "name": "Print",
+            "name:cs": "Tisk",
+            "name:en": "Print",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "system": true
+        },
+        {
+            // Jen druh `print`: tabulka a id tištěného záznamu.
+            "id": "record_table",
+            "name": "Record table",
+            "name:cs": "Tabulka záznamu",
+            "name:en": "Record table",
+            "type": "varchar",
+            "length": 64,
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "record_id",
+            "name": "Record",
+            "name:cs": "Záznam",
+            "name:en": "Record",
+            "type": "int",
+            "nullable": true,
+            "system": true
+        },
+        {
+            "id": "device",
+            "name": "Device",
+            "name:cs": "Zařízení",
+            "name:en": "Device",
+            "type": "int",
+            "nullable": false,
+            "reference": "core_devices_devices",
+            "system": true
+        },
+        {
+            // Periferie, na kterou úloha jde (řádek, ne ID z aplikace).
+            "id": "peripheral",
+            "name": "Peripheral",
+            "name:cs": "Periferie",
+            "name:en": "Peripheral",
+            "type": "int",
+            "nullable": false,
+            "reference": "core_devices_peripherals",
+            "system": true
+        },
+        {
+            "id": "role",
+            "name": "Role",
+            "name:cs": "Role",
+            "name:en": "Role",
+            "type": "varchar",
+            "length": 16,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "format",
+            "name": "Format",
+            "name:cs": "Formát",
+            "name:en": "Format",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "system": true
+        },
+        {
+            // Profil, podle kterého se data složila — i záložní.
+            "id": "profile_id",
+            "name": "Printer profile",
+            "name:cs": "Profil tiskárny",
+            "name:en": "Printer profile",
+            "type": "varchar",
+            "length": 64,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "data",
+            "name": "Data",
+            "name:cs": "Data",
+            "name:en": "Data",
+            "type": "mediumblob",
+            "nullable": false,
+            "system": true,
+            "sensitive": true
+        },
+        {
+            "id": "data_size",
+            "name": "Data size",
+            "name:cs": "Velikost dat",
+            "name:en": "Data size",
+            "type": "int",
+            "nullable": false,
+            "default": 0,
+            "system": true
+        },
+        {
+            // Varování skládání a profilu: seznam `{severity, code, text}`.
+            "id": "warnings",
+            "name": "Warnings",
+            "name:cs": "Varování",
+            "name:en": "Warnings",
+            "type": "json",
+            "nullable": true,
+            "system": true
+        },
+        {
+            // created = bez výsledku („neověřeno“), sent, failed (`PrintJobState`).
+            "id": "state",
+            "name": "State",
+            "name:cs": "Stav",
+            "name:en": "State",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "default": "created",
+            "system": true
+        },
+        {
+            // Kód chyby z `print.submit` u posledního neúspěšného výsledku.
+            "id": "error_code",
+            "name": "Error code",
+            "name:cs": "Kód chyby",
+            "name:en": "Error code",
+            "type": "varchar",
+            "length": 64,
+            "nullable": true,
+            "system": true
+        },
+        {
+            // Počet nahlášených výsledků.
+            "id": "attempts",
+            "name": "Attempts",
+            "name:cs": "Pokusy",
+            "name:en": "Attempts",
+            "type": "smallint",
+            "nullable": false,
+            "default": 0,
+            "system": true
+        },
+        {
+            "id": "created_by",
+            "name": "User",
+            "name:cs": "Uživatel",
+            "name:en": "User",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "system": true
+        },
+        {
+            "id": "created_at",
+            "name": "Created",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created",
+            "type": "datetime",
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "result_at",
+            "name": "Result reported",
+            "name:cs": "Výsledek nahlášen",
+            "name:en": "Result reported",
+            "type": "datetime",
+            "nullable": true,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_job_id",
+            "type": "unique",
+            "columns": [{"column": "job_id"}]
+        },
+        {
+            // Úklid starých úloh a řazení přehledu od nejnovější.
+            "id": "idx_created_at",
+            "type": "index",
+            "columns": [{"column": "created_at"}]
+        },
+        {
+            "id": "idx_device",
+            "type": "index",
+            "columns": [{"column": "device"}]
+        }
+    ]
+}

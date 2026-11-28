@@ -494,6 +494,20 @@ Speciální pole pro `numeric`:
 
 Speciální pole: žádná.
 
+### Binární typ
+
+| Typ v JSONC | SQL typ (MariaDB) | Popis |
+|-------------|-------------------|-------|
+| `mediumblob` | MEDIUMBLOB | Bajty (max ~16 MB) — data, která nejsou text (tisková úloha ESC/POS, #177 U39) |
+
+Sloupec `mediumblob` **musí** mít `"sensitive": true` a nesmí mít `default`
+ani `collation` — jinak je definice chyba. Bajty nejsou platné UTF-8, takže
+je generické cesty (CRUD, meta tabulky, formulář, grid) nesmí dostat do JSON
+odpovědi; `sensitive` je z nich vynechá. Čte a zapisuje je jen služba, které
+tabulka patří: zápis přes Dibi s modifikátorem `%bin` (`['data%bin' =>
+$bytes]`), ven jdou zakódované (base64). Viewer nad takovou tabulkou sloupec
+do řádků ani detailu nedává.
+
 ### Logický typ
 
 | Typ v JSONC | SQL typ (MariaDB) | Popis |

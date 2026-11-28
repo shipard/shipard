@@ -7,12 +7,17 @@
     "description:cs": "Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích",
     "description:en": "Settings shared by all prints — appearance and custom texts on prints",
 
+    // core.devices: tiskové úlohy se směrují na periferii zařízení podle
+    // role (#177 task 4b). Opačným směrem závislost není — katalog profilů
+    // čte core.devices jen z konfigurace.
     "dependencies": [
-        "core.system"
+        "core.system",
+        "core.devices"
     ],
 
     "tables": [
-        "core_prints_texts"
+        "core_prints_texts",
+        "core_prints_jobs"
     ],
 
     // Texty na tiscích jsou konfigurace zdroje dat, ne data — ds-reset je

@@ -9,6 +9,7 @@ use Shipard\Api\Response;
 use Shipard\Api\TableAccessGuard;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Prints\PrintBuildException;
+use Shipard\Core\Prints\PrintErrors;
 use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintFormat;
 use Shipard\Core\Prints\PrintLanguageNotCompiledException;
@@ -339,30 +340,24 @@ class PrintsController
         return ($this->sendService)();
     }
 
-    /** Chyby návrhu a odeslání → kód a HTTP stav (tisk samotný viz `run()`). */
+    /**
+     * Chyby návrhu a odeslání → kód a HTTP stav (tisk samotný viz `run()`).
+     * Chyby tisku mapuje sdílené `PrintErrors` — totéž čtou tiskové úlohy.
+     */
     private function sendError(\Throwable $e): Response
     {
-        return match (true) {
-            $e instanceof RecordSendException => Response::error(
+        if ($e instanceof RecordSendException) {
+            return Response::error(
                 $e->errorCode,
                 $e->getMessage(),
                 $e->errorCode === RecordSendException::PRINT_NOT_SENDABLE ? 409 : 422,
-            ),
-            $e instanceof PrintNotFoundException       => Response::error('PRINT_NOT_FOUND', $e->getMessage(), 404),
-            $e instanceof PrintRecordNotFoundException => Response::error('RECORD_NOT_FOUND', $e->getMessage(), 404),
-            $e instanceof PrintNotAvailableException   => Response::error('PRINT_NOT_AVAILABLE', $e->getMessage(), 409),
-            $e instanceof PrintBuildException          => Response::error('PRINT_DATA_MISSING', $e->getMessage(), 409),
-            $e instanceof PrintLanguageNotCompiledException
-                => Response::error('PRINT_LANGUAGE_NOT_COMPILED', $e->getMessage(), 409),
-            $e instanceof PrintRenderException => $e->isServiceUnavailable()
-                ? Response::error('RENDER_UNAVAILABLE', 'Print service is not available', 503, [
-                    ['field' => '_render', 'code' => $e->errorKind->value, 'message' => $e->getMessage()],
-                ])
-                : Response::error('RENDER_FAILED', 'Print rendering failed', 500, [
-                    ['field' => '_render', 'code' => $e->errorKind->value, 'message' => $e->getMessage()],
-                ]),
-            $e instanceof \InvalidArgumentException => Response::error('BAD_REQUEST', $e->getMessage(), 400),
-            default => throw $e,
-        };
+            );
+        }
+
+        $error = PrintErrors::of($e);
+        if ($error === null) {
+            throw $e;
+        }
+        return Response::error($error['code'], $error['message'], $error['status'], $error['details']);
     }
 }

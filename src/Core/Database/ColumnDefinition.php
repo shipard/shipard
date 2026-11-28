@@ -14,7 +14,11 @@ class ColumnDefinition
         'boolean', 'json',
         'enumInt', 'enumString',
         'encrypted_text',
+        'mediumblob',
     ];
+
+    /** Binární typ: bajty, ne text — do JSON odpovědi nesmí. */
+    public const BINARY_TYPE = 'mediumblob';
 
     /** Typy, u kterých smí definice přetížit collation databáze. */
     private const COLLATABLE_TYPES = ['varchar', 'text', 'mediumtext', 'longtext'];
@@ -100,6 +104,22 @@ class ColumnDefinition
             if (!is_string($collation) || preg_match('/^[a-z0-9]+(_[a-z0-9]+)+$/', $collation) !== 1) {
                 throw new \InvalidArgumentException(
                     "Column '{$data['id']}': attribute 'collation' must be a collation name like 'utf8mb4_bin'",
+                );
+            }
+        }
+
+        // Binární sloupec (#177 U39): bajty by generické cesty (CRUD, meta,
+        // formulář) poslaly do `json_encode`, který na nich selže. Proto musí
+        // být `sensitive` výslovně — čtení i zápis jdou jen vlastní službou.
+        if ($type === self::BINARY_TYPE) {
+            if (($data['sensitive'] ?? false) !== true) {
+                throw new \InvalidArgumentException(
+                    "Column '{$data['id']}': type '" . self::BINARY_TYPE . "' requires 'sensitive': true",
+                );
+            }
+            if (($data['default'] ?? null) !== null) {
+                throw new \InvalidArgumentException(
+                    "Column '{$data['id']}': type '" . self::BINARY_TYPE . "' cannot have a default value",
                 );
             }
         }
