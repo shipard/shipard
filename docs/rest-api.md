@@ -523,6 +523,7 @@ Chybový formát vychází z RFC 7807 (Problem Details), adaptovaný pro obálku
 | `CONFLICT` | Porušení UNIQUE constraintu |
 | `RATE_LIMITED` | Příliš mnoho požadavků; u `/_devices/challenge` šestá nevyužitá výzva zařízení |
 | `DEVICE_UNKNOWN`, `DEVICE_REVOKED`, `DEVICE_EXISTS`, `CHALLENGE_INVALID`, `SIGNATURE_INVALID` | Chyby volání zařízení nativní aplikace (401 / 403 / 409) — [native-bridge.md](native-bridge.md) §7.2; chyby ověření podpisem nenesou podrobnosti |
+| `NO_PERIPHERAL_FOR_ROLE`, `PERIPHERAL_NOT_PRESENT`, `ROLE_AMBIGUOUS`, `PROFILE_NO_DRAWER`, `JOB_NOT_FOUND` | Chyby tiskových úloh `/_print-jobs` (409, úloha 404) — [prints.md](prints.md) § 14.3. Nastavení zařízení a tiskárny je 409: napraví ho uživatel v Nastavení, ne opakování požadavku. `DEVICE_UNKNOWN` je u úloh také 409 (ne 401 — `deviceId` je hodnota v těle, ne autentizace) |
 | `BAD_REQUEST` | Malformed request |
 | `INTERNAL_ERROR` | Neočekávaná chyba serveru |
 | `TABLE_NOT_FOUND` | Tabulka neexistuje nebo není přístupná přes API |

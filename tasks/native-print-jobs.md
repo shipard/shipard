@@ -1,6 +1,6 @@
 # Nativní aplikace — task 4b: tiskové úlohy, směrování podle role, tisk z UI (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D4, D11, D25, D33, U8, U19 a upřesnění U36–U43 (schválená 2026-11-28), připraveno k implementaci
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-11-28 (#177 D4, D11, D25, D33, U8, U19, U36–U43), celý postup ověřený se simulací mostu v headless prohlížeči; zbývá ruční proklik přihlášeným administrátorem (přehled Tiskové úlohy, přiřazení role ve formuláři zařízení, `DS_READ_ONLY` naživo) — viz Hotovo když
 
 > Task pro Claude Code (6 commitů). Design: issue #177. **Navazuje na
 > task 4a** (`tasks/native-escpos-render.md` — `EscPosRenderer`, profily,
@@ -210,14 +210,76 @@ administrátora (U42).
 
 ## Hotovo když
 
-- [ ] cílené PHPUnit (`--filter 'PrintJob|ViewerController'`), integrační
-      test úloh na volném zdroji dat a `npm test` projdou
-- [ ] na dev serveru přes https se simulací: prodejka → Tisk na účtenkovou
-      tiskárnu → náhled účtenky v simulaci, úloha ve vieweru „odesláno“;
+- [x] cílené PHPUnit (`--filter 'PrintJob|ViewerController'`), integrační
+      test úloh na volném zdroji dat a `npm test` projdou — celá unit sada
+      13 958 testů, `PrintJobsFlowTest` nad `8yft-3` (včetně tisku prodejky),
+      frontend 509 testů
+- [x] na dev serveru se simulací: prodejka → Tisk na účtenkovou
+      tiskárnu → náhled účtenky v simulaci, úloha „odesláno“;
       bez role → dialog s návodem; tiskárna `error` → dialog a Zkusit
-      znovu po přepnutí na `ready` vytiskne (stejné `jobId`, `attempts` 2)
-- [ ] druhou tiskárnu simulace s rolí Účtenky formulář odmítne
-- [ ] Zkušební tisk a Otevřít šuplík z panelu Toto zařízení
-- [ ] v režimu jen pro čtení vrací `POST /_print-jobs` `DS_READ_ONLY`
-- [ ] akce `printPos` v obyčejném prohlížeči bez mostu není vidět
-- [ ] dokumentace aktualizovaná
+      znovu po přepnutí na `ready` vytiskne (stejné `jobId`, `attempts` 3 —
+      první chyba, opakování ještě v chybě, opakování po opravě) —
+      headless Chromium přes `http://127.0.0.1` (zabezpečený kontext), 26
+      kontrol. Kroky se session administrátora (registrace, `/_print-jobs`)
+      šly přes pomocníka nad `DevicesController` / `PrintJobsController`
+      v procesu, ne přihlášeným požadavkem; stav úlohy čtený z databáze
+- [x] druhou tiskárnu simulace s rolí Účtenky dokument odmítne
+      (`duplicate_role` z `PeripheralDocument` — pravidlo formuláře; samotný
+      formulář neproklikán)
+- [x] Zkušební tisk a Otevřít šuplík z panelu Toto zařízení
+- [ ] v režimu jen pro čtení vrací `POST /_print-jobs` `DS_READ_ONLY` —
+      verdikt hlídá `ReadOnlyPolicyTest` (`create` a `result` 403, `get`
+      povolen); **naživo neověřeno**, požadavek bez přihlášení skončí dřív
+      na 401
+- [x] akce `printPos` v obyčejném prohlížeči bez mostu není vidět
+- [ ] přehled Tiskové úlohy proklikat přihlášeným administrátorem — řádky
+      a detail ověřené v procesu (`ViewerController` nad skutečnými daty)
+      a kontraktním testem `ViewerDetailContractTest`, v prohlížeči ne
+- [x] dokumentace aktualizovaná
+
+## Odchylky od zadání
+
+- **Nový typ sloupce `mediumblob` v definicích tabulek.** Zadání chce data
+  úlohy jako bajty (U39), definice tabulek ale binární typ neměly. Typ
+  přibyl do jádra (`ColumnDefinition`, `SqlGenerator`,
+  `docs/table-definitions.md` § 6) s pojistkou: sloupec musí být
+  `sensitive`, jinak je definice chyba — bajty se tak generickou cestou
+  nedostanou do JSON odpovědi. Zápis přes Dibi `%bin`.
+- **`DEVICE_UNKNOWN` je u `/_print-jobs` 409, ne 401.** Kontrakt §7.2 má 401
+  pro podepsaná volání; tady je `deviceId` hodnota v těle přihlášeného
+  požadavku a klient API na 401 zkouší obnovu session a uživatele odhlásí.
+  Popsáno v kontraktu §5 a v `docs/prints.md` § 14.3.
+- **HTTP stavy:** chyby nastavení (`NO_PERIPHERAL_FOR_ROLE`,
+  `PERIPHERAL_NOT_PRESENT`, `ROLE_AMBIGUOUS`, `PROFILE_NO_DRAWER`) 409,
+  neplatné tělo 422 `VALIDATION_ERROR`, `PAYLOAD_TOO_LARGE` 413 (jako jinde
+  v API), cizí úloha 403 `FORBIDDEN`.
+- **`printPos` je mezi pevnými id ve `Viewer.svelte`**, i když je seznam
+  podle #172 D19 uzavřený: akci posílá generický háček jádra v
+  `ViewerController::detail()` jako `print` a `send`, ne modul.
+- **Viditelnost `printPos` filtruje `ViewerDetail.svelte`**, ne `Viewer` —
+  detail kreslí víc hostitelů (panel, šuplík, modal).
+- **Výsledek tisku nese navíc `details` a `request`** (`native/printJobs.js`):
+  `details` kvůli upřesnění chyby tiskárny (došel papír, otevřený kryt),
+  `request` kvůli Zkusit znovu. **Zkusit znovu při `NETWORK_ERROR` ve fázi
+  `server`** (úloha nevznikla) posílá znovu původní požadavek; s `jobId`
+  vždy tutéž úlohu s `reprint`.
+- **Sdílené `Core\Prints\PrintErrors`** mapuje chyby tisku na kódy a stavy
+  pro tiskové úlohy i pro odeslání e-mailem (`PrintsController::sendError`)
+  — místo třetí kopie téhož `match`. Vedlejší účinek: odeslání nad tiskem
+  jiného formátu vrací 409 `PRINT_FORMAT_UNSUPPORTED` místo pádu.
+- **Úklid `print-jobs-prune` běží jen ve stavu `active`** — v režimu jen pro
+  čtení úlohy nevznikají. Příkaz má navíc `--days`.
+- **Texty dialogu tykají** („Přiřaď roli Účtenky…“) jako ostatní texty
+  panelu Toto zařízení, ne vykáním z příkladu v zadání.
+- **Přehled Tiskové úlohy** má v podtitulku detailu zařízení a čas vzniku
+  až v Přehledu: výsledek přichází během téže minuty a čas v hlavičce by se
+  v Přehledu opakoval (`ViewerDetailContractTest`). Navíc filtr zařízení.
+- **Simulace:** katalog profilů se stahuje při `device.sync` (běží i po
+  registraci) a po novém načtení stránky na vyžádání panelu
+  (`ensureProfiles`), ne při startu simulace — vznik mostu zůstává bez
+  síťových volání. Zkušební účtenka z panelu simulace jde na vybranou
+  tiskárnu.
+- **Nápověda** (`help/zarizeni.md`, `help/pokladna/prodejka.md`,
+  `help/co-dnes-nejde.md`) popisuje tisk účtenky jako připravený, ale
+  dostupný až s nativní aplikací, která není vydaná.
+- **Neověřeno:** tisk na skutečné tiskárně (aplikace neexistuje, task 5).

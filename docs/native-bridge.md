@@ -1,10 +1,11 @@
 # Nativní aplikace — kontrakt mostu a zařízení
 
-**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), na serveru zařízení, registrace a podepsaná volání (task 3); tiskové úlohy, PIN a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
+**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), na serveru zařízení, registrace a podepsaná volání (task 3), skládání ESC/POS (task 4a) a tiskové úlohy s tiskem z UI (task 4b); PIN a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
 **Verze:** 1 (2026-11-27) — viz [Historie změn](#11-historie-změn)
 **Implementace:** web `frontend/src/native/` (task 2); server `core.devices`
 (task 3 — `modules/core/devices/README.md`, endpointy
-`src/Api/Controller/DevicesController.php`), `core.prints` (task 4), PIN
+`src/Api/Controller/DevicesController.php`), `core.prints` (tasky 4a a 4b —
+tiskové úlohy `src/Api/Controller/PrintJobsController.php`), PIN
 a zamčení (task 6); aplikace `shipard-app:apple/` (task 5)
 
 Zdroj pravdy pro obě strany: webová aplikace a server žijí v tomto repu,
@@ -448,27 +449,36 @@ Tisková úloha je záznam na serveru. Ve verzi 1 ji doručuje webová aplikace
 přes most (lokální cesta):
 
 ```
-1. SPA  → server   POST /_print-jobs {printId, recordId, deviceId, role}
+1. SPA  → server   POST /_print-jobs {kind, printId, recordId, deviceId, role}
                    server najde periferii podle role na záznamu zařízení,
                    složí data podle profilu tiskárny a úlohu uloží
-        ← server   {jobId, peripheralId, format, data}
+        ← server   {jobId, peripheralId, format, data, warnings}
 2. SPA  → most     print.submit {jobId, peripheralId, format, data}
         ← most     {status: "sent"} nebo chyba
+3. SPA  → server   POST /_print-jobs/{jobId}/result {status, errorCode}
+
+Zkusit znovu (tatáž úloha):
+1. SPA  → server   GET /_print-jobs/{jobId}
+        ← server   {jobId, kind, state, peripheralId, format, data, attempts, warnings}
+2. SPA  → most     print.submit {jobId, peripheralId, format, data, reprint: true}
 3. SPA  → server   POST /_print-jobs/{jobId}/result {status, errorCode}
 ```
 
 | Pole | Popis |
 |---|---|
-| `printId` | ID tisku z deklarace `prints` ([prints.md](prints.md) §2) |
-| `recordId` | záznam, nad kterým tisk vzniká |
+| `kind` | druh úlohy: `print` (tisk záznamu) \| `test` (zkušební účtenka profilu tiskárny) \| `drawer` (otevření šuplíku); nepovinné, výchozí `print` |
+| `printId` | ID tisku z deklarace `prints` ([prints.md](prints.md) §2); jen druh `print` |
+| `recordId` | záznam, nad kterým tisk vzniká; jen druh `print` |
 | `deviceId` | zařízení, na kterém se tiskne (`info.deviceId`) |
-| `role` | role periferie; ve verzi 1 jen `receipt` |
+| `role` | role periferie; nepovinné, výchozí `receipt` — ve verzi 1 jiná není |
 | `jobId` | UUID úlohy |
-| `peripheralId` | periferie zařízení s danou rolí |
-| `format` | `escpos` \| `pdf` |
+| `peripheralId` | periferie zařízení s danou rolí (ID z aplikace, jak ho čeká `print.submit`) |
+| `format` | `escpos` \| `pdf`; server ve verzi 1 vydává jen `escpos` |
 | `data` | data úlohy v base64, vyrenderovaná při vzniku úlohy |
+| `warnings` | varování skládání `[{severity, code, text}]` — např. záložní profil tiskárny (§6) |
+| `state`, `attempts` | stav úlohy a počet nahlášených výsledků (jen `GET`) |
 | `status` (výsledek) | `sent` \| `failed` |
-| `errorCode` | u `failed` kód chyby z `print.submit`; u `sent` `null` |
+| `errorCode` | u `failed` kód chyby z `print.submit` (velká písmena, nejvýš 64 znaků); u `sent` se nečte |
 
 - **Stavy na serveru:** `created` → `sent` | `failed`. Úloha bez výsledku
   je pro uživatele „neověřeno“; znovu ji pošle jen vědomou akcí
@@ -476,12 +486,18 @@ přes most (lokální cesta):
 - **Ochrana proti dvojímu tisku** je na obou stranách: aplikace si pamatuje
   posledních 100 `jobId` a stejné ID bez `reprint` odmítne
   (`DUPLICATE_JOB`), server drží stav úlohy.
-- **Otevření šuplíku** je také úloha — bez papíru.
+- **Otevření šuplíku** je také úloha — bez papíru (`kind: "drawer"`).
+- **Stav je poslední nahlášený výsledek.** Každé hlášení je jeden pokus
+  (`attempts`); Zkusit znovu používá tutéž úlohu, novou nezakládá.
+- **`DEVICE_UNKNOWN` tu má HTTP 409, ne 401** jako u podepsaných volání
+  (§7.2): `deviceId` je hodnota v těle přihlášeného požadavku a 401 by webová
+  aplikace četla jako neplatnou session.
 - **Formáty:** `escpos` (účtenková tiskárna) a `pdf`; který aplikace umí,
   říkají capabilities `print.escpos` a `print.pdf`.
 
-Endpointy `/_print-jobs`, úklid starých úloh a skládání ESC/POS popíše
-task 4 v [prints.md](prints.md); tady je jen tvar, který prochází mostem.
+Směrování podle role, práva, chybové kódy serveru, úklid starých úloh a tisk
+z UI popisuje [prints.md](prints.md) kap. 14, skládání ESC/POS kap. 13; tady
+je jen tvar, který prochází mostem.
 
 ## 6. Periferie a profily tiskáren
 
@@ -797,9 +813,9 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
 |---|---|
 | `info` | podle kontraktu; `dataSource` = `location.origin` + adresa API stránky, `profile` vždy `null` |
 | `device.register` | **skutečný** klíč ECDSA P-256 z WebCrypto a podpis podle §7.1 — server ho ověří stejně jako u aplikace |
-| `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`, hlavička `X-Shipard-App-Version`); režim z odpovědi si uloží. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
-| `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`, 42 / 56 znaků jako v katalogu serveru) a čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) |
-| `print.submit` | kontrola parametrů a limitů jako aplikace (`INVALID_PARAMS`, `PAYLOAD_TOO_LARGE`, `PERIPHERAL_NOT_FOUND`, `UNSUPPORTED_FORMAT`, `DUPLICATE_JOB` s pamětí 100 `jobId`, `PERIPHERAL_UNAVAILABLE`); místo tisku náhled účtenky |
+| `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`, hlavička `X-Shipard-App-Version`); režim z odpovědi si uloží. Potom stáhne katalog profilů tiskáren podepsaným `GET /_devices/printer-profiles` (účel `printer-profiles`) — jeho selhání synchronizaci neshodí. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
+| `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`), čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) a druhá, úzká tiskárna `mock-receipt-58` (`profileId: "escpos-58-cp852"`) — na dvou tiskárnách jde vyzkoušet jedinečnost role Účtenky |
+| `print.submit` | kontrola parametrů a limitů jako aplikace (`INVALID_PARAMS`, `PAYLOAD_TOO_LARGE`, `PERIPHERAL_NOT_FOUND`, `UNSUPPORTED_FORMAT`, `DUPLICATE_JOB` s pamětí 100 `jobId`); tiskárna ve stavu `offline` vrací `PERIPHERAL_UNAVAILABLE`, ve stavu `error` `PRINTER_ERROR` s `details.paperOut: true`; místo tisku náhled účtenky. `TIMEOUT` simulace nevyrábí |
 | `shipard:scan`, `shipard:peripheral` | z ovládacího panelu simulace |
 | `device.enroll`, `session.lock`, `session.take`, `auth.external` | `NOT_SUPPORTED` — doplní tasky 6 a 7 |
 
@@ -820,6 +836,11 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
   simulovaného zařízení je vázaná na origin — každý vstup má vlastní.
 - Registrované zařízení po přepnutí stavu periferie v panelu samo
   synchronizuje (aplikace sync spouští při změně periferií, §3.3).
+- **Profily pro náhled jsou ze serveru** (#177 U43): šířky řádku a kódovou
+  stránku bere simulace z katalogu staženého při synchronizaci (po novém
+  načtení stránky si ho registrovaná simulace stáhne znovu). Vestavěná
+  kopie obou profilů platí jen do registrace a když se katalog stáhnout
+  nepovede; panel říká, odkud profily jsou.
 
 ### Náhled ESC/POS
 
@@ -862,7 +883,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | Most ve frontendu, simulace mostu, testovací stránka v `/_dev/` | 2 — `tasks/native-frontend-bridge.md` | hotovo |
 | `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | hotovo — `challenge`, `register`, `self`, `self/peripherals`; `self` vrací `users: []` (task 6) |
 | Skládání ESC/POS, katalog profilů tiskáren, účtenka prodejky | 4a — `tasks/native-escpos-render.md` | hotovo — `GET /_devices/printer-profiles`, `EscPosRenderer`, tisk `docs.cashRegister.receiptPos`, náhled s `FS .` a `ESC !` ([prints.md](prints.md) §13) |
-| Tiskové úlohy, směrování podle role, tisk z UI | 4b — `tasks/native-print-jobs.md` | neimplementováno |
+| Tiskové úlohy, směrování podle role, tisk z UI | 4b — `tasks/native-print-jobs.md` | hotovo — `POST /_print-jobs`, `GET /_print-jobs/{jobId}`, `POST …/result`, akce Tisk na účtenkovou tiskárnu, Zkušební tisk a Otevřít šuplík, přehled Tiskové úlohy ([prints.md](prints.md) kap. 14) |
 | Aplikace pro macOS a iPadOS (`shipard-app:apple/`) | 5 | neimplementováno |
 | Profily, zařazení, PIN, zamčení | 6 | neimplementováno |
 | `auth.external` — přihlášení přes systémový prohlížeč | 7 | neimplementováno |
@@ -880,6 +901,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Server pro zařízení hotový (task 3): modul `core.devices`, endpointy `challenge`, `register`, `self`, `self/peripherals`, Nastavení → Zařízení s panelem Toto zařízení. Kontrakt beze změny. |
 | 1 | 2026-11-27 | Volání zařízení mají vlastní limit požadavků (120 za minutu na `deviceId`, strop na IP adresu) — `RATE_LIMITED` u §7.2 doplněno. Verze beze změny. |
 | 1 | 2026-11-28 | Skládání ESC/POS na serveru hotové (task 4a, #177 U27–U35): profil tiskárny má nové pole `columnsSmall` (§6, přidání pole verzi nemění), katalog dvou profilů 42 / 56 a 32 / 42 znaků, záložní profil `escpos-58-cp852`, endpoint `GET /_devices/printer-profiles`; podmnožina náhledu rozšířená o `FS .` a `ESC !` (§9a). Verze beze změny. |
+| 1 | 2026-11-28 | Tiskové úlohy hotové (task 4b, #177 U36–U43): `POST /_print-jobs` má nové pole `kind` (`print` \| `test` \| `drawer`, výchozí `print`) a nepovinnou `role` (výchozí `receipt`), odpověď nese `warnings`; nový `GET /_print-jobs/{jobId}` pro Zkusit znovu (§5). Simulace: druhá tiskárna `mock-receipt-58`, `PRINTER_ERROR` u tiskárny ve stavu `error`, katalog profilů ze serveru (§9a). Přidání polí a endpointu verzi nemění. |
 
 ---
 

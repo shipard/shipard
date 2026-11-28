@@ -225,6 +225,10 @@ princip a odchylky:
   zdroje dat. `register` a `peripherals` (hlášení periferií) zakládají
   a mění záznamy → 403. Úklid výzev (`device-challenges-prune`) proto běží
   i v `read_only`.
+- `printJobs` (tiskové úlohy účtenkových tiskáren, #177 U38): `get` ALLOW —
+  znovu načíst hotovou úlohu nic nemění; `create` a `result` zakládají
+  úlohu a zapisují výsledek → 403. Úlohy v `read_only` nevznikají, proto
+  jejich úklid (`print-jobs-prune`) běží jen ve stavu `active`.
 - `recordAction` (akce záznamu z modulů, `POST /_ui/record-action/…`,
   #172 D15) v tabulce **záměrně není** → 403: akce je mutace a jádro neví,
   co která udělá. Nepovolovat ani pro akce, které „jen čtou“ (Ověřit

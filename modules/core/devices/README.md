@@ -82,7 +82,8 @@ nepřepisuje.
 ## Role periferií
 
 Role (`core.devices.peripheralRoles`) přiřazuje administrátor v záznamu
-zařízení; podle ní bude server směrovat tiskové úlohy (task 4). Pravidla
+zařízení; podle ní server směruje tiskové úlohy (`core.prints`,
+`PrintJobRouter` — [docs/prints.md](../../../docs/prints.md) § 14.2). Pravidla
 role jsou data — `kinds` (kterému druhu periferie jde přiřadit) a `single`
 (na zařízení nejvýš jednou) — a čte je jen `PeripheralRoles`; kód se neptá
 na klíč role. Ve verzi 1 je jediná role `receipt`.
@@ -90,6 +91,15 @@ na klíč role. Ve verzi 1 je jediná role `receipt`.
 Pravidla hlídá `PeripheralDocument`, tedy formulář. Generické CRUD (`PATCH`)
 jde mimo dokumenty a jedinečnost role neověří — kdo podle role hledá
 periferii, musí počítat i s víc řádky.
+
+**Vazba na tiskové úlohy.** Modul `core.prints` na tomto modulu závisí
+(opačně ne): `PrintJobRouter` hledá podle `deviceId` aktivní zařízení
+(`DeviceRequestAuthenticator::activeDevice()`) a jeho přítomnou tiskárnu
+s rolí. Zařízení bez tiskárny s rolí, s nepřítomnou tiskárnou nebo s víc
+tiskárnami s rolí úlohu nedostane — `NO_PERIPHERAL_FOR_ROLE`,
+`PERIPHERAL_NOT_PRESENT`, `ROLE_AMBIGUOUS`; první nalezenou router nikdy
+nevybírá. Tabulka úloh `core_prints_jobs` odkazuje na řádek zařízení
+i periferie.
 
 ## Zdrojové soubory
 
@@ -137,7 +147,6 @@ v `GET /_devices/self`.
 
 ## Co modul zatím nedělá
 
-- Katalog profilů tiskáren a tiskové úlohy — task 4.
 - Zařazení uživatelů, PIN, zamčení a `device_id` na session — task 6;
   `GET /_devices/self` proto vrací `users: []`.
 - Výměna hardwaru („Registrovat jako náhradu za…“, převzetí nastavení ze

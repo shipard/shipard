@@ -2420,6 +2420,43 @@ na katalog `modules/core/prints/config/printerProfiles.jsonc` (testy to
 pro náhled a zkušební tisk a náhled souboru s bajty z `shpd-ds print-run
 --format=escpos` nebo `print-escpos-test`.
 
+### Tisk přes most (`native/printJobs.js`)
+
+Tisk na účtenkovou tiskárnu (#177 U40, U41; server a kontrakt
+[prints.md](prints.md) kap. 14, [native-bridge.md](native-bridge.md) §5).
+Celý postup jsou čisté funkce se vstřikovanými závislostmi (klient API,
+most) — testy `tests/Unit/native/printJobs.test.mjs`; vazbu na skutečného
+klienta a most drží `api/printJobs.js`.
+
+| Funkce | Co dělá |
+|---|---|
+| `submitPrintJob({kind, printId, recordId, role})` | `nativeInfo()` → `POST /_print-jobs` s `deviceId` → `print.submit` → `POST …/result` |
+| `retryPrintJob(jobId)` | `GET /_print-jobs/{jobId}` → `print.submit` s `reprint: true` → výsledek |
+| `retryFailedPrintJob(failure)` | Zkusit znovu: úloha existuje → `retryPrintJob`, nevznikla → nový `submitPrintJob` téhož požadavku |
+| `isRetryable(stage, code)` | jen chyby mostu a tiskárny (`PERIPHERAL_UNAVAILABLE`, `PRINTER_ERROR`, `TIMEOUT`, `NETWORK_ERROR`), ve fázi `server` jen `NETWORK_ERROR` |
+| `canPrintPos({available, info, apiBase})` | most nabízí `print.escpos` a zařízení je registrované v tomto zdroji dat |
+| `visibleDetailActions(actions, {posPrint})` | akce detailu bez `printPos`, když stránka tisknout nesmí |
+| `printJobErrorKey(failure)`, `printJobSuccessKey(kind)`, `printJobFailureTitleKey(failure)` | klíče textů `native.print.*` |
+
+- **Výsledek** je `{ok: true, jobId, warnings}`, nebo `{ok: false, jobId,
+  stage, code, message, details, retryable, request}`. `stage` říká, kde
+  se tisk zastavil: `server` (úloha nevznikla), `bridge` (most nebo
+  tiskárna data nepřevzaly — chyba se zapíše k úloze), `report` (data
+  tiskárně odešla, nezapsal se výsledek — úloha zůstane neověřená a **tisk
+  se neopakuje**).
+- **Akce `printPos`** v detailu záznamu: server ji posílá vždy,
+  `ViewerDetail.svelte` ji ukáže jen s `canPrintPos` — filtr je tam,
+  protože detail kreslí víc hostitelů. `Viewer.svelte::handleDetailAction`
+  ji má mezi pevnými id (posílá ji generický háček jádra jako `print`
+  a `send`, ne modul): po dobu volání je tlačítko zablokované, úspěch je
+  toast (`noticeStore`), neúspěch dialog.
+- **`components/native/PrintJobErrorDialog.svelte`** — důvod slovy podle
+  kódu, technický kód drobně pod ním, **Zkusit znovu** jen u `retryable`.
+  Opakování dělá dialog sám (`bind:failure`); po dalším neúspěchu ukáže
+  novou chybu, po úspěchu zavolá `onSuccess` a zavře se.
+- Kód chyby mostu jde do výsledku na server beze změny; kód, který server
+  nepřijme (jiný tvar než velká písmena), se hlásí jako `INTERNAL_ERROR`.
+
 ### Simulace mostu (`native/mock/`)
 
 Aby šla webová strana vyvíjet bez aplikace i bez tiskárny (#177 D29,
@@ -2449,12 +2486,24 @@ U11–U12; co simulace umí a co ne, je v kontraktu §9a):
 - **Stav** (`state.js`, klíč `shpd_native_mock_state`): režim pro každý
   zdroj dat, capabilities, stav periferií. Náhledy tisku (posledních 20)
   a paměť posledních 100 `jobId` jsou jen v paměti stránky.
+- **Periferie** jsou pevné: tiskárna `mock-receipt` (80 mm), čtečka
+  `mock-scanner` a druhá tiskárna `mock-receipt-58` (58 mm, #177 U43) — na
+  dvou tiskárnách jde proklikat jedinečnost role Účtenky. Tiskárna ve
+  stavu `error` vrací `PRINTER_ERROR` s `details.paperOut`, ve stavu
+  `offline` `PERIPHERAL_UNAVAILABLE`.
+- **Profily pro náhled** (`previewProfile`): registrovaná simulace si při
+  synchronizaci stáhne katalog podepsaným `GET /_devices/printer-profiles`
+  (`profilesFromCatalog`) a šířky i kódovou stránku bere z něj; po novém
+  načtení stránky ho panel vyžádá znovu (`controls.ensureProfiles()`).
+  Vestavěné `MOCK_PRINTER_PROFILES` platí jen do registrace a při selhání
+  stažení — musí sedět na `printerProfiles.jsonc` (hlídá `mock.test.mjs`).
 - **Panel** `components/native/NativeMockPanel.svelte` kreslí `App`, jen
   když je most `__mock` — trvalý pruh „Simulace nativní aplikace“ vpravo
   dole (i na přihlášení) a sbalitelný panel: zdroj dat, režim, capabilities,
   stav periferií (přepnutí vyšle `shipard:peripheral`), čtečka (pole + druh
   + Enter vyšle `shipard:scan`; vedle počet odběratelů), **Zkušební
-  účtenka** přes `print.submit`, náhledy tisku se stažením bajtů. Leží nad
+  účtenka** přes `print.submit` na vybranou tiskárnu, řádek o tom, odkud
+  jsou profily náhledu, náhledy tisku se stažením bajtů. Leží nad
   dialogy (`z-index` 1100), aby šla čtečka poslat i do otevřeného dialogu;
   není vrstva zásobníku, Esc ho nezavírá. Texty `native.mock.*`.
 
@@ -2472,7 +2521,7 @@ je jen kreslí.
 | `otherDataSource` | `info.dataSource` ≠ `location.origin + API_BASE_URL` | chyba — most patří jinému zdroji dat (D33) |
 | `cannotSign` | neregistrováno a chybí capability `device` | simulace mimo zabezpečený kontext nemá klíč |
 | `register` / `needsAdmin` | neregistrováno, administrátor / ostatní | formulář (název, režim) / kdo registruje |
-| `registered` | `info.mode` `personal` nebo `shared` | údaje, **Synchronizovat**, administrátorovi periferie s rolemi a **Otevřít záznam zařízení** |
+| `registered` | `info.mode` `personal` nebo `shared` | údaje, **Synchronizovat**, administrátorovi periferie s rolemi a **Otevřít záznam zařízení**; s capability `print.escpos` **Zkušební tisk** a **Otevřít šuplík** |
 
 - **Registrace** (`registerDevice`, kontrakt §7.3): `POST /_devices/challenge`
   (účel `register`) → `device.register` → `POST /_devices/register` →
@@ -2481,6 +2530,9 @@ je jen kreslí.
 - **Zneplatnění:** `device.sync` skončí `DEVICE_REVOKED`, aplikace identitu
   zahodila a `info` je zpět v `unregistered` — panel ukáže hlášku a formulář
   nové registrace.
+- **Zkušební tisk a Otevřít šuplík** (#177 U41) jsou tiskové úlohy druhu
+  `test` a `drawer` — stejná cesta a stejný dialog chyby jako tisk záznamu
+  (viz Tisk přes most).
 - **Data registrovaného zařízení** most nevrací. Administrátor je čte
   generickým seznamem nad tabulkami modulu (`deviceRecordPath`,
   `peripheralsPath`; tabulky jsou `adminOnly`), ostatní vidí jen údaje

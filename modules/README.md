@@ -83,7 +83,7 @@ Odkaz u ID vede na `README.md` modulu; modul bez něj odkazuje na svůj
 | [`core.exchange`](core/exchange/README.md) | Výměnné formáty | Kanonické výměnné formáty pro doklady a další entity |
 | [`core.help`](core/help/module.jsonc) | Uživatelská dokumentace | Zpřístupňuje uživatelskou dokumentaci z help/ vnitřnímu asistentovi přes čtecí MCP nástroje (help_search, help_get_page). Žádné tabulky ani obrazovky — zdrojem pravdy jsou markdown soubory v help/. |
 | [`core.mail`](core/mail/README.md) | Pošta | Došlá a odchozí pošta |
-| [`core.prints`](core/prints/README.md) | Tisky | Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích |
+| [`core.prints`](core/prints/README.md) | Tisky | Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích; tiskové úlohy pro účtenkové tiskárny |
 | [`core.system`](core/system/module.jsonc) | Systém | Základní systémové tabulky — uživatelé, relace, nastavení |
 | [`core.units`](core/units/README.md) | Měrné jednotky | Číselník měrných jednotek (hmotnost, objem, délka, čas, …) s koeficienty pro převody v rámci jedné veličiny |
 

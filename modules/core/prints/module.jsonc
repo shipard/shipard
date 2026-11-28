@@ -3,9 +3,9 @@
     "name": "Prints",
     "name:cs": "Tisky",
     "name:en": "Prints",
-    "description": "Settings shared by all prints — appearance and custom texts on prints",
-    "description:cs": "Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích",
-    "description:en": "Settings shared by all prints — appearance and custom texts on prints",
+    "description": "Settings shared by all prints — appearance and custom texts on prints; print jobs for receipt printers",
+    "description:cs": "Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích; tiskové úlohy pro účtenkové tiskárny",
+    "description:en": "Settings shared by all prints — appearance and custom texts on prints; print jobs for receipt printers",
 
     // core.devices: tiskové úlohy se směrují na periferii zařízení podle
     // role (#177 task 4b). Opačným směrem závislost není — katalog profilů

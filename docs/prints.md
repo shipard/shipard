@@ -12,7 +12,8 @@ Twig, PDF), REST, CLI včetně nástrojů pro vývoj šablon, akce Tisk
 v detailu, vodoznak storna, jazyky tisku `cs` / `en` / `sk` / `de`
 s přepínačem v náhledu (§3), odesílání e-mailem (§9), vzhled a vlastní
 texty na tiscích včetně textů e-mailu (§12), tisk na účtenkovou tiskárnu
-(§13, #177 task 4a) a tisky:
+(§13, #177 task 4a), tiskové úlohy a tisk z UI přes nativní aplikaci
+(kap. 14, task 4b) a tisky:
 
 | Tisk | Modul | Co |
 |---|---|---|
@@ -684,7 +685,7 @@ Tabulku určuje deklarace tisku. Práva (D21): tisk = čtení záznamu —
 `TableAccessGuard::guardTable()` na tabulku deklarace. `format=json` jen
 pro administrátora. Na read-only zdroji dat povoleno. `format=html` REST
 nenabízí (400) — je to nástroj CLI. Stejně tak `escpos` a `markup` (§13):
-účtenka jde na tiskárnu tiskovou úlohou, ne stažením bajtů. PDF nad tiskem
+účtenka jde na tiskárnu tiskovou úlohou (kap. 14), ne stažením bajtů. PDF nad tiskem
 `output: escpos` vrací 409 `PRINT_FORMAT_UNSUPPORTED`; `format=json` dává
 každý tisk.
 
@@ -796,7 +797,12 @@ výběr zůstane na jazyce, který selhal, a jde zvolit jiný. Volba se nikam
 neukládá — jazyk partnera se mění na osobě (#94 D1). Na úzké obrazovce je
 výběr na vlastním řádku nad tlačítky, dostupný i v režimu jen Stáhnout.
 
-**Akce Odeslat (D38).** Hned za akci tisku háček přidá akci `send` — stejný
+**Akce Tisk na účtenkovou tiskárnu.** Tisky `output: escpos` do akce
+`print` nepatří — háček z nich hned za ní skládá akci `printPos` stejného
+tvaru; místo náhledu zakládá tiskovou úlohu a frontend ji ukazuje jen na
+zařízení s tiskárnou (§14.5).
+
+**Akce Odeslat (D38).** Za akce tisku háček přidá akci `send` — stejný
 tvar (`button` s `target.printId`, nebo `dropdown`), jen z tisků se
 `sendPurpose`, a jen když zdroj dat má tabulku Odeslané pošty. Popisek
 v `core.system.viewerDefaults.detailActions.send`. `Viewer.svelte` otevře
@@ -1315,8 +1321,8 @@ výčtu s cfgItemem, `PrintTemplateRawRuleTest` počet slotů v layoutu.
 Další **výstup tisku** vedle PDF (#177 D26, `tasks/native-escpos-render.md`):
 stejný builder a stejná `PrintData`, vlastní šablona a renderer, který z ní
 složí bajty ESC/POS podle profilu tiskárny. Tady je jen skládání; na
-tiskárnu jde účtenka tiskovou úlohou přes nativní aplikaci (task 4b,
-[native-bridge.md](native-bridge.md) §5).
+tiskárnu jde účtenka tiskovou úlohou přes nativní aplikaci — kap. 14
+a [native-bridge.md](native-bridge.md) §5.
 
 ```
 PrintData → page.escpos.twig → značky účtenky (XML)
@@ -1351,8 +1357,8 @@ varování. Neplatný výstup šablony a chybějící konfigurace tiskáren jsou
 
 REST `/_prints` formáty `escpos` a `markup` nenabízí (400) a PDF nad tiskem
 `escpos` vrací 409 `PRINT_FORMAT_UNSUPPORTED`. Akce **Tisk** a **Odeslat**
-v detailu záznamu berou jen tisky do PDF — tisk `escpos` dostane vlastní
-akci s tiskovými úlohami (task 4b).
+v detailu záznamu berou jen tisky do PDF — tisk `escpos` má vlastní akci
+`printPos`, která zakládá tiskovou úlohu (§14.5).
 
 ### 13.2 Značky účtenky
 
@@ -1480,7 +1486,7 @@ profil tiskárně sedí: parametry profilu, **pravítko** na šířku řádku v 
 písmech (poslední číslice stojí na pravém okraji), věta se všemi českými
 písmeny velkými i malými, tučně a dvojitě, čas a ořez. Jde stejnou cestou
 jako každá účtenka. Z CLI `print-escpos-test`; tiskové úlohy ji posílají
-jako druh `test` (task 4b), šuplík je příkaz `openCashDrawer` ovladače.
+jako druh `test` (§14.1), šuplík je příkaz `openCashDrawer` ovladače.
 
 Ověření bez aplikace: soubor z CLI ukáže stránka **Most** vývojářského
 dashboardu (karta Náhled ESC/POS), na tiskárnu ho pošle
@@ -1526,3 +1532,176 @@ dodavatel s IČ a DIČ, odběratel jen když ho doklad má, titulek podle
 varianty, číslo, datum vystavení, DUZP podle stejné podmínky, pokladna,
 položky se sazbou DPH, rekapitulace u plátce, celkem, úhrada, zaokrouhlení
 a vystavil. Bez loga, QR platby, uživatelských textů a POK.
+
+## 14. Tiskové úlohy
+
+Účtenka se na tiskárnu nedostane stažením bajtů, ale **tiskovou úlohou**
+(#177 D4, D11, D25, U36–U43, `tasks/native-print-jobs.md`): záznam na
+serveru, který říká, co se tiskne, na které periferii kterého zařízení a jak
+to dopadlo. Úloha je společná oběma cestám doručení; ve verzi 1 ji tiskárně
+předává webová aplikace přes most nativní aplikace
+([native-bridge.md](native-bridge.md) §5), vyzvedávání úloh hubem bez okna
+přijde později.
+
+```
+SPA  → server   POST /_print-jobs        úloha vznikne složená: role → periferie
+                                         → profil → bajty ESC/POS, uloží se
+SPA  → most     print.submit             data v base64 na tiskárnu
+SPA  → server   POST …/{jobId}/result    sent | failed + kód chyby mostu
+```
+
+### 14.1 Model
+
+Tabulka `core_prints_jobs` (modul `core.prints`, závislost na
+`core.devices`; popis sloupců
+`modules/core/prints/tables/core_prints_jobs.md`). Bez Document třídy
+a formuláře — řádky zakládá a mění jen `PrintJobService`
+(`modules/core/prints/src/Jobs/`).
+
+- **Druhy** (`PrintJobKind`): `print` = tisk záznamu (`printId`
+  + `recordId`), `test` = zkušební účtenka profilu (`PrinterTestReceipt`,
+  §13.6), `drawer` = otevření šuplíku — jen příkaz `openCashDrawer` ovladače
+  profilu, bez papíru.
+- **Stavy** (`PrintJobState`): `created` → `sent` | `failed`. Stav je vždy
+  **poslední nahlášený výsledek**; každé hlášení zvýší `attempts`. Úloha
+  bez výsledku zůstává `created` — pro uživatele „Neověřeno“: data šla
+  klientovi, jestli je tiskárna převzala, server neví.
+- **Data se ukládají s úlohou jako bajty** (U39), ne base64: sloupec
+  `data` je `mediumblob` (jediný binární typ definic tabulek,
+  [table-definitions.md](table-definitions.md) § 6). Je `sensitive`, takže
+  ho generické cesty nevracejí; zapisuje se přes Dibi `%bin`, ven jde jen
+  z `GET /_print-jobs/{jobId}` v base64. Limit 5 MB (kontrakt §3.6,
+  `PAYLOAD_TOO_LARGE`).
+- **`warnings`** = varování builderu, sazby a směrování (záložní profil)
+  jako `[{severity, code, text}]`.
+- Tabulka není v `keepOnReset` — úlohy odkazují na záznamy.
+
+### 14.2 Směrování podle role
+
+`PrintJobRouter::route(deviceId, role, needsDrawer)` vrací periferii
+a profil, nebo `PrintJobException`:
+
+1. **Zařízení** podle `deviceId` v tomto zdroji dat (registrace je pro
+   jeden zdroj dat, #177 D33) a aktivní — pravidlo má
+   `DeviceRequestAuthenticator::activeDevice()`, router jen mapuje stavy.
+2. **Role** musí být v `core.devices.peripheralRoles` a platit pro
+   tiskárnu (`PeripheralRoles`), jinak 422.
+3. **Periferie** zařízení s rolí, druhu `printer` a `present`: žádná
+   s rolí → `NO_PERIPHERAL_FOR_ROLE`, jen nepřítomná →
+   `PERIPHERAL_NOT_PRESENT`, víc přítomných → `ROLE_AMBIGUOUS`.
+   Jedinečnost role hlídá jen formulář (`PeripheralDocument`), generické
+   CRUD ji obejde — router proto **nikdy nevybírá první nalezenou**.
+4. **Profil** podle `profile_id` periferie; neznámý nebo chybějící dostane
+   záložní `escpos-58-cp852` a varování (§13.5). Úloha `drawer` na profilu
+   bez funkce `drawer` → `PROFILE_NO_DRAWER`.
+
+### 14.3 REST
+
+`src/Api/Controller/PrintJobsController.php`; zdroj dat bez tabulky úloh
+nebo zařízení odpovídá 404.
+
+| Endpoint | Tělo | Odpověď |
+|---|---|---|
+| `POST /_print-jobs` | `{kind?, printId?, recordId?, deviceId, role?}` — `kind` výchozí `print`, `role` výchozí `receipt` | 201 `{jobId, peripheralId, format, data, warnings}` |
+| `GET /_print-jobs/{jobId}` | — | `{jobId, kind, state, peripheralId, format, data, attempts, warnings}` |
+| `POST /_print-jobs/{jobId}/result` | `{status, errorCode?}` — `status` `sent` \| `failed`; `errorCode` u `failed` povinný, velká písmena, nejvýš 64 znaků | `{state, attempts}` |
+
+`peripheralId` je ID periferie v aplikaci (jak ho čeká `print.submit`),
+`data` base64.
+
+**Práva (U38).** Úlohu `print` založí, kdo smí číst tabulku tisku
+(`TableAccessGuard` jako `/_prints`); `test` a `drawer` kterýkoli
+přihlášený uživatel — kdo na zařízení vystavuje prodejky, musí umět
+otevřít šuplík, zvláštní právo se nezavádí. Znovu načíst úlohu a zapsat
+výsledek smí jen **autor nebo administrátor**. V režimu jen pro čtení
+projde jen `GET` (`ReadOnlyPolicy`: `printJobs.get`), oba `POST` vrací 403
+`DS_READ_ONLY`.
+
+| Kód | HTTP | Kdy |
+|---|---|---|
+| `VALIDATION_ERROR` | 422 | neznámý `kind`, chybí `printId` / `recordId` u tisku, neznámá role, `status` mimo `sent` / `failed`, chybí nebo nesedí `errorCode` |
+| `DEVICE_UNKNOWN` | 409 | zařízení v tomto zdroji dat není registrované |
+| `DEVICE_REVOKED` | 403 | zařízení je zneplatněné |
+| `NO_PERIPHERAL_FOR_ROLE` | 409 | zařízení nemá tiskárnu s rolí |
+| `PERIPHERAL_NOT_PRESENT` | 409 | tiskárnu s rolí zařízení už nehlásí |
+| `ROLE_AMBIGUOUS` | 409 | roli má víc přítomných tiskáren |
+| `PROFILE_NO_DRAWER` | 409 | šuplík na profilu bez funkce `drawer` |
+| `PRINT_NOT_FOUND` | 404 | neznámý tisk |
+| `PRINT_FORMAT_UNSUPPORTED` | 409 | tisk není `output: escpos` |
+| `PAYLOAD_TOO_LARGE` | 413 | složená data mají přes 5 MB |
+| `JOB_NOT_FOUND` | 404 | úloha neexistuje (i `jobId` jiného tvaru než UUID) |
+| `FORBIDDEN` | 403 | cizí úloha |
+
+Chyby tisku záznamu (`RECORD_NOT_FOUND`, `PRINT_NOT_AVAILABLE`,
+`PRINT_DATA_MISSING`, `RENDER_*`…) mají stejné kódy a stavy jako `/_prints`
+(§6) — obě cesty je berou ze sdíleného `Core\Prints\PrintErrors`.
+
+`DEVICE_UNKNOWN` je tu **409, ne 401** jako u podepsaných volání zařízení:
+`deviceId` je hodnota v těle přihlášeného požadavku a 401 by webová aplikace
+četla jako neplatnou session (zkusila by obnovu a uživatele odhlásila).
+
+### 14.4 Úklid
+
+`shpd-ds print-jobs-prune [--days=30]` maže úlohy starší než 30 dní
+i s daty (`PrintJobService::prune()`). Úloha cronu modulu ve slotu `daily`,
+jen ve stavu `active` — v režimu jen pro čtení úlohy nevznikají, není co
+uklízet. Když nic nesmaže, nic nevypíše.
+
+### 14.5 Tisk z UI
+
+**Akce `printPos`** („Tisk na účtenkovou tiskárnu“, U40).
+`ViewerController::detail()` ji připojí za akci `print` z tisků
+`output: escpos` — stejný tvar (jeden tisk tlačítko s `target.printId`, víc
+nabídka), popisek `core.system.viewerDefaults.detailActions.printPos`.
+**Server ji posílá vždy**; neví, jestli požadavek přišel ze zařízení
+s mostem. Ukázat ji rozhoduje frontend: `ViewerDetail.svelte` filtruje akce
+přes `visibleDetailActions()` a `canPrintPos()` — most nabízí
+`print.escpos` a zařízení je registrované **v tomto zdroji dat**. V obyčejném
+prohlížeči akce není vidět.
+
+**Postup** drží `frontend/src/native/printJobs.js` (čisté funkce se
+vstřikovanými závislostmi, vazba na klienta a most v `api/printJobs.js`):
+`submitPrintJob({kind, printId, recordId, role})` = `info` mostu → úloha
+→ `print.submit` → výsledek. Výsledek říká, kde se tisk zastavil:
+
+| `stage` | Co se stalo | Zkusit znovu |
+|---|---|---|
+| `server` | úloha nevznikla (nebo se při opakování nenačetla) | jen u `NETWORK_ERROR` — nový pokus téhož požadavku |
+| `bridge` | most nebo tiskárna data nepřevzaly; chyba je zapsaná k úloze | u `PERIPHERAL_UNAVAILABLE`, `PRINTER_ERROR`, `TIMEOUT`, `NETWORK_ERROR` — tatáž úloha s `reprint: true` |
+| `report` | data tiskárně **odešla**, nezapsal se výsledek | ne — úloha zůstane „Neověřeno“, tisk se kvůli tomu neopakuje |
+
+Úspěch je toast, neúspěch `components/native/PrintJobErrorDialog.svelte`:
+důvod slovy podle kódu (`native.print.error.<kód>`, u `PRINTER_ERROR`
+upřesnění z `details.paperOut` / `coverOpen`) a **Zkusit znovu** jen
+u opakovatelných chyb. Chyba nastavení (`NO_PERIPHERAL_FOR_ROLE`,
+`ROLE_AMBIGUOUS`, `PERIPHERAL_NOT_PRESENT`…) říká, co nastavit, a opakování
+nenabízí. Zkusit znovu po chybě tiskárny používá **tutéž úlohu**
+(`GET /_print-jobs/{jobId}` → most s `reprint: true`), novou nezakládá —
+`attempts` roste.
+
+**Panel Toto zařízení** (U41) má u registrovaného zařízení s capability
+`print.escpos` tlačítka **Zkušební tisk** (`kind: "test"`) a **Otevřít
+šuplík** (`kind: "drawer"`) se stejným zpracováním výsledku.
+
+### 14.6 Přehled Tiskové úlohy
+
+Viewer `core.prints.jobs` (`PrintJobsViewer`) v Nastavení → Zařízení, jen
+ke čtení a jen pro administrátora (tabulka je `adminOnly`): čas, zařízení,
+druh, tisk a záznam, stav (Neověřeno / Odesláno / Chyba, popisky a styl
+`core.prints.jobStates`), kód chyby, pokusy a uživatel; filtry stav, druh
+a zařízení. Sloupec `data` se do seznamu ani detailu nenačítá. Zkusit
+znovu tu ve verzi 1 není — funguje jen na zařízení, které úlohu tisklo.
+
+### 14.7 Testy a ověření
+
+- `PrintJobRouterTest`, `PrintJobServiceTest`, `PrintJobsControllerTest`,
+  `PrintJobsViewerTest`, `PrintJobsPruneCommandTest` — nad in-memory
+  databází `tests/Fixtures/Module/Prints/InMemoryPrintJobsDb`.
+- `tests/Integration/Prints/PrintJobsFlowTest` — nad skutečnou databází:
+  bajty v binárním sloupci tam i zpět, výsledek, úklid, tisk prodejky.
+- Frontend `tests/Unit/native/printJobs.test.mjs` (postup, opakování,
+  viditelnost akce, texty) a `mock.test.mjs` (simulace).
+- Bez aplikace jde celý postup proklikat **simulací mostu**
+  ([native-bridge.md](native-bridge.md) §9a): registrace v panelu Toto
+  zařízení, role Účtenky tiskárně `mock-receipt`, tisk prodejky → náhled
+  účtenky v panelu simulace; stav tiskárny `chyba` vyrobí `PRINTER_ERROR`.

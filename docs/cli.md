@@ -426,7 +426,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 | `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep`, `sales-registration-run` (fronta evidence tržeb — jen zdroj dat se zapnutým doplňkem) | `active` | `core.mail`, `economy.salesRegistration` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
 | `five-minutes` | à 5 min | `device-challenges-prune` (úklid výzev zařízení — i v `read_only`), `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `sales-registration-reconcile` (záchranná síť evidence tržeb — jen se zapnutým doplňkem), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `core.devices`, `economy.exchangeRates`, `economy.salesRegistration`, `core.alerts` |
-| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
+| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `print-jobs-prune` (`active` — úklid tiskových úloh starších než 30 dní), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `core.prints`, `economy.vat`, `economy.workOrders`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
 **Odkud se úlohy berou** (#172 D6): per-DS úlohy deklarují moduly polem
@@ -2012,6 +2012,16 @@ Modul: `core.devices`
 Smaže použité a prošlé výzvy zařízení (#177 U20) — úloha cronu
 `five-minutes`, běží i ve zdroji dat jen pro čtení (výzvy tam vznikají
 také). Když není co mazat, nic nevypíše (`-v` vypíše i nulu).
+
+#### `print-jobs-prune [--days=30]`
+
+Modul: `core.prints`
+
+Smaže tiskové úlohy účtenkových tiskáren starší než 30 dní i s jejich daty
+(#177 U39, [prints.md](prints.md) § 14.4) — úloha cronu `daily`, jen ve
+stavu `active` (v režimu jen pro čtení úlohy nevznikají). `--days` mění
+stáří; hodnota mimo kladné celé číslo je chyba a nic se nesmaže. Když není
+co mazat, nic nevypíše (`-v` vypíše i nulu).
 
 #### Příkazy modulů bez vlastní kapitoly
 
