@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CODE_PAGES, codePageOfEscPos, decodeByte, encodeText } from '../../../src/native/escpos/codePages.js';
-import { decodeEscPos } from '../../../src/native/escpos/decode.js';
+import { decodeEscPos, defaultColumnsSmall } from '../../../src/native/escpos/decode.js';
 import {
   TEST_RECEIPT_PANGRAM,
   TEST_RECEIPT_QR,
@@ -15,6 +15,7 @@ import {
 
 const ESC = 0x1b;
 const GS = 0x1d;
+const FS = 0x1c;
 const LF = 0x0a;
 
 /** Složí bajty z čísel a textů (text v CP852, pokud není řečeno jinak). */
@@ -55,9 +56,9 @@ test('kódové stránky: čísla ESC t a převod tam i zpět', () => {
 test('LF: text a nový řádek, výchozí styl', () => {
   const decoded = decodeEscPos(bytes(['Ahoj', LF, LF, 'svět']));
   assert.deepEqual(decoded.lines, [
-    { text: 'Ahoj', align: 'left', bold: false, size: { w: 1, h: 1 } },
-    { text: '', align: 'left', bold: false, size: { w: 1, h: 1 } },
-    { text: 'svět', align: 'left', bold: false, size: { w: 1, h: 1 } },
+    { text: 'Ahoj', align: 'left', bold: false, size: { w: 1, h: 1 }, font: 'normal' },
+    { text: '', align: 'left', bold: false, size: { w: 1, h: 1 }, font: 'normal' },
+    { text: 'svět', align: 'left', bold: false, size: { w: 1, h: 1 }, font: 'normal' },
   ]);
   assert.deepEqual(decoded.marks, []);
 });
@@ -88,7 +89,7 @@ test('GS ! n: velikost a zalomení širokého písma', () => {
 
 test('ESC @: reset stylu, kódové stránky a rozepsaného řádku', () => {
   const decoded = decodeEscPos(bytes([ESC, 0x61, 1, ESC, 0x45, 1, GS, 0x21, 0x11, ESC, 0x74, 45, 'zahozeno', ESC, 0x40, 0xfd, LF]));
-  assert.deepEqual(decoded.lines, [{ text: 'ř', align: 'left', bold: false, size: { w: 1, h: 1 } }]);
+  assert.deepEqual(decoded.lines, [{ text: 'ř', align: 'left', bold: false, size: { w: 1, h: 1 }, font: 'normal' }]);
 });
 
 test('ESC t n: přepnutí kódové stránky uprostřed úlohy', () => {
@@ -197,4 +198,64 @@ test('zkušební účtenka: dekódování vrátí původní texty, QR a ořez', 
     }
   }
   assert.throws(() => buildTestReceipt({ codePage: 'utf-8' }), /Unknown code page/);
+});
+
+// ── malé písmo a FS . (#177 U30) ────────────────────────────────────────────
+
+test('FS . je bez výstupu, jiný FS je neznámý příkaz', () => {
+  const decoded = decodeEscPos(bytes([ESC, 0x40, FS, 0x2e, ESC, 0x74, 18, 'ř', LF]));
+  assert.deepEqual(texts(decoded), ['ř']);
+  assert.deepEqual(decoded.marks, []);
+
+  const other = decodeEscPos(bytes([FS, 0x26, 'a', LF]));
+  assert.deepEqual(other.marks, [{ at: 0, kind: 'unknown', data: { hex: '1c' } }]);
+  assert.deepEqual(texts(other), ['&a']);
+});
+
+test('ESC ! n: bit 0 je malé písmo', () => {
+  const decoded = decodeEscPos(bytes([ESC, 0x21, 1, 'a', LF, ESC, 0x21, 0, 'b', LF]));
+  assert.deepEqual(decoded.lines.map((l) => l.font), ['small', 'normal']);
+  assert.deepEqual(decoded.marks, []);
+  // ESC @ vrací běžné písmo.
+  assert.deepEqual(decodeEscPos(bytes([ESC, 0x21, 1, ESC, 0x40, 'a', LF])).lines[0].font, 'normal');
+});
+
+test('ESC ! n nastavuje i tučné a velikost — jako tiskárna', () => {
+  // bit 3 tučně, bit 4 dvojitá výška, bit 5 dvojitá šířka
+  const decoded = decodeEscPos(bytes([ESC, 0x21, 0x08, 'a', LF, ESC, 0x21, 0x30, 'b', LF, ESC, 0x21, 0x39, 'c', LF]));
+  assert.deepEqual(
+    decoded.lines.map((l) => [l.font, l.bold, l.size]),
+    [
+      ['normal', true, { w: 1, h: 1 }],
+      ['normal', false, { w: 2, h: 2 }],
+      ['small', true, { w: 2, h: 2 }],
+    ],
+  );
+
+  // ESC ! 0 zruší tučné (ESC E) i velikost (GS !): špatné pořadí příkazů je v náhledu vidět.
+  const reset = decodeEscPos(bytes([ESC, 0x45, 1, GS, 0x21, 0x11, ESC, 0x21, 0, 'a', LF]));
+  assert.deepEqual(reset.lines, [{ text: 'a', align: 'left', bold: false, size: { w: 1, h: 1 }, font: 'normal' }]);
+
+  // Správné pořadí: písmo → tučně → velikost.
+  const ordered = decodeEscPos(bytes([ESC, 0x21, 1, ESC, 0x45, 1, GS, 0x21, 0x10, 'a', LF]));
+  assert.deepEqual(ordered.lines, [{ text: 'a', align: 'left', bold: true, size: { w: 2, h: 1 }, font: 'small' }]);
+});
+
+test('malé písmo se láme podle columnsSmall', () => {
+  const small = [ESC, 0x21, 1, '1234567890', LF];
+  assert.deepEqual(texts(decodeEscPos(bytes(small), { columns: 4, columnsSmall: 6 })), ['123456', '7890']);
+  // Bez volby je malé písmo o čtvrtinu užší.
+  assert.deepEqual(texts(decodeEscPos(bytes(small), { columns: 6 })), ['12345678', '90']);
+  // Běžné písmo se dál láme podle columns a široké malé písmo zabírá násobek sloupců.
+  assert.deepEqual(texts(decodeEscPos(bytes(['1234567890', LF]), { columns: 4, columnsSmall: 6 })), ['1234', '5678', '90']);
+  assert.deepEqual(
+    texts(decodeEscPos(bytes([ESC, 0x21, 1, GS, 0x21, 0x10, '1234567890', LF]), { columns: 4, columnsSmall: 6 })),
+    ['123', '456', '789', '0'],
+  );
+});
+
+test('výchozí šířka malého písma: 48 → 64, 42 → 56, 32 → 42', () => {
+  assert.equal(defaultColumnsSmall(48), 64);
+  assert.equal(defaultColumnsSmall(42), 56);
+  assert.equal(defaultColumnsSmall(32), 42);
 });

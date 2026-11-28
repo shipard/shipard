@@ -8,26 +8,33 @@
  *   ESC d n      vytiskne rozepsaný řádek a posune o n řádků
  *   ESC a n      zarovnání (0 / 1 / 2 = left / center / right)
  *   ESC E n      tučně
+ *   ESC ! n      režim tisku: bit 0 = malé písmo (font B), bit 3 = tučně,
+ *                bity 4 / 5 = dvojitá výška / šířka — nastavuje vše najednou,
+ *                jako tiskárna (`ESC ! 0` tedy zruší i tučné a velikost)
  *   GS ! n       velikost znaku (šířka a výška 1–8)
+ *   FS .         zrušení režimu dvoubajtových znaků — bez výstupu
  *   ESC t n      kódová stránka (čísla v codePages.js)
  *   GS V …       ořez → značka `cut`
  *   GS ( k …     QR: uložení dat (funkce 80) a tisk (81) → značka `qr`
  *   ESC p …      šuplík → značka `drawer`
  *
  * Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje —
- * náhled nikdy nespadne. `EscPosRenderer` na serveru (task 4) musí zůstat
- * v téhle podmnožině, nebo náhled rozšířit i s testem.
+ * náhled nikdy nespadne. `EscPosRenderer` na serveru musí zůstat v téhle
+ * podmnožině, nebo náhled rozšířit i s testem; společné vzory
+ * `tests/Fixtures/EscPos/` hlídají, že se nerozejdou (#177 U33).
  *
  * Meze náhledu: řádek nese jeden styl — ten, který platil u jeho prvního
  * znaku (zarovnání tiskárna stejně bere jen na začátku řádku; změna tučného
- * uprostřed řádku se neukáže). Řádek delší než `columns` se zalomí jako na
- * papíře; široké písmo (GS !) zabírá násobek sloupců.
+ * uprostřed řádku se neukáže). Řádek delší než `columns` (malým písmem
+ * `columnsSmall`) se zalomí jako na papíře; široké písmo (GS !) zabírá
+ * násobek sloupců.
  */
 import { DEFAULT_CODE_PAGE, codePageOfEscPos, decodeByte } from './codePages.js';
 
 const LF = 0x0a;
 const CR = 0x0d;
 const ESC = 0x1b;
+const FS = 0x1c;
 const GS = 0x1d;
 
 const ALIGN = { 0: 'left', 1: 'center', 2: 'right', 48: 'left', 49: 'center', 50: 'right' };
@@ -37,14 +44,27 @@ function hex(bytes) {
 }
 
 /**
+ * Šířka řádku malým písmem (font B), když ji profil tiskárny neříká: font B
+ * je o čtvrtinu užší — 48 → 64, 42 → 56, 32 → 42.
+ *
+ * @param {number} columns
+ * @returns {number}
+ */
+export function defaultColumnsSmall(columns) {
+  return Math.floor((columns * 4) / 3);
+}
+
+/**
  * @param {Uint8Array|number[]} bytes
- * @param {{codePage?: string, columns?: number}} [options]  výchozí stránka (do prvního `ESC t`) a šířka papíru ve znacích
+ * @param {{codePage?: string, columns?: number, columnsSmall?: number}} [options]  výchozí stránka (do prvního `ESC t`)
+ *   a šířka papíru ve znacích běžným a malým písmem (profil tiskárny)
  * @returns {{
- *   lines: {text: string, align: 'left'|'center'|'right', bold: boolean, size: {w: number, h: number}}[],
+ *   lines: {text: string, align: 'left'|'center'|'right', bold: boolean, size: {w: number, h: number}, font: 'normal'|'small'}[],
  *   marks: {at: number, kind: 'cut'|'qr'|'drawer'|'unknown', data: object}[],
  * }} `marks[].at` = počet řádků hotových před značkou (značka patří před řádek s tímto indexem)
  */
-export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48 } = {}) {
+export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48, columnsSmall } = {}) {
+  const smallColumns = columnsSmall ?? defaultColumnsSmall(columns);
   const data = bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes);
   const lines = [];
   const marks = [];
@@ -52,6 +72,7 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
   let align = 'left';
   let bold = false;
   let size = { w: 1, h: 1 };
+  let font = 'normal';
   let page = codePage;
   let qrContent = null;
 
@@ -59,7 +80,7 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
   let text = '';
   let style = null;
 
-  const currentStyle = () => ({ align, bold, size: { ...size } });
+  const currentStyle = () => ({ align, bold, size: { ...size }, font });
 
   function pushLine() {
     lines.push({ text, ...(style ?? currentStyle()) });
@@ -81,7 +102,7 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
 
   function putChar(char) {
     if (style === null) style = currentStyle();
-    const limit = Math.max(1, Math.floor(columns / style.size.w));
+    const limit = Math.max(1, Math.floor((style.font === 'small' ? smallColumns : columns) / style.size.w));
     if (text.length >= limit) {
       pushLine();
       style = currentStyle();
@@ -110,6 +131,7 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
         align = 'left';
         bold = false;
         size = { w: 1, h: 1 };
+        font = 'normal';
         page = codePage;
         text = '';
         style = null;
@@ -124,6 +146,11 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
         i += 3;
       } else if (command === 0x45 && arg !== undefined) { // ESC E n
         bold = (arg & 1) === 1;
+        i += 3;
+      } else if (command === 0x21 && arg !== undefined) { // ESC ! n
+        font = (arg & 0x01) !== 0 ? 'small' : 'normal';
+        bold = (arg & 0x08) !== 0;
+        size = { w: (arg & 0x20) !== 0 ? 2 : 1, h: (arg & 0x10) !== 0 ? 2 : 1 };
         i += 3;
       } else if (command === 0x74 && arg !== undefined) { // ESC t n
         const next = codePageOfEscPos(arg);
@@ -181,6 +208,11 @@ export function decodeEscPos(bytes, { codePage = DEFAULT_CODE_PAGE, columns = 48
         unknown(i, end);
         i = end;
       }
+      continue;
+    }
+
+    if (byte === FS && data[i + 1] === 0x2e) { // FS .
+      i += 2;
       continue;
     }
 

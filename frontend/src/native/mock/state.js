@@ -13,12 +13,16 @@ export const DEFAULT_CAPABILITIES = ['device', 'peripherals', 'print.escpos', 's
 
 /**
  * Co simulace potřebuje vědět o profilu tiskárny pro náhled. Katalog
- * profilů je na serveru (docs/native-bridge.md §6); simulace zná jen ten,
- * který sama hlásí.
+ * profilů je na serveru (docs/native-bridge.md §6,
+ * modules/core/prints/config/printerProfiles.jsonc); simulace zná jen ten,
+ * který sama hlásí — hodnoty musí sedět na katalog (hlídá mock.test.mjs).
  */
 export const MOCK_PRINTER_PROFILES = {
-  'escpos-80-cp852': { columns: 48, codePage: 'cp852' },
+  'escpos-80-cp852': { columns: 42, columnsSmall: 56, codePage: 'cp852' },
 };
+
+/** Profil pro tiskárnu, kterou simulace nezná: nejužší z katalogu, vejde se všude. */
+export const MOCK_FALLBACK_PROFILE = { columns: 32, columnsSmall: 42, codePage: 'cp852' };
 
 const MODES = ['unregistered', 'personal', 'shared'];
 const STATUSES = ['ready', 'offline', 'error'];

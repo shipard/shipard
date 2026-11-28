@@ -349,3 +349,23 @@ test('install vloží simulaci jako shipardNative a zpřístupní ovládání', 
   assert.equal(mockControls(), mock.controls);
   assert.equal(mockControls().snapshot().dataSource, API_A);
 });
+
+test('profily simulace sedí na katalog profilů serveru', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { MOCK_FALLBACK_PROFILE, MOCK_PRINTER_PROFILES } = await import('../../../src/native/mock/state.js');
+  const source = readFileSync(
+    new URL('../../../../modules/core/prints/config/printerProfiles.jsonc', import.meta.url),
+    'utf8',
+  );
+  const profileOf = (id) => {
+    const block = source.slice(source.indexOf(`"${id}": {`));
+    const number = (key) => Number(block.match(new RegExp(`"${key}": (\\d+),`))[1]);
+    return { columns: number('columns'), columnsSmall: number('columnsSmall'), codePage: block.match(/"codePage": "([^"]+)"/)[1] };
+  };
+
+  for (const [id, profile] of Object.entries(MOCK_PRINTER_PROFILES)) {
+    assert.deepEqual(profile, profileOf(id), id);
+  }
+  // Záložní profil = záložní profil serveru (PrinterProfiles::FALLBACK_ID).
+  assert.deepEqual(MOCK_FALLBACK_PROFILE, profileOf('escpos-58-cp852'));
+});

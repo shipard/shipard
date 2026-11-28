@@ -22,7 +22,7 @@
   import { validateInfo } from '../../../native/contract.js';
   import { bytesToBase64, randomUuid } from '../../../native/bytes.js';
   import { CODE_PAGES, DEFAULT_CODE_PAGE } from '../../../native/escpos/codePages.js';
-  import { decodeEscPos } from '../../../native/escpos/decode.js';
+  import { decodeEscPos, defaultColumnsSmall } from '../../../native/escpos/decode.js';
   import { buildTestReceipt } from '../../../native/escpos/testReceipt.js';
   import { runContractChecks } from '../../bridge/checks.js';
 
@@ -40,8 +40,11 @@
   let peripherals = $state(null);
   let peripheralsError = $state(null);
 
+  // Výchozí šířky = široký profil katalogu serveru (escpos-80-cp852).
   let codePage = $state(DEFAULT_CODE_PAGE);
-  let columns = $state(48);
+  let columns = $state(42);
+  let columnsSmall = $state(56);
+  let filePreview = $state(null); // {name, size, decoded, columns, columnsSmall, unknown} | {name, error}
   let printing = $state(false);
   let lastPrint = $state(null); // {jobId, peripheral, decoded, columns, result: {kind, text}, duplicate: {kind, text}|null}
 
@@ -118,12 +121,45 @@
     return Array.isArray(peripheral.reads) ? peripheral.reads.join(', ') : '';
   }
 
+  /** Šířky papíru z polí stránky; neplatná hodnota = široký profil katalogu. */
+  function paper() {
+    const width = Number.isInteger(columns) && columns >= 16 && columns <= 96 ? columns : 42;
+    const small = Number.isInteger(columnsSmall) && columnsSmall >= width && columnsSmall <= 128 ? columnsSmall : defaultColumnsSmall(width);
+    return { codePage, columns: width, columnsSmall: small };
+  }
+
+  // Soubor s bajty ESC/POS ze serveru (`shpd-ds print-run --format=escpos`,
+  // `print-escpos-test`) — náhled bez aplikace i bez tiskárny.
+  async function previewFile(event) {
+    // Po `await` už `event.currentTarget` není — pole si vzít hned.
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const options = paper();
+      const decoded = decodeEscPos(new Uint8Array(await file.arrayBuffer()), options);
+      filePreview = {
+        name: file.name,
+        size: file.size,
+        decoded,
+        columns: options.columns,
+        columnsSmall: options.columnsSmall,
+        unknown: decoded.marks.filter((mark) => mark.kind === 'unknown').length,
+      };
+    } catch (e) {
+      filePreview = { name: file.name, error: errorText(e) };
+    }
+    // Stejný soubor jde vybrat znovu (po novém běhu CLI).
+    input.value = '';
+  }
+
   async function testPrint(peripheral) {
     printing = true;
-    const width = Number.isInteger(columns) && columns >= 16 && columns <= 96 ? columns : 48;
+    const options = paper();
+    const width = options.columns;
     const bytes = buildTestReceipt({ codePage, columns: width });
     const jobId = randomUuid();
-    const print = { jobId, peripheral, data: bytesToBase64(bytes), decoded: decodeEscPos(bytes, { codePage, columns: width }), columns: width, result: null, duplicate: null };
+    const print = { jobId, peripheral, data: bytesToBase64(bytes), decoded: decodeEscPos(bytes, options), columns: width, columnsSmall: options.columnsSmall, result: null, duplicate: null };
     try {
       await nativeCall('print.submit', { jobId, peripheralId: peripheral.id, format: 'escpos', data: print.data });
       print.result = { kind: 'success', text: t('bridge.print.sent', { name: peripheral.name, jobId }) };
@@ -205,6 +241,50 @@
   {/if}
 </div>
 
+<div class="dev-card" data-testid="bridge-escpos">
+  <h2 class="dev-card__title">{t('bridge.escpos.title')}</h2>
+  <p>{t('bridge.escpos.help')}</p>
+  <div class="dev-form__row bridge-print-options">
+    <div class="dev-field">
+      <label for="bridge-code-page">{t('bridge.print.codePage')}</label>
+      <select id="bridge-code-page" bind:value={codePage} data-testid="bridge-code-page">
+        {#each Object.entries(CODE_PAGES) as [name, page] (name)}
+          <option value={name}>{page.label}</option>
+        {/each}
+      </select>
+    </div>
+    <div class="dev-field">
+      <label for="bridge-columns">{t('bridge.print.columns')}</label>
+      <input id="bridge-columns" type="number" min="16" max="96" step="1" bind:value={columns} autocorrect="off" autocapitalize="off" spellcheck="false" data-testid="bridge-columns" />
+    </div>
+    <div class="dev-field">
+      <label for="bridge-columns-small">{t('bridge.print.columnsSmall')}</label>
+      <input id="bridge-columns-small" type="number" min="16" max="128" step="1" bind:value={columnsSmall} autocorrect="off" autocapitalize="off" spellcheck="false" data-testid="bridge-columns-small" />
+    </div>
+    <div class="dev-field">
+      <label for="bridge-escpos-file">{t('bridge.escpos.file')}</label>
+      <input id="bridge-escpos-file" type="file" onchange={previewFile} data-testid="bridge-escpos-file" />
+    </div>
+  </div>
+  {#if filePreview}
+    <div class="bridge-print" data-testid="bridge-escpos-result">
+      {#if filePreview.error}
+        <div class="dev-alert dev-alert--danger"><span class="dev-alert__text">{t('bridge.escpos.failed', { name: filePreview.name, error: filePreview.error })}</span></div>
+      {:else}
+        <div class="dev-alert dev-alert--{filePreview.unknown > 0 ? 'warning' : 'success'}" data-testid="bridge-escpos-summary">
+          <span class="dev-alert__text">{t(filePreview.unknown > 0 ? 'bridge.escpos.unknown' : 'bridge.escpos.ok', {
+            name: filePreview.name,
+            size: filePreview.size,
+            lines: filePreview.decoded.lines.length,
+            count: filePreview.unknown,
+          })}</span>
+        </div>
+        <ReceiptPreview decoded={filePreview.decoded} columns={filePreview.columns} columnsSmall={filePreview.columnsSmall} labels={markLabels} />
+      {/if}
+    </div>
+  {/if}
+</div>
+
 {#if available}
   <div class="dev-card" data-testid="bridge-info">
     <h2 class="dev-card__title">{t('bridge.info.title')}</h2>
@@ -276,20 +356,6 @@
     {:else if peripherals.length === 0}
       <div class="dev-empty">{t('bridge.peripherals.empty')}</div>
     {:else}
-      <div class="dev-form__row bridge-print-options">
-        <div class="dev-field">
-          <label for="bridge-code-page">{t('bridge.print.codePage')}</label>
-          <select id="bridge-code-page" bind:value={codePage} data-testid="bridge-code-page">
-            {#each Object.entries(CODE_PAGES) as [name, page] (name)}
-              <option value={name}>{page.label}</option>
-            {/each}
-          </select>
-        </div>
-        <div class="dev-field">
-          <label for="bridge-columns">{t('bridge.print.columns')}</label>
-          <input id="bridge-columns" type="number" min="16" max="96" step="1" bind:value={columns} autocorrect="off" autocapitalize="off" spellcheck="false" data-testid="bridge-columns" />
-        </div>
-      </div>
       <div class="dev-table-wrap">
         <TableScroll>
           <table class="dev-table">
@@ -339,7 +405,7 @@
             <div class="dev-alert dev-alert--{lastPrint.duplicate.kind}" data-testid="bridge-duplicate-result"><span class="dev-alert__text">{lastPrint.duplicate.text}</span></div>
           {/if}
           <p class="dev-muted">{t('bridge.print.preview')}</p>
-          <ReceiptPreview decoded={lastPrint.decoded} columns={lastPrint.columns} labels={markLabels} />
+          <ReceiptPreview decoded={lastPrint.decoded} columns={lastPrint.columns} columnsSmall={lastPrint.columnsSmall} labels={markLabels} />
         </div>
       {/if}
     {/if}

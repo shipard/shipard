@@ -25,7 +25,7 @@
   import { decodeEscPos } from '../../native/escpos/decode.js';
   import { buildTestReceipt } from '../../native/escpos/testReceipt.js';
   import { mockControls } from '../../native/mock/install.js';
-  import { MOCK_PRINTER_ID, MOCK_PRINTER_PROFILES } from '../../native/mock/state.js';
+  import { MOCK_FALLBACK_PROFILE, MOCK_PRINTER_ID, MOCK_PRINTER_PROFILES } from '../../native/mock/state.js';
 
   const controls = mockControls();
 
@@ -69,7 +69,7 @@
   /** Šířka a kódová stránka tiskárny, na kterou úloha šla. */
   function profileOf(peripheralId) {
     const peripheral = snapshot.peripherals.find((p) => p.id === peripheralId);
-    return MOCK_PRINTER_PROFILES[peripheral?.profileId] ?? { columns: 48, codePage: 'cp852' };
+    return MOCK_PRINTER_PROFILES[peripheral?.profileId] ?? MOCK_FALLBACK_PROFILE;
   }
 
   const previews = $derived(
@@ -78,6 +78,7 @@
       return {
         job,
         columns: profile.columns,
+        columnsSmall: profile.columnsSmall,
         decoded: job.format === 'escpos' ? decodeEscPos(job.bytes, profile) : null,
       };
     }),
@@ -213,7 +214,7 @@
             <Button label={t('native.mock.download')} icon={iconDownload} variant="ghost" size="sm" onclick={() => download(preview.job)} />
           </div>
           {#if preview.decoded}
-            <ReceiptPreview decoded={preview.decoded} columns={preview.columns} labels={markLabels} />
+            <ReceiptPreview decoded={preview.decoded} columns={preview.columns} columnsSmall={preview.columnsSmall} labels={markLabels} />
           {:else}
             <p class="shpd-mock__empty">{t('native.mock.pdfNoPreview')}</p>
           {/if}

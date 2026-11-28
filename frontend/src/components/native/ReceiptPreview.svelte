@@ -11,6 +11,8 @@
     decoded,
     /** Znaků na řádek — šířka proužku. */
     columns = 48,
+    /** Znaků na řádek malým písmem (font B); bez hodnoty o čtvrtinu užší písmo. */
+    columnsSmall = null,
     /** Popisky značek `{cut, qr, drawer, unknown}`. */
     labels = {},
   } = $props();
@@ -31,6 +33,14 @@
     return out;
   });
 
+  // Malé písmo je užší i nižší: `columnsSmall` znaků se vejde na šířku
+  // `columns` znaků běžného písma.
+  const smallScale = $derived(columns / (columnsSmall ?? Math.floor((columns * 4) / 3)));
+
+  function fontScale(line) {
+    return line.font === 'small' ? smallScale : 1;
+  }
+
   function markDetail(mark) {
     if (mark.kind === 'qr') return mark.data?.content ?? '';
     if (mark.kind === 'unknown') return mark.data?.hex ?? '';
@@ -44,7 +54,8 @@
       <div
         class="shpd-receipt__line shpd-receipt__line--{item.line.align}"
         class:shpd-receipt__line--bold={item.line.bold}
-        style:font-size="{item.line.size.h}em"
+        class:shpd-receipt__line--small={item.line.font === 'small'}
+        style:font-size="{item.line.size.h * fontScale(item.line)}em"
         style:width={item.line.size.w !== item.line.size.h ? `${(100 * item.line.size.h) / item.line.size.w}%` : null}
         style:transform={item.line.size.w !== item.line.size.h ? `scaleX(${item.line.size.w / item.line.size.h})` : null}
       >{item.line.text === '' ? ' ' : item.line.text}</div>
