@@ -38,12 +38,14 @@ test('seznamy kontraktu', () => {
   assert.ok(ERROR_CODES.includes('DUPLICATE_JOB') && ERROR_CODES.includes('UNKNOWN_METHOD'));
   assert.deepEqual(MODES, ['unregistered', 'personal', 'shared']);
   assert.ok(PLATFORMS.includes('mock'), 'simulace hlásí platform mock');
+  assert.ok(PLATFORMS.includes('ios'), 'iPhone hlásí platform ios (#177 D41)');
   assert.ok(!ERROR_CODES.includes('NOT_AVAILABLE'), 'NOT_AVAILABLE je kód frontendu, ne kontraktu');
 });
 
 test('platné info projde', () => {
   assert.deepEqual(validateInfo(info()), []);
   assert.deepEqual(validateInfo(info({ mode: 'personal', profile: null })), []);
+  assert.deepEqual(validateInfo(info({ platform: 'ios' })), []);
   assert.deepEqual(validateInfo(info({ profile: { id: '5d0e7c34-8b1a-4c59-a2f7-3e9b6d4c1f02', userId: null } })), []);
   // stránka mimo zdroj dat (vývojářský dashboard)
   assert.deepEqual(validateInfo(info({ dataSource: null, deviceId: null, mode: 'unregistered', profile: null })), []);

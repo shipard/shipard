@@ -479,8 +479,8 @@ o ISDOC dodavatele požádat.
 
 ## Rozhraní
 
-- **Nativní aplikace pro Mac a iPad zatím není vydaná; pro Android
-  a Windows se nechystá.** V Nastavení už je pro ni sekce **Zařízení**, ale
+- **Nativní aplikace pro Mac, iPad a iPhone zatím není vydaná; pro
+  Android a Windows se nechystá.** V Nastavení už je pro ni sekce **Zařízení**, ale
   bez aplikace v ní zařízení nezaregistruješ — viz
   [Zařízení a jejich registrace](zarizeni.md). Rozhraní je responzivní
   a Shipard si přidáš na plochu telefonu nebo nainstaluješ do počítače

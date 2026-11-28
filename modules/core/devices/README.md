@@ -1,6 +1,6 @@
 # Modul: Zařízení (core.devices)
 
-Registrovaná zařízení nativní aplikace Shipardu (macOS, iPadOS, později
+Registrovaná zařízení nativní aplikace Shipardu (macOS, iPadOS, iOS, později
 i hub bez okna), jejich periferie a podepsaná volání zařízení na server —
 bez session, jen podpisem výzvy klíčem zařízení. Kontrakt mezi aplikací,
 webovou stranou a serverem je v [docs/native-bridge.md](../../../docs/native-bridge.md)

@@ -109,6 +109,16 @@ class DeviceRegistrationServiceTest extends TestCase
         $this->assertSame(DeviceDocument::STATE_MAIN_ACTIVE, $row['docStateMain']);
     }
 
+    /** iPhone hlásí `ios` (kontrakt §3.1, #177 D41). */
+    public function testIosPlatformIsStored(): void
+    {
+        $this->assertContains('ios', DeviceRegistrationService::PLATFORMS);
+
+        $this->service()->register($this->body(override: ['platform' => 'ios']), self::ADMIN);
+
+        $this->assertSame('ios', $this->db->rows(DeviceDocument::TABLE)[0]['platform']);
+    }
+
     public function testOptionalFieldsMayBeMissingAndNameIsTrimmed(): void
     {
         $body = $this->body(override: ['name' => '  Můj Mac  ', 'mode' => 'personal', 'platform' => 'mock']);

@@ -95,6 +95,22 @@ class DevicesViewerTest extends TestCase
         $this->assertSame('done', $row['stateStyle']);
     }
 
+    /** iPhone hlásí `ios` (kontrakt §3.1, #177 D41) — řádek i detail ukážou „iOS“. */
+    public function testIosPlatformHasALabel(): void
+    {
+        $calls = [];
+        $record = ['platform' => 'ios'] + self::RECORD;
+
+        $row = $this->viewer($calls, $record)->renderRow($record);
+        $this->assertSame('iOS', $row['t2'][1]['text']);
+
+        $detail = $this->viewer($calls, $record)->renderDetail(5);
+        $this->assertSame(
+            ['label' => 'Platforma', 'value' => 'iOS'],
+            $detail['tabs'][0]['content']['groups'][1]['items'][0],
+        );
+    }
+
     public function testThisDeviceSpanCarriesTheDeviceIdForTheFrontend(): void
     {
         $calls = [];

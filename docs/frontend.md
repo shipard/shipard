@@ -2343,8 +2343,8 @@ změna kódu.
 
 ## 13.5 Nativní most
 
-Webová aplikace mluví s nativní aplikací Shipardu (macOS, iPadOS, repo
-`shipard-app`) přes `window.shipardNative`. Kontrakt — metody, události,
+Webová aplikace mluví s nativní aplikací Shipardu (macOS, iPadOS a iOS,
+repo `shipard-app`) přes `window.shipardNative`. Kontrakt — metody, události,
 capabilities, chybové kódy — je v [`native-bridge.md`](native-bridge.md);
 tady je webová strana (`tasks/native-frontend-bridge.md`, #177 D6, D10,
 D21, D29). Vše v `frontend/src/native/` je čisté JS bez `t()` aplikace

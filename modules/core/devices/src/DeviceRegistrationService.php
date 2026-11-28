@@ -23,7 +23,7 @@ use Shipard\Core\Database\DataSourceConnection;
 final class DeviceRegistrationService
 {
     /** `mock` hlásí jen simulace mostu pro vývoj (kontrakt §9a). */
-    public const array PLATFORMS = ['macos', 'ipados', 'mock'];
+    public const array PLATFORMS = ['macos', 'ipados', 'ios', 'mock'];
     public const array KEY_STORAGES = ['secureEnclave', 'keychain', 'mock'];
 
     private const int APP_VERSION_MAX_LENGTH = 40;

@@ -29,6 +29,7 @@
     "status.error":   { "name": "error", "name:cs": "chyba", "name:en": "error" },
     "platform.macos":  { "name": "macOS", "name:cs": "macOS", "name:en": "macOS" },
     "platform.ipados": { "name": "iPadOS", "name:cs": "iPadOS", "name:en": "iPadOS" },
+    "platform.ios":    { "name": "iOS", "name:cs": "iOS", "name:en": "iOS" },
     "platform.mock":   { "name": "bridge simulation", "name:cs": "simulace mostu", "name:en": "bridge simulation" },
 
     // --- akce Zneplatnit ---

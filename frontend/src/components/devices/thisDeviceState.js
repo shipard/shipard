@@ -170,7 +170,7 @@ export function bridgeErrorKey(code) {
 /** Hodnoty, pro které má panel popisek (`devices.<skupina>.<hodnota>`). */
 const KNOWN_LABELS = Object.freeze({
   mode: ['unregistered', 'personal', 'shared'],
-  platform: ['macos', 'ipados', 'mock'],
+  platform: ['macos', 'ipados', 'ios', 'mock'],
   kind: ['printer', 'scanner'],
   status: ['ready', 'offline', 'error'],
   role: ['receipt'],

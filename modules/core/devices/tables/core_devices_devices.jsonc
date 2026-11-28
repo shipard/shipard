@@ -97,7 +97,7 @@
             "group": "registration"
         },
         {
-            // `macos` | `ipados`; simulace pro vývoj hlásí `mock`.
+            // `macos` | `ipados` | `ios`; simulace pro vývoj hlásí `mock`.
             "id": "platform",
             "name": "Platform",
             "name:cs": "Platforma",

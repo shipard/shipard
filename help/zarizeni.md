@@ -1,13 +1,13 @@
 ---
 title: Zařízení a jejich registrace
 summary: Kde v Nastavení zaregistruješ zařízení s nativní aplikací Shipardu, jak mu přiřadíš tiskárnu účtenek a pokladnu, jak z něj vytiskneš účtenku a jak ztracené zařízení zneplatníš.
-keywords: [zařízení, registrace zařízení, registrovat zařízení, toto zařízení, pracoviště, sdílené pracoviště, osobní zařízení, nativní aplikace, aplikace pro Mac, aplikace pro iPad, tiskárna účtenek, pokladní tiskárna, čtečka, periferie, role periferie, účtenky, zneplatnit zařízení, zneplatnění, ztracené zařízení, odcizené zařízení, synchronizovat, automatické zamčení, pokladna zařízení, tisk na účtenkovou tiskárnu, tisk účtenky, zkušební tisk, otevřít šuplík, pokladní zásuvka, tiskové úlohy, zkusit znovu, tiskárna netiskne, došel papír]
+keywords: [zařízení, registrace zařízení, registrovat zařízení, toto zařízení, pracoviště, sdílené pracoviště, osobní zařízení, nativní aplikace, aplikace pro Mac, aplikace pro iPad, aplikace pro iPhone, tiskárna účtenek, pokladní tiskárna, čtečka, periferie, role periferie, účtenky, zneplatnit zařízení, zneplatnění, ztracené zařízení, odcizené zařízení, synchronizovat, automatické zamčení, pokladna zařízení, tisk na účtenkovou tiskárnu, tisk účtenky, zkušební tisk, otevřít šuplík, pokladní zásuvka, tiskové úlohy, zkusit znovu, tiskárna netiskne, došel papír]
 related: [co-dnes-nejde.md, instalace-aplikace.md, slovnicek.md, pokladna/prodejka.md]
 ---
 
 # Zařízení a jejich registrace
 
-Zařízení je počítač nebo tablet s nativní aplikací Shipardu, který se
+Zařízení je počítač, tablet nebo telefon s nativní aplikací Shipardu, který se
 serveru prokazuje vlastním klíčem. Registrované zařízení může mít tiskárnu
 účtenek, čtečku a pokladnu — je to obdoba **pracoviště** ze starého Shipardu.
 
@@ -16,8 +16,8 @@ doby v ní zařízení zaregistrovat nejde a seznam zůstane prázdný.
 
 ## Kdy to potřebuješ
 
-- Chceš na Macu nebo iPadu s aplikací Shipardu tisknout účtenky nebo číst
-  čárové kódy.
+- Chceš na Macu, iPadu nebo iPhonu s aplikací Shipardu tisknout účtenky
+  nebo číst čárové kódy.
 - Zřizuješ pracoviště, na kterém se střídá víc lidí.
 - Zařízení se ztratilo nebo ho vyřazuješ a nemá mít dál přístup.
 

@@ -243,6 +243,7 @@ test('periferie: připojené napřed, pak druh a název; role jen vyplněná', (
 test('popisky: známá hodnota má klíč, neznámá se ukáže, jak přišla', () => {
   assert.equal(labelKey('mode', 'shared'), 'devices.mode.shared');
   assert.equal(labelKey('platform', 'mock'), 'devices.platform.mock');
+  assert.equal(labelKey('platform', 'ios'), 'devices.platform.ios');
   assert.equal(labelKey('kind', 'printer'), 'devices.kind.printer');
   assert.equal(labelKey('status', 'offline'), 'devices.status.offline');
   assert.equal(labelKey('role', 'receipt'), 'devices.role.receipt');

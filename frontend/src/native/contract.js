@@ -39,7 +39,7 @@ export const ERROR_CODES = [
 ];
 
 /** `mock` hlásí jen simulace pro vývoj (#177 U12). */
-export const PLATFORMS = ['macos', 'ipados', 'mock'];
+export const PLATFORMS = ['macos', 'ipados', 'ios', 'mock'];
 export const KEY_STORAGES = ['secureEnclave', 'keychain', 'mock'];
 export const MODES = ['unregistered', 'personal', 'shared'];
 

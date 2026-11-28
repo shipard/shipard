@@ -220,6 +220,7 @@ class DevicesViewer extends TableViewer
         return match ($platform) {
             'macos'  => $this->text('platform.macos', 'macOS'),
             'ipados' => $this->text('platform.ipados', 'iPadOS'),
+            'ios'    => $this->text('platform.ios', 'iOS'),
             'mock'   => $this->text('platform.mock', 'bridge simulation'),
             default  => $platform,
         };
