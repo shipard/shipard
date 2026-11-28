@@ -2392,20 +2392,33 @@ nejsou (kontrakt §2.4), ostatní výčty se hlásí.
 
 ### Náhled ESC/POS (`native/escpos/`)
 
-`decodeEscPos(bytes, {codePage, columns})` → `{lines: [{text, align, bold,
-size}], marks: [{at, kind, data}]}` — čistá funkce nad pevnou podmnožinou
-příkazů (kontrakt §9a): inicializace, odřádkování, posun, zarovnání, tučně,
-velikost, kódová stránka, ořez, QR, šuplík. Neznámý příkaz je značka
-`unknown` s hex bajty, náhled nespadne. Kódové stránky `codePages.js`:
+`decodeEscPos(bytes, {codePage, columns, columnsSmall})` → `{lines: [{text,
+align, bold, size, font}], marks: [{at, kind, data}]}` — čistá funkce nad
+pevnou podmnožinou příkazů (kontrakt §9a): inicializace, odřádkování, posun,
+zarovnání, tučně, režim tisku `ESC !` (malé písmo, tučně, dvojitá velikost —
+vše najednou jako tiskárna), velikost, kódová stránka, `FS .`, ořez, QR,
+šuplík. Malé písmo (`font: 'small'`) se láme podle `columnsSmall`; bez volby
+`defaultColumnsSmall(columns)` — o čtvrtinu užší (48 → 64, 42 → 56,
+32 → 42). Neznámý příkaz je značka `unknown` s hex bajty, náhled nespadne. Kódové stránky `codePages.js`:
 CP852 vlastní tabulkou (prohlížeče ji neumí), Windows-1250 přes
 `TextDecoder`; čísla pro `ESC t` 18 a 45. Meze: řádek nese styl svého
 prvního znaku, přesně plný řádek se láme až dalším znakem.
 `buildTestReceipt({codePage, columns, at})` složí zkušební účtenku
 (diakritika, čára na šířku, datum a čas, QR, ořez).
 `components/native/ReceiptPreview.svelte` kreslí výsledek jako proužek
-účtenky jen z tokenů; texty značek dostává v `labels`, sám nic neimportuje.
-**`EscPosRenderer` na serveru (task 4) musí zůstat v téhle podmnožině,
-nebo náhled rozšířit i s testem** `escposPreview.test.mjs`.
+účtenky jen z tokenů (props `columns`, `columnsSmall` — malé písmo se
+zmenší tak, aby se `columnsSmall` znaků vešlo na šířku papíru); texty značek
+dostává v `labels`, sám nic neimportuje.
+**`EscPosRenderer` na serveru (`docs/prints.md` §13) musí zůstat v téhle
+podmnožině, nebo náhled rozšířit i s testem** `escposPreview.test.mjs`.
+Hlídají to **společné vzory** `tests/Fixtures/EscPos/` (#177 U33):
+`escposFixtures.test.mjs` dekóduje bajty, které složil server, a porovná je
+s náhledem, který server vyrobil ze sazby — žádná značka `unknown`.
+Profil simulace (`MOCK_PRINTER_PROFILES`) i šířky v testu vzorů musí sedět
+na katalog `modules/core/prints/config/printerProfiles.jsonc` (testy to
+čtou ze zdroje). Stránka Most má kartu **Náhled ESC/POS**: šířky papíru
+pro náhled a zkušební tisk a náhled souboru s bajty z `shpd-ds print-run
+--format=escpos` nebo `print-escpos-test`.
 
 ### Simulace mostu (`native/mock/`)
 

@@ -11,7 +11,8 @@ Hotovo: kontrakt `PrintData`, infrastruktura (deklarace, registr, runner,
 Twig, PDF), REST, CLI včetně nástrojů pro vývoj šablon, akce Tisk
 v detailu, vodoznak storna, jazyky tisku `cs` / `en` / `sk` / `de`
 s přepínačem v náhledu (§3), odesílání e-mailem (§9), vzhled a vlastní
-texty na tiscích včetně textů e-mailu (§12) a tisky:
+texty na tiscích včetně textů e-mailu (§12), tisk na účtenkovou tiskárnu
+(§13, #177 task 4a) a tisky:
 
 | Tisk | Modul | Co |
 |---|---|---|
@@ -19,13 +20,14 @@ texty na tiscích včetně textů e-mailu (§12) a tisky:
 | `docs.proformasOut.proforma` | `docs.proformasOut` | zálohová faktura vydaná |
 | `docs.cashDocs.cash` | `docs.cashDocs` | pokladní doklad, příjmový i výdajový |
 | `docs.cashRegister.receipt` | `docs.cashRegister` | prodejka (A4) |
+| `docs.cashRegister.receiptPos` | `docs.cashRegister` | účtenka prodejky pro účtenkovou tiskárnu (`output: escpos`, §13) |
 | `economy.accounting.docJournal` | `economy.accounting` | Kontace — interní tisk účetních zápisů dokladu (§4.2) |
 
 Nehotovo: hromadné a automatické odesílání (D11), revize slovenských
 a německých formulací (D32, `tasks/prints-languages.md`), QR pro další
 země (#91), titulek vratky na prodejce u plátce (#92 D11), „Vystavil“
-a jména u podpisů (#93), vlastní šablony per zdroj dat (D7), účtenka na POS
-tiskárnu, EET.
+a jména u podpisů (#93), vlastní šablony per zdroj dat (D7), tiskové úlohy
+a tisk účtenky z UI (#177 task 4b), EET.
 
 ## 1. Princip
 
@@ -101,6 +103,7 @@ a agendu textů drží modul `core.prints` (§12).
 | `catalogs` | ne | **Sdílené adresáře tisku** (typicky layout): jejich katalog překladů, assety a výchozí záhlaví a zápatí (§5) |
 | `paper` | ne | `format` (A3/A4/A5/Letter/Legal), `orientation`, `margins` (`top`/`right`/`bottom`/`left` jako CSS délky; chybějící strana = okraj profilu Report, 1.6 cm) |
 | `order` | ne | Pořadí v nabídce (default 1000) |
+| `output` | ne | `pdf` (výchozí) nebo `escpos` — tisk na účtenkovou tiskárnu (§13). Tisk `escpos` nesmí mít `paper`, `sendPurpose`, `recipientPerson`, `textSlots` ani `textVariables` (chyba loaderu) |
 | `sendPurpose` | ne | Účel odesílání — id z cfgItemu `base.persons.sendPurposes` (D34). Tisk s ním jde **odeslat e-mailem** (§9); jen u `audience: external`, jinak chyba loaderu |
 | `recipientPerson` | se `sendPurpose` | Sloupec záznamu s osobou příjemce (doklady `partner`) — podle ní se hledají adresy |
 | `textSlots` | ne | Sloty uživatelských textů, které šablona tisku vykreslí (§12.2) — hodnoty `PrintTextSlot`. E-mailové sloty jen se `sendPurpose`, jinak chyba loaderu. Chybí = tisk texty nenese (Kontace) |
@@ -680,7 +683,10 @@ jazycích tisku hlídá `PrintDeclarationsTest`.
 Tabulku určuje deklarace tisku. Práva (D21): tisk = čtení záznamu —
 `TableAccessGuard::guardTable()` na tabulku deklarace. `format=json` jen
 pro administrátora. Na read-only zdroji dat povoleno. `format=html` REST
-nenabízí (400) — je to nástroj CLI.
+nenabízí (400) — je to nástroj CLI. Stejně tak `escpos` a `markup` (§13):
+účtenka jde na tiskárnu tiskovou úlohou, ne stažením bajtů. PDF nad tiskem
+`output: escpos` vrací 409 `PRINT_FORMAT_UNSUPPORTED`; `format=json` dává
+každý tisk.
 
 - `pdf` (default): `application/pdf`, `Content-Disposition: inline;
   filename="…"` (z `meta.fileName`). **`Content-Language`** nese jazyk,
@@ -826,8 +832,9 @@ neukazuje.
 ## 8. CLI
 
 ```bash
-shpd-ds print-run <printId> [<recordId>] [--format=json|pdf|html]
+shpd-ds print-run <printId> [<recordId>] [--format=json|pdf|html|escpos|markup]
                   [--language=cs|en|sk|de] [--output=<cíl>] [--data=<PrintData.json>]
+                  [--profile=<id profilu tiskárny>]
 ```
 
 `json` (default) vypíše `PrintData` na stdout, `pdf` vyžaduje
@@ -837,9 +844,23 @@ shpd-ds print-run <printId> [<recordId>] [--format=json|pdf|html]
   služby: `index.html`, `header.html`, `footer.html` a assety pod svými
   jmény. `index.html` jde otevřít v prohlížeči; záhlaví a zápatí jsou
   samostatné dokumenty, do okrajů je skládá až render služba.
-- **`--data=<soubor>`** renderuje hotový `PrintData` (`html` nebo `pdf`)
+- **`--data=<soubor>`** renderuje hotový `PrintData` (cokoli kromě `json`)
   bez databáze, kontroly dostupnosti a builderu — `PrintRunner::renderData()`
   (§3). `recordId` se nezadává.
+
+Tisk pro účtenkovou tiskárnu (`output: escpos`, §13) má vlastní formáty —
+`pdf` a `html` z něj nejdou a z tisku do PDF nejdou tyhle:
+
+- **`--format=escpos --profile=<id> --output=<soubor>`** zapíše bajty
+  ESC/POS pro profil tiskárny. Bez `--profile` nebo s neznámým profilem
+  se použije záložní profil a příkaz to řekne na stderr.
+- **`--format=markup`** vypíše výstup šablony účtenky (značky, §13.2).
+
+```bash
+shpd-ds print-escpos-test [--profile=<id>] --output=<soubor>
+```
+
+Zkušební účtenka profilu tiskárny jako bajty ESC/POS (§13.6).
 
 ```bash
 shpd-ds print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]…
@@ -1023,6 +1044,16 @@ Příklad: polština (`pl`).
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
   — routa, controller (`Content-Language`, chybové kódy), akce v detailu
   včetně `target.languages`, `GET /_prints/text-variables`.
+- Tisk na účtenkovou tiskárnu (§13): `tests/Unit/Core/Prints/EscPos/` —
+  ovladač bajt po bajtu a v podmnožině náhledu, CP852 (tabulka shodná
+  s náhledem, náhrady znaků), parser značek, sazba, renderer, katalog
+  profilů, zkušební účtenka a **společné vzory** `EscPosFixturesTest`
+  (§13.7); `PrintRunnerEscPosTest` (formáty podle `output`, záložní profil,
+  chyby jako `PrintRenderException`), `PrintDefinitionTest` (`output`
+  a zakázané klíče), `tests/Unit/Module/Docs/CashRegister/ReceiptPosTemplateTest.php`
+  (účtenka prodejky podle variant), `PrintRunCommandTest`
+  a `PrintEscposTestCommandTest`; `PrintDeclarationsTest`
+  a `PrintWatermarkRuleTest` berou u tisku `escpos` šablonu `page.escpos.twig`.
 - Vzhled a texty (§12): `PrintDataTest` (`branding`, `texts`, starší JSON),
   `PrintRunnerTest` (nastavení → `branding`, zdroj textů, `textError`),
   `tests/Unit/Core/Prints/Texts/` — sloty proti cfgItemu, sandbox
@@ -1278,3 +1309,220 @@ v `core.prints.textSlots` (názvy, popisy, `kind`), vykreslení v layoutu
 a zápis do `textSlots` tisků, které ho podporují. E-mailový slot navíc
 potřebuje místo v `PrintEmailRenderer`. `PrintTextSlotTest` ohlídá shodu
 výčtu s cfgItemem, `PrintTemplateRawRuleTest` počet slotů v layoutu.
+
+## 13. Tisk na účtenkovou tiskárnu
+
+Další **výstup tisku** vedle PDF (#177 D26, `tasks/native-escpos-render.md`):
+stejný builder a stejná `PrintData`, vlastní šablona a renderer, který z ní
+složí bajty ESC/POS podle profilu tiskárny. Tady je jen skládání; na
+tiskárnu jde účtenka tiskovou úlohou přes nativní aplikaci (task 4b,
+[native-bridge.md](native-bridge.md) §5).
+
+```
+PrintData → page.escpos.twig → značky účtenky (XML)
+          → ReceiptMarkupParser → ReceiptLayout (sazba podle profilu)
+          → EscPosEncoder (bajty z ovladače, text v kódové stránce) → bajty
+```
+
+Třídy jsou v `src/Core/Prints/EscPos/`, konfigurace v modulu `core.prints`
+(`config/printerDrivers.jsonc`, `printerProfiles.jsonc`,
+`printerTestTexts.jsonc`).
+
+### 13.1 Deklarace a formáty
+
+Tisk s `output: "escpos"` (§2) má šablonu `page.escpos.twig` místo
+`page.html.twig` — stejný sandbox, filtry, funkce a katalogy (§5). Nemá
+papír, odesílání ani texty na tiscích; vodoznak (`watermarks`) ano, šablona
+ho tiskne jako řádek.
+
+| Formát (`PrintFormat`) | Tisk `pdf` | Tisk `escpos` | Co vrací `PrintOutput` |
+|---|---|---|---|
+| `json` | ano | ano | `printData` |
+| `pdf`, `html` | ano | ne | `pdfContent` / `document` |
+| `escpos` | ne | ano | `bytes`, `markup`, `warnings` |
+| `markup` | ne | ano | `markup` (výstup šablony, jen CLI) |
+
+Formát, který k výstupu tisku nepatří, končí
+`PrintFormatNotSupportedException` (`PrintFormat::fits()`).
+`PrintRunner::run()` a `renderData()` berou pátý parametr
+`?PrinterProfile`; bez něj se použije záložní profil a `warnings` nesou
+varování. Neplatný výstup šablony a chybějící konfigurace tiskáren jsou
+`PrintRenderException` (`invalidInput` / `unconfigured`).
+
+REST `/_prints` formáty `escpos` a `markup` nenabízí (400) a PDF nad tiskem
+`escpos` vrací 409 `PRINT_FORMAT_UNSUPPORTED`. Akce **Tisk** a **Odeslat**
+v detailu záznamu berou jen tisky do PDF — tisk `escpos` dostane vlastní
+akci s tiskovými úlohami (task 4b).
+
+### 13.2 Značky účtenky
+
+Výstup šablony je XML; hodnoty escapuje Twig (autoescape `html`).
+
+```xml
+<receipt>
+  <text align="center" bold="1" size="2x2">Prodejka</text>
+  <line/>
+  <row><l>Rohlík tukový</l></row>
+  <row font="small"><l>  2 × 3,50 (DPH 12 %)</l><r>7,00</r></row>
+  <line char="="/>
+  <row bold="1" size="2x1"><l>Celkem</l><r>7,00 CZK</r></row>
+  <feed lines="2"/>
+  <cut/>
+</receipt>
+```
+
+| Značka | Atributy | Výstup |
+|---|---|---|
+| `receipt` | — | kořen; před obsah jde inicializace a kódová stránka |
+| `text` | `align` (`left` / `center` / `right`), `bold` (`0` / `1`), `size` (`WxH`, 1–8), `font` (`normal` / `small`) | text zalomený podle šířky; prázdný = prázdný řádek |
+| `row` | `bold`, `size`, `font` | `l` vlevo (zalamuje se) a nepovinné `r` vpravo na posledním řádku levého textu; nevejde-li se, na vlastním řádku vpravo |
+| `line` | `char` (jeden znak, výchozí `-`) | čára přes celou šířku běžným písmem |
+| `feed` | `lines` (1–10, výchozí 1) | posun papíru |
+| `qr` | — (obsah = data) | QR kód; profil bez funkce `qr` ho vytiskne jako text a přidá varování |
+| `cut` | — | ořez; profil bez funkce `cut` posune papír o 3 řádky |
+| `drawer` | — | otevření šuplíku; profil bez funkce `drawer` nic |
+
+Neznámá značka, atribut nebo hodnota je **chyba s číslem řádku** výstupu
+šablony (`ReceiptMarkupException`; řádek ukáže `print-run --format=markup`).
+Styl platí pro celý prvek a po něm se vrací na výchozí — náhled nese jeden
+styl na řádek.
+
+Bílé znaky: mezery a prázdné řádky mezi značkami se ignorují. V obsahu
+značky se zalomení šablony i s odsazením čte jako jedna mezera a na okrajích
+obsahu se zahodí; mezery na témže řádku jako text zůstávají (odsazení
+`<l>  2 × …</l>`). Nezlomitelná mezera není bílý znak.
+
+### 13.3 Sazba
+
+`ReceiptLayout` počítá nad **normalizovaným** textem (§13.4), kde je jeden
+znak jeden sloupec. Šířka řádku je `columns` profilu, s `font="small"`
+`columnsSmall`, vydělená šířkou znaku ze `size`; výška znaku šířku nemění.
+
+- Řádek se láme na mezeře; slovo delší než řádek se rozdělí.
+- **Nezlomitelná mezera** z formátovacích filtrů (`1 210,00 CZK`,
+  `2. 10. 2026`) drží text pohromadě a tiskne se jako mezera.
+- Odsazení zůstává na prvním řádku; víc mezer mezi slovy je jedna.
+- `row`: mezi levým a pravým textem je aspoň jedna mezera, řádek se doplní
+  mezerami na plnou šířku. Pravý text delší než řádek se rozdělí.
+
+### 13.4 Ovladač a kódová stránka
+
+**Ovladač** (`EscPosDriver`, cfgItem `core.prints.printerDrivers`) je jediné
+místo, odkud kodér bere bajty příkazů. Ve v1 jeden univerzální ovladač
+`escpos-generic` podle normy Epson — když tiskárna potřebuje jiné bajty,
+mění se definice, ne kód. Každá účtenka začíná `ESC @`, `FS .` a `ESC t 18`.
+
+| Příkaz ovladače | Bajty | |
+|---|---|---|
+| `init` | `ESC @` | inicializace |
+| `codePages.cp852` | `FS .` `ESC t 18` | zruší režim dvoubajtových znaků, zapne PC852 |
+| `boldOn` / `boldOff` | `ESC E 1` / `ESC E 0` | |
+| `fontSmall` / `fontNormal` | `ESC ! 1` / `ESC ! 0` | font B / A |
+| `size` + n | `GS ! n` | n = (šířka − 1) · 16 + (výška − 1) |
+| `alignLeft` / `Center` / `Right` | `ESC a 0` / `1` / `2` | |
+| `feed` + n | `ESC d n` | |
+| `cut` | `GS V 65 5` | posun a ořez |
+| `openCashDrawer` | `ESC p 48 55 121` | |
+| `qr.*` | `GS ( k …` | model 2, modul 6 bodů, korekce M; data v UTF-8 |
+
+Kodér posílá styl jen při změně a v pořadí **písmo → tučně → velikost →
+zarovnání**: `ESC !` na tiskárně nastavuje i tučné a velikost, takže po
+změně písma je posílá znovu. Výchozí ovladač musí zůstat v podmnožině
+příkazů, kterou čte náhled ve frontendu ([native-bridge.md](native-bridge.md)
+§9a) — hlídá `EscPosDriverTest`; ovladač, který ji opustí, musí rozšířit
+i náhled.
+
+**Kódová stránka** (`CodePage`, ve v1 jen `Cp852`): vlastní tabulka shodná
+s náhledem (`frontend/src/native/escpos/codePages.js`, hlídá `Cp852Test`),
+ne `iconv`. Převod má dva kroky, protože náhrada mění délku textu:
+`normalize()` před sazbou a `encode()` po ní.
+
+1. znak ASCII a znak stránky se tiskne, jak je (`×`, `§`, `°`);
+2. typografický znak mimo stránku má zápis v ASCII: `€` → `EUR`,
+   pomlčky → `-`, oblé uvozovky → rovné, `…` → `...`, `·` a `•` → `*`;
+3. ostatní se rozloží (NFKD): písmeno ztratí diakritiku (`ñ` → `n`),
+   `m²` → `m2`, `½` → `1/2`;
+4. cokoli jiného je `?`. Řídicí znaky se do tiskárny nedostanou.
+
+Další stránka = třída s tabulkou, řádek v `CodePages` a příkaz v ovladači
+(a tabulka v náhledu).
+
+### 13.5 Profily tiskáren
+
+Katalog je cfgItem `core.prints.printerProfiles` (`PrinterProfiles`,
+`PrinterProfile`); kontrakt profilu popisuje
+[native-bridge.md](native-bridge.md) §6.
+
+| Profil | `columns` | `columnsSmall` | `dotsPerLine` | Funkce |
+|---|---|---|---|---|
+| `escpos-80-cp852` | 42 | 56 | 512 | `cut`, `drawer` |
+| `escpos-58-cp852` | 32 | 42 | 384 | `cut`, `drawer` |
+
+Šířky jsou parametry profilu: tiskárny s 576 body tisknou 48 / 64 znaků —
+když 42 v praxi nesedí, mění se definice nebo přibude profil. `models` je
+prázdné, dokud profil někdo na konkrétním modelu neověří. Profil odkazuje
+na ovladač klíčem `driver` (aplikace ho nedostává).
+
+`PrinterProfiles::get(?string $id)` vrací `{profile, warning}`: neznámé
+nebo neuvedené id dostane **záložní profil `escpos-58-cp852`** (nejužší,
+vejde se všude) a varování. Zdroj dat bez zkompilované konfigurace má
+katalog prázdný — výpis je prázdný seznam, skládání účtenky skončí chybou
+s odkazem na `ds-upgrade`.
+
+Aplikace čte katalog podepsaným `GET /_devices/printer-profiles` (účel
+`printer-profiles`). Katalog čte kontroler z konfigurace zdroje dat; modul
+`core.devices` na `core.prints` nezávisí.
+
+### 13.6 Zkušební účtenka
+
+`PrinterTestReceipt` složí pro profil účtenku, na které je vidět, jestli
+profil tiskárně sedí: parametry profilu, **pravítko** na šířku řádku v obou
+písmech (poslední číslice stojí na pravém okraji), věta se všemi českými
+písmeny velkými i malými, tučně a dvojitě, čas a ořez. Jde stejnou cestou
+jako každá účtenka. Z CLI `print-escpos-test`; tiskové úlohy ji posílají
+jako druh `test` (task 4b), šuplík je příkaz `openCashDrawer` ovladače.
+
+Ověření bez aplikace: soubor z CLI ukáže stránka **Most** vývojářského
+dashboardu (karta Náhled ESC/POS), na tiskárnu ho pošle
+`nc <ip> 9100 < soubor`.
+
+### 13.7 Společné vzory
+
+`tests/Fixtures/EscPos/` (#177 U33): zkušební účtenka a čtyři účtenky
+prodejky (plátce, neplátce, storno, odběratel — fixture
+`tests/Fixtures/Prints/receiptPos*.json`) pro oba profily. Každý vzor má
+bajty (`*.bin`) a očekávaný náhled (`*.preview.json` — řádky se stylem
+a značky), který vzniká **ze sazby**, ne z bajtů (`EscPosPreview`).
+
+- PHP `EscPosFixturesTest`: renderer musí vyrobit bajty bajt po bajtu.
+- JS `frontend/tests/Unit/native/escposFixtures.test.mjs`: náhled musí
+  z týchž bajtů přečíst očekávané řádky, bez značky `unknown`.
+
+Renderer a náhled se tak nerozejdou potichu. Co vzory jsou a jak vznikají,
+říká jen `EscPosFixtures.php`; po vědomé změně
+`php tests/Fixtures/EscPos/regenerate.php` a kontrola diffu.
+
+### 13.8 Jak přidat tisk pro účtenkovou tiskárnu
+
+1. Deklarace s `output: "escpos"` (§2) nad builderem, který už data dává —
+   účtenka je druhá šablona nad stejnou `PrintData`, ne nový builder.
+   Titulky, které překládá builder, musí být v katalogu tisku: sdílí-li je
+   s tiskem do PDF, přidej jeho adresář do `catalogs`
+   (`docs.cashRegister.receiptPos` → `@docs.cashRegister/receipt`).
+2. Šablona `prints/<adresář>/page.escpos.twig` se značkami (§13.2)
+   a `messages.jsonc` ve všech jazycích tisku. Obsah značky na jeden řádek;
+   šířku řádku šablona neřeší. Oddělovače mimo kódovou stránku nepoužívej.
+3. Vývoj: `print-run … --format=json > data.json`, pak
+   `--data=data.json --format=markup` a `--format=escpos --profile=<id>
+   --output=u.bin`; výsledek na stránce Most.
+4. Testy: fixture `PrintData`, šablona přes skutečný parser (vzor
+   `ReceiptPosTemplateTest`), případně vzory (§13.7).
+5. Nová značka nebo příkaz: parser + sazba + kodér + ovladač + **náhled**
+   (`decode.js`) s testem — renderer nesmí opustit podmnožinu náhledu.
+
+Účtenka prodejky `docs.cashRegister.receiptPos` nese stejné údaje daňového
+dokladu jako A4 prodejka (#177 U34): storno jako výrazný řádek nahoře,
+dodavatel s IČ a DIČ, odběratel jen když ho doklad má, titulek podle
+varianty, číslo, datum vystavení, DUZP podle stejné podmínky, pokladna,
+položky se sazbou DPH, rekapitulace u plátce, celkem, úhrada, zaokrouhlení
+a vystavil. Bez loga, QR platby, uživatelských textů a POK.

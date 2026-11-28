@@ -1835,7 +1835,7 @@ stderr, exit 0. Exit `INVALID` (2): neznámý report (vypíše dostupné),
 chybějící / nevalidní období, neznámý `--format`, `xlsx` bez `--output`.
 Pravidla převodu: [reports.md](reports.md) §15.
 
-#### `print-run <printId> [<recordId>] [--format=json|pdf|html] [--language=cs|en|sk|de] [--output=<cíl>] [--data=<PrintData.json>]`
+#### `print-run <printId> [<recordId>] [--format=json|pdf|html|escpos|markup] [--language=cs|en|sk|de] [--output=<cíl>] [--data=<PrintData.json>] [--profile=<id>]`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -1847,6 +1847,9 @@ shpd-ds print-run docs.invoicesOut.invoice 123 \
     --format=html --output=/tmp/faktura                               # HTML do adresáře
 shpd-ds print-run docs.invoicesOut.invoice --data=faktura.json \
     --format=html --output=/tmp/faktura                               # render hotových dat bez databáze
+shpd-ds print-run docs.cashRegister.receiptPos 59 \
+    --format=escpos --profile=escpos-80-cp852 --output=/tmp/u.bin     # účtenka: bajty ESC/POS
+shpd-ds print-run docs.cashRegister.receiptPos 59 --format=markup     # účtenka: výstup šablony
 ```
 
 Spustí tisk nad jedním záznamem ([prints.md](prints.md)). `recordId` je id
@@ -1857,6 +1860,16 @@ záznamu v tabulce, kterou určuje deklarace tisku.
 | `json` (default) | `PrintData` jako odsazený JSON na stdout — ladění builderu a kontraktu bez renderu |
 | `pdf` | hotové PDF; **vyžaduje `--output`** a nakonfigurovanou render službu (`render` v `server.json`) |
 | `html` | přesně to, co jde do render služby; **vyžaduje `--output=<adresář>`**: `index.html` (stránka), `header.html`, `footer.html` a assety (CSS, logo) pod svými jmény. Adresář se vytvoří, soubory stejného jména se přepíší, jiné zůstanou. Render službu nepotřebuje |
+| `escpos` | bajty ESC/POS pro účtenkovou tiskárnu; **vyžaduje `--output=<soubor>`**. Jen u tisku `output: escpos` ([prints.md](prints.md) §13) |
+| `markup` | výstup šablony účtenky (značky) na stdout nebo do `--output`; jen u tisku `output: escpos` |
+
+`pdf` a `html` dává jen tisk do PDF, `escpos` a `markup` jen tisk pro
+účtenkovou tiskárnu; `json` každý. **`--profile=<id>`** (jen s `escpos`)
+vybere profil tiskárny z katalogu zdroje dat (`escpos-80-cp852`,
+`escpos-58-cp852`). Bez něj nebo s neznámým id se použije záložní profil
+`escpos-58-cp852` a příkaz to řekne na stderr (exit 0). Soubor jde poslat
+na tiskárnu (`nc <ip> 9100 < u.bin`) nebo ukázat na stránce Most
+vývojářského dashboardu (karta Náhled ESC/POS).
 
 `index.html` jde otevřít přímo v prohlížeči (assety odkazuje relativně).
 Záhlaví a zápatí jsou samostatné dokumenty — do okrajů stránky je skládá až
@@ -1864,8 +1877,8 @@ render služba, v prohlížeči se u stránky nezobrazí.
 
 **`--data=<soubor>`** vezme hotový `PrintData` (výstup `--format=json` nebo
 fixture z `tests/Fixtures/Prints/`) a přeskočí databázi, kontrolu
-dostupnosti i builder — rovnou renderuje `html` nebo `pdf`. `recordId` se
-nezadává. `printId` musí souhlasit s `printId` v souboru a verze dat nesmí
+dostupnosti i builder — rovnou renderuje `html` nebo `pdf` (u tisku pro
+účtenkovou tiskárnu `escpos` nebo `markup`). `recordId` se nezadává. `printId` musí souhlasit s `printId` v souboru a verze dat nesmí
 být vyšší, než builder tisku zná. Jazyk se bere ze souboru, `--language` ho
 přebije (překlady šablony; popisky v `data` zůstávají, jak jsou). Slouží
 vývoji šablon: jednou `--format=json > data.json`, pak už jen upravovat
@@ -1876,12 +1889,32 @@ vývoji šablon: jednou `--format=json > data.json`, pak už jen upravovat
 dat — `docs/prints.md` §3). Interní tisky partnera neřeší.
 Měkká hlášení builderu (QR platba nevznikla) jdou na stderr, exit 0.
 Exit `INVALID` (2): neznámý tisk (vypíše dostupné), neznámý `--format` /
-`--language`, `pdf` nebo `html` bez `--output`, chybějící či nečíselné
-`recordId`, `--data` s `recordId` nebo s `--format=json`, nečitelný soubor
+`--language`, `pdf`, `html` nebo `escpos` bez `--output`, formát, který
+tisk nedává (PDF z účtenky a naopak), `--profile` bez `--format=escpos`,
+chybějící či nečíselné `recordId`, `--data` s `recordId` nebo s `--format=json`, nečitelný soubor
 `--data`, data jiného tisku nebo s neplatnou obálkou. Exit `FAILURE`
 (1): záznam neexistuje, tisk pro něj není dostupný (koncept, jiný typ
-záznamu), záznamu chybí data pro tisk, výstup nejde zapsat, nebo PDF
-nevzniklo (druh selhání render služby je ve výpisu).
+záznamu), záznamu chybí data pro tisk, výstup nejde zapsat, PDF
+nevzniklo (druh selhání render služby je ve výpisu), šablona účtenky dala
+neplatné značky (řádek je ve výpisu), nebo zdroj dat nemá konfiguraci
+tiskáren (chybí `ds-upgrade`).
+
+#### `print-escpos-test [--profile=<id>] --output=<soubor>`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds print-escpos-test --profile=escpos-80-cp852 --output=/tmp/test80.bin
+shpd-ds print-escpos-test --profile=escpos-58-cp852 --output=/tmp/test58.bin
+nc 192.168.1.50 9100 < /tmp/test80.bin                                # na tiskárnu v síti
+```
+
+Zkušební účtenka profilu tiskárny jako bajty ESC/POS ([prints.md](prints.md)
+§13.6): parametry profilu, pravítko na šířku řádku v obou písmech,
+diakritika velkými i malými, tučné a dvojité písmo, čas a ořez. Ověří
+profil bez aplikace a bez tiskové úlohy. `--output` je povinný. Bez
+`--profile` nebo s neznámým id se použije záložní profil a příkaz to řekne
+na stderr. Exit `FAILURE` (1): zdroj dat nemá zkompilovanou konfiguraci
+nebo konfiguraci tiskáren (`ds-upgrade`), výstup nejde zapsat.
 
 #### `print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]… [--from=<adresa>] [--language=cs|en|sk|de] [--dry-run]`
 

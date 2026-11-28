@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 500 tasků: **naplánováno** 6 · **částečně** 27 · **zrušeno** 1 · **hotovo** 466.
+Celkem 500 tasků: **naplánováno** 5 · **částečně** 28 · **zrušeno** 1 · **hotovo** 466.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
-| `native-escpos-render.md` | naplánováno | rozhodnutí #177 D26, U5, U13 a upřesnění U27–U35 (schválená 2026-11-28), připraveno k implementaci |
 | `native-print-jobs.md` | naplánováno | rozhodnutí #177 D4, D11, D25, D33, U8, U19 a upřesnění U36–U43 (schválená 2026-11-28), připraveno k implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -48,6 +47,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
+| `native-escpos-render.md` | částečně | kód, testy, vzory a dokumentace hotové 2026-11-28 v sedmi commitech, ověřeno na dev zdroji dat (CLI + náhled); zbývá ruční ověření na skutečné tiskárně, úzké i široké (odchylky od zadání v oddílu Odchylky) |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
 | `prints-look-fixes.md` | částečně | implementace hotová 2026-11-20 (3 commity, #162 D135–D140), ručně proklikané 2026-11-20 (výsledek v #162), doplněk D141 hotový 2026-11-20; zbývá ověření světlé čáry řádků na tiskárně |
 | `prints-look.md` | částečně | implementace hotová 2026-11-20 (5 commitů, #162 D125–D134), ručně proklikané 2026-11-20; úpravy po prokliku v `tasks/prints-look-fixes.md`; #100 zavřené; zbývá revize `sk` / `de` popisku datové schránky kolegou (sekce „Formulace k revizi“) |
@@ -310,6 +310,7 @@ strana a server tady. Design issue #177, kontrakt mezi oběma stranami
 | `native-bridge-contract.md` | 1 | Kontrakt mostu a zařízení verze 1, kategorie Klientská aplikace ve standardu komponent, roadmapa a přehled funkcí (#177 D21–D32, U1–U10, U16) |
 | `native-frontend-bridge.md` | 2 | Most ve frontendu: obálka `window.shipardNative`, odběr čteček, validátory kontraktu, náhled ESC/POS a zkušební účtenka, simulace mostu pro vývoj, stránka Most ve vývojářském dashboardu, jednořádková pole bez automatických oprav (#177 D6, D10, D21, D29, D33, U11–U15) |
 | `native-devices-registration.md` | 3 | Modul `core.devices`: zařízení, periferie a výzvy, registrace a podepsaná volání bez session (`/_devices/challenge`, `register`, `self`, `self/peripherals`), politika PINu `auth.pin`, Nastavení → Zařízení s panelem Toto zařízení, pokladna zařízení z `economy.codebooks`, CLI `device-list` / `device-revoke`, úklid výzev (#177 D5, D13, D24, D27, D32, U16–U26) |
+| `native-escpos-render.md` | 4a | Skládání ESC/POS na serveru: ovladač a kódová stránka CP852, šablonový jazyk a sazba účtenky, katalog profilů tiskáren a `GET /_devices/printer-profiles`, výstup `escpos` v `PrintRunner` a CLI, účtenka prodejky `docs.cashRegister.receiptPos`, zkušební účtenka, náhled s `FS .` a malým písmem, společné vzory (#177 D26, U5, U13, U27–U35) |
 
 ## Výměnný formát a import ze starého Shipardu
 

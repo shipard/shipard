@@ -14,6 +14,16 @@ Drží dvě věci:
 - **Texty na tiscích** (#90 D47–D52): vlastní texty vkládané do slotů tisku
   a do e-mailu — agenda v Nastavení, tabulka `core_prints_texts`.
 
+A konfiguraci **tisku na účtenkovou tiskárnu** (#177 task 4a,
+[docs/prints.md](../../../docs/prints.md) §13) — jen data, třídy jsou
+v `src/Core/Prints/EscPos/`:
+
+- `core.prints.printerDrivers` — bajty příkazů ESC/POS (ovladač
+  `escpos-generic`);
+- `core.prints.printerProfiles` — katalog profilů tiskáren (šířky řádku,
+  kódová stránka, funkce); čte ho i `GET /_devices/printer-profiles`;
+- `core.prints.printerTestTexts` — popisky zkušební účtenky.
+
 ## Závislosti
 
 - `core.system`

@@ -503,11 +503,12 @@ Profil tiskárny:
 {
   "id": "escpos-80-cp852",
   "name": "ESC/POS 80 mm, CP852",
-  "columns": 48,
-  "dotsPerLine": 576,
+  "columns": 42,
+  "columnsSmall": 56,
+  "dotsPerLine": 512,
   "codePage": "cp852",
-  "features": ["cut", "drawer", "qr"],
-  "models": ["Epson TM-T20III"]
+  "features": ["cut", "drawer"],
+  "models": []
 }
 ```
 
@@ -515,14 +516,22 @@ Profil tiskárny:
 |---|---|
 | `id` | ID profilu, které si aplikace ukládá u periferie |
 | `name` | název pro výběr v nastavení periferie |
-| `columns` | znaků na řádek |
+| `columns` | znaků na řádek běžným písmem |
+| `columnsSmall` | znaků na řádek malým písmem (font B) |
 | `dotsPerLine` | šířka tisku v bodech |
 | `codePage` | kódová stránka textu |
 | `features` | co tiskárna umí: `cut` (ořez), `drawer` (šuplík), `qr` (QR kód příkazem tiskárny) |
-| `models` | modely, na kterých je profil ověřený |
+| `models` | modely, na kterých je profil ověřený — prázdné, dokud ho nikdo na konkrétním modelu neověřil |
 
-Neznámé `profileId` u periferie: server použije obecný profil a úlohu
-označí varováním.
+Katalog verze 1 má dva profily, oba v kódové stránce CP852 a s funkcemi
+`cut` a `drawer` (tiskárna bez nože nebo šuplíku příkaz ignoruje):
+`escpos-80-cp852` (42 / 56 znaků, 512 bodů) a `escpos-58-cp852` (32 / 42
+znaků, 384 bodů). Šířky jsou data katalogu — aplikace je nemá v kódu.
+
+Neznámé `profileId` u periferie: server použije **záložní profil
+`escpos-58-cp852`** (nejužší, vejde se na každou tiskárnu) a úlohu označí
+varováním. Skládání ESC/POS na serveru popisuje
+[prints.md](prints.md) §13.
 
 ## 7. Zařízení ↔ server
 
@@ -789,7 +798,7 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
 | `info` | podle kontraktu; `dataSource` = `location.origin` + adresa API stránky, `profile` vždy `null` |
 | `device.register` | **skutečný** klíč ECDSA P-256 z WebCrypto a podpis podle §7.1 — server ho ověří stejně jako u aplikace |
 | `device.sync` | podepsané `GET /_devices/self` a `PUT /_devices/self/peripherals` (dvě výzvy, účely `self` a `peripherals`, hlavička `X-Shipard-App-Version`); režim z odpovědi si uloží. Chyby: `NETWORK_ERROR`, `SERVER_ERROR` s `details {status, code}`, `DEVICE_UNKNOWN` → `NOT_REGISTERED`, `DEVICE_REVOKED` smaže identitu tohoto zdroje dat |
-| `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`, 48 znaků) a čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) |
+| `peripherals.list` | tiskárna `mock-receipt` (`profileId: "escpos-80-cp852"`, 42 / 56 znaků jako v katalogu serveru) a čtečka `mock-scanner` (`reads: ["barcode", "rfid"]`) |
 | `print.submit` | kontrola parametrů a limitů jako aplikace (`INVALID_PARAMS`, `PAYLOAD_TOO_LARGE`, `PERIPHERAL_NOT_FOUND`, `UNSUPPORTED_FORMAT`, `DUPLICATE_JOB` s pamětí 100 `jobId`, `PERIPHERAL_UNAVAILABLE`); místo tisku náhled účtenky |
 | `shipard:scan`, `shipard:peripheral` | z ovládacího panelu simulace |
 | `device.enroll`, `session.lock`, `session.take`, `auth.external` | `NOT_SUPPORTED` — doplní tasky 6 a 7 |
@@ -816,8 +825,10 @@ Server je u zařízení přijímá (task 3); aplikace je nikdy nepošle.
 
 Simulace a stránka Most ukazují místo tisku **náhled** — z bajtů úlohy
 čitelnou účtenku. Náhled je čistá funkce ve frontendu nad pevnou
-podmnožinou příkazů; `EscPosRenderer` na serveru (task 4) musí zůstat
-v ní, nebo náhled rozšířit i s testem.
+podmnožinou příkazů; `EscPosRenderer` na serveru ([prints.md](prints.md)
+§13) v ní zůstává — hlídají to společné vzory `tests/Fixtures/EscPos/`,
+které skládá server a čte náhled. Kdo podmnožinu opustí, musí náhled
+rozšířit i s testem.
 
 | Příkaz | Bajty | Náhled |
 |---|---|---|
@@ -826,7 +837,9 @@ v ní, nebo náhled rozšířit i s testem.
 | posun o n řádků | `ESC d n` | n prázdných řádků |
 | zarovnání | `ESC a n` | `left` / `center` / `right` |
 | tučně | `ESC E n` | `bold` |
+| režim tisku | `ESC ! n` | bit 0 = malé písmo (`font: small`, šířka `columnsSmall`), bit 3 = tučně, bity 4 / 5 = dvojitá výška / šířka — nastavuje vše najednou, jako tiskárna |
 | velikost | `GS ! n` | `size` `{w, h}` |
+| zrušení dvoubajtových znaků | `FS .` | bez výstupu |
 | kódová stránka | `ESC t n` | přepne dekódování |
 | ořez | `GS V …` | značka `cut` |
 | QR | `GS ( k …` (uložení dat funkce 80, tisk funkce 81) | značka `qr` s obsahem |
@@ -848,7 +861,8 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | Kontrakt (tento dokument) | 1 — `tasks/native-bridge-contract.md` | hotovo |
 | Most ve frontendu, simulace mostu, testovací stránka v `/_dev/` | 2 — `tasks/native-frontend-bridge.md` | hotovo |
 | `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | hotovo — `challenge`, `register`, `self`, `self/peripherals`; `self` vrací `users: []` (task 6) |
-| Tiskové úlohy, ESC/POS, katalog profilů tiskáren | 4 | neimplementováno |
+| Skládání ESC/POS, katalog profilů tiskáren, účtenka prodejky | 4a — `tasks/native-escpos-render.md` | hotovo — `GET /_devices/printer-profiles`, `EscPosRenderer`, tisk `docs.cashRegister.receiptPos`, náhled s `FS .` a `ESC !` ([prints.md](prints.md) §13) |
+| Tiskové úlohy, směrování podle role, tisk z UI | 4b — `tasks/native-print-jobs.md` | neimplementováno |
 | Aplikace pro macOS a iPadOS (`shipard-app:apple/`) | 5 | neimplementováno |
 | Profily, zařazení, PIN, zamčení | 6 | neimplementováno |
 | `auth.external` — přihlášení přes systémový prohlížeč | 7 | neimplementováno |
@@ -865,6 +879,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Nepovinné pole `keyStorage` v těle `POST /_devices/register` (§7.2, #177 U24) a výčet chyb registrace. Před implementací klienta, verze beze změny. |
 | 1 | 2026-11-27 | Server pro zařízení hotový (task 3): modul `core.devices`, endpointy `challenge`, `register`, `self`, `self/peripherals`, Nastavení → Zařízení s panelem Toto zařízení. Kontrakt beze změny. |
 | 1 | 2026-11-27 | Volání zařízení mají vlastní limit požadavků (120 za minutu na `deviceId`, strop na IP adresu) — `RATE_LIMITED` u §7.2 doplněno. Verze beze změny. |
+| 1 | 2026-11-28 | Skládání ESC/POS na serveru hotové (task 4a, #177 U27–U35): profil tiskárny má nové pole `columnsSmall` (§6, přidání pole verzi nemění), katalog dvou profilů 42 / 56 a 32 / 42 znaků, záložní profil `escpos-58-cp852`, endpoint `GET /_devices/printer-profiles`; podmnožina náhledu rozšířená o `FS .` a `ESC !` (§9a). Verze beze změny. |
 
 ---
 

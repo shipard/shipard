@@ -1,6 +1,6 @@
 # Nativní aplikace — task 4a: skládání ESC/POS, profily tiskáren, účtenka prodejky (#177)
 
-**Stav:** naplánováno — rozhodnutí #177 D26, U5, U13 a upřesnění U27–U35 (schválená 2026-11-28), připraveno k implementaci
+**Stav:** částečně — kód, testy, vzory a dokumentace hotové 2026-11-28 v sedmi commitech, ověřeno na dev zdroji dat (CLI + náhled); zbývá ruční ověření na skutečné tiskárně, úzké i široké (odchylky od zadání v oddílu Odchylky)
 
 > Task pro Claude Code (7 commitů). Design: issue #177. Jen serverová část
 > skládání tisku pro účtenkové tiskárny a rozšíření náhledu ve frontendu;
@@ -286,16 +286,63 @@ a stránka Most předají `columnsSmall` z profilu; vestavěný profil simulace
 
 ## Hotovo když
 
-- [ ] cílené PHPUnit (`--filter 'EscPos|Cp852|Receipt|PrinterProfile|PrintDefinitionLoader|PrintRunCommand'`)
+- [x] cílené PHPUnit (`--filter 'EscPos|Cp852|Receipt|PrinterProfile|PrintDefinition|PrintRunCommand'`)
       a `npm test` projdou; vzory sedí bajt po bajtu i v náhledu
-- [ ] `shpd-ds print-run docs.cashRegister.receiptPos <id> --format=escpos
+- [x] `shpd-ds print-run docs.cashRegister.receiptPos <id> --format=escpos
       --profile=escpos-80-cp852 --output=/tmp/u.bin` na dev DS vyrobí
-      účtenku; `--format=markup` ukáže šablonu
-- [ ] `print-escpos-test` pro oba profily
-- [ ] náhled souboru z CLI (stránka Most nebo test) ukáže diakritiku,
-      malé písmo a ořez bez značek `unknown`
+      účtenku; `--format=markup` ukáže šablonu — ověřeno na ukázkovém
+      zdroji `8yft-3` (platná i stornovaná prodejka)
+- [x] `print-escpos-test` pro oba profily
+- [x] náhled souboru z CLI (stránka Most nebo test) ukáže diakritiku,
+      malé písmo a ořez bez značek `unknown` — test vzorů i karta Náhled
+      ESC/POS na stránce Most v headless prohlížeči
 - [ ] na skutečné tiskárně (úzká i široká) zkušební účtenka a účtenka
-      prodejky — ruční ověření, bajty jde poslat např. `nc <ip> 9100 < u.bin`
-- [ ] A4 prodejka beze změny (stávající testy tisků projdou); akce Tisk
-      v detailu prodejky nabízí dál jen A4 tisky (test `ViewerController`)
-- [ ] dokumentace aktualizovaná
+      prodejky — ruční ověření, bajty jde poslat např. `nc <ip> 9100 < u.bin`.
+      Sledovat hlavně: řádek přesně na šířku papíru + `LF` (řádky `row`
+      a `line` jsou vždy plné — některé tiskárny po plném řádku přidají
+      prázdný), zda 42 / 56 a 32 / 42 znaků sedí (pravítko zkušební
+      účtenky), malé písmo `ESC ! 1` a ořez `GS V 65 5`
+- [x] A4 prodejka beze změny (stávající testy tisků projdou); akce Tisk
+      v detailu prodejky nabízí dál jen A4 tisky (`PrintsApiTest`)
+- [x] dokumentace aktualizovaná
+
+## Odchylky od zadání
+
+Co implementace udělala jinak, než zadání říká (schváleno s plánem
+2026-11-28):
+
+- **Znaky mimo CP852** (U32). Zadání znalo jen `€` → `EUR` a ztrátu
+  diakritiky. Titulek „Prodejka – daňový doklad“ má ale pomlčku, která
+  v CP852 není a rozkladem se nezíská — vyšla by jako `?`. Kódová stránka
+  proto nese tabulku náhrad (pomlčky → `-`, oblé uvozovky → rovné, `…` →
+  `...`, `·` a `•` → `*`) a rozklad je NFKD (`m²` → `m2`, `½` → `1/2`).
+  Náhrada mění délku textu, takže převod má dva kroky: `normalize()` před
+  sazbou a `encode()` po ní.
+- **Katalogy účtenky** (U34). Titulky `title.cashRegister*` nejsou
+  v `@docs.core/_layout`, ale v katalogu A4 prodejky a překládá je builder —
+  deklarace má `catalogs: ["@docs.core/_layout", "@docs.cashRegister/receipt"]`.
+- **`ESC !` v náhledu** (U30). Náhled nečte jen bit 0: na tiskárně příkaz
+  nastavuje i tučné (bit 3) a velikost (bity 4 a 5), `ESC ! 0` je tedy
+  ruší. Náhled se chová stejně a kodér posílá písmo jako první — špatné
+  pořadí příkazů by bylo v náhledu vidět.
+- **Očekávaný náhled vzorů** (U33) vyrábí PHP ze sazby (`EscPosPreview`),
+  ne JS dekodér z bajtů — jinak by test náhledu porovnával dekodér sám se
+  sebou. Značky se porovnávají místem a druhem, obsah jen u QR.
+- **Zakázané klíče tisku `escpos`** (U35): vedle `paper`, `sendPurpose`
+  a `textSlots` i `recipientPerson` a `textVariables` (bez těch dvou nemají
+  smysl).
+- **`PrintDefinitionLoaderTest` neexistuje** — validace deklarace je
+  v `PrintDefinition::fromArray()`, testy `output` jsou v `PrintDefinitionTest`.
+  `PrintDeclarationsTest` a `PrintWatermarkRuleTest` dostaly větev pro
+  šablonu `page.escpos.twig`.
+- **Datum bez času.** Zadání chtělo „datum a čas vystavení“; `PrintData`
+  nese jen datum (stejný builder jako A4), účtenka tiskne datum.
+- **Zaokrouhlení a platební údaje.** Účtenka tiskne i to, co A4 prodejka
+  u převodu (splatnost, účet, IBAN, variabilní symbol), odpočet záloh
+  a částku v domácí měně — stejné podmínky jako A4. QR platba ne.
+- **Stránka Most** má navíc kartu Náhled ESC/POS s náhledem souboru z CLI
+  (zadání chtělo jen předat `columnsSmall`); výchozí šířky jsou 42 / 56.
+- **Limit požadavků.** `printer-profiles` potřeboval řádek
+  i v `RateLimitMiddleware` (bucket podle zařízení) — zadání ho nezmiňuje.
+- **Texty zkušební účtenky** jsou v cfgItem `core.prints.printerTestTexts`
+  (česky a anglicky), ne v kódu.
