@@ -1,0 +1,112 @@
+{#
+    Účtenka prodejky pro účtenkovou tiskárnu (#177 U34). Stejná data jako A4
+    prodejka (CashRegisterPrintBuilder, kontrakt `data` v docs/prints.md)
+    a stejné údaje daňového dokladu — jen jako značky účtenky, ze kterých
+    EscPosRenderer složí bajty podle profilu tiskárny (šířka řádku je věc
+    profilu, šablona ji nezná).
+
+    Značky a sazbu popisuje docs/prints.md → Tisk na účtenkovou tiskárnu.
+    Obsah značky se píše na jeden řádek; hodnoty escapuje Twig. Oddělovače
+    mimo kódovou stránku tiskárny (·, –) šablona nepoužívá.
+
+    Bez loga, uživatelských textů a QR platby.
+#}
+{% set doc = data.document %}
+{% set showVat = doc.vatPayer and doc.vatMode != 0 %}
+{% set totals = data.totals %}
+{% set payment = data.payment %}
+<receipt>
+{# Stornovaný doklad: text vodoznaku jako výrazný řádek nahoře. #}
+{% if meta.watermark %}
+    <text align="center" bold="1" size="2x2">{{ meta.watermark }}</text>
+    <feed/>
+{% endif %}
+
+{% if data.supplier %}
+    {% include '@docs.cashRegister/receiptPos/party.escpos.twig' with { party: data.supplier, heading: null, align: 'center' } %}
+{% endif %}
+{% if data.customer %}
+    <line/>
+    {% include '@docs.cashRegister/receiptPos/party.escpos.twig' with { party: data.customer, heading: t('label.customer'), align: 'left' } %}
+{% endif %}
+<line/>
+
+<text align="center" size="2x1">{{ doc.title }}</text>
+<row><l>{{ t('receipt.number') }}</l><r>{{ doc.number }}</r></row>
+<row><l>{{ t('label.issueDate') }}</l><r>{{ data.dates.issue|date }}</r></row>
+{% if payment.bankTransfer %}
+    <row><l>{{ t('label.dueDate') }}</l><r>{{ data.dates.due|date }}</r></row>
+{% endif %}
+{# Stejná podmínka jako A4 prodejka. #}
+{% if data.dates.duzp and showVat %}
+    <row><l>{{ t('label.taxPointDate') }}</l><r>{{ data.dates.duzp|date }}</r></row>
+{% endif %}
+{% if data.cashDesk %}
+    <row><l>{{ t('label.cashDesk') }}</l><r>{{ data.cashDesk.name }}</r></row>
+{% endif %}
+{% if doc.text %}
+    <text>{{ doc.text }}</text>
+{% endif %}
+<line/>
+
+{# Položka: popis, pod ním malým písmem množství × cena, sazba DPH a celkem. #}
+{% for row in data.rows %}
+    {% if row.kind == 'text' %}
+        <text>{{ row.description }}</text>
+    {% else %}
+        <row><l>{{ row.description }}{% if row.discountPct is not null %} {{ t('rows.discount', { pct: row.discountPct|pct }) }}{% endif %}</l></row>
+        <row font="small"><l>  {% if row.quantity is not null %}{{ row.quantity|qty }}{% if row.unit %} {{ row.unit.label }}{% endif %} × {{ row.unitPrice|money }}{% endif %}{% if showVat and row.vat %} {{ t('receipt.rowVat', { pct: row.vat.pct|pct }) }}{% endif %}</l><r>{{ row.total|money }}</r></row>
+    {% endif %}
+{% endfor %}
+<line/>
+
+{# Rekapitulace DPH — neplátce ji nemá (`vatRecap` je prázdný). #}
+{% if data.vatRecap is not empty %}
+    <text font="small">{{ t('recap.title') }}</text>
+    {% for line in data.vatRecap %}
+        <row font="small"><l>{{ line.label }} {{ line.pct|pct }}: {{ t('recap.base') }} {{ line.base|money }}, {{ t('recap.tax') }} {{ line.tax|money }}</l><r>{{ line.total|money }}</r></row>
+    {% endfor %}
+    <line/>
+{% endif %}
+
+{% if data.advances %}
+    <row><l>{{ t('totals.total') }}</l><r>{{ totals.totalBeforeAdvances|money(doc.currency) }}</r></row>
+    <row><l>{{ t('totals.advances') }}</l><r>{{ (0 - data.advances.total)|money(doc.currency) }}</r></row>
+{% endif %}
+<row bold="1" size="2x1"><l>{{ payment.bankTransfer ? t('totals.toPay') : t('totals.total') }}</l><r>{{ totals.total|money(doc.currency) }}</r></row>
+{% if doc.foreignCurrency and totals.totalDom is not null %}
+    <row><l>{{ t('totals.totalIn', { currency: doc.homeCurrency }) }}</l><r>{{ totals.totalDom|money(doc.homeCurrency) }}</r></row>
+{% endif %}
+{% if doc.foreignCurrency and doc.exchangeRate %}
+    <row><l>{{ t('totals.exchangeRate') }}</l><r>1 {{ doc.currency }} = {{ doc.exchangeRate|qty }} {{ doc.homeCurrency }}</r></row>
+{% endif %}
+<row><l>{{ t('label.paymentMethod') }}</l><r>{{ payment.method.label }}</r></row>
+{% if totals.rounding != 0 %}
+    <row><l>{{ t('totals.rounding') }}</l><r>{{ totals.rounding|money(doc.currency) }}</r></row>
+{% endif %}
+{% if payment.bankAccount %}
+    {% if payment.bankAccount.account_number|default('') %}
+        <row><l>{{ t('label.bankAccount') }}</l><r>{{ payment.bankAccount.account_number }}</r></row>
+    {% endif %}
+    {% if payment.bankAccount.iban|default('') %}
+        <row><l>{{ t('label.iban') }}</l><r>{{ payment.bankAccount.iban|iban }}</r></row>
+    {% endif %}
+{% endif %}
+{% if payment.reference %}
+    <row><l>{{ t('label.paymentReference') }}</l><r>{{ payment.reference }}</r></row>
+{% endif %}
+{% if doc.notice %}
+    <text>{{ doc.notice }}</text>
+{% endif %}
+{% for note in data.vatNotes %}
+    <text font="small">{{ note.mark }} {{ note.text }}</text>
+{% endfor %}
+{% if doc.author %}
+    <row><l>{{ t('footer.issuedBy') }}</l><r>{{ doc.author.name }}</r></row>
+{% endif %}
+
+<feed/>
+<text align="center">{{ t('receipt.thanks') }}</text>
+<feed lines="3"/>
+<cut/>
+</receipt>

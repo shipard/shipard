@@ -1,0 +1,301 @@
+{
+    "lines": [
+        {
+            "text": "STORNO",
+            "align": "center",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 2
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Tiskárna Vzorová s.r.o.",
+            "align": "center",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Dlouhá 1, 760 01 Zlín",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "IČ: 00000019, DIČ: CZ00000019",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Prodejka -",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "daňový doklad",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Číslo dokladu       IT-PRINT-REC",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum vystavení      30. 9. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum zdanitelného plnění",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "                     30. 9. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Pokladna         Hlavní pokladna",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Tonery do tiskárny",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "  2 × 500,00 (DPH 21 %)           1 210,00",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Rekapitulace DPH",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "Základní 21 %: Základ 1 000,00, DPH 210,00",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "                                  1 210,00",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Celkem",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "    1 210,00 CZK",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Způsob úhrady           Hotovost",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Děkujeme za nákup",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        }
+    ],
+    "marks": [
+        {
+            "at": 29,
+            "kind": "cut",
+            "data": null
+        }
+    ]
+}

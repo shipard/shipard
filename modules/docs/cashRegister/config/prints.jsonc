@@ -1,6 +1,6 @@
 // Tisk prodejky (#90 D26) — A4, tisk ven. Builder, layout a dílčí bloky
 // šablony jsou sdílené v docs.core; tady je deklarace a stránková šablona.
-// Účtenka na POS tiskárnu je mimo: jiný renderer nad stejnými daty (D3).
+// Účtenka pro účtenkovou tiskárnu je druhý tisk nad stejnými daty (D3, #177).
 [
     {
         "id": "docs.cashRegister.receipt",
@@ -32,5 +32,28 @@
             "margins": { "top": "3.2cm", "bottom": "2cm" }
         },
         "order": 10
+    },
+    // Účtenka prodejky pro účtenkovou tiskárnu (#177 D26, U34): stejný
+    // builder a stejná data jako A4 prodejka, jiná šablona — značky účtenky,
+    // ze kterých EscPosRenderer složí bajty ESC/POS podle profilu tiskárny.
+    // Na tiskárnu jde tiskovou úlohou; akce Tisk v detailu ji nenabízí.
+    {
+        "id": "docs.cashRegister.receiptPos",
+        "name": "Receipt",
+        "name:cs": "Účtenka",
+        "name:en": "Receipt",
+        "table": "docs_core_heads",
+        "filter": { "doc_type": ["cashreg"] },
+        // Stornovaná prodejka nese text vodoznaku jako výrazný řádek nahoře.
+        "docStates": [40, 30],
+        "watermarks": { "30": "watermark.cancelled" },
+        "audience": "external",
+        // Tisk `escpos` nemá papír, odesílání ani texty na tiscích.
+        "output": "escpos",
+        "builder": "Shipard\\Module\\Docs\\Core\\Prints\\CashRegisterPrintBuilder",
+        "template": "@docs.cashRegister/receiptPos",
+        // Titulky podle varianty překládá builder — jsou v katalogu A4 prodejky.
+        "catalogs": ["@docs.core/_layout", "@docs.cashRegister/receipt"],
+        "order": 20
     }
 ]

@@ -12,7 +12,8 @@ namespace Shipard\Core\Prints\EscPos;
  * 1. znak ASCII a znak z tabulky se tiskne, jak je;
  * 2. typografický znak mimo stránku má náhradu v ASCII (`€` → `EUR`,
  *    pomlčka → `-`, oblé uvozovky → rovné);
- * 3. písmeno s diakritikou mimo stránku se tiskne bez ní (NFD);
+ * 3. písmeno s diakritikou mimo stránku se tiskne bez ní a znak se
+ *    zápisem v jiných znacích rozloženě (`m²` → `m2`, `½` → `1/2`) — rozklad NFKD;
  * 4. cokoli jiného je `?`.
  */
 abstract class SingleByteCodePage implements CodePage
@@ -37,6 +38,7 @@ abstract class SingleByteCodePage implements CodePage
         "\u{2018}" => "'",
         "\u{2019}" => "'",
         "\u{2026}" => '...',
+        "\u{2044}" => '/',
         "\u{00B7}" => '*',
         "\u{2022}" => '*',
         "\u{00A9}" => '(c)',
@@ -121,7 +123,7 @@ abstract class SingleByteCodePage implements CodePage
             return '';
         }
 
-        $decomposed = \Normalizer::normalize($char, \Normalizer::FORM_D);
+        $decomposed = \Normalizer::normalize($char, \Normalizer::FORM_KD);
         if (!is_string($decomposed) || $decomposed === $char) {
             return self::UNKNOWN;
         }
@@ -132,7 +134,7 @@ abstract class SingleByteCodePage implements CodePage
 
         $out = '';
         foreach (mb_str_split($base, 1, 'UTF-8') as $baseChar) {
-            $out .= $this->printable($baseChar) ?? self::UNKNOWN;
+            $out .= $this->printable($baseChar) ?? self::REPLACEMENTS[$baseChar] ?? self::UNKNOWN;
         }
         return $out;
     }

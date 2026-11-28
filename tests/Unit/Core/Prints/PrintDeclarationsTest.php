@@ -119,6 +119,8 @@ class PrintDeclarationsTest extends TestCase
         $this->assertSame([
             'docs.cashDocs.cash'            => $all,
             'docs.cashRegister.receipt'     => $all,
+            // Účtenka pro účtenkovou tiskárnu texty na tiscích nenese (#177 U35).
+            'docs.cashRegister.receiptPos'  => [],
             'docs.invoicesOut.invoice'      => $all,
             'docs.proformasOut.proforma'    => $all,
             // Kontace je interní tisk — uživatelské texty nenese (D48).

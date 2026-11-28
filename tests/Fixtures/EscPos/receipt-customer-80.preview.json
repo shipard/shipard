@@ -1,0 +1,341 @@
+{
+    "lines": [
+        {
+            "text": "Tiskárna Vzorová s.r.o.",
+            "align": "center",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Dlouhá 1, 760 01 Zlín",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "IČ: 00000019, DIČ: CZ00000019",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Odběratel",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Papírnictví U Brány s.r.o.",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Náměstí 5, 765 02 Otrokovice",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "IČ: 00000035, DIČ: CZ00000035",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Prodejka - daňový",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "doklad",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Číslo dokladu                 IT-PRINT-REC",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum vystavení                30. 9. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum splatnosti              14. 10. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum zdanitelného plnění      30. 9. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Pokladna                   Hlavní pokladna",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Tonery do tiskárny",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "  2 × 500,00 (DPH 21 %)                         1 210,00",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Rekapitulace DPH",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "Základní 21 %: Základ 1 000,00, DPH 210,00      1 210,00",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "K úhradě 1 210,00 CZK",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Způsob úhrady                     Převodem",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Bankovní účet           19-2000145399/0800",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "IBAN         CZ65 0800 0000 1920 0014 5399",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Variabilní symbol               1426000001",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Děkujeme za nákup",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        }
+    ],
+    "marks": [
+        {
+            "at": 33,
+            "kind": "cut",
+            "data": null
+        }
+    ]
+}

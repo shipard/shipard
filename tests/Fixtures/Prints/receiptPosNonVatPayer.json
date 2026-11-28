@@ -1,0 +1,121 @@
+{
+    "printId": "docs.cashRegister.receiptPos",
+    "version": 1,
+    "language": "cs",
+    "record": {
+        "table": "docs_core_heads",
+        "id": 123,
+        "docState": 40
+    },
+    "generatedAt": "2026-10-02T10:30:00+02:00",
+    "meta": {
+        "title": "Prodejka IT-PRINT-REC",
+        "fileName": "prodejka-it-print-rec.pdf",
+        "watermark": null
+    },
+    "branding": {
+        "logo": null,
+        "logoPlacement": "left",
+        "accentColor": "#c8c8c8"
+    },
+    "texts": {},
+    "messages": [],
+    "data": {
+        "document": {
+            "type": "cashreg",
+            "tradeDir": 1,
+            "titleVariant": "cashRegisterNonVatPayer",
+            "title": "Prodejka",
+            "number": "IT-PRINT-REC",
+            "text": null,
+            "notice": null,
+            "isTaxDocument": true,
+            "vatPayer": false,
+            "vatMode": 0,
+            "currency": "CZK",
+            "homeCurrency": "CZK",
+            "exchangeRate": null,
+            "foreignCurrency": false,
+            "author": null,
+            "correction": null
+        },
+        "dates": {
+            "issue": "2026-09-30",
+            "due": "2026-09-30",
+            "duzp": null,
+            "periodFrom": null,
+            "periodTo": null
+        },
+        "supplier": {
+            "name": "Tiskárna Vzorová s.r.o.",
+            "company_id": "00000019",
+            "tax_id": null,
+            "vat_id": null,
+            "court_registration": "C 12345 vedená u Krajského soudu v Brně",
+            "contact": {
+                "email": "fakturace@tiskarna.example",
+                "phone": "+420 577 000 001"
+            },
+            "address": {
+                "street": "Dlouhá 1",
+                "house_number": null,
+                "city": "Zlín",
+                "city_part": null,
+                "zip": "760 01",
+                "country": "cz",
+                "display_block": "Dlouhá 1\n760 01 Zlín",
+                "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "vat_registration": null
+        },
+        "customer": null,
+        "payment": {
+            "method": {
+                "id": 2,
+                "label": "Kartou"
+            },
+            "bankTransfer": false,
+            "reference": null,
+            "specificSymbol": null,
+            "constantSymbol": null,
+            "bankAccount": null,
+            "amountToPay": 1000,
+            "currency": "CZK",
+            "qr": null
+        },
+        "rows": [
+            {
+                "kind": "item",
+                "description": "Tonery do tiskárny",
+                "quantity": 2,
+                "unit": null,
+                "unitPrice": 499.8,
+                "unitPriceIncludesVat": false,
+                "discountPct": null,
+                "vat": null,
+                "base": 999.6,
+                "vatAmount": null,
+                "total": 999.6,
+                "advanceDeduction": false
+            }
+        ],
+        "vatRecap": [],
+        "vatNotes": [],
+        "advances": null,
+        "totals": {
+            "base": 999.6,
+            "vat": 0,
+            "rounding": 0.4,
+            "total": 1000,
+            "totalBeforeAdvances": 1000,
+            "baseDom": null,
+            "vatDom": null,
+            "totalDom": null
+        },
+        "cashDesk": {
+            "id": 1,
+            "code": "HP",
+            "name": "Hlavní pokladna"
+        }
+    }
+}

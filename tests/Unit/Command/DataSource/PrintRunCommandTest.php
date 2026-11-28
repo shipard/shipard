@@ -10,6 +10,8 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Utils\JsoncParser;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -72,12 +74,13 @@ class PrintRunCommandTest extends TestCase
      * render hotových dat ho nepotřebuje.
      *
      * @param array<string, mixed> $input
+     * @param list<string> $modules aktivní moduly zdroje dat
      * @return array{0: int, 1: string, 2: string} exit, stdout, stderr
      */
-    private function exec(array $input): array
+    private function exec(array $input, array $modules = ['docs.invoicesOut']): array
     {
         $dsConfig = $this->createStub(DataSourceConfig::class);
-        $dsConfig->method('getModules')->willReturn(['docs.invoicesOut']);
+        $dsConfig->method('getModules')->willReturn($modules);
         $dsConfig->method('getDefaultLanguage')->willReturn('cs');
         $dsConfig->method('getDataSourceDir')->willReturn($this->dsDir);
 
@@ -263,5 +266,101 @@ class PrintRunCommandTest extends TestCase
             $this->assertSame('', $stdout);
             $this->assertFileDoesNotExist($out);
         }
+    }
+
+    private const RECEIPT_ID = 'docs.cashRegister.receiptPos';
+
+    /** Zkompilovaná konfigurace zdroje dat s ovladačem a profily tiskáren. */
+    private function compilePrinterConfig(): void
+    {
+        $items = [];
+        foreach (['printerDrivers', 'printerProfiles'] as $name) {
+            $items['core.prints.' . $name] = ConfigLocalizer::localize(
+                JsoncParser::parseFile(dirname(__DIR__, 4) . "/modules/core/prints/config/{$name}.jsonc"),
+                'cs',
+            );
+        }
+        mkdir($this->dsDir . '/config/configuration', 0755, true);
+        file_put_contents(
+            $this->dsDir . '/config/configuration/compiled.cs.json',
+            json_encode(['items' => $items], JSON_UNESCAPED_UNICODE),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @return array{0: int, 1: string, 2: string}
+     */
+    private function receipt(array $options): array
+    {
+        return $this->exec(
+            ['printId' => self::RECEIPT_ID, '--data' => dirname(__DIR__, 3) . '/Fixtures/Prints/receiptPosVatPayer.json'] + $options,
+            ['docs.cashRegister'],
+        );
+    }
+
+    public function testReceiptToBytesMatchesTheSharedFixture(): void
+    {
+        $this->compilePrinterConfig();
+        $out = $this->dsDir . '/receipt.bin';
+
+        [$exit, $stdout, $stderr] = $this->receipt(['--format' => 'escpos', '--profile' => 'escpos-80-cp852', '--output' => $out]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $stderr);
+        $this->assertSame('', $stdout);
+        $this->assertSame('', $stderr);
+        // Tytéž bajty jako společný vzor, který čte i náhled ve frontendu (#177 U33).
+        $this->assertFileEquals(dirname(__DIR__, 3) . '/Fixtures/EscPos/receipt-vat-payer-80.bin', $out);
+    }
+
+    public function testReceiptWithoutOrWithUnknownProfileUsesFallbackWithWarning(): void
+    {
+        $this->compilePrinterConfig();
+
+        foreach ([[], ['--profile' => 'epson-tm']] as $index => $profile) {
+            $out = $this->dsDir . "/fallback{$index}.bin";
+            [$exit, , $stderr] = $this->receipt($profile + ['--format' => 'escpos', '--output' => $out]);
+
+            $this->assertSame(Command::SUCCESS, $exit, $stderr);
+            $this->assertStringContainsString('Warning:', $stderr);
+            $this->assertStringContainsString('escpos-58-cp852', $stderr);
+            $this->assertFileEquals(dirname(__DIR__, 3) . '/Fixtures/EscPos/receipt-vat-payer-58.bin', $out);
+        }
+    }
+
+    public function testMarkupShowsOutputOfTheReceiptTemplate(): void
+    {
+        // Na výstup šablony není konfigurace tiskáren potřeba.
+        [$exit, $stdout, $stderr] = $this->receipt(['--format' => 'markup']);
+
+        $this->assertSame(Command::SUCCESS, $exit, $stderr);
+        $this->assertStringStartsWith('<receipt>', ltrim($stdout));
+        $this->assertStringContainsString('<row><l>Číslo dokladu</l><r>IT-PRINT-REC</r></row>', $stdout);
+        $this->assertStringContainsString('<cut/>', $stdout);
+
+        [$exit, $stdout] = $this->receipt(['--format' => 'markup', '--language' => 'en']);
+        $this->assertSame(Command::SUCCESS, $exit);
+        $this->assertStringContainsString('<row><l>Receipt No.</l><r>IT-PRINT-REC</r></row>', $stdout);
+    }
+
+    public function testReceiptHasNoPdfOrHtml(): void
+    {
+        foreach ([['--format' => 'pdf', '--output' => $this->dsDir . '/x.pdf'], ['--format' => 'html', '--output' => $this->dsDir . '/x']] as $options) {
+            [$exit, , $stderr] = $this->receipt($options);
+
+            $this->assertSame(Command::INVALID, $exit);
+            $this->assertStringContainsString("(output 'escpos') cannot be rendered to '{$options['--format']}'", $stderr);
+        }
+    }
+
+    public function testReceiptOnDataSourceWithoutPrinterConfigFails(): void
+    {
+        $out = $this->dsDir . '/none.bin';
+
+        [$exit, , $stderr] = $this->receipt(['--format' => 'escpos', '--profile' => 'escpos-80-cp852', '--output' => $out]);
+
+        $this->assertSame(Command::FAILURE, $exit);
+        $this->assertStringContainsString('Cannot read compiled config', $stderr);
+        $this->assertFileDoesNotExist($out);
     }
 }

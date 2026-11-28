@@ -1,0 +1,16 @@
+// Katalog účtenky prodejky pro účtenkovou tiskárnu (#177 U34) — jen texty,
+// které A4 prodejka nemá. Titulky jsou v katalogu A4 prodejky
+// (@docs.cashRegister/receipt), společné klíče dokladů v @docs.core/_layout.
+// Texty se tisknou v kódové stránce tiskárny: znak, který v ní není
+// (pomlčka, oblé uvozovky), se nahradí zápisem v ASCII.
+{
+    "receipt.number": { "cs": "Číslo dokladu", "en": "Receipt No.", "sk": "Číslo dokladu", "de": "Belegnummer" },
+    // Sazba DPH na řádku položky, za množstvím a cenou.
+    "receipt.rowVat": { "cs": "(DPH {pct})", "en": "(VAT {pct})", "sk": "(DPH {pct})", "de": "(MwSt. {pct})" },
+    "receipt.thanks": {
+        "cs": "Děkujeme za nákup",
+        "en": "Thank you for your purchase",
+        "sk": "Ďakujeme za nákup",
+        "de": "Vielen Dank für Ihren Einkauf"
+    }
+}

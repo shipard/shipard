@@ -1,0 +1,211 @@
+{
+    "lines": [
+        {
+            "text": "Tiskárna Vzorová s.r.o.",
+            "align": "center",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Dlouhá 1, 760 01 Zlín",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "IČ: 00000019",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Prodejka",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Číslo dokladu                 IT-PRINT-REC",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Datum vystavení                30. 9. 2026",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Pokladna                   Hlavní pokladna",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Tonery do tiskárny",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "  2 × 499,80                                      999,60",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "------------------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Celkem   1 000,00 CZK",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Způsob úhrady                       Kartou",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Zaokrouhlení                      0,40 CZK",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Děkujeme za nákup",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        }
+    ],
+    "marks": [
+        {
+            "at": 20,
+            "kind": "cut",
+            "data": null
+        }
+    ]
+}

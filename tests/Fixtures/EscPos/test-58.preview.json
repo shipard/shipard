@@ -1,0 +1,281 @@
+{
+    "lines": [
+        {
+            "text": "ZKUŠEBNÍ ÚČTENKA",
+            "align": "center",
+            "bold": true,
+            "size": {
+                "w": 2,
+                "h": 2
+            },
+            "font": "normal"
+        },
+        {
+            "text": "ESC/POS 58 mm, CP852",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Profil           escpos-58-cp852",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Znaků na řádek           32 / 42",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Bodů na řádek                384",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Kódová stránka             cp852",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Funkce               cut, drawer",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "12345678901234567890123456789012",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "123456789012345678901234567890123456789012",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Příliš žluťoučký kůň úpěl",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "ďábelské ódy",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "PŘÍLIŠ ŽLUŤOUČKÝ KŮŇ ÚPĚL",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "ĎÁBELSKÉ ÓDY",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Příliš žluťoučký kůň úpěl ďábelské ódy",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "PŘÍLIŠ ŽLUŤOUČKÝ KŮŇ ÚPĚL ĎÁBELSKÉ ÓDY",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "small"
+        },
+        {
+            "text": "Příliš žluťoučký kůň úpěl",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "ďábelské ódy",
+            "align": "left",
+            "bold": true,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "Příliš žluťoučký",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 2
+            },
+            "font": "normal"
+        },
+        {
+            "text": "kůň úpěl",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 2
+            },
+            "font": "normal"
+        },
+        {
+            "text": "ďábelské ódy",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 2,
+                "h": 2
+            },
+            "font": "normal"
+        },
+        {
+            "text": "--------------------------------",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "2026-11-28 10:15:42",
+            "align": "center",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        },
+        {
+            "text": "",
+            "align": "left",
+            "bold": false,
+            "size": {
+                "w": 1,
+                "h": 1
+            },
+            "font": "normal"
+        }
+    ],
+    "marks": [
+        {
+            "at": 27,
+            "kind": "cut",
+            "data": null
+        }
+    ]
+}

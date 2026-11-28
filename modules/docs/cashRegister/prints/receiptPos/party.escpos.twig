@@ -1,0 +1,23 @@
+{#
+    Jedna strana dokladu na účtence ze snapshotu hlavičky. Proměnné: `party`
+    (snapshot), `heading` (popisek nad názvem, null = bez něj), `align`.
+    Snapshot nemusí nést všechny klíče (starší doklady, import), proto
+    `default` u každého čtení — stejně jako strana A4 dokladu
+    (@docs.core/_partials/party.html.twig), včetně volby DIČ.
+#}
+{% set address = party.address|default({}) %}
+{% set vatRegistration = party.vat_registration|default({}) %}
+{% set taxId = vatRegistration.vat_id|default('') ?: (party.tax_id|default('') ?: party.vat_id|default('')) %}
+{% set companyId = party.company_id|default('') %}
+{% if heading %}
+    <text align="{{ align }}">{{ heading }}</text>
+{% endif %}
+<text align="{{ align }}" bold="1">{{ party.name|default('') }}</text>
+{% if address.display_line|default('') %}
+    <text align="{{ align }}">{{ address.display_line }}</text>
+{% elseif address.street|default('') or address.city|default('') %}
+    <text align="{{ align }}">{{ address.street|default('') }}{% if address.house_number|default('') %} {{ address.house_number }}{% endif %}, {{ address.zip|default('')|zip(address.country|default('')) }} {{ address.city|default('') }}</text>
+{% endif %}
+{% if companyId or taxId %}
+    <text align="{{ align }}">{% if companyId %}{{ t('label.companyId') }}: {{ companyId }}{% endif %}{% if companyId and taxId %}, {% endif %}{% if taxId %}{{ t('label.taxId') }}: {{ taxId }}{% endif %}</text>
+{% endif %}

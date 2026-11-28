@@ -86,6 +86,10 @@ final class Cp852Test extends TestCase
         $this->assertSame('n', self::print('ñ'));
         $this->assertSame('A', self::print('Å'));
         $this->assertSame('e', self::print('ė'));
+        // Znak se zápisem v jiných znacích: horní index, zlomek, slitek.
+        $this->assertSame('80 g/m2', self::print('80 g/m²'));
+        $this->assertSame('1/2 kg', self::print('½ kg'));
+        $this->assertSame('fi', self::print('ﬁ'));
         // Rozložený zápis se nejdřív složí: ż v CP852 je, q s čárkou ne.
         $this->assertSame("\xBE", self::print("z\u{0307}"));
         $this->assertSame('q', self::print("q\u{0301}"));
