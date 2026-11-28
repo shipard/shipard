@@ -822,6 +822,7 @@ class Router
 			'/_devices/register'         => ['POST', 'register'],
 			'/_devices/self'             => ['GET', 'self'],
 			'/_devices/self/peripherals' => ['PUT', 'peripherals'],
+			'/_devices/printer-profiles' => ['GET', 'printerProfiles'],
 		];
 		if (!isset($actions[$subpath])) {
 			return Response::error('NOT_FOUND', 'Not found', 404);

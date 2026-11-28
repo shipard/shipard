@@ -1,0 +1,52 @@
+{
+    // core.prints.printerProfiles
+    //
+    // Katalog profilů účtenkových tiskáren (#177 U5, U29; kontrakt
+    // docs/native-bridge.md §6). Nativní aplikace ho čte podepsaným
+    // GET /_devices/printer-profiles, nabízí v nastavení periferie a ukládá
+    // si jen `profileId`; server podle profilu skládá ESC/POS.
+    //
+    // Šířky jsou parametry profilu: když 42 znaků na široké tiskárně v praxi
+    // nesedí (tiskárny s 576 body tisknou 48 / 64), mění se definice nebo
+    // přibude profil — ne kód. Neznámé `profileId` dostane profil
+    // `escpos-58-cp852` (nejužší, vejde se všude) a varování
+    // (PrinterProfiles::FALLBACK_ID).
+    //
+    // Atributy:
+    //   driver:       ovladač z printerDrivers.jsonc (bajty příkazů); aplikace
+    //                 ho nedostává
+    //   columns:      znaků na řádek v běžném písmu
+    //   columnsSmall: znaků na řádek v malém písmu (font B)
+    //   dotsPerLine:  šířka tisku v bodech
+    //   codePage:     kódová stránka textu — ve v1 jen cp852
+    //   features:     cut / drawer / qr; tiskárna bez nože nebo šuplíku
+    //                 příkaz ignoruje (jako starý ovladač), proto je mají oba
+    //   models:       modely, na kterých je profil ověřený — prázdné, dokud
+    //                 ho někdo na konkrétním modelu neověří
+
+    "escpos-80-cp852": {
+        "name": "ESC/POS 80 mm, CP852",
+        "name:cs": "ESC/POS 80 mm, CP852",
+        "name:en": "ESC/POS 80 mm, CP852",
+        "driver": "escpos-generic",
+        "columns": 42,
+        "columnsSmall": 56,
+        "dotsPerLine": 512,
+        "codePage": "cp852",
+        "features": ["cut", "drawer"],
+        "models": []
+    },
+
+    "escpos-58-cp852": {
+        "name": "ESC/POS 58 mm, CP852",
+        "name:cs": "ESC/POS 58 mm, CP852",
+        "name:en": "ESC/POS 58 mm, CP852",
+        "driver": "escpos-generic",
+        "columns": 32,
+        "columnsSmall": 42,
+        "dotsPerLine": 384,
+        "codePage": "cp852",
+        "features": ["cut", "drawer"],
+        "models": []
+    }
+}

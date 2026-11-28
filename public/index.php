@@ -793,6 +793,7 @@ function dispatchDevices(
 		'register'    => $ctrl->register($request, $auth, $db, $tables),
 		'self'        => $ctrl->selfState($request, $db, $tables),
 		'peripherals' => $ctrl->peripherals($request, $db, $tables),
+		'printerProfiles' => $ctrl->printerProfiles($request, $db, $tables),
 		default       => Response::error('INTERNAL_ERROR', "Unknown devices action: {$route->action}", 500),
 	};
 }

@@ -220,7 +220,7 @@ class RateLimitMiddleware
 	private function deviceIdOf(Request $request, Route $route): ?string
 	{
 		$deviceId = match ($route->action) {
-			'self', 'peripherals' => $request->getHeader(DeviceRequestAuthenticator::HEADER_DEVICE),
+			'self', 'peripherals', 'printerProfiles' => $request->getHeader(DeviceRequestAuthenticator::HEADER_DEVICE),
 			'challenge'           => ($request->getBody() ?? [])['deviceId'] ?? null,
 			default               => null,
 		};

@@ -271,7 +271,7 @@ class RateLimitMiddlewareTest extends TestCase
 
 	public function testDeviceCallsUseOwnBucketKeyedByDeviceId(): void
 	{
-		foreach (['self', 'peripherals'] as $action) {
+		foreach (['self', 'peripherals', 'printerProfiles'] as $action) {
 			[$keyA, $type, $limit] = $this->bucket($this->signedReq(self::DEVICE_A), new Route('devices', $action));
 			[$keyB] = $this->bucket($this->signedReq(self::DEVICE_B), new Route('devices', $action));
 

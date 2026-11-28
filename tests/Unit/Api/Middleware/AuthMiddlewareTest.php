@@ -196,7 +196,7 @@ class AuthMiddlewareTest extends TestCase
 	{
 		// Podepsané volání zařízení session nenese (#177 U4) — ověřuje ho
 		// DevicesController podpisem; zastaralá hlavička nesmí vadit.
-		foreach (['self', 'peripherals'] as $action) {
+		foreach (['self', 'peripherals', 'printerProfiles'] as $action) {
 			$route = new Route('devices', $action);
 			$req = $this->req(server: ['HTTP_AUTHORIZATION' => 'Token malformed']);
 			$result = $this->middleware->handle($req, $route, $this->db);

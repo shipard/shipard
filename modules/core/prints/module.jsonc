@@ -67,6 +67,11 @@
         {
             "id": "core.prints.printerDrivers",
             "file": "config/printerDrivers.jsonc"
+        },
+        // Katalog profilů tiskáren; čte ho i GET /_devices/printer-profiles.
+        {
+            "id": "core.prints.printerProfiles",
+            "file": "config/printerProfiles.jsonc"
         }
     ],
 

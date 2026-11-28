@@ -90,7 +90,7 @@ class AuthMiddleware
 		// a `register` výjimkou NEJSOU — registrace potřebuje session
 		// administrátora a bez hlavičky Authorization projdou jako anonymní.
 		if ($route->controller === 'devices'
-			&& in_array($route->action, ['self', 'peripherals'], true)) {
+			&& in_array($route->action, ['self', 'peripherals', 'printerProfiles'], true)) {
 			return true;
 		}
 		if ($openApiPublic && $route->controller === 'openapi' && $route->action === 'spec') {

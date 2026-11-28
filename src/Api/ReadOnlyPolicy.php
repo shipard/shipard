@@ -90,6 +90,8 @@ final class ReadOnlyPolicy
 		'devices' => [
 			'challenge' => ReadOnlyVerdict::Allow,
 			'self'      => ReadOnlyVerdict::Allow,
+			// Katalog profilů tiskáren je konfigurace, nic nemění.
+			'printerProfiles' => ReadOnlyVerdict::Allow,
 			// register, peripherals → 403: zakládají a mění záznamy
 		],
 		// Tisk = čtení záznamu (#90 D21); návrh odeslání nic nemění.

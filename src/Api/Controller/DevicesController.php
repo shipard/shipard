@@ -11,6 +11,8 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Prints\EscPos\PrinterProfile;
+use Shipard\Core\Prints\EscPos\PrinterProfiles;
 use Shipard\Module\Core\Devices\ChallengeService;
 use Shipard\Module\Core\Devices\DeviceContext;
 use Shipard\Module\Core\Devices\DeviceDocument;
@@ -31,6 +33,7 @@ use Shipard\Module\Core\Devices\PeripheralSync;
  * | POST /_devices/register           | session administrátora, podpis v těle     |
  * | GET  /_devices/self               | podpis, účel `self`                       |
  * | PUT  /_devices/self/peripherals   | podpis, účel `peripherals`                |
+ * | GET  /_devices/printer-profiles   | podpis, účel `printer-profiles`           |
  *
  * `self` a `peripherals` jsou v `AuthMiddleware` výjimkou (session nenesou);
  * `challenge` a `register` ne — bez hlavičky `Authorization` dostanou
@@ -149,6 +152,32 @@ final class DevicesController
         }
 
         return Response::success(['count' => $count]);
+    }
+
+    /**
+     * Katalog profilů účtenkových tiskáren (#177 U5, kontrakt §6). Katalog
+     * je konfigurace modulu core.prints — čte se přímo z konfigurace zdroje
+     * dat, modul core.devices na něm nezávisí. Zdroj dat bez core.prints má
+     * katalog prázdný.
+     *
+     * @param array<string, TableDefinition> $tables
+     */
+    public function printerProfiles(Request $request, DataSourceConnection $db, array $tables): Response
+    {
+        if (($gate = self::gate($tables)) !== null) {
+            return $gate;
+        }
+        $device = $this->authenticate($request, $db, DevicePurpose::PrinterProfiles);
+        if ($device instanceof Response) {
+            return $device;
+        }
+
+        return Response::success([
+            'profiles' => array_map(
+                static fn (PrinterProfile $profile): array => $profile->toArray(),
+                PrinterProfiles::fromConfig($this->config)->all(),
+            ),
+        ]);
     }
 
     private function authenticate(Request $request, DataSourceConnection $db, DevicePurpose $purpose): DeviceContext|Response

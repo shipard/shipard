@@ -39,6 +39,9 @@ trait DevicesConfig
                 $items['core.devices.' . $catalog] = self::repoJsonc($module . $catalog . '.jsonc');
             }
         }
+        // Katalog profilů tiskáren patří modulu core.prints; controller
+        // zařízení ho čte z konfigurace zdroje dat (#177 U5).
+        $items['core.prints.printerProfiles'] = self::repoJsonc('modules/core/prints/config/printerProfiles.jsonc');
         $items['core.system.viewerDetailLabels'] = self::repoJsonc('modules/core/system/config/viewerDetailLabels.jsonc');
         return $override + $items;
     }

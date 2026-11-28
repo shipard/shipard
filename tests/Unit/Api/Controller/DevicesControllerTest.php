@@ -411,4 +411,86 @@ class DevicesControllerTest extends TestCase
         ));
         $this->assertSame([], $this->db->rows('core_devices_peripherals'));
     }
+
+    // ── printer-profiles ────────────────────────────────────────────────────
+
+    public function testPrinterProfilesReturnTheCatalogInContractShape(): void
+    {
+        $this->seedDevice();
+
+        $response = $this->controller()->printerProfiles(
+            $this->request('GET', 'printer-profiles', headers: $this->signedHeaders(DevicePurpose::PrinterProfiles)),
+            $this->db,
+            $this->tables(),
+        );
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame([
+            'profiles' => [
+                [
+                    'id'           => 'escpos-80-cp852',
+                    'name'         => 'ESC/POS 80 mm, CP852',
+                    'columns'      => 42,
+                    'columnsSmall' => 56,
+                    'dotsPerLine'  => 512,
+                    'codePage'     => 'cp852',
+                    'features'     => ['cut', 'drawer'],
+                    'models'       => [],
+                ],
+                [
+                    'id'           => 'escpos-58-cp852',
+                    'name'         => 'ESC/POS 58 mm, CP852',
+                    'columns'      => 32,
+                    'columnsSmall' => 42,
+                    'dotsPerLine'  => 384,
+                    'codePage'     => 'cp852',
+                    'features'     => ['cut', 'drawer'],
+                    'models'       => [],
+                ],
+            ],
+        ], self::data($response));
+    }
+
+    public function testPrinterProfilesNeedASignatureOfTheirOwnPurpose(): void
+    {
+        $this->seedDevice();
+        $ctrl = $this->controller();
+
+        $this->assertError('DEVICE_UNKNOWN', 401, $ctrl->printerProfiles($this->request('GET', 'printer-profiles'), $this->db, $this->tables()));
+        // Výzva účelu `self` katalog neotevře.
+        $this->assertError('CHALLENGE_INVALID', 401, $ctrl->printerProfiles(
+            $this->request('GET', 'printer-profiles', headers: $this->signedHeaders(DevicePurpose::Self)),
+            $this->db,
+            $this->tables(),
+        ));
+        $this->assertError('SIGNATURE_INVALID', 401, $ctrl->printerProfiles(
+            $this->request('GET', 'printer-profiles', headers: $this->signedHeaders(DevicePurpose::PrinterProfiles, signAs: 'self')),
+            $this->db,
+            $this->tables(),
+        ));
+        // Zdroj dat bez modulu zařízení endpoint nemá.
+        $this->assertSame(404, $ctrl->printerProfiles(
+            $this->request('GET', 'printer-profiles'),
+            $this->db,
+            [],
+        )->getStatus());
+    }
+
+    public function testPrinterProfilesAreEmptyWithoutThePrintsModule(): void
+    {
+        $this->seedDevice();
+        $ctrl = new DevicesController(
+            new DataSourceConfig($this->dsDir),
+            $this->devicesConfig(['core.prints.printerProfiles' => null]),
+            fn () => $this->now,
+        );
+
+        $response = $ctrl->printerProfiles(
+            $this->request('GET', 'printer-profiles', headers: $this->signedHeaders(DevicePurpose::PrinterProfiles)),
+            $this->db,
+            $this->tables(),
+        );
+
+        $this->assertSame(['profiles' => []], self::data($response));
+    }
 }

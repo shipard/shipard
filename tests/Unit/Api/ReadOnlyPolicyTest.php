@@ -57,6 +57,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['prints', 'textVariables', $allow],
 			// devices — bez výzvy a `self` by se zařízení neověřilo (#177)
 			['devices', 'challenge', $allow], ['devices', 'self', $allow],
+			['devices', 'printerProfiles', $allow],
 			['devices', 'register', $d403], ['devices', 'peripherals', $d403],
 			['alerts', 'registry', $allow], ['alerts', 'runDue', $d403], ['alerts', 'runCheck', $d403],
 			['setup', 'checklist', $allow], ['setup', 'parameters', $d403],

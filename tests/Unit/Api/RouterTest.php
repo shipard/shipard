@@ -820,6 +820,7 @@ class RouterTest extends TestCase
 			['/api/v1/_devices/register', 'POST', 'register'],
 			['/api/v1/_devices/self', 'GET', 'self'],
 			['/api/v1/_devices/self/peripherals', 'PUT', 'peripherals'],
+			['/api/v1/_devices/printer-profiles', 'GET', 'printerProfiles'],
 		] as [$path, $method, $action]) {
 			$result = $this->router->resolve($path, $method);
 			$this->assertInstanceOf(Route::class, $result, $path);
@@ -834,6 +835,7 @@ class RouterTest extends TestCase
 			['/api/v1/_devices/self', 'POST'],
 			['/api/v1/_devices/self/peripherals', 'GET'],
 			['/api/v1/_devices/self/peripherals', 'POST'],
+			['/api/v1/_devices/printer-profiles', 'POST'],
 		] as [$path, $method]) {
 			$result = $this->router->resolve($path, $method);
 			$this->assertInstanceOf(Response::class, $result, "{$method} {$path}");
@@ -845,7 +847,7 @@ class RouterTest extends TestCase
 	{
 		// Bez vlastní větve by `/_devices` skončilo jako CRUD nad tabulkou `_devices`
 		// a starý endpoint se session (`/_devices/{deviceId}/peripherals`) nesmí existovat (D32).
-		foreach (['/api/v1/_devices', '/api/v1/_devices/0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10/peripherals', '/api/v1/_devices/printer-profiles'] as $path) {
+		foreach (['/api/v1/_devices', '/api/v1/_devices/0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10/peripherals', '/api/v1/_devices/printer-profiles/escpos-80-cp852', '/api/v1/_devices/print-jobs'] as $path) {
 			$result = $this->router->resolve($path, 'GET');
 			$this->assertInstanceOf(Response::class, $result, $path);
 			$this->assertSame(404, $result->getStatus(), $path);
