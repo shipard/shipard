@@ -31,7 +31,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [První nastavení zdroje dat](prvni-nastaveni.md) | Jak čerstvý zdroj dat nastavit přes kartu Dokončit nastavení — vlastní firma, DPH, bankovní účet, účtová osnova, fiskální rok a domácí měna. |
 | [Slovníček](slovnicek.md) | Co která věc v Shipardu znamená a jak se jmenuje v rozhraní. |
 | [Začínáme](zaciname.md) | Co dělat po prvním přihlášení — dokončit nastavení, dostat do Shipardu první fakturu a zorientovat se v levém panelu. |
-| [Zařízení a jejich registrace](zarizeni.md) | Kde v Nastavení zaregistruješ zařízení s nativní aplikací Shipardu, jak mu přiřadíš tiskárnu účtenek a pokladnu a jak ztracené zařízení zneplatníš. |
+| [Zařízení a jejich registrace](zarizeni.md) | Kde v Nastavení zaregistruješ zařízení s nativní aplikací Shipardu, jak mu přiřadíš tiskárnu účtenek a pokladnu, jak z něj vytiskneš účtenku a jak ztracené zařízení zneplatníš. |
 
 ### Osoby
 

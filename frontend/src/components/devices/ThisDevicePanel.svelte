@@ -23,6 +23,10 @@
   import { get, post } from '../../api/client.js';
   import { nativeCall } from '../../native/bridge.js';
   import { nativeStore } from '../../stores/native.svelte.js';
+  import { noticeStore } from '../../stores/notice.svelte.js';
+  import PrintJobErrorDialog from '../native/PrintJobErrorDialog.svelte';
+  import { submitPrintJob } from '../../api/printJobs.js';
+  import { printJobSuccessKey } from '../../native/printJobs.js';
   import { authStore } from '../../stores/auth.svelte.js';
   import {
     PANEL, REGISTER_MODES, NAME_MAX_LENGTH, panelState, registrationFormError, registerDevice,
@@ -45,6 +49,9 @@
   let recordState = $state('idle'); // idle | loading | missing | ready | error
   let recordError = $state(null);
   let formOpen = $state(false);
+  // Zkušební tisk a šuplík (#177 U41): běžící druh úlohy a neúspěch pro dialog.
+  let printing = $state(null);
+  let printJobFailure = $state(null);
 
   const info = $derived(nativeStore.info);
   const state = $derived(panelState({
@@ -151,6 +158,23 @@
     }
   }
 
+  /** Zkušební účtenka nebo otevření šuplíku — stejná cesta jako tisk záznamu. */
+  async function printJob(kind) {
+    if (busy || printing !== null) return;
+    message = null;
+    printing = kind;
+    try {
+      const result = await submitPrintJob({ kind });
+      if (result.ok) {
+        noticeStore.show(t(printJobSuccessKey(kind)), { level: 'success' });
+      } else {
+        printJobFailure = result;
+      }
+    } finally {
+      printing = null;
+    }
+  }
+
   async function handleFormSaved() {
     formOpen = false;
     await loadRecord();
@@ -240,9 +264,27 @@
         {/if}
 
         <div class="shpd-this-device__actions">
-          <Button label={t('devices.sync.submit')} variant="secondary" loading={busy} onclick={sync} testid="this-device-sync" />
+          <Button label={t('devices.sync.submit')} variant="secondary" loading={busy} disabled={printing !== null} onclick={sync} testid="this-device-sync" />
           {#if record}
             <Button label={t('devices.registered.open')} variant="secondary" disabled={busy} onclick={() => { formOpen = true; }} testid="this-device-open" />
+          {/if}
+          {#if nativeStore.has('print.escpos')}
+            <Button
+              label={t('native.print.testPrint')}
+              variant="secondary"
+              loading={printing === 'test'}
+              disabled={busy || printing !== null}
+              onclick={() => printJob('test')}
+              testid="this-device-test-print"
+            />
+            <Button
+              label={t('native.print.openDrawer')}
+              variant="secondary"
+              loading={printing === 'drawer'}
+              disabled={busy || printing !== null}
+              onclick={() => printJob('drawer')}
+              testid="this-device-open-drawer"
+            />
           {/if}
         </div>
       </section>
@@ -283,6 +325,12 @@
     onClose={() => { formOpen = false; loadRecord(); }}
   />
 {/if}
+
+<!-- Zkušební tisk a šuplík: neúspěch s důvodem a Zkusit znovu (#177 U41). -->
+<PrintJobErrorDialog
+  bind:failure={printJobFailure}
+  onSuccess={(_result, request) => noticeStore.show(t(printJobSuccessKey(request?.kind)), { level: 'success' })}
+/>
 
 <style>
   .shpd-this-device {

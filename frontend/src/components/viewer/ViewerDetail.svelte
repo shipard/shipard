@@ -20,6 +20,9 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import ContentBlock from '../content/ContentBlock.svelte';
+  import { API_BASE_URL } from '../../api/config.js';
+  import { nativeStore } from '../../stores/native.svelte.js';
+  import { canPrintPos, visibleDetailActions } from '../../native/printJobs.js';
 
   // hideSingleTabBar: opt-in pro hostitele s jediným tabem (ViewerDetailModal) —
   // skryje tab lištu, když není mezi čím přepínat. Default false, aby se
@@ -28,6 +31,18 @@
   // zablokované (dvojklik na Vystavit opravný doklad by založil dva
   // koncepty, #92 task B U8). Nastavuje hostitel (Viewer.svelte).
   let { detail = null, loading = false, onRefresh, onAction = null, hideSingleTabBar = false, busyActionId = null } = $props();
+
+  // Akce k vykreslení: Tisk na účtenkovou tiskárnu (`printPos`, #177 U40)
+  // posílá server vždy, ale vidět je jen na registrovaném zařízení, jehož
+  // most umí `print.escpos`. Filtr je tady, protože detail kreslí víc
+  // hostitelů (panel, šuplík, modal).
+  const actions = $derived(visibleDetailActions(detail?.actions, {
+    posPrint: canPrintPos({
+      available: nativeStore.available,
+      info: nativeStore.info,
+      apiBase: window.location.origin + API_BASE_URL,
+    }),
+  }));
 
   // Otevřený dropdown — { actionId, anchor }. Per-action, takže různá tlačítka
   // se navzájem zavírají (otevření nového dropdownu shodí předchozí).
@@ -247,9 +262,9 @@
       {/if}
     {/snippet}
 
-    {#if (detail?.actions ?? []).length > 0}
+    {#if actions.length > 0}
       <div class="shpd-detail__actions">
-        {#each detail.actions as action (action.id)}
+        {#each actions as action (action.id)}
           {@render renderAction(action)}
         {/each}
       </div>
@@ -486,7 +501,7 @@
     <!-- Dropdown menu pro detail.actions kind=dropdown — Popover anchorovaný
          na trigger button. Otvírání řídí `dropdownOpen`. -->
     {#if dropdownOpen !== null}
-      {@const openAction = (detail?.actions ?? []).find(a => a.id === dropdownOpen.actionId)}
+      {@const openAction = actions.find(a => a.id === dropdownOpen.actionId)}
       {#if openAction}
         <Popover
           open={true}

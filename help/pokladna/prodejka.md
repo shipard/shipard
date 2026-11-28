@@ -2,7 +2,7 @@
 title: Prodejka
 summary: Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury, jak udělat vratku a jak prodejku vytisknout.
 keywords: [prodejka, prodej za hotové, prodej na pokladně, paragon, účtenka, platba kartou, prodej kartou, prodej na dobírku, dobírka, platební brána, tržba, vratka, vrácení zboží, storno prodeje, prodejky, plátce, tisk prodejky, vytisknout prodejku, PDF prodejky, prodejka daňový doklad, prodejka vratka, zaokrouhlení prodejky, zaokrouhlení na celé koruny, automatické zaokrouhlení, zaokrouhlení částky]
-related: [pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, polozky/zalozeni-polozky.md, uctarna/dph-zive-vystupy.md, co-dnes-nejde.md]
+related: [pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, polozky/zalozeni-polozky.md, uctarna/dph-zive-vystupy.md, co-dnes-nejde.md, zarizeni.md]
 ---
 
 # Prodejka
@@ -94,9 +94,12 @@ partnera — pohledávka pak vznikne za ním.
 A4 (nad 10 000 Kč jednotlivě) se dostane jen prodej, u kterého je vyplněný
 partner s českým DIČ — viz [Živé výstupy DPH](../uctarna/dph-zive-vystupy.md).
 
-**Účtenku z pokladní tiskárny z Shipardu nedostaneš.** Prodejka se tiskne
-jen jako PDF na stránku A4 — viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md).
+**Účtenku z pokladní tiskárny zatím z Shipardu nedostaneš.** Tlačítko
+**Tisk na účtenkovou tiskárnu** se v detailu prodejky ukáže jen na
+registrovaném zařízení s nativní aplikací Shipardu a tiskárnou účtenek —
+a aplikace ještě není vydaná. Do té doby se prodejka tiskne jen jako PDF na
+stránku A4. Viz [Zařízení a jejich registrace](../zarizeni.md)
+a [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
 
@@ -108,5 +111,7 @@ jen jako PDF na stránku A4 — viz
   v přiznání a kontrolním hlášení
 - [Tisk faktury](../faktury-vydane/tisk-faktury.md) — náhled, stažení
   a hlášení při tisku fungují stejně
+- [Zařízení a jejich registrace](../zarizeni.md) — tiskárna účtenek
+  a tisk na ni
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — účtenka z pokladní
   tiskárny, pokladní kniha

@@ -31,6 +31,9 @@
   import { noticeStore } from '../../stores/notice.svelte.js';
   import AssetsDepreciationRunDialog from './AssetsDepreciationRunDialog.svelte';
   import PrintPreviewDialog from './PrintPreviewDialog.svelte';
+  import PrintJobErrorDialog from '../native/PrintJobErrorDialog.svelte';
+  import { submitPrintJob } from '../../api/printJobs.js';
+  import { printJobSuccessKey } from '../../native/printJobs.js';
   import SendDialog from './SendDialog.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
@@ -589,6 +592,8 @@
   let detailModal = $state(null);
   // Náhled tisku záznamu (detail akce print) — { printId, recordId, languages } | null.
   let printPreview = $state(null);
+  // Neúspěšný tisk na účtenkovou tiskárnu — otevírá dialog s důvodem.
+  let printJobFailure = $state(null);
   // Dialog odeslání záznamu e-mailem (akce `send`): { printId, recordId }.
   let sendDialog = $state(null);
 
@@ -873,6 +878,27 @@
     if (actionId === 'print') {
       const printId = value ?? action.target?.printId;
       if (printId) printPreview = { printId, recordId, languages: action.target?.languages ?? [] };
+      return;
+    }
+    // Tisk na účtenkovou tiskárnu (#177 U40, docs/prints.md kap. 14): stejný
+    // tvar akce jako Tisk, ale místo náhledu vzniká tisková úloha a jde přes
+    // most na tiskárnu. Akci posílá generický háček jádra jako `print`
+    // a `send`, ne modul — proto je mezi pevnými id, i když jsou jinak
+    // uzavřený seznam.
+    if (actionId === 'printPos') {
+      const printId = value ?? action.target?.printId;
+      if (!printId || busyActionId !== null) return;
+      busyActionId = actionId;
+      try {
+        const result = await submitPrintJob({ kind: 'print', printId, recordId });
+        if (result.ok) {
+          noticeStore.show(t(printJobSuccessKey('print')), { level: 'success' });
+        } else {
+          printJobFailure = result;
+        }
+      } finally {
+        busyActionId = null;
+      }
       return;
     }
     // Odeslat (docs/prints.md → Odesílání): stejný tvar akce jako Tisk —
@@ -1751,6 +1777,12 @@
   recordId={printPreview?.recordId ?? null}
   languages={printPreview?.languages ?? []}
   onClose={() => { printPreview = null; }}
+/>
+
+<!-- Neúspěšný tisk na účtenkovou tiskárnu: důvod a Zkusit znovu. -->
+<PrintJobErrorDialog
+  bind:failure={printJobFailure}
+  onSuccess={(_result, request) => noticeStore.show(t(printJobSuccessKey(request?.kind)), { level: 'success' })}
 />
 
 <!-- Odeslání záznamu e-mailem; po odeslání se obnoví detail — sekce

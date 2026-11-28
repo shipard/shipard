@@ -190,10 +190,14 @@ zaúčtují na účet pokladny, ale přehled zůstatku a pohybů pokladny za obd
 počáteční stav ani inventura pokladny nejsou. Zůstatek dnes zjistíš jen
 z účetního deníku nebo hlavní knihy na účtu pokladny.
 
-**Účtenku na pokladní tiskárně nevytiskneš.**
-[Prodejka](pokladna/prodejka.md) i [pokladní doklad](pokladna/pokladni-doklad.md)
-se tisknou jen jako PDF na stránku A4. Úzkou účtenku pro zákazníka u pultu
-musíš dát z jiného zařízení.
+**Účtenku na pokladní tiskárně zatím nevytiskneš.** Tisk prodejky na
+účtenkovou tiskárnu je připravený, ale jde jen přes nativní aplikaci
+Shipardu, která ještě není vydaná — viz
+[Zařízení a jejich registrace](zarizeni.md). Do té doby se
+[prodejka](pokladna/prodejka.md) tiskne jen jako PDF na stránku A4 a úzkou
+účtenku pro zákazníka u pultu musíš dát z jiného zařízení.
+[Pokladní doklad](pokladna/pokladni-doklad.md) účtenku pro pokladní tiskárnu
+nemá vůbec.
 
 **Vyúčtování od platební brány, terminálu nebo dopravce Shipard sám
 nevytvoří.** Prodej kartou, přes bránu nebo na dobírku založí pohledávku
