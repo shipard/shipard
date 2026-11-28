@@ -384,6 +384,7 @@ function dispatch(
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
 		'hostingOidc' => dispatchHostingOidc($route, $request, $auth, $db, $tables, $resolved),
 		'devices' => dispatchDevices($route, $request, $auth, $db, $tables, $resolved, $configRuntime),
+		'printJobs' => dispatchPrintJobs($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $configRuntime),
 		'hostingServer' => dispatchHostingServer($route, $request, $db, $tables, $resolved),
 		'hostingMail' => dispatchHostingMail($route, $request, $db, $tables, $resolved),
 		'hostingAiGateway' => dispatchHostingAiGateway($route, $request, $db, $tables, $resolved),
@@ -795,6 +796,61 @@ function dispatchDevices(
 		'peripherals' => $ctrl->peripherals($request, $db, $tables),
 		'printerProfiles' => $ctrl->printerProfiles($request, $db, $tables),
 		default       => Response::error('INTERNAL_ERROR', "Unknown devices action: {$route->action}", 500),
+	};
+}
+
+/**
+ * Tiskové úlohy pro účtenkové tiskárny (#177 task 4b). Těla požadavků jsou
+ * pár polí — velká jsou jen data v odpovědi.
+ *
+ * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+ */
+function dispatchPrintJobs(
+	Route $route,
+	Request $request,
+	AuthContext $auth,
+	array $tables,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	ModulePathResolver $modulePathResolver,
+	\Shipard\Api\ResolvedDataSource $resolved,
+	string $language,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+): Response {
+	if (!\Shipard\Api\Controller\PrintJobsController::available($tables)) {
+		return Response::error('NOT_FOUND', 'Not found', 404);
+	}
+	$contentLength = (int) ($request->getHeader('content-length') ?? '0');
+	if ($contentLength > 65536) {
+		return Response::error('PAYLOAD_TOO_LARGE', 'Request body too large', 413);
+	}
+
+	$registry = \Shipard\Api\PrintDefinitionLoader::load($resolved->config, $modulePathResolver, $language);
+	// Runner se staví až pro tisk záznamu — zkušební účtenka a šuplík ho
+	// nepotřebují. Bez klienta render služby: úloha je ESC/POS, ne PDF.
+	$renderPrint = static function (
+		string $printId,
+		int $recordId,
+		\Shipard\Core\Prints\EscPos\PrinterProfile $profile,
+	) use ($registry, $resolved, $db, $modulePathResolver): \Shipard\Core\Prints\PrintOutput {
+		return \Shipard\Core\Prints\PrintRunnerFactory::create($registry, $resolved->config, $db, $modulePathResolver)
+			->run($printId, $recordId, \Shipard\Core\Prints\PrintFormat::Escpos, null, $profile);
+	};
+
+	$ctrl = new \Shipard\Api\Controller\PrintJobsController(
+		$registry,
+		new \Shipard\Module\Core\Prints\Jobs\PrintJobService(
+			$db,
+			new \Shipard\Module\Core\Prints\Jobs\PrintJobRouter($db, $configRuntime),
+			$registry,
+			$renderPrint,
+			$configRuntime,
+		),
+	);
+	return match ($route->action) {
+		'create' => $ctrl->create($request->getBody(), $auth, $tables),
+		'get'    => $ctrl->get((string) $route->key, $auth),
+		'result' => $ctrl->result((string) $route->key, $request->getBody(), $auth),
+		default  => Response::error('INTERNAL_ERROR', "Unknown print jobs action: {$route->action}", 500),
 	};
 }
 

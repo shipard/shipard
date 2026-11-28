@@ -48,6 +48,9 @@ class CronJobRegistryTest extends TestCase
         ],
         'daily' => [
             ['mail-idempotency-prune', 'core.mail', ['active', 'read_only']],
+            // úklid tiskových úloh (#177 U39) — v režimu jen pro čtení
+            // úlohy nevznikají, není co uklízet
+            ['print-jobs-prune', 'core.prints', ['active']],
             ['vat-periods-ensure', 'economy.vat', ['active']],
             ['work-orders-invoice-run', 'economy.workOrders', ['active']],
         ],

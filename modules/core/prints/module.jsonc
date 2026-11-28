@@ -26,6 +26,16 @@
         "core_prints_texts"
     ],
 
+    "commands": [
+        "Shipard\\Module\\Core\\Prints\\Command\\PrintJobsPruneCommand"
+    ],
+
+    // Úklid tiskových úloh starších než 30 dní (#177 U39). Jen ve stavu
+    // `active`: v režimu jen pro čtení úlohy nevznikají, není co uklízet.
+    "cronJobs": [
+        { "command": "print-jobs-prune", "slot": "daily" }
+    ],
+
     // Vzhled je branding — stránka Tisky stojí hned za stránkou Aplikace
     // a texty na tiscích hned za ní.
     "settingsItems": [

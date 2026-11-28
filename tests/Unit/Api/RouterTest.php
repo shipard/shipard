@@ -854,6 +854,51 @@ class RouterTest extends TestCase
 		}
 	}
 
+	// Tiskové úlohy (#177 task 4b)
+
+	public function testPrintJobsRoutes(): void
+	{
+		$jobId = '0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10';
+
+		$create = $this->router->resolve('/api/v1/_print-jobs', 'POST');
+		$this->assertInstanceOf(Route::class, $create);
+		$this->assertRoute($create, 'printJobs', 'create');
+		$this->assertNull($create->key);
+
+		$get = $this->router->resolve("/api/v1/_print-jobs/{$jobId}", 'GET');
+		$this->assertInstanceOf(Route::class, $get);
+		$this->assertRoute($get, 'printJobs', 'get');
+		$this->assertSame($jobId, $get->key);
+
+		$result = $this->router->resolve("/api/v1/_print-jobs/{$jobId}/result", 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'printJobs', 'result');
+		$this->assertSame($jobId, $result->key);
+	}
+
+	public function testPrintJobsRoutesRejectOtherMethodsAndPaths(): void
+	{
+		$jobId = '0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10';
+
+		foreach ([
+			['/api/v1/_print-jobs', 'GET'],
+			["/api/v1/_print-jobs/{$jobId}", 'POST'],
+			["/api/v1/_print-jobs/{$jobId}", 'DELETE'],
+			["/api/v1/_print-jobs/{$jobId}/result", 'GET'],
+		] as [$path, $method]) {
+			$result = $this->router->resolve($path, $method);
+			$this->assertInstanceOf(Response::class, $result, "{$method} {$path}");
+			$this->assertSame(405, $result->getStatus(), "{$method} {$path}");
+		}
+
+		// Bez vlastní větve by cesta skončila jako CRUD nad tabulkou `_print-jobs`.
+		foreach (['/api/v1/_print-jobs/', '/api/v1/_print-jobs/42', "/api/v1/_print-jobs/{$jobId}/data", "/api/v1/_print-jobs/{$jobId}/result/x"] as $path) {
+			$result = $this->router->resolve($path, 'GET');
+			$this->assertInstanceOf(Response::class, $result, $path);
+			$this->assertSame(404, $result->getStatus(), $path);
+		}
+	}
+
 	// Hosting server provisioning routes (D3)
 
 	public function testHostingServerReconcilePost(): void

@@ -59,6 +59,8 @@ class ReadOnlyPolicyTest extends TestCase
 			['devices', 'challenge', $allow], ['devices', 'self', $allow],
 			['devices', 'printerProfiles', $allow],
 			['devices', 'register', $d403], ['devices', 'peripherals', $d403],
+			// tiskové úlohy (#177 U38): číst jde, zakládat a hlásit výsledek ne
+			['printJobs', 'get', $allow], ['printJobs', 'create', $d403], ['printJobs', 'result', $d403],
 			['alerts', 'registry', $allow], ['alerts', 'runDue', $d403], ['alerts', 'runCheck', $d403],
 			['setup', 'checklist', $allow], ['setup', 'parameters', $d403],
 			['setup', 'generateAccountingItems', $d403], ['setup', 'bridgeBankAccounts', $d403],

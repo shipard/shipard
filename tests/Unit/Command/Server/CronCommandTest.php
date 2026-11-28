@@ -134,7 +134,7 @@ class CronCommandTest extends TestCase
         ],
         'two-minutes'  => [],
         'five-minutes' => ['device-challenges-prune', 'exchange-rates-download', 'sales-registration-reconcile', 'alerts-run'],
-        'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
+        'daily'        => ['mail-idempotency-prune', 'print-jobs-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
         'weekly'       => ['alerts-prune'],
     ];
 
@@ -214,6 +214,9 @@ class CronCommandTest extends TestCase
                 ['command' => 'mail-analyze --sweep', 'slot' => 'minute'],
                 ['command' => 'mail-idempotency-prune', 'slot' => 'daily', 'states' => $cleanup],
             ]],
+            'core/prints'        => ['core.prints', ['core.system', 'core.devices'], [
+                ['command' => 'print-jobs-prune', 'slot' => 'daily'],
+            ]],
             'economy/vat'        => ['economy.vat', ['core.system'], [
                 ['command' => 'vat-periods-ensure', 'slot' => 'daily'],
             ]],
@@ -228,7 +231,7 @@ class CronCommandTest extends TestCase
                 ['command' => 'sales-registration-reconcile', 'slot' => 'five-minutes'],
             ]],
             'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts'], []],
-            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.devices', 'core.mail', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.devices', 'core.mail', 'core.prints', 'economy.vat', 'economy.workOrders', 'economy.exchangeRates', 'economy.salesRegistration'], []],
         ];
         foreach ($defs as $path => [$id, $deps, $cronJobs]) {
             mkdir($root . '/' . $path, 0755, true);
@@ -368,12 +371,12 @@ class CronCommandTest extends TestCase
         $exit = $tester->execute(['--slot' => 'daily']);
 
         $this->assertSame(0, $exit);
-        // server job ds-state-check + 2 DS × (mail-idempotency-prune, vat-periods-ensure, work-orders-invoice-run)
-        $this->assertCount(7, $cmd->callLog);
+        // server job ds-state-check + 2 DS × (mail-idempotency-prune, print-jobs-prune, vat-periods-ensure, work-orders-invoice-run)
+        $this->assertCount(9, $cmd->callLog);
 
         $hb = $this->readHeartbeat('daily');
         $this->assertSame(1, $hb['failedCount']);
-        $this->assertSame(7, $hb['jobsRun']);
+        $this->assertSame(9, $hb['jobsRun']);
         $this->assertSame('aaaa-aaaa-aaaa-aaaa', $hb['failures'][0]['ds']);
         $this->assertSame('mail-idempotency-prune', $hb['failures'][0]['job']);
         $this->assertSame(1, $hb['failures'][0]['exitCode']);
@@ -418,6 +421,7 @@ class CronCommandTest extends TestCase
         $this->assertSame([
             ['ds' => '(server)', 'job' => 'ds-state-check'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-idempotency-prune'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'print-jobs-prune'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'vat-periods-ensure'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'work-orders-invoice-run'],
         ], $cmd->callLog);
@@ -890,6 +894,7 @@ class CronCommandTest extends TestCase
         $tester->execute(['--slot' => 'daily', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
         $this->assertSame([
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-idempotency-prune'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'print-jobs-prune'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'vat-periods-ensure'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'work-orders-invoice-run'],
         ], $cmd->callLog);

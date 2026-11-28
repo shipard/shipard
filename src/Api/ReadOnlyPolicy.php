@@ -101,6 +101,11 @@ final class ReadOnlyPolicy
 			'textVariables' => ReadOnlyVerdict::Allow,
 			// send → 403: odeslání vytváří zprávu a řádek fronty (D38)
 		],
+		// Tiskové úlohy (#177 U38): znovu načíst hotovou úlohu nic nemění.
+		'printJobs' => [
+			'get' => ReadOnlyVerdict::Allow,
+			// create, result → 403: zakládají úlohu a zapisují výsledek
+		],
 		'alerts' => [
 			'registry' => ReadOnlyVerdict::Allow,
 			// runDue, runCheck → 403

@@ -406,6 +406,12 @@ class Router
 			return new Route('prints', $action, $m[1], (int) $m[2]);
 		}
 
+		// Tiskové úlohy pro účtenkové tiskárny (#177 task 4b, docs/prints.md
+		// kap. 14). `jobId` je UUID a jede ve slotu `key`.
+		if ($subpath === '/_print-jobs' || str_starts_with($subpath, '/_print-jobs/')) {
+			return $this->resolvePrintJobsRoute($subpath, $method);
+		}
+
 		if (str_starts_with($subpath, '/_setup')) {
 			return $this->resolveSetupRoute($subpath, $method);
 		}
@@ -811,6 +817,25 @@ class Router
 			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 		}
 		return new Route('hostingOidc', $action);
+	}
+
+	private function resolvePrintJobsRoute(string $subpath, string $method): Route|Response
+	{
+		// Nová akce = řádek v ReadOnlyPolicy (výchozí je 403).
+		if ($subpath === '/_print-jobs') {
+			[$action, $allowed, $jobId] = ['create', 'POST', null];
+		} elseif (preg_match('#^/_print-jobs/([0-9a-fA-F-]{36})(/result)?$#D', $subpath, $m)) {
+			[$action, $allowed, $jobId] = ($m[2] ?? '') === '/result'
+				? ['result', 'POST', $m[1]]
+				: ['get', 'GET', $m[1]];
+		} else {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+
+		if ($method !== $allowed) {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+		return new Route('printJobs', $action, key: $jobId);
 	}
 
 	private function resolveDevicesRoute(string $subpath, string $method): Route|Response
