@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 506 tasků: **naplánováno** 5 · **částečně** 29 · **zrušeno** 1 · **hotovo** 471.
+Celkem 506 tasků: **naplánováno** 4 · **částečně** 30 · **zrušeno** 1 · **hotovo** 471.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
-| `native-app-prep.md` | naplánováno | #177 D34, D36, D41 (2026-11-28); patří před ruční ověření tasku 5a na iPhonu |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -47,6 +46,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
+| `native-app-prep.md` | částečně | kontrakt, server, web, testy a dokumentace hotové 2026-11-28 ve třech commitech (#177 D34, D36, D41); zbývá (člověk) přepsat instrukce Projektu v claude.ai podle `docs/ai-workflow.md` §8 |
 | `native-escpos-render.md` | částečně | kód, testy, vzory a dokumentace hotové 2026-11-28 v sedmi commitech, ověřeno na dev zdroji dat (CLI + náhled); zbývá ruční ověření na skutečné tiskárně, úzké i široké (odchylky od zadání v oddílu Odchylky) |
 | `native-print-jobs.md` | částečně | kód, testy a dokumentace hotové 2026-11-28 (#177 D4, D11, D25, D33, U8, U19, U36–U43), celý postup ověřený se simulací mostu v headless prohlížeči; zbývá ruční proklik přihlášeným administrátorem (přehled Tiskové úlohy, přiřazení role ve formuláři zařízení, `DS_READ_ONLY` naživo) — viz Hotovo když |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
@@ -303,11 +303,15 @@ referenční dokument `docs/prints.md` (od Fáze 1).
 
 ## Nativní aplikace (#177)
 
-Nativní aplikace Shipardu pro macOS a iPadOS: okno s WebView, ve kterém
-běží běžný Shipard, a device hub pro periferie (POS tiskárny, čtečky,
-sdílená pracoviště s PINem). Aplikace žije v repu `shipard-app`, webová
-strana a server tady. Design issue #177, kontrakt mezi oběma stranami
-`docs/native-bridge.md`.
+Nativní aplikace Shipardu pro macOS, iPadOS a iOS: okno s WebView, ve
+kterém běží běžný Shipard, a device hub pro periferie (POS tiskárny,
+čtečky, sdílená pracoviště s PINem). Aplikace žije v repu `shipard-app`,
+webová strana a server tady. Design issue #177, kontrakt mezi oběma
+stranami `docs/native-bridge.md`.
+
+Tasky aplikace žijí v `shipard_app:tasks/` (řada `apple-phase<N>`: 5a
+kostra, most a identita; 5b síťové tiskárny; 5c Bluetooth a čtečky).
+Tady zůstávají tasky kontraktu a serverové strany.
 
 | Task | Č. | Co řeší |
 |------|----|---------|
@@ -316,6 +320,7 @@ strana a server tady. Design issue #177, kontrakt mezi oběma stranami
 | `native-devices-registration.md` | 3 | Modul `core.devices`: zařízení, periferie a výzvy, registrace a podepsaná volání bez session (`/_devices/challenge`, `register`, `self`, `self/peripherals`), politika PINu `auth.pin`, Nastavení → Zařízení s panelem Toto zařízení, pokladna zařízení z `economy.codebooks`, CLI `device-list` / `device-revoke`, úklid výzev (#177 D5, D13, D24, D27, D32, U16–U26) |
 | `native-escpos-render.md` | 4a | Skládání ESC/POS na serveru: ovladač a kódová stránka CP852, šablonový jazyk a sazba účtenky, katalog profilů tiskáren a `GET /_devices/printer-profiles`, výstup `escpos` v `PrintRunner` a CLI, účtenka prodejky `docs.cashRegister.receiptPos`, zkušební účtenka, náhled s `FS .` a malým písmem, společné vzory (#177 D26, U5, U13, U27–U35) |
 | `native-print-jobs.md` | 4b | Tiskové úlohy: tabulka `core_prints_jobs` s binárními daty (nový typ sloupce `mediumblob`), směrování podle role (`PrintJobRouter`), REST `/_print-jobs` s výsledkem a Zkusit znovu, úklid `print-jobs-prune`, akce Tisk na účtenkovou tiskárnu v detailu, Zkušební tisk a Otevřít šuplík v panelu Toto zařízení, dialog chyby tisku, přehled Tiskové úlohy, simulace s druhou tiskárnou, chybou tiskárny a katalogem profilů ze serveru (#177 D4, D11, D25, D33, U8, U19, U36–U43) |
+| `native-app-prep.md` | — | Příprava na aplikaci: platforma `ios` (iPhone) v kontraktu, na serveru a ve webu, minimum systémů macOS 26, iPadOS 26 a iOS 26, repo `shipard-app` v mapě projektů, standardu komponent a `docs/ai-workflow.md` (#177 D34, D36, D41) |
 
 ## Výměnný formát a import ze starého Shipardu
 
@@ -729,6 +734,7 @@ otevřené.
 | `old_shipard` | `shipard/shipard-old` (soukromé) | Starý Shipard + migrační pipeline do nového |
 | `dev_env` | `shipard/dev-env` (soukromé) | Přístupy a prostředí týmu (`docs/ai-workflow.md` §6) |
 | `mail_router` | `shipard/mail-router` | Mail-router daemon (Python) |
+| `shipard_app` | `shipard/shipard-app` | Nativní aplikace (Swift; macOS, iPadOS, iOS) — v `remote-dev-bridge` není, checkout je na Macu vývojáře |
 | `ai_analyzer` | `shipard/ai-analyzer` | AI analyzer daemon (Python) — **zrušen** #85 D24 (2026-10-10), repozitář archivován |
 
 Úplný seznam včetně testovacího serveru je v `dev-env.md` §3. Lokální

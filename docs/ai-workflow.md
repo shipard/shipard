@@ -157,6 +157,14 @@ bez `--dry-run` čeká na potvrzení „Proceed? [y/N]“. Z Claude (vzdálený 
 Claude Code) a ze skriptů volat jen s `--dry-run`, nebo po schválení v chatu
 s `--force` — jinak příkaz visí do timeoutu.
 
+**Připojená složka desktopové aplikace** — repo nativní aplikace
+`shipard/shipard-app` má checkout na Macu vývojáře a Claude v chatu k němu
+chodí přes složku připojenou v desktopové aplikaci, ne přes MCP most. Shell
+je tam Linuxová VM bez Xcode a vidí jen připojenou složku. Mazání souborů je
+v ní vypnuté, proto git jen čtecími příkazy s `git --no-optional-locks` —
+jinak v `.git` zůstanou zámky. Build a testy pouští Claude Code; chat čte
+souhrn `apple/.build/test-summary.txt`.
+
 ---
 
 ## 5. Když Claude zjistí něco, co má platit příště
@@ -183,6 +191,7 @@ změnu **navrhne** a člověk ji commitne; do `CLAUDE.md` se nepíše potichu.
 |--------|---------|----------------------------|
 | **repo `shipard/shipard`** (veřejné) | `CLAUDE.md`, `docs/`, `tasks/README.md`, tento dokument | `git clone`; Claude Code načte `CLAUDE.md` automaticky |
 | **repo `shipard/dev-env`** (soukromé, jen tým) | `dev-env.md` (týmové cíle mostu, přístupy), `alpha.md` (testovací server), `old-shipard.md` (import ze starého Shipardu), `README.md` (checklist člena týmu) | `git clone`; v claude.ai přes GitHub sync do knowledge Projektu — kdo není v týmu, tuhle vrstvu nemá a nepotřebuje |
+| **repo `shipard/shipard-app`** (veřejné) | `CLAUDE.md`, `apple/CLAUDE.md`, `docs/`, `tasks/` — nativní aplikace (#177) | `git clone` na Mac; Claude Code načte `CLAUDE.md` automaticky; v claude.ai přes GitHub sync do knowledge Projektu |
 | **stroj** | `CLAUDE.local.md` v kořeni checkoutu, `~/.claude/*` | nesdílí se; vzor `CLAUDE.local.example.md` (kapitola 7) |
 | **claude.ai Projekt** | instrukce + knowledge (GitHub sync z `shipard/shipard` aspoň `CLAUDE.md`, `docs/`, `tasks/README.md`; členové týmu navíc `dev-env`) | Team plán: jeden sdílený Projekt; Pro/Max: každý si založí vlastní; text instrukcí je v kapitole 8 |
 
@@ -332,6 +341,18 @@ jsou v knowledge, pokud je mám.
 - Po každém `patch_file` ověř `git diff`. PHPUnit jen s úzkým `--filter`.
   Grep s `--include`, ne široká rekurze přes `modules/`.
 - Nikdy nepushuj.
+
+**Nativní aplikace `shipard/shipard-app`** (#177): konvence a postup buildu
+jsou v jejím `CLAUDE.md` a `apple/CLAUDE.md` — načti je na začátku práce na
+aplikaci, a `CLAUDE.local.md` z checkoutu taky. Checkout je na mém Macu
+v připojené složce desktopové aplikace: čteš, hledáš, píšeš tasky a `docs/`;
+build a testy pouští Claude Code, ty čteš souhrn `apple/.build/test-summary.txt`.
+Git jen čtecí příkazy s `--no-optional-locks`. Zdroj pravdy pro obě strany je
+`docs/native-bridge.md` v `shipard/shipard`. Navíc platí:
+- Nikdy nečti podpisové certifikáty, profily, Keychain ani klíče
+  (Sparkle, App Store Connect); žádné archive, notarizace ani upload.
+- Aplikace se ve vývoji připojuje jen ke zdroji dat `free` — registrace
+  zařízení i tiskové úlohy jsou zápisy do zdroje dat.
 
 Když zjistíš něco, co má platit i příště, navrhni zápis do správného souboru
 podle `docs/ai-workflow.md` §5 — paměť Projektu se s kolegy nesdílí.

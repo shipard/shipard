@@ -15,7 +15,7 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 - [x] Upozornění — automatické kontroly jako karty na Dashboardu
 - [x] Úkoly — samostatná evidence
 - [ ] 🟠 Anglické rozhraní — existuje, nepřeložené popisky
-- [ ] Nativní aplikace pro macOS a iPadOS — Shipard v okně aplikace, tisk na POS tiskárny, čtečky, sdílená pracoviště s PINem (#177)
+- [ ] Nativní aplikace pro macOS, iPadOS a iOS — Shipard v okně aplikace, tisk na POS tiskárny, čtečky, sdílená pracoviště s PINem (#177)
 
 ## Pošta a AI vytěžení
 

@@ -1,6 +1,6 @@
 # Nativní aplikace — příprava na aplikaci: platforma `ios` a repo `shipard-app` v dokumentaci (#177)
 
-**Stav:** naplánováno — #177 D34, D36, D41 (2026-11-28); patří před ruční ověření tasku 5a na iPhonu
+**Stav:** částečně — kontrakt, server, web, testy a dokumentace hotové 2026-11-28 ve třech commitech (#177 D34, D36, D41); zbývá (člověk) přepsat instrukce Projektu v claude.ai podle `docs/ai-workflow.md` §8
 
 > Task pro Claude Code (3 commity). Design: issue #177. Aplikace vzniká
 > v repu `shipard/shipard-app` (`shipard_app:tasks/apple-phase1.md`,
@@ -124,13 +124,31 @@ Git jen čtecí příkazy s `--no-optional-locks`. Zdroj pravdy pro obě strany 
 
 ## Hotovo když
 
-- [ ] cílené PHPUnit (`--filter 'DeviceRegistration|DevicesViewer|DevicesController'`)
+- [x] cílené PHPUnit (`--filter 'DeviceRegistration|DevicesViewer|DevicesController'`)
       projde; registrace s `ios` uloží platformu, neznámá platforma vrátí
       `VALIDATION_ERROR`
-- [ ] `cd frontend && npm test` projde, `npm run build`
-- [ ] viewer Zařízení a panel Toto zařízení ukazují „iOS“ (testy popisků)
-- [ ] dokumentace podle bodů 1, 3 a 4; popis aplikace „jen macOS
+- [x] `cd frontend && npm test` projde, `npm run build`
+- [x] viewer Zařízení a panel Toto zařízení ukazují „iOS“ (testy popisků)
+- [x] dokumentace podle bodů 1, 3 a 4; popis aplikace „jen macOS
       a iPadOS“ nezůstal mimo historii (`grep -rn iPadOS --include=*.md docs tasks/README.md CLAUDE.md`)
-- [ ] hlavička **Stav** a index tasků aktualizované
+- [x] hlavička **Stav** a index tasků aktualizované
 - [ ] (člověk) instrukce Projektu v claude.ai přepsané podle
       `docs/ai-workflow.md` §8
+
+## Odchylky od zadání
+
+Navíc proti výčtu v zadání, aby starý popis nezůstal mimo historii:
+
+- text panelu Toto zařízení bez mostu (`devices.noBridge.text`, `cs.js`
+  i `en.js`) jmenuje macOS, iPadOS a iOS;
+- nápověda `help/zarizeni.md` a `help/co-dnes-nejde.md` počítá s iPhonem
+  (commit 2);
+- příklad `info` v kontraktu §3.1 má `osVersion` 26.1 — původní 18.2 bylo
+  pod minimem z D36;
+- komentář sloupce `platform` v `core_devices_devices.jsonc`;
+- řádek **Status** v hlavičce kontraktu: aplikace rozpracovaná, PIN
+  neimplementován.
+
+`CLAUDE.md` platformy aplikace nejmenuje, proto se nemění. Věta o Safari
+v cílových prohlížečích (`docs/frontend.md`) je o webu v prohlížeči
+a zůstává.

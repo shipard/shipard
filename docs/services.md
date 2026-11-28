@@ -229,8 +229,9 @@ je nepoužitelný.
 - **Tasky**: `tasks/*.md` podle konvence z `shpd/tasks/README.md`, index
   generuje `scripts/tasks-index.py` (kopie z `shpd`).
 - **Jazyk dokumentace a tasků: čeština**, shodně s pravidlem v
-  [`documentation.md`](documentation.md). Kód, commit messages a log eventy
-  zůstávají v angličtině.
+  [`documentation.md`](documentation.md). **Commit messages jsou česky**,
+  s prefixem typu a oblasti jako v `shpd` (`feat(devices): …`); anglicky
+  zůstává kód a log eventy.
 
 ---
 
@@ -291,7 +292,7 @@ Jeden repozitář pro všechny platformy:
 
 ```
 <repo>/
-├── apple/                     # macOS a iPadOS; později android/, windows/
+├── apple/                     # macOS, iPadOS a iOS; později android/, windows/
 │   └── CLAUDE.md              # konvence platformy
 ├── testing/                   # společné: falešná tiskárna, vzorové úlohy a bajty
 ├── docs/
@@ -386,7 +387,7 @@ Komponenta je v souladu se standardem, když:
 | `ai-analyzer` | runtime služba | **zrušena** (#85 D24, 2026-10-10) — repozitář archivován, analýzu pošty dělá `shpd` v procesu |
 | `mail-router` | runtime služba | nesouladná — chybí `CLAUDE.md`, CLI, prázdné `tasks/` |
 | generátor videa (#48) | nástroj | nevzniklo — píše se přímo podle standardu |
-| `shipard-app` (#177) | klientská aplikace | nevzniklo — vznikne podle standardu (task 5 z #177); kontrakt [`native-bridge.md`](native-bridge.md) verze 1 je zapsaný předem |
+| `shipard-app` (#177) | klientská aplikace | vzniká podle standardu — kostra repa a task 5a (`shipard_app:tasks/apple-phase1.md`); kontrakt [`native-bridge.md`](native-bridge.md) verze 1 je zapsaný předem |
 | Gotenberg (#34) | vendorovaná infra | dle standardu — pin + unit template `docs/render/shpd-render.service`, provoz `docs/operations/render-service.md`, klient `src/Core/Render/` (`docs/render.md`); rollout na alfě zbývá |
 
 ---
