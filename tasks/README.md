@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 506 tasků: **naplánováno** 4 · **částečně** 30 · **zrušeno** 1 · **hotovo** 471.
+Celkem 506 tasků: **naplánováno** 4 · **částečně** 29 · **zrušeno** 1 · **hotovo** 472.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -46,7 +46,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
-| `native-app-prep.md` | částečně | kontrakt, server, web, testy a dokumentace hotové 2026-11-28 ve třech commitech (#177 D34, D36, D41); zbývá (člověk) přepsat instrukce Projektu v claude.ai podle `docs/ai-workflow.md` §8 |
 | `native-escpos-render.md` | částečně | kód, testy, vzory a dokumentace hotové 2026-11-28 v sedmi commitech, ověřeno na dev zdroji dat (CLI + náhled); zbývá ruční ověření na skutečné tiskárně, úzké i široké (odchylky od zadání v oddílu Odchylky) |
 | `native-print-jobs.md` | částečně | kód, testy a dokumentace hotové 2026-11-28 (#177 D4, D11, D25, D33, U8, U19, U36–U43), celý postup ověřený se simulací mostu v headless prohlížeči; zbývá ruční proklik přihlášeným administrátorem (přehled Tiskové úlohy, přiřazení role ve formuláři zařízení, `DS_READ_ONLY` naživo) — viz Hotovo když |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |

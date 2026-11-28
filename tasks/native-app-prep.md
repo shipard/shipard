@@ -1,6 +1,6 @@
 # Nativní aplikace — příprava na aplikaci: platforma `ios` a repo `shipard-app` v dokumentaci (#177)
 
-**Stav:** částečně — kontrakt, server, web, testy a dokumentace hotové 2026-11-28 ve třech commitech (#177 D34, D36, D41); zbývá (člověk) přepsat instrukce Projektu v claude.ai podle `docs/ai-workflow.md` §8
+**Stav:** hotovo — 2026-11-28 ve třech commitech (#177 D34, D36, D41); instrukce Projektu v claude.ai přepsané podle `docs/ai-workflow.md` §8
 
 > Task pro Claude Code (3 commity). Design: issue #177. Aplikace vzniká
 > v repu `shipard/shipard-app` (`shipard_app:tasks/apple-phase1.md`,
@@ -132,7 +132,7 @@ Git jen čtecí příkazy s `--no-optional-locks`. Zdroj pravdy pro obě strany 
 - [x] dokumentace podle bodů 1, 3 a 4; popis aplikace „jen macOS
       a iPadOS“ nezůstal mimo historii (`grep -rn iPadOS --include=*.md docs tasks/README.md CLAUDE.md`)
 - [x] hlavička **Stav** a index tasků aktualizované
-- [ ] (člověk) instrukce Projektu v claude.ai přepsané podle
+- [x] (člověk) instrukce Projektu v claude.ai přepsané podle
       `docs/ai-workflow.md` §8
 
 ## Odchylky od zadání
