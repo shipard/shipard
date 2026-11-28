@@ -1156,6 +1156,8 @@ export default {
   'native.mock.download': 'Stáhnout',
   'native.mock.pdfNoPreview': 'PDF se v náhledu neukazuje, dá se stáhnout.',
   'native.mock.error': 'Tisk selhal — {code}: {message}',
+  'native.mock.profilesServer': 'Šířky a kódová stránka náhledu: katalog profilů ze serveru.',
+  'native.mock.profilesBuiltIn': 'Šířky a kódová stránka náhledu: vestavěné profily (katalog ze serveru až po registraci).',
   'native.mock.mark.cut': 'ořez',
   'native.mock.mark.qr': 'QR',
   'native.mock.mark.drawer': 'šuplík',

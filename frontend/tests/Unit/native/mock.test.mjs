@@ -8,7 +8,7 @@ import { createPublicKey, verify, webcrypto } from 'node:crypto';
 import { validateError, validateInfo, validatePeripheralList } from '../../../src/native/contract.js';
 import { createMockBridge, install, isoWithZone, mockControls } from '../../../src/native/mock/install.js';
 import { deviceStorageKey } from '../../../src/native/mock/deviceKey.js';
-import { MOCK_STATE_KEY } from '../../../src/native/mock/state.js';
+import { MOCK_STATE_KEY, previewProfile, profilesFromCatalog } from '../../../src/native/mock/state.js';
 
 const API_A = 'http://10.0.0.5/aaaa-aaaa-aaaa-aaaa/api/v1';
 const API_B = 'http://10.0.0.5/bbbb-bbbb-bbbb-bbbb/api/v1';
@@ -53,8 +53,14 @@ async function rejectsWith(promise, code) {
 
 const job = (overrides = {}) => ({ jobId: 'job-1', peripheralId: 'mock-receipt', format: 'escpos', data: 'G0BIZWxsbwo=', ...overrides });
 
-/** Maketa serveru pro podepsaná volání: výzvy, GET self, PUT peripherals. */
-function fakeServer({ mode = 'shared', errorFor = {} } = {}) {
+/** Katalog profilů, jak ho vrací `GET /_devices/printer-profiles` — jiné šířky než vestavěné, ať je vidět, odkud se berou. */
+const SERVER_PROFILES = [
+  { id: 'escpos-80-cp852', name: '80 mm', columns: 48, columnsSmall: 64, dotsPerLine: 576, codePage: 'cp852', features: ['cut', 'drawer'], models: [] },
+  { id: 'escpos-58-cp852', name: '58 mm', columns: 30, columnsSmall: 40, dotsPerLine: 384, codePage: 'cp852', features: ['cut'], models: [] },
+];
+
+/** Maketa serveru pro podepsaná volání: výzvy, GET self, PUT peripherals, katalog profilů. */
+function fakeServer({ mode = 'shared', errorFor = {}, profiles = SERVER_PROFILES } = {}) {
   const calls = [];
   let counter = 0;
   const fetch = async (url, init) => {
@@ -66,6 +72,7 @@ function fakeServer({ mode = 'shared', errorFor = {} } = {}) {
     if (key === 'POST /_devices/challenge') return json(200, { success: true, data: { challenge: `challenge-${++counter}`, expiresIn: 60 } });
     if (key === 'GET /_devices/self') return json(200, { success: true, data: { mode, name: 'Pokladna 2', state: 'active', users: [], pinPolicy: {}, autoLockMinutes: null } });
     if (key === 'PUT /_devices/self/peripherals') return json(200, { success: true, data: { count: body.peripherals.length } });
+    if (key === 'GET /_devices/printer-profiles') return json(200, { success: true, data: { profiles } });
     return json(404, { success: false, error: { code: 'NOT_FOUND', message: 'Not found' } });
   };
   return { fetch, calls };
@@ -89,8 +96,10 @@ test('info a periferie projdou validátory kontraktu', async () => {
   assert.deepEqual(list.peripherals.map((p) => [p.id, p.kind, p.status]), [
     ['mock-receipt', 'printer', 'ready'],
     ['mock-scanner', 'scanner', 'ready'],
+    ['mock-receipt-58', 'printer', 'ready'],
   ]);
   assert.equal(list.peripherals[0].profileId, 'escpos-80-cp852');
+  assert.equal(list.peripherals[2].profileId, 'escpos-58-cp852');
   assert.deepEqual(list.peripherals[1].reads, ['barcode', 'rfid']);
 });
 
@@ -149,6 +158,118 @@ test('print.submit: periferie, formát a náhled úlohy', async () => {
   assert.deepEqual(await call('print.submit', job({ jobId: 'job-2' })), { status: 'sent' });
 });
 
+test('print.submit: tiskárna ve stavu error hlásí PRINTER_ERROR s došlým papírem', async () => {
+  const { call, controls } = setup();
+  controls.setPeripheralStatus('mock-receipt', 'error');
+
+  await assert.rejects(call('print.submit', job({ jobId: 'paper' })), (error) => {
+    assert.equal(error.code, 'PRINTER_ERROR');
+    assert.deepEqual(error.details, { paperOut: true });
+    assert.deepEqual(validateError(error), []);
+    assert.ok(!(error instanceof Error), 'most zamítá prostým objektem');
+    return true;
+  });
+  assert.deepEqual(controls.jobs(), [], 'úloha se nevytiskla');
+
+  // Chyba se týká jen té tiskárny — druhá tiskne dál.
+  assert.deepEqual(await call('print.submit', job({ jobId: 'narrow', peripheralId: 'mock-receipt-58' })), { status: 'sent' });
+
+  // Neúspěšnou úlohu si simulace nepamatuje: po opravě projde táž i bez
+  // `reprint`, s `reprint` (Zkusit znovu) také.
+  controls.setPeripheralStatus('mock-receipt', 'ready');
+  assert.deepEqual(await call('print.submit', job({ jobId: 'paper', reprint: true })), { status: 'sent' });
+  assert.deepEqual(controls.jobs().map((j) => [j.jobId, j.peripheralId, j.reprint]), [
+    ['paper', 'mock-receipt', true],
+    ['narrow', 'mock-receipt-58', false],
+  ]);
+});
+
+test('profily náhledu: do registrace vestavěné, po synchronizaci katalog ze serveru', async () => {
+  const server = fakeServer();
+  const { call, controls } = setup({ fetch: server.fetch });
+
+  assert.equal(controls.snapshot().profilesFromServer, false);
+  assert.deepEqual(controls.profileOf('mock-receipt'), { columns: 42, columnsSmall: 56, codePage: 'cp852' });
+  assert.deepEqual(controls.profileOf('mock-receipt-58'), { columns: 32, columnsSmall: 42, codePage: 'cp852' });
+  // Neregistrované zařízení katalog stáhnout nemůže — a ani to nezkouší.
+  assert.equal(await controls.ensureProfiles(), false);
+  assert.equal(server.calls.length, 0);
+
+  const changes = [];
+  controls.subscribe(() => changes.push(1));
+  await call('device.sync');
+
+  assert.equal(controls.snapshot().profilesFromServer, true);
+  assert.ok(changes.length > 0, 'stažení katalogu se hlásí panelu');
+  assert.deepEqual(controls.profileOf('mock-receipt'), { columns: 48, columnsSmall: 64, codePage: 'cp852' });
+  assert.deepEqual(controls.profileOf('mock-receipt-58'), { columns: 30, columnsSmall: 40, codePage: 'cp852' });
+  assert.deepEqual(controls.profileOf('mock-scanner'), { columns: 32, columnsSmall: 42, codePage: 'cp852' }, 'bez profilu záložní');
+
+  const before = server.calls.length;
+  assert.equal(await controls.ensureProfiles(), true);
+  assert.equal(server.calls.length, before, 'stažený katalog se nestahuje znovu');
+});
+
+test('profily náhledu: po novém načtení stránky si registrovaná simulace katalog stáhne', async () => {
+  const storage = memoryStorage();
+  const server = fakeServer();
+  await setup({ storage, fetch: server.fetch }).call('device.sync');
+
+  const reloaded = setup({ storage, fetch: server.fetch });
+  assert.equal(reloaded.controls.snapshot().profilesFromServer, false);
+  const before = server.calls.length;
+
+  assert.equal(await reloaded.controls.ensureProfiles(), true);
+
+  assert.deepEqual(server.calls.slice(before).map((c) => `${c.method} ${c.path}`), [
+    'POST /_devices/challenge', 'GET /_devices/printer-profiles',
+  ]);
+  assert.deepEqual(reloaded.controls.profileOf('mock-receipt'), { columns: 48, columnsSmall: 64, codePage: 'cp852' });
+});
+
+test('profily náhledu: selhání katalogu synchronizaci neshodí a nechá vestavěné profily', async () => {
+  const server = fakeServer({ errorFor: { 'GET /_devices/printer-profiles': { status: 404, code: 'NOT_FOUND' } } });
+  const { call, controls } = setup({ fetch: server.fetch });
+
+  const info = await call('device.sync');
+
+  assert.equal(info.mode, 'shared');
+  assert.equal(controls.snapshot().profilesFromServer, false);
+  assert.deepEqual(controls.profileOf('mock-receipt'), { columns: 42, columnsSmall: 56, codePage: 'cp852' });
+  assert.equal(await controls.ensureProfiles(), false);
+
+  // Odpověď, která katalog není, se nepoužije.
+  const odd = setup({ fetch: fakeServer({ profiles: 'nope' }).fetch });
+  await odd.call('device.sync');
+  assert.equal(odd.controls.snapshot().profilesFromServer, false);
+});
+
+test('katalog profilů: jen úplné profily, neznámý profil záložní', () => {
+  assert.equal(profilesFromCatalog(null), null);
+  assert.equal(profilesFromCatalog({ profiles: {} }), null);
+  assert.deepEqual(profilesFromCatalog({ profiles: [] }), {});
+  assert.deepEqual(
+    profilesFromCatalog({ profiles: [
+      ...SERVER_PROFILES,
+      null,
+      { id: 'no-columns', codePage: 'cp852' },
+      { id: 'zero', columns: 0, columnsSmall: 10, codePage: 'cp852' },
+      { id: '', columns: 10, columnsSmall: 12, codePage: 'cp852' },
+      { id: 'no-page', columns: 10, columnsSmall: 12 },
+    ] }),
+    {
+      'escpos-80-cp852': { columns: 48, columnsSmall: 64, codePage: 'cp852' },
+      'escpos-58-cp852': { columns: 30, columnsSmall: 40, codePage: 'cp852' },
+    },
+  );
+
+  const catalog = { 'escpos-80-cp852': { columns: 48, columnsSmall: 64, codePage: 'cp852' } };
+  assert.deepEqual(previewProfile('escpos-80-cp852', catalog), catalog['escpos-80-cp852']);
+  assert.deepEqual(previewProfile('escpos-58-cp852', catalog), { columns: 32, columnsSmall: 42, codePage: 'cp852' }, 'mimo katalog vestavěný');
+  assert.deepEqual(previewProfile('unknown', catalog), { columns: 32, columnsSmall: 42, codePage: 'cp852' });
+  assert.deepEqual(previewProfile(undefined, null), { columns: 32, columnsSmall: 42, codePage: 'cp852' });
+});
+
 test('DUPLICATE_JOB: paměť posledních 100 jobId, reprint projde', async () => {
   const { call, controls } = setup();
   await call('print.submit', job({ jobId: 'first' }));
@@ -196,13 +317,16 @@ test('device.sync: podepsané GET self a PUT peripherals, režim z odpovědi', a
     'GET /_devices/self',
     'POST /_devices/challenge',
     'PUT /_devices/self/peripherals',
+    'POST /_devices/challenge',
+    'GET /_devices/printer-profiles',
   ]);
   assert.ok(server.calls.every((c) => c.url.startsWith(API_A + '/_devices/') && c.credentials === 'omit'));
   assert.deepEqual(server.calls[0].body, { deviceId: info.deviceId, purpose: 'self' });
   assert.deepEqual(server.calls[2].body, { deviceId: info.deviceId, purpose: 'peripherals' });
+  assert.deepEqual(server.calls[4].body, { deviceId: info.deviceId, purpose: 'printer-profiles' });
 
   const key = createPublicKey({ key: Buffer.from(registered.publicKey, 'base64'), format: 'der', type: 'spki' });
-  for (const [index, purpose] of [[1, 'self'], [3, 'peripherals']]) {
+  for (const [index, purpose] of [[1, 'self'], [3, 'peripherals'], [5, 'printer-profiles']]) {
     const headers = server.calls[index].headers;
     assert.equal(headers['X-Shipard-Device'], info.deviceId);
     assert.equal(headers['X-Shipard-Challenge'], `challenge-${(index + 1) / 2}`);
@@ -212,7 +336,7 @@ test('device.sync: podepsané GET self a PUT peripherals, režim z odpovědi', a
     assert.equal(verify('sha256', message, { key, dsaEncoding: 'der' }, Buffer.from(headers['X-Shipard-Signature'], 'base64')), true, purpose);
   }
   assert.deepEqual(validatePeripheralList(server.calls[3].body), []);
-  assert.equal(server.calls[3].body.peripherals.length, 2);
+  assert.equal(server.calls[3].body.peripherals.length, 3);
 
   // režim je uložený pro tento zdroj dat
   assert.deepEqual(JSON.parse(storage.getItem(MOCK_STATE_KEY)).modes, { [API_A]: 'shared' });
@@ -298,8 +422,11 @@ test('události z ovládání: shipard:scan a shipard:peripheral', async () => {
   controls.setPeripheralStatus('mock-scanner', 'ready');
   await new Promise((resolve) => setTimeout(resolve, 20));
   const synced = server.calls.slice(callsBefore).map((c) => `${c.method} ${c.path}`);
-  assert.deepEqual(synced, ['POST /_devices/challenge', 'GET /_devices/self', 'POST /_devices/challenge', 'PUT /_devices/self/peripherals']);
-  assert.equal(server.calls.at(-1).body.peripherals[1].status, 'ready');
+  assert.deepEqual(synced, [
+    'POST /_devices/challenge', 'GET /_devices/self', 'POST /_devices/challenge', 'PUT /_devices/self/peripherals',
+    'POST /_devices/challenge', 'GET /_devices/printer-profiles',
+  ]);
+  assert.equal(server.calls.findLast((c) => c.method === 'PUT').body.peripherals[1].status, 'ready');
 });
 
 test('stav periferií a capabilities přežije novou instanci', async () => {

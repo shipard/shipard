@@ -25,7 +25,7 @@
   import { decodeEscPos } from '../../native/escpos/decode.js';
   import { buildTestReceipt } from '../../native/escpos/testReceipt.js';
   import { mockControls } from '../../native/mock/install.js';
-  import { MOCK_FALLBACK_PROFILE, MOCK_PRINTER_ID, MOCK_PRINTER_PROFILES } from '../../native/mock/state.js';
+  import { MOCK_PRINTER_ID } from '../../native/mock/state.js';
 
   const controls = mockControls();
 
@@ -37,6 +37,8 @@
   let scanData = $state('');
   let scanKind = $state('barcode');
   let error = $state(null);
+  // Tiskárna, na kterou jde zkušební účtenka z panelu.
+  let testPrinter = $state(MOCK_PRINTER_ID);
 
   function refresh() {
     snapshot = controls.snapshot();
@@ -48,6 +50,9 @@
     refresh();
     const stopState = controls.subscribe(refresh);
     const stopCount = onSubscriberCountChange((count) => (subscribers = count));
+    // Registrovaná simulace bere šířky a kódovou stránku z katalogu serveru
+    // (#177 U43) — po novém načtení stránky si ho stáhne znovu.
+    controls.ensureProfiles();
     return () => {
       stopState();
       stopCount();
@@ -66,23 +71,24 @@
     unknown: t('native.mock.mark.unknown'),
   };
 
-  /** Šířka a kódová stránka tiskárny, na kterou úloha šla. */
-  function profileOf(peripheralId) {
-    const peripheral = snapshot.peripherals.find((p) => p.id === peripheralId);
-    return MOCK_PRINTER_PROFILES[peripheral?.profileId] ?? MOCK_FALLBACK_PROFILE;
-  }
+  const printerOptions = $derived(
+    snapshot.peripherals.filter((p) => p.kind === 'printer').map((p) => ({ value: p.id, label: p.name })),
+  );
 
-  const previews = $derived(
-    jobs.map((job) => {
-      const profile = profileOf(job.peripheralId);
+  const previews = $derived.by(() => {
+    // Katalog profilů ze serveru dorazí až po registraci — čtení příznaku
+    // zajistí, že se náhledy po jeho stažení přepočítají.
+    void snapshot.profilesFromServer;
+    return jobs.map((job) => {
+      const profile = controls.profileOf(job.peripheralId);
       return {
         job,
         columns: profile.columns,
         columnsSmall: profile.columnsSmall,
         decoded: job.format === 'escpos' ? decodeEscPos(job.bytes, profile) : null,
       };
-    }),
-  );
+    });
+  });
 
   function setCapability(name, enabled) {
     controls.setCapability(name, enabled);
@@ -104,11 +110,11 @@
 
   async function printTestReceipt() {
     error = null;
-    const profile = profileOf(MOCK_PRINTER_ID);
+    const profile = controls.profileOf(testPrinter);
     try {
       await nativeCall('print.submit', {
         jobId: randomUuid(),
-        peripheralId: MOCK_PRINTER_ID,
+        peripheralId: testPrinter,
         format: 'escpos',
         data: bytesToBase64(buildTestReceipt(profile)),
       });
@@ -197,8 +203,14 @@
 
       <h3 class="shpd-mock__heading">{t('native.mock.jobs')}</h3>
       <div class="shpd-mock__actions">
+        <div class="shpd-mock__test-printer">
+          <Select bind:value={testPrinter} options={printerOptions} required />
+        </div>
         <Button label={t('native.mock.testReceipt')} icon={iconPrint} variant="secondary" onclick={printTestReceipt} testid="native-mock-test-receipt" />
       </div>
+      <p class="shpd-mock__info" data-testid="native-mock-profiles">
+        {t(snapshot.profilesFromServer ? 'native.mock.profilesServer' : 'native.mock.profilesBuiltIn')}
+      </p>
       {#if error}
         <p class="shpd-mock__note" role="alert">{error}</p>
       {/if}
@@ -359,7 +371,13 @@
 
   .shpd-mock__scan-kind { flex: 0 0 9rem; }
 
-  .shpd-mock__actions { margin-bottom: var(--shpd-space-sm); }
+  .shpd-mock__actions {
+    display: flex;
+    gap: var(--shpd-space-sm);
+    align-items: center;
+    margin-bottom: var(--shpd-space-sm);
+  }
+  .shpd-mock__test-printer { flex: 1 1 auto; min-width: 0; }
 
   .shpd-mock__note {
     margin: var(--shpd-space-sm) 0;
@@ -369,6 +387,13 @@
   .shpd-mock__empty {
     margin: var(--shpd-space-sm) 0;
     color: var(--shpd-color-text-secondary);
+  }
+
+  /* Informace bez výstrahy — odkud náhled bere profil tiskárny. */
+  .shpd-mock__info {
+    margin: var(--shpd-space-sm) 0;
+    color: var(--shpd-color-text-secondary);
+    font-size: var(--shpd-font-size-meta);
   }
 
   .shpd-mock__job { margin-bottom: var(--shpd-space-md); }

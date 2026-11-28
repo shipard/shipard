@@ -10,15 +10,17 @@
  *
  * Co umí: `info`; `device.register` se skutečným klíčem P-256 a podpisem
  * (U4); `device.sync` jako podepsané `GET /_devices/self` a `PUT
- * /_devices/self/peripherals` (D32); `peripherals.list`; `print.submit`
- * s náhledem místo tisku; události `shipard:scan` a `shipard:peripheral`
- * z ovládání. `device.enroll`, `session.lock`, `session.take`
+ * /_devices/self/peripherals` (D32) a stažení katalogu profilů tiskáren
+ * podepsaným `GET /_devices/printer-profiles` (#177 U43);
+ * `peripherals.list`; `print.submit` s náhledem místo tisku — tiskárna ve
+ * stavu `error` vrací `PRINTER_ERROR` s `details.paperOut`; události
+ * `shipard:scan` a `shipard:peripheral` z ovládání. `device.enroll`, `session.lock`, `session.take`
  * a `auth.external` vrací `NOT_SUPPORTED` (tasky 6 a 7).
  */
 import { PERIPHERAL_STATUSES, PRINT_FORMATS, PRINT_MAX_BYTES, PRINT_MAX_COPIES, SCAN_KINDS } from '../contract.js';
 import { base64DecodedLength, base64ToBytes, isBase64 } from '../bytes.js';
 import { createDeviceKey } from './deviceKey.js';
-import { loadState, modeOf, saveState } from './state.js';
+import { loadState, modeOf, previewProfile, profilesFromCatalog, saveState } from './state.js';
 
 /** Kolik posledních `jobId` si simulace pamatuje (ochrana proti dvojímu tisku, kontrakt §5). */
 const JOB_MEMORY = 100;
@@ -85,6 +87,9 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
   const sentJobIds = [];
   const jobs = [];
   const listeners = new Set();
+  // Katalog profilů tiskáren ze serveru; `null` = ještě nestažený
+  // (neregistrované zařízení ho stáhnout nemůže), náhled bere vestavěné profily.
+  let catalog = null;
 
   function changed() {
     for (const listener of listeners) listener();
@@ -186,7 +191,23 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
       persist();
     }
     await signedCall('PUT', '/_devices/self/peripherals', 'peripherals', { peripherals: publicPeripherals() });
+    // Katalog profilů je pro náhled, ne pro synchronizaci — jeho selhání ji neshodí.
+    await loadProfiles().catch(() => {});
     return info();
+  }
+
+  /**
+   * Stáhne katalog profilů tiskáren (kontrakt §6): šířky řádku a kódovou
+   * stránku pro náhled bere simulace ze serveru, ne ze své kopie.
+   *
+   * @returns {Promise<boolean>} je katalog stažený?
+   */
+  async function loadProfiles() {
+    const loaded = profilesFromCatalog(await signedCall('GET', '/_devices/printer-profiles', 'printer-profiles'));
+    if (loaded === null) return false;
+    catalog = loaded;
+    changed();
+    return true;
   }
 
   // --- metody mostu ---
@@ -232,6 +253,11 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
     }
     if (sentJobIds.includes(jobId) && !reprint) {
       throw fail('DUPLICATE_JOB', `Job ${jobId} was already sent`);
+    }
+    // `offline` = tiskárna není připojená; `error` = připojená, ale hlásí
+    // chybu — simulace ji ohlásí jako došlý papír (kontrakt §3.6).
+    if (peripheral.status === 'error') {
+      throw fail('PRINTER_ERROR', `Printer ${peripheralId} reported an error`, { paperOut: true });
     }
     if (peripheral.status !== 'ready') {
       throw fail('PERIPHERAL_UNAVAILABLE', `Peripheral ${peripheralId} is ${peripheral.status}`);
@@ -298,7 +324,33 @@ export function createMockBridge({ apiBase, storage, fetch, crypto, target, now 
         storedCapabilities: [...state.capabilities],
         capabilities: capabilities(),
         peripherals: publicPeripherals(),
+        profilesFromServer: catalog !== null,
       };
+    },
+
+    /**
+     * Profil tiskárny pro náhled úlohy: z katalogu serveru, do registrace
+     * vestavěný, neznámý záložní.
+     */
+    profileOf(peripheralId) {
+      const peripheral = state.peripherals.find((p) => p.id === peripheralId);
+      return previewProfile(peripheral?.profileId, catalog);
+    },
+
+    /**
+     * Stáhne katalog profilů, když je zařízení registrované a ještě ho nemá
+     * (po novém načtení stránky). Selhání nechá vestavěné profily.
+     *
+     * @returns {Promise<boolean>} je katalog stažený?
+     */
+    async ensureProfiles() {
+      if (catalog !== null) return true;
+      if (modeOf(state, apiBase) === 'unregistered' || !capabilities().includes('device')) return false;
+      try {
+        return await loadProfiles();
+      } catch {
+        return false;
+      }
     },
 
     deviceId: () => key.deviceId(),

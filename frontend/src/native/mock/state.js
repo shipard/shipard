@@ -7,6 +7,8 @@
 export const MOCK_STATE_KEY = 'shpd_native_mock_state';
 
 export const MOCK_PRINTER_ID = 'mock-receipt';
+/** Druhá, úzká tiskárna (#177 U43) — jde na ní proklikat jedinečnost role i záložní šířku. */
+export const MOCK_NARROW_PRINTER_ID = 'mock-receipt-58';
 export const MOCK_SCANNER_ID = 'mock-scanner';
 
 export const DEFAULT_CAPABILITIES = ['device', 'peripherals', 'print.escpos', 'scanner'];
@@ -14,11 +16,14 @@ export const DEFAULT_CAPABILITIES = ['device', 'peripherals', 'print.escpos', 's
 /**
  * Co simulace potřebuje vědět o profilu tiskárny pro náhled. Katalog
  * profilů je na serveru (docs/native-bridge.md §6,
- * modules/core/prints/config/printerProfiles.jsonc); simulace zná jen ten,
- * který sama hlásí — hodnoty musí sedět na katalog (hlídá mock.test.mjs).
+ * modules/core/prints/config/printerProfiles.jsonc) a registrovaná simulace
+ * si ho stahuje (`profilesFromCatalog`); tyhle vestavěné hodnoty platí jen
+ * do registrace a když se katalog stáhnout nepovede. Musí sedět na katalog
+ * (hlídá mock.test.mjs).
  */
 export const MOCK_PRINTER_PROFILES = {
   'escpos-80-cp852': { columns: 42, columnsSmall: 56, codePage: 'cp852' },
+  'escpos-58-cp852': { columns: 32, columnsSmall: 42, codePage: 'cp852' },
 };
 
 /** Profil pro tiskárnu, kterou simulace nezná: nejužší z katalogu, vejde se všude. */
@@ -27,6 +32,38 @@ export const MOCK_FALLBACK_PROFILE = { columns: 32, columnsSmall: 42, codePage: 
 const MODES = ['unregistered', 'personal', 'shared'];
 const STATUSES = ['ready', 'offline', 'error'];
 
+/**
+ * Katalog profilů ze serveru (`GET /_devices/printer-profiles`) → to, co
+ * potřebuje náhled. Profil s neúplnými údaji se přeskočí; odpověď, která
+ * katalog není, dá `null` (simulace zůstane u vestavěných profilů).
+ *
+ * @param {unknown} data  `data` odpovědi serveru
+ * @returns {Record<string, {columns: number, columnsSmall: number, codePage: string}>|null}
+ */
+export function profilesFromCatalog(data) {
+  if (data === null || typeof data !== 'object' || !Array.isArray(data.profiles)) return null;
+  const profiles = {};
+  for (const profile of data.profiles) {
+    if (profile === null || typeof profile !== 'object') continue;
+    const { id, columns, columnsSmall, codePage } = profile;
+    if (typeof id !== 'string' || id === '' || typeof codePage !== 'string' || codePage === '') continue;
+    if (!Number.isInteger(columns) || columns < 1 || !Number.isInteger(columnsSmall) || columnsSmall < 1) continue;
+    profiles[id] = { columns, columnsSmall, codePage };
+  }
+  return profiles;
+}
+
+/**
+ * Profil pro náhled: katalog ze serveru má přednost, bez něj vestavěný,
+ * neznámý profil dostane záložní — stejně jako na serveru.
+ *
+ * @param {string|null|undefined} profileId
+ * @param {Record<string, object>|null} catalog
+ */
+export function previewProfile(profileId, catalog) {
+  return catalog?.[profileId] ?? MOCK_PRINTER_PROFILES[profileId] ?? MOCK_FALLBACK_PROFILE;
+}
+
 export function defaultState() {
   return {
     modes: {},
@@ -34,6 +71,7 @@ export function defaultState() {
     peripherals: [
       { id: MOCK_PRINTER_ID, kind: 'printer', name: 'Mock receipt printer', transport: 'tcp', status: 'ready', profileId: 'escpos-80-cp852' },
       { id: MOCK_SCANNER_ID, kind: 'scanner', name: 'Mock scanner', transport: 'usb', status: 'ready', reads: ['barcode', 'rfid'] },
+      { id: MOCK_NARROW_PRINTER_ID, kind: 'printer', name: 'Mock receipt printer 58 mm', transport: 'bluetooth', status: 'ready', profileId: 'escpos-58-cp852' },
     ],
   };
 }

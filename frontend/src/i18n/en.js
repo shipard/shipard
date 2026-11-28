@@ -1143,6 +1143,8 @@ export default {
   'native.mock.download': 'Download',
   'native.mock.pdfNoPreview': 'PDF has no preview here, it can be downloaded.',
   'native.mock.error': 'Printing failed — {code}: {message}',
+  'native.mock.profilesServer': 'Preview widths and code page: printer profile catalogue from the server.',
+  'native.mock.profilesBuiltIn': 'Preview widths and code page: built-in profiles (the server catalogue comes after registration).',
   'native.mock.mark.cut': 'cut',
   'native.mock.mark.qr': 'QR',
   'native.mock.mark.drawer': 'drawer',
