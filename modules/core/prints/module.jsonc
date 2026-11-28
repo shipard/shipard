@@ -62,6 +62,11 @@
         {
             "id": "core.prints.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
+        },
+        // Tisk na účtenkovou tiskárnu (#177 task 4a): bajty příkazů ESC/POS.
+        {
+            "id": "core.prints.printerDrivers",
+            "file": "config/printerDrivers.jsonc"
         }
     ],
 

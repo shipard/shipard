@@ -1,0 +1,74 @@
+{
+    // core.prints.printerDrivers
+    //
+    // Ovladače účtenkových tiskáren (#177 U27, U28) — bajty příkazů ESC/POS.
+    // Kodér (src/Core/Prints/EscPos) bere příkazy výhradně odsud přes
+    // EscPosDriver; když fyzická tiskárna potřebuje jiné bajty, mění se
+    // tahle definice, ne kód. Profil tiskárny (printerProfiles.jsonc) na
+    // ovladač odkazuje klíčem `driver`.
+    //
+    // Ve v1 jeden univerzální ovladač jako ve starém Shipardu, hodnoty podle
+    // normy Epson. Výchozí ovladač musí zůstat v podmnožině příkazů, kterou
+    // umí náhled ve frontendu (frontend/src/native/escpos/decode.js, U13) —
+    // hlídá EscPosDriverTest; ovladač, který ji opustí, musí rozšířit i náhled.
+    //
+    // Atributy:
+    //   commands:  příkaz → bajty (0–255). `size` a `feed` jsou předpony, za
+    //              které kodér doplní jeden bajt (velikost `GS ! n`, počet
+    //              řádků `ESC d n`).
+    //   codePages: kódová stránka → bajty, které ji na tiskárně zapnou
+    //   qr:        QR kód příkazem `GS ( k` — `prefix` + délka (pL pH) + tělo
+    //              funkce; `store` je tělo před daty
+
+    "escpos-generic": {
+        "name": "ESC/POS (generic)",
+        "name:cs": "ESC/POS (obecný)",
+        "name:en": "ESC/POS (generic)",
+
+        "commands": {
+            // ESC @
+            "init": [27, 64],
+            "lineFeed": [10],
+            // ESC E n — rozhoduje nejnižší bit (starý Shipard posílal 128)
+            "boldOn": [27, 69, 1],
+            "boldOff": [27, 69, 0],
+            // ESC ! n — bit 0 = font B. Na tiskárně příkaz nastavuje i tučné
+            // a velikost, kodér ho proto posílá před `boldOn` a `size`.
+            "fontSmall": [27, 33, 1],
+            "fontNormal": [27, 33, 0],
+            // GS ! n
+            "size": [29, 33],
+            // ESC a n
+            "alignLeft": [27, 97, 0],
+            "alignCenter": [27, 97, 1],
+            "alignRight": [27, 97, 2],
+            // ESC d n
+            "feed": [27, 100],
+            // GS V 65 5 — posun a ořez
+            "cut": [29, 86, 65, 5],
+            // ESC p 48 55 121
+            "openCashDrawer": [27, 112, 48, 55, 121]
+        },
+
+        "codePages": {
+            // FS . zruší režim dvoubajtových znaků (tiskárny pro asijský
+            // trh v něm startují), ESC t 18 = PC852
+            "cp852": [28, 46, 27, 116, 18]
+        },
+
+        "qr": {
+            // GS ( k
+            "prefix": [29, 40, 107],
+            // fn 65: model 2
+            "model": [49, 65, 50, 0],
+            // fn 67: velikost modulu 6 bodů
+            "moduleSize": [49, 67, 6],
+            // fn 69: korekce chyb M
+            "errorCorrection": [49, 69, 49],
+            // fn 80: uložení dat (následují data v UTF-8)
+            "store": [49, 80, 48],
+            // fn 81: tisk
+            "print": [49, 81, 48]
+        }
+    }
+}
