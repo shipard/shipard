@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Core\Prints\EscPos;
 use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Prints\EscPos\EscPosDriver;
 use Shipard\Core\Prints\EscPos\EscPosDrivers;
+use Shipard\Core\Prints\EscPos\PrinterProfile;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
@@ -30,5 +31,24 @@ trait EscPosConfig
     protected static function driver(): EscPosDriver
     {
         return self::drivers()->get('escpos-generic');
+    }
+
+    /**
+     * Profil pro testy sazby — 42 / 56 znaků jako široká tiskárna katalogu.
+     *
+     * @param array<string, mixed> $override
+     */
+    protected static function profile(array $override = []): PrinterProfile
+    {
+        return PrinterProfile::fromArray('test-profile', $override + [
+            'name'         => 'Test',
+            'driver'       => 'escpos-generic',
+            'columns'      => 42,
+            'columnsSmall' => 56,
+            'dotsPerLine'  => 512,
+            'codePage'     => 'cp852',
+            'features'     => ['cut', 'drawer'],
+            'models'       => [],
+        ]);
     }
 }
