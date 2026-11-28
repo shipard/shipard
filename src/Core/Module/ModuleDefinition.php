@@ -21,6 +21,9 @@ class ModuleDefinition
     /** Výchozí pořadí rozšíření UI (`detailExtensions` / `formTabs` / `rowDecorators` → `order`, #172 D19). */
     public const int UI_EXTENSION_DEFAULT_ORDER = 500;
 
+    /** Výchozí pořadí provisioneru modulu (`provisioners[].order`, #174 D28). */
+    public const int PROVISIONER_DEFAULT_ORDER = 500;
+
     /** Cesta sekce `server.json` (`serverConfig[].key`, #172 D10): segmenty `[a-z][a-zA-Z0-9]*` oddělené tečkou. */
     public const string SERVER_CONFIG_KEY_PATTERN = '/^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*$/';
 
@@ -56,7 +59,8 @@ class ModuleDefinition
         public readonly array $prints = [],
         public readonly array $sendPurposes = [],
         public readonly array $recordSenderProviders = [],
-        public readonly array $workOrderInvoiceContributors = [],
+        public readonly array $periodicInvoicingContributors = [],
+        public readonly array $periodicInvoicingSources = [],
         public readonly array $aiFunctions = [],
         public readonly array $overviewBlocks = [],
         /** Druh modulu (#170 D4): instalační podle skupiny, doplněk podle pole `kind`, jinak jádro. */
@@ -81,6 +85,8 @@ class ModuleDefinition
         public readonly array $rowDecorators = [],
         /** @var list<array{id: string, table: string, class: class-string, admin: bool, order: int}> akce záznamu s obsluhou v modulu (#172 D12) */
         public readonly array $recordActions = [],
+        /** @var list<array{class: class-string, order: int}> provisionery výchozích dat modulu (#174 D28) */
+        public readonly array $provisioners = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -535,43 +541,44 @@ class ModuleDefinition
             $sendPurposes = array_values($sendPurposes);
         }
 
-        // workOrderInvoiceContributors — přispěvatelé obsahu faktury
-        // periodické zakázky (#110 D7, D10): {id, class, name[:lang]}.
-        // ConfigCompiler je složí do cfgItem economy.workOrders.invoiceContributors
-        // (nabídka řádku předpisu, validace id); instance staví
+        // periodicInvoicingContributors — přispěvatelé obsahu faktury
+        // periodické fakturace, společní pro všechny zdroje (#110 D7, D10;
+        // #175 D5): {id, class, name[:lang]}. ConfigCompiler je složí do
+        // cfgItem economy.periodicInvoicing.contributors (nabídka řádku
+        // předpisu, validace id); instance staví
         // InvoiceContributorRegistry::fromConfig.
-        $workOrderInvoiceContributors = [];
-        if (array_key_exists('workOrderInvoiceContributors', $data)) {
-            if (!is_array($data['workOrderInvoiceContributors']) || !array_is_list($data['workOrderInvoiceContributors'])) {
+        $periodicInvoicingContributors = [];
+        if (array_key_exists('periodicInvoicingContributors', $data)) {
+            if (!is_array($data['periodicInvoicingContributors']) || !array_is_list($data['periodicInvoicingContributors'])) {
                 throw new \InvalidArgumentException(
-                    "Module '{$data['id']}': workOrderInvoiceContributors must be a JSON array",
+                    "Module '{$data['id']}': periodicInvoicingContributors must be a JSON array",
                 );
             }
-            foreach ($data['workOrderInvoiceContributors'] as $idx => $contributor) {
+            foreach ($data['periodicInvoicingContributors'] as $idx => $contributor) {
                 if (!is_array($contributor)) {
                     throw new \InvalidArgumentException(
-                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] must be an object",
+                        "Module '{$data['id']}': periodicInvoicingContributors[{$idx}] must be an object",
                     );
                 }
                 $contributorId = $contributor['id'] ?? null;
                 if (!is_string($contributorId) || !preg_match('/^[a-z][a-zA-Z0-9_.]*$/', $contributorId)) {
                     throw new \InvalidArgumentException(
-                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}].id must be an identifier",
+                        "Module '{$data['id']}': periodicInvoicingContributors[{$idx}].id must be an identifier",
                     );
                 }
                 if (!isset($contributor['class']) || !is_string($contributor['class']) || $contributor['class'] === '') {
                     throw new \InvalidArgumentException(
-                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] requires 'class'",
+                        "Module '{$data['id']}': periodicInvoicingContributors[{$idx}] requires 'class'",
                     );
                 }
                 if (!isset($contributor['name']) || !is_string($contributor['name']) || $contributor['name'] === '') {
                     throw new \InvalidArgumentException(
-                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] requires 'name'",
+                        "Module '{$data['id']}': periodicInvoicingContributors[{$idx}] requires 'name'",
                     );
                 }
-                if (isset($workOrderInvoiceContributors[$contributorId])) {
+                if (isset($periodicInvoicingContributors[$contributorId])) {
                     throw new \InvalidArgumentException(
-                        "Module '{$data['id']}': workOrderInvoiceContributors has duplicate id '{$contributorId}'",
+                        "Module '{$data['id']}': periodicInvoicingContributors has duplicate id '{$contributorId}'",
                     );
                 }
                 $entry = ['id' => $contributorId, 'class' => $contributor['class']];
@@ -580,9 +587,47 @@ class ModuleDefinition
                         $entry[$key] = $value;
                     }
                 }
-                $workOrderInvoiceContributors[$contributorId] = $entry;
+                $periodicInvoicingContributors[$contributorId] = $entry;
             }
-            $workOrderInvoiceContributors = array_values($workOrderInvoiceContributors);
+            $periodicInvoicingContributors = array_values($periodicInvoicingContributors);
+        }
+
+        // periodicInvoicingSources — zdroje periodické fakturace (#175 D3):
+        // {id, class}. ConfigCompiler je složí do cfgItem
+        // economy.periodicInvoicing.sources; instance staví
+        // InvoicingSources::fromConfig.
+        $periodicInvoicingSources = [];
+        if (array_key_exists('periodicInvoicingSources', $data)) {
+            if (!is_array($data['periodicInvoicingSources']) || !array_is_list($data['periodicInvoicingSources'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': periodicInvoicingSources must be a JSON array",
+                );
+            }
+            foreach ($data['periodicInvoicingSources'] as $idx => $source) {
+                if (!is_array($source)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': periodicInvoicingSources[{$idx}] must be an object",
+                    );
+                }
+                $sourceId = $source['id'] ?? null;
+                if (!is_string($sourceId) || !preg_match('/^[a-z][a-zA-Z0-9]*$/', $sourceId)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': periodicInvoicingSources[{$idx}].id must be an identifier",
+                    );
+                }
+                if (!isset($source['class']) || !is_string($source['class']) || $source['class'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': periodicInvoicingSources[{$idx}] requires 'class'",
+                    );
+                }
+                if (isset($periodicInvoicingSources[$sourceId])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': periodicInvoicingSources has duplicate id '{$sourceId}'",
+                    );
+                }
+                $periodicInvoicingSources[$sourceId] = ['id' => $sourceId, 'class' => $source['class']];
+            }
+            $periodicInvoicingSources = array_values($periodicInvoicingSources);
         }
 
         // overviewBlocks — bloky Přehledu firmy (#120 D2): {id, section, order,
@@ -867,6 +912,11 @@ class ModuleDefinition
         // a navíc `id` akce a příznak `admin`.
         $recordActions = self::parseUiExtensions($data, 'recordActions', withAction: true);
 
+        // provisioners — výchozí data modulu zakládaná v `ds-upgrade`
+        // (#174 D28). Tady jen tvar; třídu, rozhraní a namespace hlídá
+        // ModuleProvisionerRules nad celým stromem.
+        $provisioners = self::parseProvisioners($data);
+
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -898,7 +948,8 @@ class ModuleDefinition
             prints: $prints,
             sendPurposes: $sendPurposes,
             recordSenderProviders: $recordSenderProviders,
-            workOrderInvoiceContributors: $workOrderInvoiceContributors,
+            periodicInvoicingContributors: $periodicInvoicingContributors,
+            periodicInvoicingSources: $periodicInvoicingSources,
             aiFunctions: $aiFunctions,
             overviewBlocks: $overviewBlocks,
             kind: $kind,
@@ -912,6 +963,7 @@ class ModuleDefinition
             formTabs: $formTabs,
             rowDecorators: $rowDecorators,
             recordActions: $recordActions,
+            provisioners: $provisioners,
         );
     }
 
@@ -991,6 +1043,59 @@ class ModuleDefinition
             $extensions[] = $action + ['table' => $table, 'class' => ltrim($class, '\\')] + $admin + ['order' => $order];
         }
         return $extensions;
+    }
+
+
+    /**
+     * Provisionery modulu (`provisioners`, #174 D28): seznam `{class, order?}`
+     * — `class` třída s rozhraním `ModuleProvisioner`, `order` celé číslo
+     * (výchozí {@see self::PROVISIONER_DEFAULT_ORDER}) pro pořadí v rámci
+     * modulu. Neznámý klíč položky je chyba, třída smí být v seznamu jednou.
+     * Třída se tu nenačítá.
+     *
+     * @param array<string, mixed> $data
+     * @return list<array{class: class-string, order: int}>
+     * @throws \InvalidArgumentException
+     */
+    private static function parseProvisioners(array $data): array
+    {
+        if (!array_key_exists('provisioners', $data)) {
+            return [];
+        }
+        if (!is_array($data['provisioners']) || !array_is_list($data['provisioners'])) {
+            throw new \InvalidArgumentException("Module '{$data['id']}': provisioners must be a JSON array");
+        }
+
+        $provisioners = [];
+        $seen = [];
+        foreach ($data['provisioners'] as $idx => $raw) {
+            $where = "Module '{$data['id']}': provisioners[{$idx}]";
+            if (!is_array($raw) || ($raw !== [] && array_is_list($raw))) {
+                throw new \InvalidArgumentException("{$where} must be an object");
+            }
+            $unknown = array_diff(array_keys($raw), ['class', 'order']);
+            if ($unknown !== []) {
+                throw new \InvalidArgumentException("{$where} has unknown key '" . reset($unknown) . "'");
+            }
+
+            $class = $raw['class'] ?? null;
+            if (!is_string($class) || ltrim($class, '\\') === '') {
+                throw new \InvalidArgumentException("{$where}.class must be a non-empty class name");
+            }
+            $class = ltrim($class, '\\');
+            if (isset($seen[$class])) {
+                throw new \InvalidArgumentException("Module '{$data['id']}': provisioners lists '{$class}' twice");
+            }
+            $seen[$class] = true;
+
+            $order = $raw['order'] ?? self::PROVISIONER_DEFAULT_ORDER;
+            if (!is_int($order)) {
+                throw new \InvalidArgumentException("{$where}.order must be an integer");
+            }
+
+            $provisioners[] = ['class' => $class, 'order' => $order];
+        }
+        return $provisioners;
     }
 
     /**

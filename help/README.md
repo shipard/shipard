@@ -95,6 +95,13 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Zakázka na dokladech](zakazky/zakazka-na-dokladech.md) | Jak zapnout pole Zakázka na fakturách, pokladních a účetních dokladech, kdy ji dát na hlavičku a kdy jen na řádek, a kde pak zakázku najdeš v účetním deníku. |
 | [Zakázky](zakazky/zakazky.md) | Jak založit zakázku, co znamenají čtyři typy zakázek, jak zakázka dostane číslo, jak funguje nadřazená zakázka a podzakázky a jak zakázku ukončit nebo zrušit. |
 
+### Budovy
+
+| Stránka | Co v ní najdeš |
+|---------|----------------|
+| [Druhy smluv a číslování](budovy/nastaveni.md) | Kde upravíš druhy smluv doplňku Budovy, jak napsat vzorec čísla smlouvy, co znamená roční restart, jak druhu nastavit výchozí hodnoty fakturace a šablonu řádků pro nové smlouvy a co se u druhu po potvrzení už nedá změnit. |
+| [Smlouvy](budovy/smlouvy.md) | Jak v doplňku Budovy založit nájemní smlouvu, přidat jí místa, potvrdit ji a dostat číslo, jak jí nastavit fakturaci (periodicita, řádky, přepisy hodnot druhu) a pracovat se záložkou Fakturace, co znamená varování o překryvu míst a jak smlouvu ukončit nebo zrušit. |
+
 ### Majetek
 
 | Stránka | Co v ní najdeš |

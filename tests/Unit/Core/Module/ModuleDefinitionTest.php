@@ -759,26 +759,26 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
-    // ── workOrderInvoiceContributors (#110 D10) ─────────────────────────────
+    // ── periodicInvoicingContributors (#110 D10, #175 D5) ─────────────────────────────
 
-    public function testWorkOrderInvoiceContributorsParsed(): void
+    public function testPeriodicInvoicingContributorsParsed(): void
     {
         $def = ModuleDefinition::fromArray([
             'id'   => 'economy.energy',
             'name' => 'Energy',
-            'workOrderInvoiceContributors' => [
+            'periodicInvoicingContributors' => [
                 ['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba', 'extra' => 'ignored'],
             ],
         ]);
 
         $this->assertSame(
             [['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba']],
-            $def->workOrderInvoiceContributors,
+            $def->periodicInvoicingContributors,
         );
-        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->workOrderInvoiceContributors);
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->periodicInvoicingContributors);
     }
 
-    public function testWorkOrderInvoiceContributorsValidation(): void
+    public function testPeriodicInvoicingContributorsValidation(): void
     {
         foreach ([
             [[['class' => 'Foo\\Bar', 'name' => 'X']], '.id must be an identifier'],
@@ -788,7 +788,43 @@ class ModuleDefinitionTest extends TestCase
             [[['id' => 'ok', 'class' => 'Foo\\Bar', 'name' => 'X'], ['id' => 'ok', 'class' => 'Foo\\Baz', 'name' => 'Y']], "duplicate id 'ok'"],
         ] as [$contributors, $message]) {
             try {
-                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => $contributors]);
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'periodicInvoicingContributors' => $contributors]);
+                $this->fail($message);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString($message, $e->getMessage());
+            }
+        }
+    }
+
+    // ── periodicInvoicingSources (#175 D3) ──────────────────────────────────
+
+    public function testPeriodicInvoicingSourcesParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.workOrders',
+            'name' => 'Work orders',
+            'periodicInvoicingSources' => [
+                ['id' => 'workOrders', 'class' => 'Foo\\WorkOrderSource', 'extra' => 'ignored'],
+            ],
+        ]);
+
+        $this->assertSame([['id' => 'workOrders', 'class' => 'Foo\\WorkOrderSource']], $def->periodicInvoicingSources);
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->periodicInvoicingSources);
+    }
+
+    public function testPeriodicInvoicingSourcesValidation(): void
+    {
+        foreach ([
+            ['not a list', 'must be a JSON array'],
+            [['x'], 'must be an object'],
+            [[['class' => 'Foo\\Bar']], '.id must be an identifier'],
+            // Id jde do CLI (--source) a do klíče nálezu „zdroj:id“ — bez teček a mezer.
+            [[['id' => 'work.orders', 'class' => 'Foo\\Bar']], '.id must be an identifier'],
+            [[['id' => 'ok']], "requires 'class'"],
+            [[['id' => 'ok', 'class' => 'Foo\\Bar'], ['id' => 'ok', 'class' => 'Foo\\Baz']], "duplicate id 'ok'"],
+        ] as [$sources, $message]) {
+            try {
+                ModuleDefinition::fromArray(['id' => 'economy.workOrders', 'name' => 'Work orders', 'periodicInvoicingSources' => $sources]);
                 $this->fail($message);
             } catch (\InvalidArgumentException $e) {
                 $this->assertStringContainsString($message, $e->getMessage());
@@ -1740,6 +1776,58 @@ class ModuleDefinitionTest extends TestCase
             'states řetězcem'     => [[$valid + ['states' => 'active']], 'cronJobs[0].states must be a non-empty JSON array'],
             'states prázdné'      => [[$valid + ['states' => []]], 'cronJobs[0].states must be a non-empty JSON array'],
             'neznámý stav'        => [[$valid + ['states' => ['active', 'readonly']]], 'cronJobs[0].states has an unknown state'],
+        ];
+    }
+
+    // ── provisioners (#174 D28) ─────────────────────────────────────────────
+
+    public function testProvisionersDefaultToEmpty(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT']);
+
+        $this->assertSame([], $def->provisioners);
+    }
+
+    public function testProvisionersAreParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id' => 'facility.buildings',
+            'name' => 'Buildings',
+            'provisioners' => [
+                ['class' => '\\Shipard\\Module\\Facility\\Buildings\\KindsProvisioner'],
+                ['order' => 10, 'class' => 'Shipard\\Module\\Facility\\Buildings\\OtherProvisioner'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['class' => 'Shipard\\Module\\Facility\\Buildings\\KindsProvisioner', 'order' => 500],
+            ['class' => 'Shipard\\Module\\Facility\\Buildings\\OtherProvisioner', 'order' => 10],
+        ], $def->provisioners, 'výchozí order je 500, úvodní lomítko třídy se zahodí, pořadí deklarace zůstává');
+    }
+
+    /** @param mixed $value */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidProvisioners')]
+    public function testInvalidProvisionerThrows(mixed $value, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Module 'economy.vat': provisioners" . $message);
+        ModuleDefinition::fromArray(['id' => 'economy.vat', 'name' => 'VAT', 'provisioners' => $value]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidProvisioners(): array
+    {
+        $valid = ['class' => 'Shipard\\Module\\Economy\\Vat\\SeedProvisioner'];
+
+        return [
+            'objekt místo pole'    => [$valid, ' must be a JSON array'],
+            'řetězec místo položky' => [[$valid['class']], '[0] must be an object'],
+            'pole místo položky'   => [[[$valid['class']]], '[0] must be an object'],
+            'neznámý klíč'         => [[$valid + ['skip' => true]], "[0] has unknown key 'skip'"],
+            'bez třídy'            => [[['order' => 10]], '[0].class must be a non-empty class name'],
+            'prázdná třída'        => [[['class' => '\\']], '[0].class must be a non-empty class name'],
+            'order řetězcem'       => [[$valid + ['order' => '10']], '[0].order must be an integer'],
+            'třída dvakrát'        => [[$valid, ['class' => '\\' . $valid['class']]], " lists 'Shipard\\Module\\Economy\\Vat\\SeedProvisioner' twice"],
         ];
     }
 }

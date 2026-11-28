@@ -52,7 +52,9 @@ class CronJobRegistryTest extends TestCase
             // úlohy nevznikají, není co uklízet
             ['print-jobs-prune', 'core.prints', ['active']],
             ['vat-periods-ensure', 'economy.vat', ['active']],
-            ['work-orders-invoice-run', 'economy.workOrders', ['active']],
+            // jeden běh pro všechny zdroje fakturace (#175 D6); pořadí za
+            // obdobími DPH drží `order` v module.jsonc
+            ['periodic-invoicing-run', 'economy.periodicInvoicing', ['active']],
         ],
         'weekly' => [
             ['alerts-prune', 'core.alerts', ['active', 'read_only']],

@@ -318,11 +318,11 @@ přežije cyklus reset → reimport.
 lístků (`exchange-rates-download`), upozornění
 (`alerts-run`, `alerts-prune`), úklid idempotence pošty, instance tvrzení
 DPH (`vat-periods-ensure`), periodická fakturace
-(`work-orders-invoice-run`). Server-level joby (`hosting-sync`,
+(`periodic-invoicing-run`). Server-level joby (`hosting-sync`,
 `ds-state-check`) se přepínačem neřídí.
 
 **Co přepínač neřídí (D7).** Jen dispatcher. Příkazy spuštěné přímo
-(`shpd-ds work-orders-invoice-run`, `shpd-ds alerts-run`) i odpojené
+(`shpd-ds periodic-invoicing-run`, `shpd-ds alerts-run`) i odpojené
 procesy po příjmu zprávy (analýza pošty) běží vždy — práce vyvolaná
 uživatelem nebo příchodem zprávy není cron.
 

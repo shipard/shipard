@@ -40,7 +40,7 @@ class DisplayDateUsageTest extends TestCase
         'modules/base/registry/src/RegistryExpirationAlertCheck.php'  => 'text upozornění uložený při běhu kontroly',
         'modules/docs/core/src/Checks/StaleInRepairCheck.php'         => 'text upozornění uložený při běhu kontroly',
         'modules/economy/bank/src/Checks/BankAccountingErrorsCheck.php' => 'text upozornění uložený při běhu kontroly',
-        'modules/economy/workOrders/src/Checks/PeriodCheckBase.php'   => 'text upozornění uložený při běhu kontroly',
+        'modules/economy/periodicInvoicing/src/Checks/PeriodCheckBase.php'   => 'text upozornění uložený při běhu kontroly',
         'modules/economy/assets/src/Posting/AssetPostingBuilder.php'  => 'popis účetního zápisu uložený v dokladu',
         'modules/core/exchange/src/Document/PayloadContext.php'       => 'zpráva výsledku importu uložená u návrhu dokladu',
     ];

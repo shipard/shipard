@@ -1,0 +1,202 @@
+{
+    // facility.buildings.formTexts
+    //
+    // Texty prvků formulářů doplňku Budovy (#150 D87, #174 D24) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Názvy tabů,
+    // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
+    "texts": {
+        // --- druh smlouvy ---
+        "kind.typeLockedHint": {
+            "name": "The type of a confirmed kind cannot be changed.",
+            "name:cs": "Typ potvrzeného druhu nejde změnit.",
+            "name:en": "The type of a confirmed kind cannot be changed."
+        },
+        "kind.typeUsedHint": {
+            "name": "The type cannot be changed while contracts use this kind.",
+            "name:cs": "Typ nejde změnit, dokud druh používají smlouvy.",
+            "name:en": "The type cannot be changed while contracts use this kind."
+        },
+        "kind.typeHint": {
+            "name": "The type decides which places a contract of this kind may have. It cannot be changed once the kind is confirmed or used by a contract.",
+            "name:cs": "Typ určuje, jaká místa smí smlouva tohoto druhu mít. Po potvrzení druhu nebo jeho použití na smlouvě už ho nejde změnit.",
+            "name:en": "The type decides which places a contract of this kind may have. It cannot be changed once the kind is confirmed or used by a contract."
+        },
+        "kind.codeHint": {
+            "name": "Short code used as %C in the number pattern, unique among kinds.",
+            "name:cs": "Krátký kód, který se do vzorce čísla dosadí za %C; mezi druhy jedinečný.",
+            "name:en": "Short code used as %C in the number pattern, unique among kinds."
+        },
+        "kind.patternHint": {
+            "name": "%C kind code, %y / %Y year the contract starts (2 / 4 digits), %3 to %6 sequence padded with zeros. The sequence is required.",
+            "name:cs": "%C kód druhu, %y / %Y rok zahájení smlouvy (2 / 4 místa), %3 až %6 pořadí doplněné nulami. Pořadí je povinné.",
+            "name:en": "%C kind code, %y / %Y year the contract starts (2 / 4 digits), %3 to %6 sequence padded with zeros. The sequence is required."
+        },
+        "kind.resetHint": {
+            "name": "Yearly = the sequence starts again every calendar year a contract starts in; the pattern must then contain the year.",
+            "name:cs": "Ročně = pořadí začíná znovu každý kalendářní rok zahájení smlouvy; vzorec pak musí obsahovat rok.",
+            "name:en": "Yearly = the sequence starts again every calendar year a contract starts in; the pattern must then contain the year."
+        },
+
+        // --- smlouva ---
+        "contract.placesTypesHint": {
+            "name": "Allowed place types: {types}.",
+            "name:cs": "Povolené typy míst: {types}.",
+            "name:en": "Allowed place types: {types}."
+        },
+        "contract.placesAnyHint": {
+            "name": "Places of any type.",
+            "name:cs": "Místa libovolného typu.",
+            "name:en": "Places of any type."
+        },
+        "contract.kindHint": {
+            "name": "The kind decides the contract type and number; it cannot be changed after confirmation.",
+            "name:cs": "Druh určuje typ a číslo smlouvy; po potvrzení se nemění.",
+            "name:en": "The kind decides the contract type and number; it cannot be changed after confirmation."
+        },
+        "contract.numberPlaceholder": {
+            "name": "Assigned on confirmation",
+            "name:cs": "Přidělí se při potvrzení",
+            "name:en": "Assigned on confirmation"
+        },
+        "contract.customerPlaceholder": {
+            "name": "Search for a person…",
+            "name:cs": "Hledat osobu…",
+            "name:en": "Search for a person…"
+        },
+        "contract.customerHint": {
+            "name": "Required to confirm the contract.",
+            "name:cs": "Povinný při potvrzení smlouvy.",
+            "name:en": "Required to confirm the contract."
+        },
+        "contract.startHint": {
+            "name": "Required to confirm the contract; its year decides the contract number.",
+            "name:cs": "Povinné při potvrzení smlouvy; jeho rok určuje číslo smlouvy.",
+            "name:en": "Required to confirm the contract; its year decides the contract number."
+        },
+        "contract.endHint": {
+            "name": "Empty = open-ended.",
+            "name:cs": "Prázdné = doba neurčitá.",
+            "name:en": "Empty = open-ended."
+        },
+        "contract.places": {
+            "name": "Places",
+            "name:cs": "Místa",
+            "name:en": "Places"
+        },
+        "contract.placesPlaceholder": {
+            "name": "Search for a place…",
+            "name:cs": "Hledat místo…",
+            "name:en": "Search for a place…"
+        },
+
+        // --- druh: výchozí hodnoty fakturace (#174 D29) ---
+        "kind.invDocTypeHint": {
+            "name": "Invoice or advance invoice; a contract may override it.",
+            "name:cs": "Faktura, nebo zálohová faktura; smlouva smí přepsat.",
+            "name:en": "Invoice or advance invoice; a contract may override it."
+        },
+        "kind.invSeriesNoTypeHint": {
+            "name": "Choose the document type first.",
+            "name:cs": "Nejdřív vyber typ dokladu.",
+            "name:en": "Choose the document type first."
+        },
+        "kind.invSeriesHint": {
+            "name": "A number series of the document type.",
+            "name:cs": "Řada typu dokladu.",
+            "name:en": "A number series of the document type."
+        },
+        "kind.invDueDaysHint": {
+            "name": "Empty = {days} days.",
+            "name:cs": "Prázdné = {days} dní.",
+            "name:en": "Empty = {days} days."
+        },
+        "kind.invTimingHint": {
+            "name": "Issue date and tax point date of the document; empty = at the start of the period.",
+            "name:cs": "Datum vystavení a DUZP dokladu; prázdné = na počátku období.",
+            "name:en": "Issue date and tax point date of the document; empty = at the start of the period."
+        },
+        "kind.invVatModeHint": {
+            "name": "Prices on prescription rows without VAT (from the base) or with VAT (from the total); empty = from the base.",
+            "name:cs": "Ceny na řádcích předpisu bez DPH (ze základu), nebo s DPH (z ceny celkem); prázdné = ze základu.",
+            "name:en": "Prices on prescription rows without VAT (from the base) or with VAT (from the total); empty = from the base."
+        },
+        "kind.invPaymentMethodHint": {
+            "name": "Empty = bank transfer.",
+            "name:cs": "Prázdné = převodem.",
+            "name:en": "Empty = bank transfer."
+        },
+        "kind.invBankAccountHint": {
+            "name": "Empty = the default account of the document.",
+            "name:cs": "Prázdné = výchozí účet dokladu.",
+            "name:en": "Empty = the default account of the document."
+        },
+
+        // --- smlouva: fakturace a přepisy hodnot druhu (#174 D29, D37) ---
+        "contract.periodicityHint": {
+            "name": "Calendar period; empty = the contract is not invoiced.",
+            "name:cs": "Kalendářní období; prázdné = smlouva se nefakturuje.",
+            "name:en": "Calendar period; empty = the contract is not invoiced."
+        },
+        "contract.invFromHint": {
+            "name": "The first invoiced period is the one containing this date; empty = the start date, it may not be earlier.",
+            "name:cs": "První fakturované období je to, které obsahuje toto datum; prázdné = zahájení, dřív být nesmí.",
+            "name:en": "The first invoiced period is the one containing this date; empty = the start date, it may not be earlier."
+        },
+        "contract.docTextPlaceholder": {
+            "name": "Empty = contract title and period",
+            "name:cs": "Prázdné = název smlouvy a období",
+            "name:en": "Empty = contract title and period"
+        },
+        "contract.docTextHint": {
+            "name": "The {období} variable is replaced with the period in the language of the tenant, e.g. October 2026.",
+            "name:cs": "Proměnná {období} se nahradí obdobím v jazyce nájemce, např. říjen 2026.",
+            "name:en": "The {období} variable is replaced with the period in the language of the tenant, e.g. October 2026."
+        },
+        "contract.currencyHint": {
+            "name": "Empty = the home currency.",
+            "name:cs": "Prázdná = domácí měna.",
+            "name:en": "Empty = the home currency."
+        },
+        "contract.paymentReferenceHint": {
+            "name": "Fixed payment reference — every invoice of the contract carries it.",
+            "name:cs": "Pevný variabilní symbol — ponesou ho všechny faktury smlouvy.",
+            "name:en": "Fixed payment reference — every invoice of the contract carries it."
+        },
+        "contract.costCenterPlaceholder": {
+            "name": "Search for a cost center…",
+            "name:cs": "Hledat středisko…",
+            "name:en": "Search for a cost center…"
+        },
+        "contract.costCenterHint": {
+            "name": "Cost center of the documents of this contract.",
+            "name:cs": "Středisko dokladů smlouvy.",
+            "name:en": "Cost center of the documents of this contract."
+        },
+        "contract.fromKind": {
+            "name": "From the kind: {value}",
+            "name:cs": "Z druhu: {value}",
+            "name:en": "From the kind: {value}"
+        },
+        "contract.seriesNoTypeHint": {
+            "name": "Choose the document type first — here or on the kind.",
+            "name:cs": "Nejdřív vyber typ dokladu — tady nebo na druhu.",
+            "name:en": "Choose the document type first — here or on the kind."
+        },
+        "contract.dueDaysKindHint": {
+            "name": "From the kind: {days} days",
+            "name:cs": "Z druhu: {days} dní",
+            "name:en": "From the kind: {days} days"
+        },
+        "contract.dueDaysDefaultHint": {
+            "name": "Empty = {days} days.",
+            "name:cs": "Prázdné = {days} dní.",
+            "name:en": "Empty = {days} days."
+        },
+        "contract.bankAccountHint": {
+            "name": "Empty on both the contract and the kind = the default account of the document.",
+            "name:cs": "Prázdné na smlouvě i druhu = výchozí účet dokladu.",
+            "name:en": "Empty on both the contract and the kind = the default account of the document."
+        }
+    }
+}

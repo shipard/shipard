@@ -31,6 +31,13 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
 
 ## Testy
 
+- `Api/FormMultiLookupSaveTest.php` — prvek formuláře `multilookup` (#176):
+  uložení přes `FormController::save` → `TableGateway` → child tabulka nad
+  fixturovým modulem `test.multiLookup`. Vložení, změna pořadí, odebrání
+  a smazání všeho; id nedotčených řádků a sloupec navíc existujícího řádku
+  zůstávají. Tabulky fixtury si test zakládá jako dočasné
+  (`CREATE TEMPORARY TABLE`) — ve zdroji dat po něm nic nezůstane.
+
 - `Dataset/DatasetRoundTripTest.php` — datová sada (`docs/datasets.md`):
   syntetická sada s prefixem `IT-DS` → seed v merge režimu (bez resetu) →
   export vložených záznamů → porovnání + invarianty (zaúčtování, lineage,

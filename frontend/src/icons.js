@@ -141,6 +141,12 @@ import {
   faUtensils,
   faSquareParking,
   faChair,
+  faCity,
+  faFileSignature,
+  faBuildingUser,
+  faHouseUser,
+  faStore,
+  faEnvelopesBulk,
 } from '@fortawesome/free-solid-svg-icons';
 
 // ── Akce (toolbary, tlačítka) ──────────────────────────────────
@@ -303,6 +309,19 @@ export const iconPlaceTech = faServer;
 export const iconPlaceParking = faSquareParking;
 export const iconPlaceWorkplace = faChair;
 
+// ── Smlouvy a správa budov ─────────────────────────────────────
+// Obecné ikony podle významu: smlouva a její předmět (kancelář, byt,
+// obchodní prostor, sklad, parkování, virtuální kancelář) a sekce pro
+// víc budov. Klíče `contract-*` posílá server v cfgItemech typů smluv.
+export const iconCity = faCity;
+export const iconContract = faFileSignature;
+export const iconContractOffice = faBuildingUser;
+export const iconContractFlat = faHouseUser;
+export const iconContractRetail = faStore;
+export const iconContractStorage = faWarehouse;
+export const iconContractParking = faSquareParking;
+export const iconContractVirtualOffice = faEnvelopesBulk;
+
 /**
  * Mapování názvů ikon z API (string) → ikonový objekt.
  * Server může v navigaci poslat "icon": "users" a klient ho přeloží.
@@ -413,6 +432,14 @@ export const iconMap = {
   'place-tech': iconPlaceTech,
   'place-parking': iconPlaceParking,
   'place-workplace': iconPlaceWorkplace,
+  'city': iconCity,
+  'contract': iconContract,
+  'contract-office': iconContractOffice,
+  'contract-flat': iconContractFlat,
+  'contract-retail': iconContractRetail,
+  'contract-storage': iconContractStorage,
+  'contract-parking': iconContractParking,
+  'contract-virtual-office': iconContractVirtualOffice,
 };
 
 /**

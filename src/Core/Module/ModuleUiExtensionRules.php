@@ -16,7 +16,11 @@ namespace Shipard\Core\Module;
  *  1. Třída existuje, implementuje rozhraní svého druhu
  *     ({@see ModuleUiExtensions::KINDS}), jde vytvořit bez argumentů
  *     konstruktoru a leží v namespace svého modulu
- *     (`Shipard\Module\<Skupina>\<Modul>\`).
+ *     (`Shipard\Module\<Skupina>\<Modul>\`), nebo modulu, na kterém
+ *     modul (tranzitivně) závisí (#175) — společnou třídu tak modul
+ *     deklaruje nad svou tabulkou (akce periodické fakturace nad tabulkou
+ *     zdroje). Třída závislosti je ve zdroji dat vždy načtená s modulem,
+ *     který ji deklaruje; třída cizího modulu bez závislosti ne.
  *  2. Tabulka je vlastní tabulka modulu, nebo tabulka modulu, na kterém
  *     modul (tranzitivně) závisí — rozšíření tabulky, kterou zdroj dat
  *     s aktivním modulem mít nemusí, by nikdy nedostalo slovo.
@@ -45,6 +49,7 @@ final class ModuleUiExtensionRules
         $violations = [];
         foreach ($byId as $id => $definition) {
             $reachable = null;
+            $reachableModules = null;
             foreach (ModuleUiExtensions::KINDS as $kind => $interface) {
                 $seen = [];
                 $seenIds = [];
@@ -58,9 +63,10 @@ final class ModuleUiExtensionRules
                         $seenIds[$reg['id']] = true;
                     }
 
-                    self::checkClass($id, $where, $reg['class'], $interface, $violations);
+                    $reachableModules ??= self::reachableModules($id, $byId);
+                    self::checkClass($id, $reachableModules, $where, $reg['class'], $interface, $violations);
 
-                    $reachable ??= self::reachableTables($id, $byId);
+                    $reachable ??= self::reachableTables($reachableModules, $byId);
                     if (!isset($reachable[$reg['table']])) {
                         $violations[] = "{$where} table '{$reg['table']}' is neither a table of the module"
                             . ' nor of a module it depends on';
@@ -79,31 +85,45 @@ final class ModuleUiExtensionRules
     }
 
     /**
-     * Tabulky modulu a všech modulů, na kterých tranzitivně závisí.
-     * Neznámá závislost se přeskočí — hlásí ji resolver modulů.
+     * Modul a všechny moduly, na kterých tranzitivně závisí. Neznámá
+     * závislost se přeskočí — hlásí ji resolver modulů.
      *
      * @param array<string, ModuleDefinition> $byId
-     * @return array<string, true>
+     * @return list<string> id modulů, deklarující modul první
      */
-    private static function reachableTables(string $moduleId, array $byId): array
+    private static function reachableModules(string $moduleId, array $byId): array
     {
-        $tables = [];
         $visited = [];
         $queue = [$moduleId];
         while ($queue !== []) {
-            $current = array_pop($queue);
+            $current = array_shift($queue);
             if (isset($visited[$current]) || !isset($byId[$current])) {
                 continue;
             }
             $visited[$current] = true;
-            foreach ($byId[$current]->tables as $table) {
-                if (is_string($table)) {
-                    $tables[$table] = true;
-                }
-            }
             foreach ($byId[$current]->dependencies as $dependency) {
                 if (is_string($dependency)) {
                     $queue[] = $dependency;
+                }
+            }
+        }
+        return array_keys($visited);
+    }
+
+    /**
+     * Tabulky modulu a všech modulů, na kterých tranzitivně závisí.
+     *
+     * @param list<string> $moduleIds výsledek reachableModules()
+     * @param array<string, ModuleDefinition> $byId
+     * @return array<string, true>
+     */
+    private static function reachableTables(array $moduleIds, array $byId): array
+    {
+        $tables = [];
+        foreach ($moduleIds as $moduleId) {
+            foreach ($byId[$moduleId]->tables as $table) {
+                if (is_string($table)) {
+                    $tables[$table] = true;
                 }
             }
         }
@@ -111,21 +131,30 @@ final class ModuleUiExtensionRules
     }
 
     /**
+     * @param list<string> $reachableModules modul a jeho tranzitivní závislosti
      * @param class-string $interface
      * @param list<string> $violations
      */
     private static function checkClass(
         string $moduleId,
+        array $reachableModules,
         string $where,
         string $class,
         string $interface,
         array &$violations,
     ): void {
         $where .= " class '{$class}'";
-        $namespace = ModuleServerConfigRules::moduleNamespace($moduleId);
-
-        if (!str_starts_with($class, $namespace)) {
-            $violations[] = "{$where} is outside the module namespace {$namespace}";
+        $inNamespace = false;
+        foreach ($reachableModules ?: [$moduleId] as $reachableId) {
+            if (str_starts_with($class, ModuleServerConfigRules::moduleNamespace($reachableId))) {
+                $inNamespace = true;
+                break;
+            }
+        }
+        if (!$inNamespace) {
+            $violations[] = "{$where} is outside the module namespace "
+                . ModuleServerConfigRules::moduleNamespace($moduleId)
+                . ' and the namespaces of the modules it depends on';
             return;
         }
         if (!class_exists($class)) {

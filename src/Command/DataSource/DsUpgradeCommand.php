@@ -19,6 +19,8 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Database\TableMerger;
 use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Module\ModuleProvisionContext;
+use Shipard\Core\Module\ModuleProvisioner;
 use Shipard\Core\Module\ModuleResolver;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Core\Server\DataSourceSecretsMigrator;
@@ -36,6 +38,7 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessRulesProvisioner;
 use Shipard\Module\Core\Units\UnitsProvisioner;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\NumberSeriesCodeBackfill;
+use Shipard\Module\Economy\WorkOrders\Upgrade\LegacyInvoicingAlertsCleanup;
 use Shipard\Module\Docs\Core\NumberSeriesProvisioner;
 use Shipard\Module\Economy\Accbal\BalancesProvisioner;
 use Shipard\Module\Economy\Accbal\ClearingInfrastructureProvisioner;
@@ -412,6 +415,12 @@ class DsUpgradeCommand extends Command
         // system_code, existující druhy se nepřepisují ani nevrací z archivu.
         $this->provisionPlaceKinds($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
 
+        // Provisionery deklarované moduly (`provisioners` v module.jsonc,
+        // #174 D28) — BEZPODMÍNEČNĚ, i pod skipProvisioning: výchozí data,
+        // bez kterých modul nejde používat, ne migrovaná data. Jádro tu
+        // žádný modul nejmenuje; tak zakládá svá data doplněk.
+        $this->provisionModules($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
+
         // Parametry vrstvy C (docs/ds-setup.md §5.2) — jedna instance kvůli
         // request-level cache; provisionery jen čtou, žádný set se tu neděje.
         $settings = new SettingsStore($dsConnection);
@@ -452,6 +461,11 @@ class DsUpgradeCommand extends Command
         // z doby před zavedením sloupce a řádkům z importu přes generické
         // CRUD. Idempotentní — druhý běh nic nenajde.
         $this->backfillRecordCodes($resolvedModules, $dsConnection, $output);
+
+        // Osiřelé alerty po přejmenování checků periodické fakturace (#175):
+        // `economy.workorders.*` už žádný check nevrací a reconciler je sám
+        // neuzavře. BEZPODMÍNEČNĚ jako doplnění kódů; idempotentní.
+        $this->closeLegacyInvoicingAlerts($resolvedModules, $dsConnection, $output);
 
         $secretsWarnings = DsSecretCipher::healthCheck($dsConfig);
         foreach ($secretsWarnings as $warning) {
@@ -884,6 +898,69 @@ class DsUpgradeCommand extends Command
         $result = new PlaceKindsProvisioner($dsConnection, $types)->provision();
 
         $this->logProvisioningResult($output, 'place kinds', $result['kinds']);
+    }
+
+    /**
+     * Provisionery modulů (#174 D28): třídy z `provisioners` aktivních
+     * modulů v pořadí resolvovaných modulů (závislost před závislým)
+     * a `order` v modulu. Běží mimo skipProvisioning gate — viz komentář
+     * u volání v execute(). Výjimka provisioneru ukončí `ds-upgrade` chybou
+     * se jménem modulu a třídy; tiché přeskočení by nechalo modul bez dat.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function provisionModules(
+        array $resolvedModules,
+        string $dsDir,
+        DataSourceConfig $dsConfig,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $declared = [];
+        foreach ($resolvedModules as $module) {
+            $provisioners = $module->provisioners;
+            usort($provisioners, static fn(array $a, array $b): int => $a['order'] <=> $b['order']);
+            foreach ($provisioners as $provisioner) {
+                $declared[] = [$module->id, $provisioner['class']];
+            }
+        }
+        if ($declared === []) {
+            return;
+        }
+
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning module data...', OutputInterface::VERBOSITY_VERBOSE);
+
+        $context = new ModuleProvisionContext($dsConnection, $dsConfig, $this->loadModuleConfig($dsDir, $dsConfig));
+
+        foreach ($declared as [$moduleId, $class]) {
+            $where = "Module '{$moduleId}': provisioner '{$class}'";
+            if (!is_subclass_of($class, ModuleProvisioner::class)) {
+                throw new \RuntimeException("{$where} does not implement " . ModuleProvisioner::class);
+            }
+            try {
+                $result = new $class()->provision($context);
+            } catch (\Throwable $e) {
+                throw new \RuntimeException("{$where} failed: " . $e->getMessage(), 0, $e);
+            }
+            foreach ($result as $label => $stats) {
+                $this->logProvisioningResult($output, (string) $label, $stats);
+            }
+        }
+    }
+
+    /**
+     * Zkompilovaná konfigurace v jazyce zdroje dat pro provisionery modulů.
+     * Bez kompilátu `null` — provisioner pak nic nezakládá odhadem. Seam pro
+     * testy (fixture moduly kompilát nemají).
+     */
+    protected function loadModuleConfig(string $dsDir, DataSourceConfig $dsConfig): ?ConfigRuntime
+    {
+        try {
+            return ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage());
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -1356,6 +1433,29 @@ class DsUpgradeCommand extends Command
             if ($count > 0) {
                 $output->writeln(sprintf('  [FILL]   %s — filled: %d', $label, $count));
             }
+        }
+    }
+
+    /**
+     * Uzavře otevřené alerty se starým id checků periodické fakturace
+     * (`economy.workorders.*`, #175) — viz komentář u volání v execute().
+     * Řádek výpisu jen když se něco uzavřelo.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function closeLegacyInvoicingAlerts(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        if (!$this->isModuleActive($resolvedModules, 'core.alerts')
+            || !$this->isModuleActive($resolvedModules, 'economy.workOrders')
+        ) {
+            return;
+        }
+        $resolved = (new LegacyInvoicingAlertsCleanup($dsConnection->getDibiConnection()))->run();
+        if ($resolved > 0) {
+            $output->writeln(sprintf('  [FIX]    legacy periodic invoicing alerts (economy.workorders.*) — resolved: %d', $resolved));
         }
     }
 

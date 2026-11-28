@@ -11,8 +11,10 @@ use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Core\Viewer\ViewerDefinition;
 use Shipard\Core\Viewer\ViewerRegistry;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\Source\PeriodicInvoicingSource;
 use Shipard\Module\Economy\WorkOrders\WorkOrderJournalService;
+use Shipard\Module\Economy\WorkOrders\WorkOrderInvoicingSource;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTreeService;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
@@ -64,9 +66,9 @@ class WorkOrdersViewerTest extends TestCase
             [WorkOrderTypes::CFG_ITEM, self::TYPES],
             ['economy.workOrders.docStates', JsoncParser::parseFile(self::MODULE . '/config/docStates.jsonc')],
             ['economy.workOrders.viewerLabels', ['label.kind' => ['name' => 'Druh'], 'group.customer' => ['name' => 'Zákazník']]],
-            ['economy.workOrders.periodStates', ['planned' => ['name' => 'Naplánováno'], 'waiting' => ['name' => 'Čeká na podklady'], 'issued' => ['name' => 'Vystaveno'], 'stopped' => ['name' => 'Zastaveno']]],
-            ['economy.workOrders.periodicities', ['month' => ['name' => 'Měsíčně']]],
-            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období']]],
+            ['economy.periodicInvoicing.periodStates', ['planned' => ['name' => 'Naplánováno'], 'waiting' => ['name' => 'Čeká na podklady'], 'issued' => ['name' => 'Vystaveno'], 'stopped' => ['name' => 'Zastaveno']]],
+            ['economy.periodicInvoicing.periodicities', ['month' => ['name' => 'Měsíčně']]],
+            ['economy.periodicInvoicing.invoiceTimings', ['start' => ['name' => 'Na počátku období']]],
             ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná']]],
         ]);
         $viewer = new TestableWorkOrdersViewer($db, 'economy_work_orders_heads');
@@ -227,7 +229,7 @@ class WorkOrdersViewerTest extends TestCase
         );
     }
 
-    public function testPeriodicDetailHasInvoicingTabWithPeriodsAndActions(): void
+    public function testPeriodicDetailHasInvoicingTabWithPeriods(): void
     {
         $record = [
             'id' => 6, 'number' => 'S260001', 'title' => 'Nájem kanceláře', 'type' => 'periodic', 'date_start' => '2026-08-01',
@@ -277,12 +279,10 @@ class WorkOrdersViewerTest extends TestCase
         $this->assertArrayNotHasKey('_action', $rows[2]);
         $this->assertSame('Chybí řada', $rows[2]['message']);
 
-        $actions = $detail['actions'];
-        $this->assertSame(['workOrderIssueDue', 'workOrderRegenerate', 'workOrderRestore'], array_column($actions, 'id'));
-        $this->assertSame('button', $actions[0]['kind']);
-        $this->assertSame('dropdown', $actions[1]['kind']);
-        $this->assertSame([['label' => '2026-10-01 – 2026-10-31 — draft #605', 'value' => '3']], $actions[1]['items']);
-        $this->assertSame([['label' => '2026-09-01 – 2026-09-30', 'value' => '2']], $actions[2]['items']);
+        // Akce záložky už viewer nevypisuje (#175 D8): jsou to akce záznamu
+        // z `recordActions` (třídy enginu, test RecordActionsTest), které
+        // builder detailu přidá z rozšíření modulů — tady žádná nejsou.
+        $this->assertArrayNotHasKey('actions', $detail);
 
         // Koncept zakázky bez období: bez akcí, místo tabulky jen text.
         $draftViewer = $this->viewer($q2, ['docState' => 10] + $record);
@@ -330,9 +330,19 @@ class TestableWorkOrdersViewer extends WorkOrdersViewer
         };
     }
 
-    protected function kindRow(int $kindId): ?array
+    protected function invoicingSource(): PeriodicInvoicingSource
     {
-        return $this->kind;
+        $viewer = $this;
+        return new class($viewer) extends WorkOrderInvoicingSource {
+            public function __construct(private readonly TestableWorkOrdersViewer $viewer)
+            {
+            }
+
+            public function kind(array $record): ?array
+            {
+                return $this->viewer->kind;
+            }
+        };
     }
 
     protected function today(): string

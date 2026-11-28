@@ -44,7 +44,7 @@ final class PrintsModuleTest extends TestCase
     {
         $table = self::jobs();
 
-        $this->assertSame(475, $table->tableId);
+        $this->assertSame(482, $table->tableId);
         $this->assertTrue($table->adminOnly);
         $this->assertTrue($table->systemManaged);
         $raw = JsoncParser::parseFile(self::MODULE . '/tables/' . PrintJobService::TABLE . '.jsonc');

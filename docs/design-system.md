@@ -805,7 +805,7 @@ písma a řádkování.
 
 - **Jednořádkový prvek** má `height` z tokenu a svislé odsazení 0 — obsah
   centruje flex nebo sám prohlížeč. **Víceřádkový** (`TextArea`,
-  `MultiselectInput`, zalamované tlačítko `wrap`, pole chatu) má token
+  `MultiselectInput`, `MultiLookupInput`, zalamované tlačítko `wrap`, pole chatu) má token
   jako `min-height`; `TextArea` a `wrap` dopočítají svislé odsazení tak,
   aby jeden řádek dal přesně výšku prvku.
 - **Kdy běžná, kdy kompaktní** (D107): každá lišta — seznam, report,
@@ -859,8 +859,8 @@ prvek**: sloupec editačního formuláře (`FormColumn`, `FormFieldRow`,
   nenatahuje a víceřádkové pole má popisek u svého prvního řádku
   (s účařím seděl popisek u posledního řádku `TextArea`).
 - **Pole, jehož první řádek není vysoký jako ovládací prvek**, se
-  dorovná v komponentě pole, ne výjimkou v popisku: `TextArea`
-  a `MultiselectInput` dopočítávají svislé odsazení tak, aby první řádek
+  dorovná v komponentě pole, ne výjimkou v popisku: `TextArea`,
+  `MultiselectInput` a `MultiLookupInput` dopočítávají svislé odsazení tak, aby první řádek
   (řada čipů) měl střed ve výšce ovládacího prvku; čip adresy
   v `SendDialog` stejným výrazem (adresa na středu, důvod pod ní čip jen
   prodlouží) a řádek přílohy má výšku ovládacího prvku jako minimum.
@@ -1185,7 +1185,7 @@ druhu (`panel` je dočasný panel vzhledu i nedočasný detail v draweru):
 | dočasná (`transient: true`) | nedočasná (`transient: false`) |
 |---|---|
 | bublina `Popover` — i `KebabMenu`, panel rozhodnutí, výběr období | `Modal` (zavírá ho klik na ztmavené pozadí) |
-| nabídka `LookupInput` a `MultiselectInput` | detail v draweru `ViewerDetailDrawer` |
+| nabídka `LookupInput`, `MultiLookupInput` a `MultiselectInput` | detail v draweru `ViewerDetailDrawer` |
 | uživatelské menu `UserMenu` | boční chat `ChatPanel` |
 | panel vzhledu `ThemePanel` (na telefonu je to `Modal`) | drawer sidebaru na telefonu (zavírá ho klik na překryv) |
 | paleta příkazů `CommandPalette` | |

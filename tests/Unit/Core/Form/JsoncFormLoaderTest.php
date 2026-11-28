@@ -598,4 +598,67 @@ class JsoncFormLoaderTest extends TestCase
         $this->expectExceptionMessage('filter must be object|null');
         (new JsoncFormLoader())->load($path, $this->makeTableDef());
     }
+
+
+    // -------- multilookup (#176) --------
+
+    public function testMultiLookupElementParsed(): void
+    {
+        $path = $this->writeJsonc(<<<JSON
+        {
+            "tabs": [{"id": "h", "label": "H", "sections": [{"columns": [{"elements": [
+                {
+                    "type": "multilookup",
+                    "column": "places",
+                    "label": "Místa",
+                    "placeholder": "Hledat místo…",
+                    "lookup": {"table": "base_places_places", "filter": {"types": "office"}, "refColumn": "place"}
+                }
+            ]}]}]}]
+        }
+        JSON);
+
+        $def = (new JsoncFormLoader())->load($path, $this->makeTableDef());
+        $el = $def->tabs[0]->sections[0]->columns[0]->elements[0];
+
+        $this->assertSame('multilookup', $el->type);
+        $this->assertSame('places', $el->column);
+        $this->assertSame('Místa', $el->label);
+        $this->assertSame('Hledat místo…', $el->placeholder);
+        $this->assertFalse($el->required, 'klíč child tabulky není sloupec — povinnost se neodvozuje');
+        $this->assertSame(
+            ['table' => 'base_places_places', 'filter' => ['types' => 'office'], 'ref_column' => 'place'],
+            $el->lookup,
+        );
+    }
+
+    public function testMultiLookupWithoutTableThrows(): void
+    {
+        $path = $this->writeJsonc(<<<JSON
+        {
+            "tabs": [{"id": "h", "label": "H", "sections": [{"columns": [{"elements": [
+                {"type": "multilookup", "column": "places"}
+            ]}]}]}]
+        }
+        JSON);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('multilookup element "places" requires lookup.table');
+        (new JsoncFormLoader())->load($path, $this->makeTableDef());
+    }
+
+    public function testMultiLookupRefColumnMustBeString(): void
+    {
+        $path = $this->writeJsonc(<<<JSON
+        {
+            "tabs": [{"id": "h", "label": "H", "sections": [{"columns": [{"elements": [
+                {"type": "multilookup", "column": "places", "lookup": {"table": "t", "refColumn": 5}}
+            ]}]}]}]
+        }
+        JSON);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('refColumn must be a non-empty string');
+        (new JsoncFormLoader())->load($path, $this->makeTableDef());
+    }
 }

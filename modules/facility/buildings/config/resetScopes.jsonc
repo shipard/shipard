@@ -1,0 +1,9 @@
+{
+    // facility.buildings.resetScopes
+    //
+    // Restart čítače čísel smluv na druhu (#174 D18): průběžně, nebo každý
+    // kalendářní rok zahájení smlouvy.
+
+    "continuous": { "name": "Continuous", "name:cs": "Průběžně", "name:en": "Continuous" },
+    "yearly":     { "name": "Yearly",     "name:cs": "Ročně",    "name:en": "Yearly" }
+}

@@ -1,0 +1,37 @@
+{
+    // economy.periodicInvoicing.formTexts
+    //
+    // Texty prvků společného formuláře řádku předpisu
+    // (Rows\AbstractPrescriptionRowsForm, #174 D31, #150 D87) — čte
+    // `TableForm::formText()` ze sekce `texts`. Holé `name` je anglická
+    // varianta a shoduje se s fallbackem v PHP znak po znaku. Texty jsou
+    // společné všem zdrojům fakturace — záznam zdroje nejmenují. Názvy tabů,
+    // sekcí a oddělovačů formulářů sem zatím nepatří (#154).
+    "texts": {
+        "row.unitPriceHint": {
+            "name": "Unit price without VAT, or with VAT, depending on the VAT mode of the prescription.",
+            "name:cs": "Cena za jednotku bez DPH, nebo s DPH podle režimu DPH předpisu.",
+            "name:en": "Unit price without VAT, or with VAT, depending on the VAT mode of the prescription."
+        },
+        "row.vatCodeHint": {
+            "name": "The VAT codes on offer follow the document type of the record or its kind.",
+            "name:cs": "Nabídka kódů DPH se řídí typem dokladu záznamu nebo jeho druhu.",
+            "name:en": "The VAT codes on offer follow the document type of the record or its kind."
+        },
+        "row.operationHint": {
+            "name": "Empty = the default operation of the target document.",
+            "name:cs": "Prázdné = výchozí pohyb cílového dokladu.",
+            "name:en": "Empty = the default operation of the target document."
+        },
+        "row.validFromHint": {
+            "name": "The row is invoiced when its validity covers the tax point date of the period; empty = unlimited.",
+            "name:cs": "Řádek se fakturuje, když platnost pokrývá DUZP období; prázdné = neomezeno.",
+            "name:en": "The row is invoiced when its validity covers the tax point date of the period; empty = unlimited."
+        },
+        "row.contributorHint": {
+            "name": "The contributor fills the row from its source data; empty = a fixed row.",
+            "name:cs": "Obsah řádku doplní přispěvatel podle podkladů; prázdné = pevný řádek.",
+            "name:en": "The contributor fills the row from its source data; empty = a fixed row."
+        }
+    }
+}

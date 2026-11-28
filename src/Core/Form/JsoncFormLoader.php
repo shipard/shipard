@@ -307,6 +307,38 @@ class JsoncFormLoader
             }
         }
 
+        // Výběr více záznamů (#176): jen tabulka, filtr a nepovinný
+        // odkazový sloupec child tabulky; `column` je `dataKey` z `childTables`.
+        if ($type === 'multilookup') {
+            $rawLookup = $elData['lookup'] ?? null;
+            if (!is_array($rawLookup) || !isset($rawLookup['table']) || !is_string($rawLookup['table']) || $rawLookup['table'] === '') {
+                throw new \RuntimeException(sprintf(
+                    'JsoncFormLoader: %s — multilookup element "%s" requires lookup.table',
+                    $jsonPath, $column ?? '?',
+                ));
+            }
+            $filter = $rawLookup['filter'] ?? null;
+            if ($filter !== null && !is_array($filter)) {
+                throw new \RuntimeException(sprintf(
+                    'JsoncFormLoader: %s — multilookup element "%s" filter must be object|null',
+                    $jsonPath, $column ?? '?',
+                ));
+            }
+            $lookup = [
+                'table'  => $rawLookup['table'],
+                'filter' => $filter,
+            ];
+            if (array_key_exists('refColumn', $rawLookup)) {
+                if (!is_string($rawLookup['refColumn']) || $rawLookup['refColumn'] === '') {
+                    throw new \RuntimeException(sprintf(
+                        'JsoncFormLoader: %s — multilookup element "%s" refColumn must be a non-empty string',
+                        $jsonPath, $column ?? '?',
+                    ));
+                }
+                $lookup['ref_column'] = $rawLookup['refColumn'];
+            }
+        }
+
         return new FormElement(
             type: $type,
             column: $column,

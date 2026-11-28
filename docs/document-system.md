@@ -389,6 +389,13 @@ Pokud naopak chceš zajistit, aby změna v child setu triggerovala recompute na 
 
 Při smazání dokumentu se nejprve smažou všechny child záznamy, pak hlavička.
 
+**Formulář child set neukládá** — `FormController::save` propouští jen
+sloupce tabulky a řádky sub-tabulek mají vlastní endpointy. Jediná výjimka
+je prvek formuláře `multilookup` (#176): child tabulku vazby M:N edituje
+jako seznam id a `FormController` ho při uložení převede na řádky pod
+`dataKey` — jen u formuláře, který prvek má (`docs/edit-forms.md` §4.7b).
+Document třída rodiče pak řádky vidí v `validate()` i `beforeSave()`.
+
 ### Transakce
 
 Celá operace (hlavička + všechny child tabulky) probíhá v jedné DB transakci. Pokud cokoliv selže, provede se ROLLBACK.

@@ -1,0 +1,165 @@
+{
+    // Budovy (#174): doplněk pro správu budovy. Fáze 1 = evidence nájemních
+    // smluv s místy z číselníku míst (base.places) — druhy smluv s typem,
+    // číslování per druh, stavy Ukončená / Zrušená. Fáze 2 = fakturace smluv:
+    // smlouvy jsou zdroj periodické fakturace (#175) s předpisem, řádky
+    // a šablonou řádků na druhu. Napojení na Místa (fáze 3) přijde později. Doplněk: jádro o něm neví, ve zdroji dat se zapíná
+    // `shpd-ds ds-module enable facility.buildings`.
+    "id": "facility.buildings",
+    "name": "Buildings",
+    "name:cs": "Budovy",
+    "name:en": "Buildings",
+    "description": "Building management: lease contracts with places, contract kinds and numbering, periodic invoicing of contracts",
+    "description:cs": "Správa budovy: nájemní smlouvy s místy, druhy smluv a jejich číslování, periodická fakturace smluv",
+    "description:en": "Building management: lease contracts with places, contract kinds and numbering, periodic invoicing of contracts",
+
+    "kind": "addon",
+
+    // Fáze 2 (#174 D29–D34): smlouvy jsou zdroj periodické fakturace —
+    // předpis a řádky dědí ze společného základu enginu
+    // economy.periodicInvoicing, řady dokladů a střediska jsou z docs.core
+    // a economy.codebooks.
+    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places", "economy.codebooks", "docs.core", "economy.periodicInvoicing"],
+
+    // Zdroj periodické fakturace (#174 D34): smlouvy V pořádku s periodicitou
+    // a „fakturovat od“; evidence období facility_buildings_contract_periods.
+    "periodicInvoicingSources": [
+        {"id": "buildingContracts", "class": "Shipard\\Module\\Facility\\Buildings\\ContractInvoicingSource"}
+    ],
+
+    // Akce záložky Fakturace — akce záznamu se společnými třídami enginu
+    // periodické fakturace, deklarované nad tabulkou smluv; zdroj si akce
+    // najde podle tabulky. Globální id facility.buildings.issueDue /
+    // .regenerate / .restore.
+    "recordActions": [
+        {"id": "issueDue",   "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\IssueDueAction",   "order": 100},
+        {"id": "regenerate", "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RegenerateAction", "order": 110},
+        {"id": "restore",    "table": "facility_buildings_contracts", "class": "Shipard\\Module\\Economy\\PeriodicInvoicing\\Action\\RestoreAction",    "order": 120}
+    ],
+
+    "tables": [
+        "facility_buildings_contract_kinds",
+        "facility_buildings_number_counters",
+        "facility_buildings_contracts",
+        "facility_buildings_contract_places",
+        "facility_buildings_contract_kind_rows",
+        "facility_buildings_contract_rows",
+        "facility_buildings_contract_periods"
+    ],
+
+    // Vlastní sekce sidebaru a Nastavení (#174 D1, #170 D13) — vedle Zakázek.
+    "navSections": [
+        { "id": "buildings", "name": "Buildings", "name:cs": "Budovy", "name:en": "Buildings", "icon": "city", "order": 34 }
+    ],
+    "settingsSections": [
+        { "id": "buildings", "name": "Buildings", "name:cs": "Budovy", "name:en": "Buildings", "icon": "city", "order": 13 }
+    ],
+
+    // Smlouvy ve vlastní sekci sidebaru; bez dolních tabů — filtr druh / typ
+    // a ikona typu v řádku (#174 D5, D25). Druhy smluv žijí v Nastavení →
+    // Budovy, do hlavní navigace nepatří.
+    "viewers": [
+        {
+            "id": "facility.buildings.contracts",
+            "name": "Contracts",
+            "name:cs": "Smlouvy",
+            "name:en": "Contracts",
+            "icon": "contract",
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsViewer",
+            "navSection": "buildings",
+            "navOrder": 10,
+            "detailHeader": { "title": "{title}", "subtitle": "{number}" }
+        },
+        {
+            "id": "facility.buildings.contractKinds",
+            "name": "Contract kinds",
+            "name:cs": "Druhy smluv",
+            "name:en": "Contract kinds",
+            "icon": "kinds",
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsViewer"
+        }
+    ],
+
+    "settingsItems": [
+        { "viewer": "facility.buildings.contractKinds", "section": "buildings", "order": 10 }
+    ],
+
+    "forms": [
+        {
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsForm"
+        },
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsForm"
+        },
+        {
+            // Řádek předpisu — sub-formulář tabu Řádky smlouvy (D30).
+            "table": "facility_buildings_contract_rows",
+            "id": "facility.buildings.contractRows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowsForm"
+        },
+        {
+            // Řádek šablony — sub-formulář tabu Šablona řádků druhu (D32).
+            "table": "facility_buildings_contract_kind_rows",
+            "id": "facility.buildings.contractKindRows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowsForm"
+        }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "facility_buildings_contract_kinds",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindDocument"
+        },
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractDocument"
+        },
+        {
+            "table": "facility_buildings_contract_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowDocument"
+        },
+        {
+            "table": "facility_buildings_contract_kind_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowDocument"
+        }
+    ],
+
+    // Řádky předpisu se řídí stavem smlouvy, šablona řádků stavem druhu
+    // (#174 D30, D32): u rodiče ve stavu s readOnly jsou jen ke čtení,
+    // úprava přes V opravě. Jádro providery vynucuje na uložení, mazání
+    // i generickém CRUD; stavy čtou z cfgItem sady stavů rodiče.
+    "documentLockProviders": [
+        {
+            "table": "facility_buildings_contract_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractRowLockProvider"
+        },
+        {
+            "table": "facility_buildings_contract_kind_rows",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindRowLockProvider"
+        }
+    ],
+
+    "lookups": [
+        {
+            "table": "facility_buildings_contracts",
+            "class": "Shipard\\Module\\Facility\\Buildings\\ContractsLookup"
+        }
+    ],
+
+    // Výchozí druhy smluv (#174 D19, D28) — jeden druh na typ se seedovým kódem.
+    "provisioners": [
+        { "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsProvisioner" }
+    ],
+
+    "config": [
+        { "id": "facility.buildings.contractTypes", "file": "config/contractTypes.jsonc" },
+        { "id": "facility.buildings.docStates",     "file": "config/docStates.jsonc" },
+        { "id": "facility.buildings.resetScopes",   "file": "config/resetScopes.jsonc" },
+        { "id": "facility.buildings.viewerLabels",  "file": "config/viewerLabels.jsonc" },
+        { "id": "facility.buildings.formTexts",     "file": "config/formTexts.jsonc" }
+    ]
+}

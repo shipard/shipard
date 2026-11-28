@@ -161,7 +161,7 @@ leden–červenec, 2 projekty Ukončeno; nová zakázka od května s evidencí
 květen–říjen), 115 vystavených období s dokladem
 a otiskem, 115 vydaných faktur se zdrojem *periodická fakturace* (113
 V pořádku + 2 koncepty měsíce kotvy),
-`work-orders-invoice-run --dry-run --date=<kotva>` nic nevystaví, deník
+`periodic-invoicing-run --dry-run --date=<kotva>` nic nevystaví, deník
 projektů nese výnosy i náklady, upozornění *Faktury z periodické
 fakturace ke kontrole* ukazuje 2 koncepty měsíce kotvy. Majetek: karta
 MA0001 V pořádku se zařazením 14. 2. 2026 (původ *Ručně*, nezaúčtované),
@@ -252,7 +252,7 @@ Změna ceny hotelu = dva řádky předpisu s platností. Zahraniční zakázky
 jsou v EUR s účtem BU2. Evidence období (`workOrders/*.jsonc` `periods[]`)
 je úplná: každé období od „fakturovat od“ do kotvy má doklad, koncepty
 v měsíci kotvy jsou vystavená období s dokladem v Konceptu, takže
-`shpd-ds work-orders-invoice-run --dry-run --date=<kotva>` nic nevystaví.
+`shpd-ds periodic-invoicing-run --dry-run --date=<kotva>` nic nevystaví.
 Zálohová faktura (`once`) a jednorázové faktury zakázku nemají.
 
 **Projekty** (D36): dvě zakázky Ukončeno druhu „Projekty“ řady `P` —

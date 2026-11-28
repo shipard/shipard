@@ -96,7 +96,7 @@
             "name:en": "Invoicing timing",
             "type": "enumString",
             "length": 5,
-            "cfgItem": "economy.workOrders.invoiceTimings",
+            "cfgItem": "economy.periodicInvoicing.invoiceTimings",
             "nullable": true
         },
         {

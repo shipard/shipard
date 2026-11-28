@@ -111,7 +111,7 @@ class WorkOrderRowsFormTest extends TestCase
         $form = new WorkOrderRowsForm('economy_work_orders_rows');
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(static fn(string $id): mixed => match ($id) {
-            'economy.workOrders.invoiceContributors' => ['energy.consumption' => ['class' => 'X', 'name' => 'Spotřeba energií']],
+            'economy.periodicInvoicing.contributors' => ['energy.consumption' => ['class' => 'X', 'name' => 'Spotřeba energií']],
             default => null,
         });
         $form->setConfig($config);

@@ -150,6 +150,30 @@ class ModuleUiExtensionRulesTest extends TestCase
         $this->assertStringContainsString('is outside the module namespace Shipard\\Module\\Test\\UiHost\\', $violations[1]);
     }
 
+    public function testClassOfADependencyIsAllowed(): void
+    {
+        // Společná třída z modulu, na kterém modul (i tranzitivně) závisí,
+        // deklarovaná nad tabulkou z dosahu modulu (#175): akce periodické
+        // fakturace žijí v enginu, zdroj je deklaruje nad svou tabulkou.
+        $source = static fn(array $dependencies): ModuleDefinition => ModuleDefinition::fromArray([
+            'id' => 'test.uiSource',
+            'name' => 'source',
+            'dependencies' => $dependencies,
+            'tables' => ['test_ui_source_heads'],
+            'recordActions' => [['id' => 'ping', 'table' => 'test_ui_source_heads', 'class' => self::ACTION]],
+            'detailExtensions' => [['table' => 'test_ui_source_heads', 'class' => self::DETAIL]],
+        ]);
+        $middle = ModuleDefinition::fromArray(['id' => 'test.uiMiddle', 'name' => 'middle', 'dependencies' => ['test.uiExtensions']]);
+
+        $this->assertSame([], ModuleUiExtensionRules::violations([$this->host(), $this->addon([]), $source(['test.uiExtensions'])]));
+        $this->assertSame([], ModuleUiExtensionRules::violations([$this->host(), $this->addon([]), $middle, $source(['test.uiMiddle'])]));
+
+        // Bez závislosti na modulu třídy je to dál porušení.
+        $violations = ModuleUiExtensionRules::violations([$this->host(), $this->addon([]), $source(['test.uiHost'])]);
+        $this->assertCount(2, $violations);
+        $this->assertStringContainsString('is outside the module namespace Shipard\\Module\\Test\\UiSource\\ and the namespaces of the modules it depends on', $violations[0]);
+    }
+
     public function testClassThatNeedsConstructorArgumentsIsAViolation(): void
     {
         $violations = ModuleUiExtensionRules::violations([

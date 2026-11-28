@@ -6,7 +6,7 @@
     // docs_core_rows, aby řádek šel 1:1 do kanonického dokladu
     // (InvoiceBuilder). Pohyb smí být prázdný = výchozí pohyb cílového
     // dokladu. `contributor` = id registrovaného přispěvatele obsahu
-    // (workOrderInvoiceContributors), NULL = pevný řádek.
+    // (periodicInvoicingContributors), NULL = pevný řádek.
     //
     // Sub-tabulka zakázky spravovaná přes formulář zakázky (tab Řádky).
     // Řídí se stavem zakázky: Přidat / Smazat / úprava jen v Konceptu

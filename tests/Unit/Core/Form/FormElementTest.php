@@ -434,4 +434,79 @@ class FormElementTest extends TestCase
             ],
         );
     }
+
+
+    // -------- Multilookup (#176) --------
+
+    public function testMultiLookupBasic(): void
+    {
+        $el = new FormElement(
+            type: 'multilookup',
+            column: 'places',
+            label: 'Místa',
+            lookup: ['table' => 'base_places_places', 'filter' => ['types' => 'office'], 'ref_column' => 'place'],
+        );
+
+        $this->assertSame('multilookup', $el->type);
+        $this->assertSame('places', $el->column);
+        $this->assertSame('place', $el->lookup['ref_column']);
+        // Klient dostane jen tabulku a filtr — odkazový sloupec je věc serveru.
+        $this->assertSame(
+            ['table' => 'base_places_places', 'filter' => ['types' => 'office']],
+            $el->toArray()['lookup'],
+        );
+    }
+
+    public function testMultiLookupRequiresColumn(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('multilookup element requires column');
+
+        new FormElement(type: 'multilookup', lookup: ['table' => 't']);
+    }
+
+    public function testMultiLookupRequiresLookupTable(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('multilookup lookup.table must be a non-empty string');
+
+        new FormElement(type: 'multilookup', column: 'places', lookup: ['table' => '']);
+    }
+
+    public function testMultiLookupRequiresLookupConfig(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('multilookup element requires lookup config');
+
+        new FormElement(type: 'multilookup', column: 'places');
+    }
+
+    public function testMultiLookupRejectsEmptyRefColumn(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('multilookup lookup.ref_column must be a non-empty string');
+
+        new FormElement(type: 'multilookup', column: 'places', lookup: ['table' => 't', 'ref_column' => '']);
+    }
+
+    public function testMultiLookupRejectsEditAndCreateFlags(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('multilookup does not support lookup.create_form');
+
+        new FormElement(type: 'multilookup', column: 'places', lookup: ['table' => 't', 'create_form' => true]);
+    }
+
+    public function testMultiLookupNotAllowedInInline(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('only input, select are allowed inside inline groups');
+
+        new FormElement(
+            type: 'inline',
+            elements: [
+                new FormElement(type: 'multilookup', column: 'places', lookup: ['table' => 't']),
+            ],
+        );
+    }
 }

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 500 tasků: **naplánováno** 4 · **částečně** 29 · **zrušeno** 1 · **hotovo** 466.
+Celkem 505 tasků: **naplánováno** 4 · **částečně** 29 · **zrušeno** 1 · **hotovo** 471.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -117,6 +117,8 @@ alokace `tableId` napříč rooty.
 | `third-party-modules-phase4.md` | 4 | `next-table-id` napříč rooty + `--range` |
 | `third-party-modules-phase5.md` | 5 | Dokumentace (finální) |
 | `addon-modules.md` | — | Doplňkové moduly (#170): druh modulu `kind: addon` a pravidla druhů, neplatné jméno v kořeni modulů je chyba, `shpd-ds ds-module`, generovaný rozcestník `modules/README.md`, vlastní sekce sidebaru a Nastavení z `module.jsonc` |
+| `buildings-phase1.md` | 1 | Doplněk Budovy (`facility.buildings`, #174): typy a druhy smluv, smlouva s místy (`multilookup`), číslování, stavy, varování překryvu míst, filtr `types` v `PlacesLookup`, ověření `ds-module` naostro (#174 D1–D27) |
+| `buildings-phase2.md` | 2 | Doplněk Budovy — fakturace smluv: nastavení fakturace na druhu a smlouvě, řádky předpisu a šablona řádků na druhu, zdroj `buildingContracts`, záložka Fakturace; společný základ řádku předpisu v enginu (#174 D29–D38) |
 
 ## Frontend — shell, navigace, viewery
 
@@ -155,6 +157,7 @@ Server-driven formuláře, generický klient. Reference
 | `form-builder-hardening.md` | Whitelist `inputType`, dedikované buildery (`addTextArea`, `addDate`, …) |
 | `form-header-info.md` | Strukturované info v hlavičce formuláře (`HeaderInfo`) |
 | `form-lookup-fields.md` | Typeahead lookup pro FK na velké tabulky |
+| `form-multilookup.md` | Prvek `multilookup` — výběr více záznamů z tabulky do child tabulky rodiče (`childTables`), převod seznam id ↔ řádky ve `FormController`, štítky s hledáním (#176 D1–D10) |
 | `form-modal-unified-size.md` | Sjednocení velikosti editačních modalů |
 | `form-validation-errors.md` | Zobrazení a kontrakt validačních hlášek |
 | `persons-form-restructure.md` | Restrukturalizace formuláře osob |
@@ -456,6 +459,7 @@ issue #110. Předpoklady: `dimensions-core.md` (Účetnictví),
 | `work-orders-phase2.md` | 2 | Periodická fakturace: předpis na druhu a zakázce, řádky s platností, evidence období, denní běh a CLI s náhledem, koncept přes výměnný formát, Přegenerovat (`replaceConcept`) a Obnovit, záložka Fakturace, rozhraní přispěvatelů, upozornění (#110 D2–D7, D10–D12, D24; Q1–Q7) |
 | `work-orders-rows-readonly.md` | 2 | Oprava: řádky předpisu se řídí stavem zakázky (bez `independentRows` — V pořádku jen ke čtení, Přidat / Smazat v Konceptu a V opravě), backend guard `parent_read_only` |
 | `work-orders-import.md` | — | Výměnný formát zakázky `shpd.workOrders.workOrder.v1` (hlavička, předpis, řádky, *fakturovat od*, cílový stav, převzaté číslo) a endpointy validate / apply pro import ze starého Shipardu (#110 D9, D25, D26) |
+| `periodic-invoicing-sources.md` | — | Periodická fakturace jako modul jádra `economy.periodicInvoicing` se zdroji fakturace: registrace `periodicInvoicingSources`, evidence období per zdroj, společní přispěvatelé, jeden běh a upozornění, záložka Fakturace a akce jako `recordActions`; Zakázky první zdroj (#175 D1–D9) |
 
 ## Došlá pošta (core.mail)
 
@@ -525,6 +529,7 @@ Systém upozornění s akcemi. Reference [`docs/alerts.md`](../docs/alerts.md).
 | `alerts-01.md` | Modul `core.alerts` MVP (checks, reconciliation, snooze/dismiss) |
 | `alerts-02.md` | `detail.actions` ve Vieweru (alerts první konzument akcí) |
 | `alerts-03.md` | Check `docs.core.stale_in_repair` |
+| `alerts-group-per-section.md` | Skupinová karta feedu per check a sekce z nálezu — odznak každé sekce, které se nálezy checku týkají (#181) |
 
 ## Dashboard a Úkoly
 

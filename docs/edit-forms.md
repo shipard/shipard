@@ -158,7 +158,7 @@ Formulář má vždy alespoň jeden tab. Je-li tab jen jeden, tab bar se nezobra
 
 Element žije uvnitř sloupce (`section.columns[i].elements[]`). Sám si nediktuje šířku — tu určuje sloupec.
 
-Povolené typy: `input`, `select`, `multiselect`, `lookup`, `separator`, `inline`, `content`, `component`. Typ `html` zanikl (#150 D82) — formulář HTML se vzhledem neposílá, viz §4.5.
+Povolené typy: `input`, `select`, `multiselect`, `lookup`, `multilookup`, `separator`, `inline`, `content`, `component`. Typ `html` zanikl (#150 D82) — formulář HTML se vzhledem neposílá, viz §4.5.
 
 ### 4.1 `input`
 
@@ -381,6 +381,110 @@ Detailně viz [kapitolu 22](#22-lookup-pole). Pravidla:
 
 - `lookup` element **nemůže** být uvnitř `inline` skupiny.
 - `select` ponechte pro enumy a malé cfgItem-based číselníky; `lookup` je pro velké tabulky se search-driven UX.
+
+### 4.7b `multilookup`
+
+```json
+{
+    "type": "multilookup",
+    "column": "places",
+    "label": "Místa",
+    "placeholder": "Hledat místo…",
+    "lookup": {
+        "table": "base_places_places",
+        "filter": {"types": "office"}
+    }
+}
+```
+
+Výběr **více záznamů z tabulky** (vazba M:N, #176) — vedle `lookup` (jeden
+záznam) a `multiselect` (víc hodnot z pevné nabídky). Ve formuláři jsou
+vybrané záznamy štítky ve vstupu, další se hledá psaním.
+
+**Úložiště je child tabulka**, ne sloupec. Rodič ji deklaruje
+v `childTables` (`docs/document-system.md` §6) a `column` prvku je její
+`dataKey`:
+
+```jsonc
+// tabulka rodiče
+"childTables": [
+    {"table": "buildings_contracts_places", "foreignKey": "contract", "dataKey": "places"}
+]
+```
+
+Vazbu prvku na child tabulku odvodí `Core\Form\MultiLookupBinding`:
+
+- **odkazový sloupec** = jediný sloupec child tabulky s `reference` na
+  tabulku lookupu mimo cizí klíč na rodiče. Žádný nebo víc kandidátů je
+  chyba deklarace (`\LogicException` s tabulkou a sloupcem) a prvek ho
+  musí říct sám: `lookup.refColumn` v JSONC, `refColumn:` v builderu.
+  Klientovi se `refColumn` neposílá.
+- **pořadí** drží sloupec `order_pos`, má-li ho child tabulka (jinak pořadí
+  podle `id` řádku). Pořadí je pořadí výběru, přetahování není.
+
+Chybnou deklaraci zastaví `FormContractTest` nad stromem modulů: každý
+prvek v JSONC formuláři i volání `multiLookup()` v PHP formuláři musí jít
+navázat a tabulka lookupu musí mít registrovaný `TableLookup`. PHP formulář
+se čte ze zdroje — sloupec, tabulka a `refColumn` jsou literál nebo
+konstanta třídy a třída je (sama nebo potomkem) registrovaná ve `forms`.
+
+**Tvar hodnoty.** `data[column]` je seznam id odkazovaných záznamů v pořadí
+(`[12, 7]`), nový záznam má `[]`. `dataResolved[column]` je **seznam**
+položek `{id, primary, secondary}` v pořadí hodnoty — přichází vždy celý
+(i prázdný) v odpovědi meta, přepočtu, uložení i přechodu stavu; id, které
+lookup nenajde, v něm chybí (štítek pak ukáže `#id`).
+
+**Načtení.** `FormController` čte child set rodiče až podle prvků definice,
+takže **definice se při `meta` staví ještě bez seznamu v datech** — PHP
+formulář ho v `buildFormDefinition()` uvidí až při přepočtu, kdy ho klient
+posílá s daty. Na seznamu proto nestav nic, co musí platit hned po
+otevření; filtr lookupu podle jiného pole (druh → povolené typy) tím
+dotčený není. Prvek, který se ve formuláři existujícího záznamu objeví až
+po přepočtu, dostane seznam z databáze.
+
+**Uložení.** Klient posílá seznam; `FormController` ho převede na řádky
+child tabulky (`MultiLookupBinding::toRows()`) a uloží je běžná
+synchronizace `TableGateway`:
+
+- odkaz, který už řádek má, si nechá jeho `id` (změní se nejvýš pořadí),
+  nový odkaz je řádek bez `id`, chybějící se smaže; `[]` smaže vše;
+- posílá se jen `id`, odkaz a `order_pos` — **ostatní sloupce vazby prvek
+  nespravuje**: nový řádek dostane výchozí hodnoty sloupců, existující se
+  nemění. Jejich úprava patří sub-tabulce (kap. 15);
+- klíč projde **jen u formuláře, jehož aktuální definice prvek má** a není
+  `readOnly` — whitelist jde podle prvků, ne podle `childTables`. Formulář
+  bez prvku tak uložením hlavičky vazby nesmaže (chybějící klíč ≠ prázdný
+  seznam) a řádky dokladů se touto cestou uložit nedají. V read-only stavu
+  dokumentu platí `editable_columns` jako u sloupců;
+- Document třída rodiče vidí v `validate()` / `beforeSave()` pod klíčem
+  řádky child tabulky (`[{id?, <odkaz>, order_pos}]`), stejný tvar jako
+  z API.
+
+**Chyby.** Hodnota, která není seznam kladných celých čísel, a záznam
+vybraný dvakrát jsou 422 `VALIDATION_ERROR` s chybou na `column` (kódy
+`invalid_list`, `duplicate` — zpráva jmenuje záznam; texty
+`core.system.formDefaults`) dřív, než se volá gateway; duplicitu nedovolí
+už frontend. Chyba Document třídy s cestou do řádku (`places.1.place`) se
+ukáže u celého pole — viz kontrakt `field` v kap. 8.
+
+**Hledání a filtr** jdou přes `TableLookup` odkazované tabulky stejným
+endpointem jako `lookup` (kap. 22): `lookup.filter` staví formulář při
+přepočtu a projdou jen klíče z `getAllowedFilterKeys()`. Vybrané záznamy
+se v nabídce skrývají. Úprava ani založení záznamu z pole není — příznaky
+`editForm` / `createForm` prvek odmítne.
+
+Pravidla:
+
+- `multilookup` **nemůže** být uvnitř `inline` skupiny ani v záložce
+  z modulu (`formTabs`, kap. 27 — ta ukládá jen sloupce tabulky).
+- `required` je jen hvězdička u popisku; povinnost hlídá Document třída.
+- V detailu záznamu se vazby ukazují blokem `table` s `open_detail` na
+  řádku — vlastní typ obsahu prvek nemá.
+
+PHP builder: `TabBuilder::multiLookup(column, table:, filter:, label:,
+placeholder:, required:, readOnly:, hidden:, triggers:, hint:,
+refColumn:)`. Popisek se z definice tabulky neodvodí (`column` není sloupec
+rodiče) — uveď `label`.
 
 ### Zaniklé typy
 
@@ -658,6 +762,7 @@ zavře sám.
 |-----------------|--------|------------|
 | Konkrétní `column` formuláře | Field-level chyba | error vedle inputu, tabová tečka, řádek v banneru s prefixem labelu pole |
 | Virtuální sloupec strukturovaného pole (`filing_profile.typ_ds`, kap. 25) | Field-level chyba | dtto — pro klienta je to obyčejný `column` |
+| Cesta do řádku child tabulky prvku `multilookup` (`places.1.place`, §4.7b) | Field-level chyba prvku `places` | error u pole se štítky; víc chyb jednoho pole se spojí (každá na vlastním řádku) |
 | `field` = id nějakého tabu (typicky subtable, např. `rows` → tab „Řádky") | Tab-level chyba | banner + tabová tečka na tom tabu + `switchToErrorTab` na něj přeskočí |
 | `_form` (konstanta `ValidationError::FIELD_FORM`) | Form-level chyba | jen banner, holá hláška |
 | Cokoli jiného (neznámý sloupec, prázdný string) | Fallback na form-level | jako `_form` — jen banner |
@@ -775,11 +880,12 @@ Mechanismus je generický na úrovni `Modal.svelte` — žádný kontext o tom, 
 
 ### Detekce neuložených změn (dirty state)
 
-FormEditor sleduje změny dat oproti snapshotu pořízenému při posledním načtení nebo uložení. Stav propaguje do FormDialogu přes `onDirtyChange` callback. Když je formulář dirty a uživatel se ho pokusí zavřít (Esc, klik na overlay, tlačítko `×`), zobrazí se nativní `window.confirm` s textem „Máte neuložené změny. Opravdu chcete zavřít formulář?". Tlačítka Uložit a stavová tlačítka kontrolu obcházejí — ta změny ukládají, ne ztrácejí.
+FormEditor sleduje změny dat oproti snapshotu pořízenému při posledním načtení nebo uložení. Stav propaguje do FormDialogu přes `onDirtyChange` callback. Když je formulář dirty a uživatel se ho pokusí zavřít (Esc, klik na overlay, tlačítko `×`), zobrazí se `ConfirmDialog` Zahodit / Zůstat (`FormDialog.guardDirty()`, kap. 16). Tlačítka Uložit a stavová tlačítka kontrolu obcházejí — ta změny ukládají, ne ztrácejí.
 
 - **ReadOnly formuláře nikdy nejsou dirty** — uživatel nemůže nic změnit.
 - **Recalculate NEaktualizuje snapshot** — recalculate neukládá do DB, takže přepočítaná data jsou stále neuložená změna. Po triggeru je formulář dirty (server typicky přepočítá hodnoty) a uživatel musí změnu explicitně uložit. Pokud zavře bez uložení, confirm dialog ho upozorní.
 - **`null` vs `''`** — porovnání tyto dvě hodnoty považuje za rovné (server vrací `null` u nullable polí, formulář je interně reprezentuje jako `''`).
+- **Seznamy** (`multilookup`, `multiselect`) se porovnávají **podle obsahu a pořadí**, ne podle reference (`utils/multiLookup.js` `sameList()`): přepočet i každý výběr dávají nové pole, takže návrat k původnímu výběru formulář zase vyčistí; změna pořadí je změna; prázdný seznam je totéž co nevyplněno.
 - **Subtables** — každá instance FormDialogu (Osoba, Kontakt v Osobě) má vlastní dirty check. Otevřený subdialog Kontaktu sleduje změny svých polí nezávisle na rodičovské Osobě.
 
 ### Force close — bypass dirty kontroly
@@ -962,6 +1068,7 @@ $tab = $this->tab('basic', 'Základní údaje')
 | `checkbox` | `checkbox` | `boolean` |
 | `select` | — | `enumInt`, `enumString` |
 | `multiselect` | — | `json` (list hodnot) |
+| `multiLookup` | — | child tabulka z `childTables` (seznam id, §4.7b) |
 
 **Past — číselný sloupec přes `input()`.** `input()` typ pole neodvozuje
 ze sloupce: bez `inputType` je to textové pole a prázdná hodnota odejde
@@ -990,6 +1097,12 @@ $col->select(string $column, ?string $label = null, ?array $options = null,
 
 $col->multiselect(string $column, ?string $label = null, ?array $options = null,
     ?string $triggers = null, bool $required = false, ...): static;
+
+$col->multiLookup(string $column, string $table, ?array $filter = null,
+    ?string $label = null, ?string $placeholder = null, bool $required = false,
+    bool $readOnly = false, bool $hidden = false, ?string $triggers = null,
+    ?string $hint = null, ?string $refColumn = null): static;
+    // $column = dataKey child tabulky rodiče, hodnota = seznam id (§4.7b)
 
 $col->separator(?string $label = null, bool $hidden = false): static;
 $col->content(array $blocks, bool $hidden = false): static;   // bloky obsahu detailu (§4.5)
@@ -1543,6 +1656,7 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 | `FormFieldRow.svelte` | Wrapper jedné label+input dvojice — emituje DVA sourozence do FormColumn gridu; popisek s řádkem na středu pole, smí se zalomit |
 | `FormInline.svelte` | Inline skupina (víc polí v jedné řádce); první pole použije label řádky, ostatní mají mini-labely. V úzké sekci pole pod sebou s popisky nad sebou — jedno DOM, přepíná `@container form-section` |
 | `FormElement.svelte` | Renderer elementu — switch podle `type` + delegace na UI komponenty; `content` kreslí sdílená `content/ContentBlock.svelte` (§4.5), `component` registr `formComponents.js` (§4.6) |
+| `MultiLookupInput.svelte` (ui/) | Prvek `multilookup` (§4.7b): štítky vybraných záznamů ve vstupu, hledání jako `LookupInput` (sdílené `utils/lookupSearch.js`), nabídka jako vrstva zásobníku; čisté funkce v `utils/multiLookup.js` |
 | `FormDocVatRecap.svelte`, `FormDocParties.svelte` | Komponenty formuláře dokladu `docVatRecap` / `docParties` nad sdílenými částmi dokladu (`document/VatRecapTable.svelte`, `document/PartyCard.svelte`) — §4.6 |
 | `FormSubTable.svelte` | Sub-tabulka: sloupce a řádky ze serveru (`/subtable`), Přidat / Upravit / Smazat (ConfirmDialog) nebo Zobrazit v read-only, klientský filtr od 11 řádků — kap. 15 |
 | `FormStateBar.svelte` | Spodní toolbar: Uložit + přechodová tlačítka; `readOnly` skryje obojí, bez jediné akce se nerenderuje. `isNew` + `onSaveAndContinue` → Přidat + Přidat a pokračovat (na mobilu v kebabu — sdílený `ui/KebabMenu` s položkami `{key, label, danger, run}`, výčet skládá lišta) |
@@ -1569,6 +1683,7 @@ v Document rodiče; `FormController` o tabulkách řádků nic neví.
 | `FormDefinition` | Datová třída; `toArray()` → snake_case JSON |
 | `FormTab` | Datová třída |
 | `FormElement` | Datová třída; `input_type`, `hidden`, `triggers`; `blocks` prvku `content` (validace typů bloků, §4.5) |
+| `MultiLookupBinding` | Vazba prvku `multilookup` na child tabulku rodiče: odvození odkazového sloupce a pořadí, převod seznam id ↔ řádky (§4.7b) |
 | `FormRegistry` | Registr PHP tříd formulářů; podporuje per-table polymorfismus přes `typeColumn` + `classes` + `defaultClass` (`createForm($table, $data, ...)`) — viz kap. 23 |
 | `FormController` | HTTP controller; volá `createForm($table, $data, ...)` ve všech metodách (`resolveFormDefinition`, `recalculate`, `enrichHeaderInfo`, `resolveSubtableContext` pro `subtable` / `subtableMove`) |
 | `AutoFormBuilder` | Generuje FormDefinition z TableDefinition |
@@ -1990,6 +2105,7 @@ Inline combobox pro FK na velké tabulky. Klient si průběžně dohledává zá
 
 - **`select`** — enumy (`enumInt`/`enumString`), malé cfgItem-based číselníky (jednotky, sazby DPH, typy adres). Options se předají v `FormDefinition` jako pole `{value, label}`.
 - **`lookup`** — velké tabulky (Osoby, Adresy, Bankovní účty, Položky…), kde nativní `<select>` nezvládá vyhledávání a stažení tisíců záznamů do payloadu by zpomalilo render.
+- **`multilookup`** — víc záznamů z velké tabulky (vazba M:N přes child tabulku). Hledá týmž endpointem a `TableLookup` jako `lookup`, liší se tvarem hodnoty, `dataResolved` a uložením — viz [§4.7b](#47b-multilookup).
 
 ### Wire formát elementu
 
@@ -2098,6 +2214,7 @@ Response stejný tvar jako search bez `total`. Neexistující ID se v `items[]` 
 
 - `dataResolved` je vždy přítomné (pro nový záznam je `{}`)
 - Klíče jsou pouze ty `column` z lookup elementů, kde má `data[column]` ne-null hodnotu a kde resolve uspěl
+- Prvek `multilookup` má pod svým klíčem **seznam** položek v pořadí hodnoty, vždy celý — i prázdný (§4.7b)
 - camelCase top-level (drží konzistenci s `formDefinition`); uvnitř `formDefinition.tabs[].sections[]` zůstává snake_case
 
 ### `TableLookup` třída

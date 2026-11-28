@@ -23,7 +23,7 @@ final class TestableWorkOrderRowLockProvider extends WorkOrderRowLockProvider
         return $this;
     }
 
-    protected function loadWorkOrders(array $ids): array
+    protected function loadParents(array $ids): array
     {
         $this->queries[] = $ids;
         return array_intersect_key($this->workOrders, array_flip($ids));

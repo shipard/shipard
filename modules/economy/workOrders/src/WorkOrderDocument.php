@@ -12,8 +12,8 @@ use Shipard\Core\Numbering\NumberPattern;
 use Shipard\Core\Numbering\SequenceCounter;
 use Shipard\Core\Numbering\SequenceStorage;
 use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettingsResolver;
 
 /**
  * Zakázka (economy_work_orders_heads, docs/work-orders.md §5.3–5.4,
@@ -258,7 +258,7 @@ class WorkOrderDocument extends Document
             $data['parent'] = null;
         }
         if ($type !== '' && $types->invoicing($type) !== WorkOrderTypes::INVOICING_PERIODIC) {
-            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::WORK_ORDER_COLUMNS] as $col) {
+            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::RECORD_COLUMNS] as $col) {
                 $data[$col] = null;
             }
         } elseif ($type !== '' && !self::hasValue($data['inv_from'] ?? null)) {

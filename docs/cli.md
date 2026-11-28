@@ -426,7 +426,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 | `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep`, `sales-registration-run` (fronta evidence tržeb — jen zdroj dat se zapnutým doplňkem) | `active` | `core.mail`, `economy.salesRegistration` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
 | `five-minutes` | à 5 min | `device-challenges-prune` (úklid výzev zařízení — i v `read_only`), `exchange-rates-download` (síť jen při chybějícím lístku: nejvýš 6 dotazů, pauza 1 h), `sales-registration-reconcile` (záchranná síť evidence tržeb — jen se zapnutým doplňkem), `alerts-run` (self-throttling přes `next_run_at`) | `active` | `core.devices`, `economy.exchangeRates`, `economy.salesRegistration`, `core.alerts` |
-| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `print-jobs-prune` (`active` — úklid tiskových úloh starších než 30 dní), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `core.prints`, `economy.vat`, `economy.workOrders`; server-level — |
+| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `print-jobs-prune` (`active` — úklid tiskových úloh starších než 30 dní), `vat-periods-ensure` (`active`), `periodic-invoicing-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `core.prints`, `economy.vat`, `economy.periodicInvoicing`; server-level — |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
 **Odkud se úlohy berou** (#172 D6): per-DS úlohy deklarují moduly polem
@@ -1346,9 +1346,9 @@ nebo třída, neplatný účel, přechod na `free` bez terminálu, chyba zápisu
 cd /opt/shipard/data-sources/<id>
 shpd-ds ds-module                              # list (výchozí akce)
 shpd-ds ds-module list --json
-sudo shpd-ds ds-module enable facility.core    # zapíše main.json a spustí ds-upgrade
-sudo shpd-ds ds-module disable facility.core   # tabulky modulu zůstávají
-sudo shpd-ds ds-module enable facility.core --no-upgrade
+sudo shpd-ds ds-module enable facility.buildings    # zapíše main.json a spustí ds-upgrade
+sudo shpd-ds ds-module disable facility.buildings   # tabulky modulu zůstávají
+sudo shpd-ds ds-module enable facility.buildings --no-upgrade
 ```
 
 Moduly zdroje dat a zapínání **doplňků** (#170 D5,
@@ -1444,41 +1444,60 @@ Exit 0 bez rozdílů, 1 s rozdíly nebo chybou plánu nebo rokem kontroly ve
 stavu `errors` (varování a uplynulá doba neshazují); FAILURE i při chybě
 prostředí.
 
-#### `work-orders-invoice-run [--date=YYYY-MM-DD] [--work-order=<číslo>] [--dry-run]`
+#### `periodic-invoicing-run [--date=YYYY-MM-DD] [--source=<id>] [--record=<číslo>] [--dry-run]`
 
-Modul: `economy.workOrders`
+Modul: `economy.periodicInvoicing`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
-shpd-ds work-orders-invoice-run --dry-run                   # která období by se vystavila a jaké doklady
-shpd-ds work-orders-invoice-run                             # vystaví koncepty za splatná období (denní cron)
-shpd-ds work-orders-invoice-run --date=2026-11-01 --dry-run # simulace běhu k datu
-shpd-ds work-orders-invoice-run --work-order=S260001        # jedna zakázka — i přes pojistku dohánění
+shpd-ds periodic-invoicing-run --dry-run                    # která období by se vystavila a jaké doklady
+shpd-ds periodic-invoicing-run                              # vystaví koncepty za splatná období všech zdrojů (denní cron)
+shpd-ds periodic-invoicing-run --date=2026-11-01 --dry-run  # simulace běhu k datu
+shpd-ds periodic-invoicing-run --source=workOrders          # jen jeden zdroj fakturace
+shpd-ds periodic-invoicing-run --source=workOrders --record=S260001   # jeden záznam — i přes pojistku dohánění
 ```
 
-Běh periodické fakturace ([work-orders.md](work-orders.md) §5.5, #110 D5):
-pro každou periodickou zakázku **V pořádku** s „fakturovat od“ založí
-chybějící splatná období (den fakturace = počátek / konec období ≤ datum
-běhu) a vystaví je jako **koncepty** faktur nebo zálohových faktur
-vydaných přes výměnný formát (`DocumentApplier`, Q1). Založení dokladu
-a zápis do evidence období jsou jedna transakce; `issued` období se
-nikdy nevystaví podruhé (idempotentní, smazaný koncept = zastaveno).
-Víc než 3 dlužná období jedné zakázky běh nevystaví (pojistka dohánění,
-Q4) — vystaví je `--work-order` nebo akce *Vystavit dlužná období*
-v detailu zakázky. Chyba jednoho období (chybějící řada, validace
-dokladu, žádný platný řádek) zastaví jen to období; důvod zůstane
-v evidenci a hlásí ho upozornění. Výstup: řádek per zakázka × období
-(vystaveno / čeká na podklady / selhalo / pojistka) a souhrn. Na DS bez
-modulu zakázek rychlý exit 0.
+Běh periodické fakturace ([work-orders.md](work-orders.md) §5.5, #110 D5,
+#175 D6) — jeden pro všechny **zdroje fakturace** (Zakázky a další zdroje
+registrované přes `periodicInvoicingSources`,
+`modules/economy/periodicInvoicing/README.md`): pro každý záznam, který
+zdroj vrací mezi kandidáty (u zakázek periodická zakázka **V pořádku**
+s „fakturovat od“), založí chybějící splatná období (den fakturace =
+počátek / konec období ≤ datum běhu) a vystaví je jako **koncepty** faktur
+nebo zálohových faktur vydaných přes výměnný formát (`DocumentApplier`, Q1).
+Založení dokladu a zápis do evidence období zdroje jsou jedna transakce;
+`issued` období se nikdy nevystaví podruhé (idempotentní, smazaný koncept =
+zastaveno). Víc než 3 dlužná období jednoho záznamu běh nevystaví (pojistka
+dohánění, Q4) — vystaví je `--record` nebo akce *Vystavit dlužná období*
+v detailu záznamu. Chyba jednoho období (chybějící řada, validace dokladu,
+žádný platný řádek) zastaví jen to období; důvod zůstane v evidenci a hlásí
+ho upozornění. Výstup: hlavička per záznam (`<číslo a název> [<zdroj>]`),
+řádek per období (vystaveno / čeká na podklady / selhalo / pojistka)
+a souhrn.
 
-Exit 0; 1 když se některé období nepodařilo vystavit; INVALID při špatném
-datu nebo neznámém čísle zakázky.
+`--source` omezí běh na jeden zdroj (id z registrace, u zakázek
+`workOrders`), `--record` na jeden záznam zdroje podle čísla — číslo hledá
+zdroj, proto `--record` bez `--source` končí chybou. Bez registrovaného
+zdroje příkaz nic nedělá (exit 0).
+
+Exit 0; 1 když se některé období nepodařilo vystavit; 2 při špatném datu,
+neznámém zdroji nebo čísle záznamu a u `--record` bez `--source`.
 
 | Opce | Význam |
 |------|--------|
 | `--date=YYYY-MM-DD` | datum běhu (splatnost období); výchozí dnešek |
-| `--work-order=<číslo>` | jen tato zakázka, bez pojistky dohánění |
+| `--source=<id>` | jen tento zdroj fakturace |
+| `--record=<číslo>` | jen tento záznam zdroje (vyžaduje `--source`), bez pojistky dohánění |
 | `--dry-run` | jen výčet, nic se nezapíše (ani období se nezaloží) |
+
+#### `work-orders-invoice-run [--date=YYYY-MM-DD] [--work-order=<číslo>] [--dry-run]`
+
+Modul: `economy.workOrders`
+
+**Alias na jedno vydání** (#175 D6) — zanikne v dalším vydání, používej
+`periodic-invoicing-run`: bez voleb odpovídá `--source=workOrders`,
+`--work-order=<číslo>` odpovídá `--source=workOrders --record=<číslo>`.
+Při spuštění to vypíše. Úlohu cronu nemá.
 
 #### `exchange-rates-import <soubor|složka> [--replace]`
 

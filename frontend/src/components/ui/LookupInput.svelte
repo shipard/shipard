@@ -4,6 +4,7 @@
   import { FORM_DATA_CONTEXT } from '../form/formContext.js';
   import { t } from '../../i18n/index.js';
   import { openLayer } from '../../utils/layerStack.js';
+  import { createLookupSearch } from '../../utils/lookupSearch.js';
   import Icon from './Icon.svelte';
   import { iconEdit, iconAdd } from '../../icons.js';
   // Přímý import FormDialog — stejný vzor jako FormSubTable.svelte. Vite zvládá
@@ -37,9 +38,28 @@
   let loading = $state(false);
   let lastError = $state(null);
   let activeIndex = $state(-1);
-  let debounceTimer = null;
-  /** Token nejnovějšího fetche — starší odpovědi ignoruje. */
-  let currentFetchToken = 0;
+
+  // Hledání se zpožděním a zahazováním starších odpovědí — sdílené
+  // s MultiLookupInput (utils/lookupSearch.js).
+  const search = createLookupSearch({
+    get,
+    getLookup: () => lookup,
+    onState: (patch) => {
+      loading = patch.loading;
+      lastError = failureText(patch.failure);
+      if (patch.items !== undefined) {
+        results = patch.items;
+        if (patch.failure === null) {
+          activeIndex = results.length > 0 ? 0 : -1;
+        }
+      }
+    },
+  });
+
+  function failureText(failure) {
+    if (!failure) return null;
+    return failure.network ? t('common.unknownError') : (failure.error?.message ?? t('lookup.error'));
+  }
 
   // ── Sub-form dialog state ────────────────────────────────────────────────
   // Otevírá vnořený FormDialog pro editaci aktuálního výběru (edit) nebo
@@ -59,58 +79,6 @@
   const canEdit = $derived(!!lookup?.edit_form && hasValue && !disabled);
   const canCreate = $derived(!!lookup?.create_form && !disabled);
 
-  function buildSearchUrl(term) {
-    const params = new URLSearchParams();
-    params.set('q', term);
-    if (lookup?.filter) {
-      for (const [k, v] of Object.entries(lookup.filter)) {
-        if (v !== null && v !== undefined) {
-          params.set(`filter[${k}]`, String(v));
-        }
-      }
-    }
-    return `/_ui/lookup/${lookup.table}/search?${params.toString()}`;
-  }
-
-  async function runSearch(term) {
-    if (!lookup?.table) {
-      results = [];
-      loading = false;
-      return;
-    }
-    const myToken = ++currentFetchToken;
-    loading = true;
-    lastError = null;
-    const res = await get(buildSearchUrl(term));
-    // Starší fetch overlap: odpověď zahodíme, novější už běží.
-    if (myToken !== currentFetchToken) {
-      return;
-    }
-    loading = false;
-    if (res === null) {
-      lastError = t('common.unknownError');
-      results = [];
-      return;
-    }
-    if (!res.success) {
-      lastError = res.error?.message ?? t('lookup.error');
-      results = [];
-      return;
-    }
-    results = res.data?.items ?? [];
-    activeIndex = results.length > 0 ? 0 : -1;
-  }
-
-  function scheduleSearch(term) {
-    if (debounceTimer !== null) {
-      clearTimeout(debounceTimer);
-    }
-    debounceTimer = setTimeout(() => {
-      debounceTimer = null;
-      runSearch(term);
-    }, 300);
-  }
-
   function openDropdown() {
     if (disabled || open) return;
     open = true;
@@ -120,7 +88,7 @@
     // Pokud nějaké value není, displayLabel = '' — chovaní jako předtím.
     searchTerm = displayLabel;
     // Iniciální načtení — prázdné q = první stránka záznamů.
-    runSearch('');
+    search.run('');
     // Select all v inputu — odložit do mikrotasku, až Svelte propiše value.
     queueMicrotask(() => {
       inputEl?.select();
@@ -131,10 +99,7 @@
     open = false;
     searchTerm = '';
     activeIndex = -1;
-    if (debounceTimer !== null) {
-      clearTimeout(debounceTimer);
-      debounceTimer = null;
-    }
+    search.cancel();
   }
 
   function handleFocus() {
@@ -147,7 +112,7 @@
       open = true;
     }
     searchTerm = e.currentTarget.value;
-    scheduleSearch(searchTerm);
+    search.schedule(searchTerm);
   }
 
   function handleSelect(item) {

@@ -82,8 +82,8 @@ class WorkOrdersFormTest extends TestCase
             [WorkOrderTypes::CFG_ITEM, self::TYPES],
             [WorkOrdersForm::CURRENCIES_CFG_ITEM, ['czk' => ['name' => 'Česká koruna', 'alpha3' => 'CZK'], 'eur' => ['name' => 'Euro', 'alpha3' => 'EUR']]],
             ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná'], 'invni' => ['name' => 'Faktura přijatá']]],
-            ['economy.workOrders.periodicities', ['month' => ['name' => 'Měsíčně'], 'quarter' => ['name' => 'Čtvrtletně']]],
-            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období'], 'end' => ['name' => 'Na konci období']]],
+            ['economy.periodicInvoicing.periodicities', ['month' => ['name' => 'Měsíčně'], 'quarter' => ['name' => 'Čtvrtletně']]],
+            ['economy.periodicInvoicing.invoiceTimings', ['start' => ['name' => 'Na počátku období'], 'end' => ['name' => 'Na konci období']]],
             ['docs.core.vatModes', ['0' => ['name' => 'Bez DPH'], '1' => ['name' => 'Ze základu'], '2' => ['name' => 'Z ceny celkem']]],
             ['docs.core.paymentMethods', ['0' => ['name' => 'Hotovost'], '1' => ['name' => 'Převodem']]],
         ]);

@@ -79,7 +79,7 @@ class DevicesControllerTest extends TestCase
     private function tables(): array
     {
         $def = TableDefinition::fromArray([
-            'tableId' => 472,
+            'tableId' => 479,
             'name'    => 'Devices',
             'columns' => [['id' => 'id', 'name' => 'ID', 'type' => 'int', 'autoIncrement' => true, 'primaryKey' => true]],
         ]);

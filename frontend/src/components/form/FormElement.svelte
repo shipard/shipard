@@ -8,6 +8,7 @@
   import NumberInput from '../ui/NumberInput.svelte';
   import DateInput from '../ui/DateInput.svelte';
   import LookupInput from '../ui/LookupInput.svelte';
+  import MultiLookupInput from '../ui/MultiLookupInput.svelte';
   import FormFieldRow from './FormFieldRow.svelte';
   import FormInline from './FormInline.svelte';
   import ContentBlock from '../content/ContentBlock.svelte';
@@ -104,6 +105,20 @@
         {error}
         onchange={handleChange}
         onResolveChange={(item) => onResolveChange?.(element.column, item)}
+      />
+
+    {:else if element.type === 'multilookup'}
+      <MultiLookupInput
+        id={inputId}
+        bind:value={formData[element.column]}
+        resolved={dataResolved?.[element.column] ?? []}
+        lookup={element.lookup}
+        required={element.required ?? false}
+        disabled={elDisabled}
+        placeholder={element.placeholder}
+        {error}
+        onchange={handleChange}
+        onResolveChange={(items) => onResolveChange?.(element.column, items)}
       />
 
     {:else if element.input_type === 'textarea'}

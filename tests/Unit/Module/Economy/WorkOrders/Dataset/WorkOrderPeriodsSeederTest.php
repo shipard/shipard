@@ -18,8 +18,8 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetWriter;
 use Shipard\Module\Core\Exchange\Dataset\SeedContext;
 use Shipard\Module\Core\Exchange\Dataset\SeedReport;
 use Shipard\Module\Economy\WorkOrders\Dataset\WorkOrderPeriodsSeeder;
-use Shipard\Module\Economy\WorkOrders\Invoicing\ContentHash;
-use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
+use Shipard\Module\Economy\PeriodicInvoicing\ContentHash;
+use Shipard\Module\Economy\PeriodicInvoicing\PeriodRepository;
 use Shipard\Tests\Unit\Module\Core\Exchange\Dataset\DatasetPreflightTest;
 
 /**
@@ -111,7 +111,7 @@ class WorkOrderPeriodsSeederTest extends TestCase
     {
         $reader = $this->writeSet();
         $ctx = $this->context($reader);
-        $repository = new class($ctx->db) extends PeriodRepository {
+        $repository = new class($ctx->db, 'economy_work_orders_periods', 'work_order') extends PeriodRepository {
             /** @var list<array> */
             public array $calls = [];
 

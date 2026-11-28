@@ -21,5 +21,18 @@
         "name": "No",
         "name:cs": "Ne",
         "name:en": "No"
+    },
+
+    // Chyby prvku `multilookup` při uložení formuláře (FormController,
+    // #176 D5) — hodnota mimo seznam id a záznam vybraný dvakrát.
+    "multiLookupInvalid": {
+        "name": "The value must be a list of records.",
+        "name:cs": "Hodnota musí být seznam záznamů.",
+        "name:en": "The value must be a list of records."
+    },
+    "multiLookupDuplicate": {
+        "name": "{name} is selected more than once.",
+        "name:cs": "Záznam {name} je vybraný víckrát.",
+        "name:en": "{name} is selected more than once."
     }
 }

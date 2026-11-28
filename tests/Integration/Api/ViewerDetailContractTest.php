@@ -55,6 +55,8 @@ class ViewerDetailContractTest extends IntegrationTestCase
         'economy.items.kinds' => ['Typ položky'],
         // Seedovaný druh místa se jmenuje stejně jako jeho typ (Budova / Budova); uživatelské druhy ne.
         'base.places.kinds' => ['Typ místa'],
+        // Seedovaný druh smlouvy doplňku Budovy se jmenuje stejně jako jeho typ (Kancelář / Kancelář); uživatelské druhy ne.
+        'facility.buildings.contractKinds' => ['Typ smlouvy'],
         // Součty případu s jediným pohybem = částka toho pohybu v podtitulku.
         'economy.accbal.ledger' => ['Předpisy', 'Úhrady', 'Zůstatek'],
         // Kód bankovního účtu bývá jeho pořadové číslo.

@@ -55,7 +55,7 @@ class DevicesModuleTest extends TestCase
             $ids[$table] = TableDefinition::fromArray(self::table($table))->tableId;
         }
         $this->assertSame(
-            ['core_devices_devices' => 472, 'core_devices_peripherals' => 473, 'core_devices_challenges' => 474],
+            ['core_devices_devices' => 479, 'core_devices_peripherals' => 480, 'core_devices_challenges' => 481],
             $ids,
         );
 

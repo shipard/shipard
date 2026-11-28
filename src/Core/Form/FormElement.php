@@ -19,6 +19,7 @@ final class FormElement
         'select',
         'multiselect',
         'lookup',
+        'multilookup',
         'separator',
         'inline',
         'component',
@@ -47,6 +48,9 @@ final class FormElement
      * @param FormElement[]|null $elements Used by inline groups.
      * @param array<int, array{value: mixed, label: string}>|null $options
      * @param array{table: string, filter: array<string, scalar>|null}|null $lookup
+     *     U prvku `multilookup` (#176) navíc nepovinné `ref_column` — odkazový
+     *     sloupec child tabulky, když ho nejde odvodit (`MultiLookupBinding`);
+     *     klientovi se neposílá.
      * @param list<array<string, mixed>>|null $blocks Bloky obsahu prvku `content`
      *     (#150 D83) — kontrakt detailu záznamu (`DetailContent`), jen typy
      *     sdílené komponenty frontendu (`DetailContent::SHARED_TYPES`).
@@ -152,6 +156,34 @@ final class FormElement
             }
             if (array_key_exists('create_defaults', $lookup) && !is_bool($lookup['create_defaults'])) {
                 throw new \InvalidArgumentException('lookup.create_defaults must be bool');
+            }
+        }
+
+        // Výběr více záznamů z tabulky (#176 D1): `column` = `dataKey` child
+        // tabulky rodiče, hodnota = seznam id. Úprava ani založení záznamu
+        // z pole není (D6), proto žádné příznaky `lookup`.
+        if ($type === 'multilookup') {
+            if ($column === null || $column === '') {
+                throw new \InvalidArgumentException('multilookup element requires column');
+            }
+            if ($lookup === null) {
+                throw new \InvalidArgumentException('multilookup element requires lookup config {table, filter?, ref_column?}');
+            }
+            $table = $lookup['table'] ?? null;
+            if (!is_string($table) || $table === '') {
+                throw new \InvalidArgumentException('multilookup lookup.table must be a non-empty string');
+            }
+            if (array_key_exists('filter', $lookup) && $lookup['filter'] !== null && !is_array($lookup['filter'])) {
+                throw new \InvalidArgumentException('multilookup lookup.filter must be array|null');
+            }
+            $refColumn = $lookup['ref_column'] ?? null;
+            if ($refColumn !== null && (!is_string($refColumn) || $refColumn === '')) {
+                throw new \InvalidArgumentException('multilookup lookup.ref_column must be a non-empty string');
+            }
+            foreach (['edit_form', 'create_form', 'edit_triggers', 'create_defaults'] as $flag) {
+                if (array_key_exists($flag, $lookup)) {
+                    throw new \InvalidArgumentException("multilookup does not support lookup.{$flag}");
+                }
             }
         }
     }

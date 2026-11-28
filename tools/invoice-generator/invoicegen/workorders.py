@@ -6,7 +6,7 @@ jak by je složil `InvoiceBuilder` nad naseedovanou zakázkou:
   fakturace na počátku období, splatná období k datu běhu);
 - `period_label` = `PeriodLabel` (měsíc přes ICU `LLLL yyyy` — názvy
   měsíců v 1. pádě ověřené proti PHP 8.5 / ICU 74; čtvrtletí a pololetí
-  z cfgItem `economy.workOrders.periodTexts`);
+  z cfgItem `economy.periodicInvoicing.periodTexts`);
 - `doc_text` = `DocTextTemplate` (`{období}` / `{period}`, prázdná šablona =
   název zakázky + štítek, ořez na 200 znaků);
 - `rows_valid_at` = `InvoiceBuilder::rowsValidAt` (platnost řádku předpisu

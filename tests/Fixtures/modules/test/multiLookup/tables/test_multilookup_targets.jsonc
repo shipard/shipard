@@ -1,0 +1,33 @@
+// Fixture tabulka — existuje jen v testech. Cíl vazby M:N, hledá se přes
+// `TargetsLookup` (filtr `kind` z whitelistu).
+{
+    "tableId": 9006,
+    "name": "test_multilookup_targets",
+    "displayPattern": "{name}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true,
+            "nullable": false,
+            "system": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "kind",
+            "name": "Kind",
+            "type": "varchar",
+            "length": 10,
+            "nullable": true
+        }
+    ]
+}

@@ -6,7 +6,7 @@ namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
-use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
+use Shipard\Module\Economy\PeriodicInvoicing\InvoicingSettings;
 
 /**
  * Druh zakázky (economy_work_orders_kinds, docs/work-orders.md D14).

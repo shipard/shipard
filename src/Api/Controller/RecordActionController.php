@@ -13,6 +13,8 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Document\DocumentEventDispatcher;
+use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Module\ModuleUiExtension;
 use Shipard\Core\Module\ModuleUiExtensions;
@@ -62,6 +64,8 @@ final class RecordActionController
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?ServerConfig $serverConfig = null,
         private readonly string $language = 'en',
+        private readonly ?DocumentRegistry $documents = null,
+        private readonly ?DocumentEventDispatcher $dispatcher = null,
     ) {
     }
 
@@ -119,6 +123,9 @@ final class RecordActionController
             $auth->userId,
             $auth->isAdmin,
             $this->serverConfig,
+            $this->documents,
+            $this->tables,
+            $this->dispatcher,
         );
 
         // Výjimku akce zaloguje a spolkne `call()` — tady z ní zbývá `null`.

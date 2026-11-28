@@ -61,7 +61,7 @@
             "name:en": "State",
             "type": "enumString",
             "length": 10,
-            "cfgItem": "economy.workOrders.periodStates",
+            "cfgItem": "economy.periodicInvoicing.periodStates",
             "nullable": false,
             "default": "planned"
         },

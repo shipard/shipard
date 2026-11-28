@@ -376,9 +376,8 @@ function dispatch(
 		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config, $journalContributors),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
 		'assets' => dispatchAssets($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
-		'workOrders' => dispatchWorkOrders($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
 		'docs'    => dispatchDocs($route, $request, $db, $configRuntime, $resolved, $documentRegistry, $tables, $documentEventDispatcher),
-		'recordAction' => dispatchRecordAction($route, $request, $auth, $tables, $db, $viewerRegistry, $configRuntime, $resolved->config, $serverConfig, resolveLanguage($request, $resolved->config)),
+		'recordAction' => dispatchRecordAction($route, $request, $auth, $tables, $db, $viewerRegistry, $configRuntime, $resolved->config, $serverConfig, resolveLanguage($request, $resolved->config), $documentRegistry, $documentEventDispatcher),
 		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
@@ -579,32 +578,6 @@ function dispatchAssets(
 	};
 }
 
-function dispatchWorkOrders(
-	Route $route,
-	Request $request,
-	\Shipard\Core\Database\DataSourceConnection $db,
-	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
-	\Shipard\Api\ResolvedDataSource $resolved,
-	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
-	array $tables = [],
-	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
-): Response {
-	$ctrl = new \Shipard\Module\Economy\WorkOrders\WorkOrdersInvoicingController(
-		$db,
-		$configRuntime,
-		$resolved->config,
-		$documentRegistry,
-		$tables,
-		$documentEventDispatcher,
-	);
-	return match ($route->action) {
-		'issueDue'         => $ctrl->issueDue($request),
-		'regeneratePeriod' => $ctrl->regenerate($request),
-		'restorePeriod'    => $ctrl->restore($request),
-		default            => Response::error('INTERNAL_ERROR', "Unknown workOrders action: {$route->action}", 500),
-	};
-}
-
 function dispatchDocs(
 	Route $route,
 	Request $request,
@@ -641,9 +614,13 @@ function dispatchRecordAction(
 	\Shipard\Core\Config\DataSourceConfig $dsConfig,
 	?ServerConfig $serverConfig,
 	string $language,
+	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
+	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 ): Response {
 	// Akce záznamu s obsluhou v modulu (#172 D12–D15). Registr rozšíření je
 	// týž, ze kterého detail vieweru akce vypisuje — jen aktivní moduly.
+	// Registr dokumentů a dispatcher událostí jdou do kontextu akce pro
+	// akce, které zakládají doklady (#175 U3).
 	$ctrl = new \Shipard\Api\Controller\RecordActionController(
 		$viewerRegistry->uiExtensions(),
 		$db,
@@ -652,6 +629,8 @@ function dispatchRecordAction(
 		$dsConfig,
 		$serverConfig,
 		$language,
+		$documentRegistry,
+		$documentEventDispatcher,
 	);
 	return match ($route->action) {
 		'run'   => $ctrl->run((string) $route->table, (int) $route->id, (string) $route->key, $auth, $request),

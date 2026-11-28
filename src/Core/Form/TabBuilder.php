@@ -375,6 +375,47 @@ final class TabBuilder
     }
 
     /**
+     * Výběr více záznamů z tabulky (#176): `$column` je `dataKey` child
+     * tabulky, kterou rodič deklaruje v `childTables`; hodnota je seznam id
+     * záznamů tabulky `$table`. Odkazový sloupec child tabulky se odvodí
+     * (`MultiLookupBinding`), `$refColumn` ho říká výslovně. Popisek se
+     * z definice tabulky neodvodí — `$column` není sloupec rodiče.
+     *
+     * @param array<string, scalar>|null $filter
+     */
+    public function multiLookup(
+        string $column,
+        string $table,
+        ?array $filter = null,
+        ?string $label = null,
+        ?string $placeholder = null,
+        bool $required = false,
+        bool $readOnly = false,
+        bool $hidden = false,
+        ?string $triggers = null,
+        ?string $hint = null,
+        ?string $refColumn = null,
+    ): static {
+        $lookupCfg = ['table' => $table, 'filter' => $filter];
+        if ($refColumn !== null) {
+            $lookupCfg['ref_column'] = $refColumn;
+        }
+        $this->pushElement(new FormElement(
+            type: 'multilookup',
+            column: $column,
+            label: $this->resolveLabel($column, $label),
+            placeholder: $placeholder,
+            required: $required,
+            readOnly: $readOnly,
+            hidden: $hidden,
+            triggers: $triggers,
+            hint: $hint,
+            lookup: $lookupCfg,
+        ));
+        return $this;
+    }
+
+    /**
      * Vloží hotové elementy do otevřeného sloupce — pro generátory, které
      * elementy staví samy (`TableForm::structuredFieldElements()`, #74).
      * Prázdný seznam nic nedělá, takže podmíněné cesty nemusí nic řešit.

@@ -410,6 +410,29 @@ případně Přegenerovat koncept.
 
 ### 5.5 Periodická fakturace (D2–D7, D10–D12, D24)
 
+> **Engine periodické fakturace je od #175 samostatný modul jádra
+> `economy.periodicInvoicing`** (`tasks/periodic-invoicing-sources.md`,
+> `modules/economy/periodicInvoicing/README.md`): běh, evidence období
+> (`PeriodRepository` nad tabulkou zdroje), sestavení dokladu, přispěvatelé,
+> záložka Fakturace, akce záznamu, CLI `periodic-invoicing-run`, cron,
+> upozornění `economy.periodicinvoicing.*` a stránka nastavení. Zakázky jsou
+> jeho první **zdroj fakturace** — `WorkOrderInvoicingSource` (registrace
+> `periodicInvoicingSources`, id `workOrders`): kandidáti jsou periodické
+> zakázky V pořádku s „fakturovat od“, evidence období zůstává
+> v `economy_work_orders_periods`, dimenze dokladu zakázka a středisko.
+> V modulu Zakázek zůstává předpis (sloupce `inv_*`, řádky), tabulka období,
+> seeder a exporter datových sad a deklarace `recordActions` nad
+> `economy_work_orders_heads`. Chování nad zakázkami se přesunem nezměnilo.
+>
+> **Od #174 D31, D34, D35** (`tasks/buildings-phase2.md`, 2026-11-27) má engine
+> druhý zdroj — smlouvy doplňku Budovy — a řádek předpisu **společný
+> základ** v enginu (`Rows\AbstractPrescriptionRowsForm`,
+> `…RowDocument`, `…RowLockProvider`, `PrescriptionRowsSubtable`):
+> `WorkOrderRowsForm`, `WorkOrderRowDocument` a `WorkOrderRowLockProvider`
+> z něj jen dědí a dodávají rodiče, chování zakázek se nezměnilo. Konstanty
+> `InvoicingSettings::WORK_ORDER_COLUMNS` / `SOURCE_WORK_ORDER` se jmenují
+> `RECORD_COLUMNS` / `SOURCE_RECORD`.
+
 **`economy_work_orders_periods`** — evidence období: zakázka, začátek
 a konec období, stav (*naplánováno / čeká na podklady / vystaveno /
 zastaveno*), doklad. Unikátní klíč zakázka × začátek období.
@@ -446,7 +469,7 @@ efektivní typ dokladu a řadu a aspoň jeden řádek. Evidence
 `economy_work_orders_periods` (UNIQUE zakázka × začátek; `state` planned /
 waiting / issued, zastaveno odvozené = issued s dokladem v koši nebo bez
 něj; `result` + `message` = výsledek posledního běhu, `content_hash` =
-otisk konceptu). `src/Invoicing/`: `PeriodCalendar` (kalendářní období,
+otisk konceptu). Engine (dnes `economy.periodicInvoicing`): `PeriodCalendar` (kalendářní období,
 den fakturace, splatná období k datu, ukončení bez krácení),
 `PeriodLabel` (`{období}` přes ext-intl a cfgItem `periodTexts` cs / en /
 sk / de), `InvoiceBuilder` → kanonický `shpd.docs.document.v1`
@@ -458,22 +481,25 @@ apply + zápis dokladu v jedné transakci — applier ukládá v
 `NestedTransaction`; chyba jednoho období zastaví jen je; pojistka
 dohánění `MAX_CATCHUP = 3` s `force`; dry-run bez zápisu; Přegenerovat
 přes `applyOptions.replaceConcept`, Obnovit = odvázání dokladu + běh),
-CLI `work-orders-invoice-run` a cron `daily`. Detail: tab *Fakturace*
+CLI `periodic-invoicing-run` (alias `work-orders-invoice-run` na jedno
+vydání) a cron `daily`. Detail: tab *Fakturace* (`InvoicingDetailTab`)
 a akce Vystavit dlužná období / Přegenerovat / Obnovit
-(`WorkOrdersInvoicingController`, `/_work-orders/…`). Přispěvatelé:
-`InvoiceContributor` + registrace `workOrderInvoiceContributors` →
-cfgItem `economy.workOrders.invoiceContributors`
+jako akce záznamu (`recordActions`, `POST /_ui/record-action/…`; Přegenerovat
+a Obnovit s dialogem výběru období). Přispěvatelé:
+`InvoiceContributor` + registrace `periodicInvoicingContributors` →
+cfgItem `economy.periodicInvoicing.contributors`
 (`InvoiceContributorRegistry`), Waiting = koncept s řádky přispěvatele
 s množstvím 0, Ready v dalším běhu přegeneruje jen nezměněný koncept
-(`ContentHash`), nastavení `economy.workOrders.contributorWaitDays`;
-žádný přispěvatel zatím. Upozornění `economy.workorders.*`
+(`ContentHash`), nastavení `economy.periodicInvoicing.contributorWaitDays`
+(Nastavení → Účetnictví → Periodická fakturace);
+žádný přispěvatel zatím. Upozornění `economy.periodicinvoicing.*`
 (invoices_to_review souhrnně, period_failed, catchup_blocked,
-period_waiting per zakázka). Viewer dokladů má filtr Zdroj
+period_waiting per záznam zdroje, klíč nálezu `zdroj:id`). Viewer dokladů má filtr Zdroj
 (`source_kind`). Odchylky od zadání: řada do applieru podle id
 (dnes reference `numberSeries`, #166 D30), výchozí účet
 dosazuje builder přes `DefaultBankAccountResolver` (applier pro ostatní
 volající beze změny), `inv_vat_mode` nabízí i Bez DPH, id alertů malými
-písmeny (`economy.workorders.*`).
+písmeny (dnes `economy.periodicinvoicing.*`).
 
 ### 5.6 Standardní dimenze (D20, D21, D23)
 

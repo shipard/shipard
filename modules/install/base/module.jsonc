@@ -29,6 +29,7 @@
         "economy.bank",
         "economy.accbal",
         "economy.assets",
+        "economy.periodicInvoicing",
         "economy.workOrders",
         "economy.exchangeRates",
         "world.vat",

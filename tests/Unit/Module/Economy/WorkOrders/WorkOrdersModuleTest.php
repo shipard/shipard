@@ -33,7 +33,7 @@ class WorkOrdersModuleTest extends TestCase
         $module = ModuleDefinition::fromArray(self::module());
 
         $this->assertSame('economy.workOrders', $module->id);
-        foreach (['core.system', 'core.attachments', 'base.persons', 'economy.codebooks', 'docs.core', 'economy.accounting'] as $dependency) {
+        foreach (['core.system', 'core.attachments', 'base.persons', 'economy.codebooks', 'docs.core', 'economy.accounting', 'economy.periodicInvoicing'] as $dependency) {
             $this->assertContains($dependency, $module->dependencies, $dependency);
         }
 
@@ -71,10 +71,15 @@ class WorkOrdersModuleTest extends TestCase
             ['economy.workOrders.kinds' => 'workOrders', 'economy.workOrders.numberSeries' => 'workOrders'],
             array_column($viewers, 'section', 'viewer'),
         );
-        // Stránka nastavení periodické fakturace (fáze 2) v téže sekci.
+        // Stránka nastavení periodické fakturace přešla do modulu
+        // economy.periodicInvoicing, sekce Účetnictví (#175 U5).
         $pages = array_filter($module['settingsItems'], static fn(array $i): bool => isset($i['page']));
-        $this->assertSame(['workOrdersInvoicing' => 'workOrders'], array_column($pages, 'section', 'page'));
-        $this->assertSame(['workOrdersInvoicing'], array_column($module['settingsPages'], 'id'));
+        $this->assertSame([], array_values($pages));
+        $this->assertArrayNotHasKey('settingsPages', $module);
+        // Upozornění, denní běh i jeho cron nese společný modul (#175 D6);
+        // v Zakázkách zůstává jen alias příkazu na jedno vydání.
+        $this->assertArrayNotHasKey('alertChecks', $module);
+        $this->assertArrayNotHasKey('cronJobs', $module);
 
         $sections = JsoncParser::parseFile(self::MODULES . '/install/base/config/settingsSections.jsonc')['sections'];
         $orders = array_column($sections, 'order', 'id');

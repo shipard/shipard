@@ -133,7 +133,9 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 Agendy, které většina firem nepoužije — nejsou součástí základní instalace
 a zapínají se ve zdroji dat, kde je chtějí (`docs/modules.md` §9, #170).
 
-- [ ] Správa budovy — nájemní smlouvy, virtuální kanceláře, měřiče, fakturace
+- [x] Budovy — smlouvy s místy (fáze 1): doplněk `facility.buildings`, druhy smluv s typem a číslováním, smlouva s nájemcem, platností a místy z číselníku míst, varování o překryvu míst (#174, `modules/facility/buildings/README.md`)
+- [x] Budovy — fakturace smluv (fáze 2): smlouvy jako druhý zdroj periodické fakturace — výchozí hodnoty fakturace a šablona řádků na druhu, periodicita, „fakturovat od“, text dokladu, měna, pevný VS, středisko a řádky předpisu na smlouvě, záložka Fakturace s akcemi; společný základ řádku předpisu v enginu (#174 D29–D38, `tasks/buildings-phase2.md`)
+- [ ] Budovy — smlouvy v detailu místa a obsazenost (fáze 3), měřiče, jistota, zálohy na služby a vyúčtování, indexace nájmu, import smluv
 - [x] Evidence tržeb (EET 2.0) — odeslání tržeb z dokladů s kontaktní platbou správci daně; ne pokladní systém (#171): registrace a certifikát, tržby z prodejek, pokladních dokladů a faktur placených hotově nebo kartou, Kontaktní platba na faktuře placené na místě (QR, karta), opakování a upozornění, tržba a její stav na dokladu. Ověřeno proti playgroundu, v produkci zatím ne
 - [ ] Správa počítačové sítě
 

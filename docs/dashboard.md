@@ -601,15 +601,32 @@ detailu. **Sekce feedu** (#101 D5): individuální i skupinové karty nesou
 je collector řadí dle `kind`, tedy dle závažnosti; setup karta (níže)
 patří do Položek k založení (`newItems`). `kind` zůstává dle severity.
 
-**Agregace per check** — víc než 3 aktivní alerty jednoho `check_id`
+**Agregace per check a sekce** — skupina = aktivní alerty jednoho
+`check_id` se shodnou sekcí z nálezu (`context.navSection`, `docs/alerts.md`
+→ Sekce z nálezu); nálezy bez sekce v kontextu tvoří vlastní skupinu.
+Běžný check má skupinu jednu, check společný víc agendám (periodická
+fakturace: zakázky a smlouvy) jednu per sekce. Víc než 3 alerty skupiny
 (`GROUP_THRESHOLD = 3`, tj. 4+) se sbalí do **jedné skupinové karty**, která
-individuální karty daného checku plně nahrazuje; 1–3 alerty zůstávají
-individuální. Sběr je dvoufázový: agregát `GROUP BY check_id` (bez LIMITu →
-pravdivý počet i nad pojistným limitem zdroje), pak individuální řádky jen pro checky pod
-prahem. Skupinová karta: `id = "alert-group:{check_id}"`, titulek =
+individuální karty skupiny plně nahrazuje; 1–3 alerty zůstávají
+individuální. **Práh platí per skupina, ne per check** — deset nálezů
+zakázek a jeden nález smlouvy téhož checku dají skupinovou kartu Zakázek
+a individuální kartu smlouvy (s jejím titulkem a akcí), šest nálezů po
+třech ve dvou sekcích šest individuálních karet. Karty jedné sekce tak
+nezávisí na tom, kolik nálezů má sekce jiná, a odznak (`navSection`) i filtr
+`?section=` dostane každá sekce, které se nálezy týkají. Sběr je
+dvoufázový: agregát `GROUP BY check_id, sekce` (bez LIMITu → pravdivý
+počet i nad pojistným limitem zdroje), pak individuální řádky jen skupin
+pod prahem — okno `COUNT(*) OVER (PARTITION BY check_id, sekce)` nad týmž
+výrazem sekce (`NULLIF(JSON_VALUE(context, '$.navSection'), '')`).
+Skupinová karta: `id = "alert-group:{check_id}"`, se sekcí z nálezu
+`"alert-group:{check_id}:{sekce}"`; `navSection` = sekce z nálezu, jinak
+sekce checku; titulek =
 lokalizovaný název checku z `AlertCheckRegistry` (fallback `check_id`, když
 check mezitím zmizel z modulu / registr chybí), podtitulek s pravdivým počtem
-(„27 upozornění"), `kind` dle **nejvyšší** severity ve skupině (stejné
+(„27 upozornění"; u skupiny se sekcí z nálezu s názvem sekce z
+`global.navSections` — „10 upozornění · Zakázky“, aby šly rozlišit dvě
+karty téhož checku; sekce, kterou navigace nezná, název nenese),
+`kind` dle **nejvyšší** severity ve skupině (stejné
 mapování jako individuální karta — agregace nesnižuje viditelnost),
 `timestamp` = `MAX(last_seen_at)`, `context = {checkId, count, severity,
 group: true}`. Jediná primary akce `open_viewer` na `core.alerts.alerts`,

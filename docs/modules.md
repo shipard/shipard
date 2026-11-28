@@ -440,7 +440,8 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `journalDimensions` | object[] | Ne | Ano (`name`) | Analytické dimenze deníku: `id`, `rowColumn`, `journalColumn`, `table`, `name` povinné, `headColumn`, `rowFlag`, `forms` volitelné (přirozený klíč pro výměnný formát říká `exchangeKey` v definici cílové tabulky, ne dimenze — #166 D8). Standardní dimenze jádra (#110 D20): sloupce leží v definicích `docs_core_heads`, `docs_core_rows` a `economy_accounting_journal`, deklaraci nese `economy.accounting`; `ConfigCompiler` je skládá do cfgItem `core.accounting.journalDimensions` (`docs/accounting.md` §6 Dimenze deníku) |
 | `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
 | `recordSenderProviders` | object[] | Ne | Ne | Odesílatel podle záznamu (#90 D39): `{table, class}`, třída implementuje `RecordSenderProvider`. Jeden poskytovatel na tabulku — druhá registrace téže tabulky je chyba. Čte `RecordSenderProviderLoader`, ptá se `SenderResolver` (`docs/mail/outbound.md`) |
-| `workOrderInvoiceContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.workOrders.invoiceContributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
+| `periodicInvoicingSources` | object[] | Ne | Ne | Zdroje periodické fakturace (#175 D3): `{id, class}`, třída implementuje `PeriodicInvoicingSource`. `ConfigCompiler` je skládá do cfgItem `economy.periodicInvoicing.sources`; instance staví `InvoicingSources::fromConfig` (viz níže) |
+| `periodicInvoicingContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické fakturace, společní pro všechny zdroje (#110 D7, D10; #175 D5): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.periodicInvoicing.contributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
 | `overviewBlocks` | object[] | Ne | Ne | Bloky Přehledu firmy (#120): `id`, `section`, `class` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `core.overview.blocks` (seřazeno `[order, id]`); instance staví `OverviewBlockRegistry::fromConfig` (viz níže, `docs/overview.md`) |
 | `aiFunctions` | object[] | Ne | Ano (`name`, `description`) | AI funkce modulu (#85 D36): `id` (`oblast.nazev`), `name`, `tier` (`fast` / `balanced` / `strong`), `defaults.maxTokens` povinné; `defaults.temperature`, `requires` (`tools`, `pdf`), `description` volitelné. `ConfigCompiler` je skládá do cfgItem `core.ai.functions`; čte `AiFunctionRegistry`, volání skládá `AiFunctionResolver` (viz níže, `docs/ai.md` §5.3) |
 | `commands` | string[] | Ne | Ne | Příkazy `shpd-ds`, které patří jen tomuto modulu (#172 D2): FQCN tříd odvozených od `Symfony\Component\Console\Command\Command` v namespace `Shipard\Module\<Skupina>\<Modul>\Command\` (viz níže) |
@@ -457,6 +458,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `formTabs` | object[] | Ne | Ne | Záložka formuláře cizí tabulky (#172 D17, viz níže): `{table, class, order?}`, třída dědí `Shipard\Core\Form\ModuleFormTab` |
 | `rowDecorators` | object[] | Ne | Ne | Štítky řádku seznamu cizí tabulky (#172 D18, viz níže): `{table, class, order?}`, třída implementuje `Shipard\Core\Viewer\RowDecorator` |
 | `recordActions` | object[] | Ne | Ne | Akce záznamu s obsluhou v modulu (#172 D12–D15, viz níže): `{id, table, class, admin?, order?}`, třída implementuje `Shipard\Core\RecordAction\RecordAction` |
+| `provisioners` | object[] | Ne | Ne | Výchozí data modulu zakládaná v `ds-upgrade` (#174 D28, viz níže): `{class, order?}`, třída implementuje `Shipard\Core\Module\ModuleProvisioner` |
 
 ### Pole `commands`, `serverCommands` a `cronJobs`
 
@@ -635,7 +637,11 @@ klíč položky, chybějící tabulka nebo třída a `order` jiného typu než c
 testem nad celým stromem `modules/`:
 
 - třída existuje, implementuje rozhraní svého druhu, jde vytvořit bez
-  argumentů konstruktoru a leží v namespace svého modulu;
+  argumentů konstruktoru a leží v namespace svého modulu **nebo modulu, na
+  kterém modul tranzitivně závisí** (#175) — společnou třídu tak modul
+  deklaruje nad svou tabulkou (akce periodické fakturace: třídy enginu
+  `economy.periodicInvoicing`, deklarace u zdroje). Třída modulu, na
+  kterém deklarující modul nezávisí, je dál porušení;
 - tabulka je vlastní tabulka modulu nebo tabulka modulu, na kterém modul
   tranzitivně závisí;
 - tatáž třída není pro tabulku v jednom druhu registrovaná dvakrát.
@@ -703,6 +709,12 @@ endpoint viewer nemá a `available()` musí pokaždé vidět totéž.
 **Kontext** `RecordActionContext` rozšiřuje `ModuleExtensionContext`
 o `userId`, `isAdmin` a `serverConfig` — sekci `server.json` modulu čte
 akce přes `ServerConfig::getSection()` a svou třídu `ServerConfigSection`.
+Pro akce, které zakládají nebo mění doklady, nese navíc nepovinné
+`documents` (`DocumentRegistry`), `tables` (definice tabulek zdroje dat)
+a `dispatcher` (`DocumentEventDispatcher`) — z nich akce složí ukládací
+služby (`DocumentApplier::create()`, #175 U3). Vyplňuje je endpoint akce
+při provedení; při vykreslení detailu jsou prázdné, takže `available()`
+a `describe()` na nich nesmí záviset.
 
 **Pole dialogu** (D13) vznikají továrnami `RecordActionField`:
 
@@ -851,16 +863,51 @@ typicky dědí z `AbstractDocumentLockProvider` (settery `db`/`config`/
 `economy.codebooks` → `FiscalMonthLockProvider` (zamčený fiskální měsíc).
 Detaily: `docs/document-system.md` sekce 16.
 
-### Pole `workOrderInvoiceContributors`
+### Pole `periodicInvoicingSources`
 
-Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10,
-`docs/work-orders.md` §5.5): jiný modul doplní nebo upraví řádky faktury
-za období podle podkladů (první případ: přefakturace spotřeby). Zapíná se
-řádkem fakturačního předpisu zakázky s `contributor = id`; zakázka bez
-takového řádku přispěvatele nevolá.
+Zdroje periodické fakturace (#175 D1–D4,
+`modules/economy/periodicInvoicing/README.md`): evidence, jejíž záznamy
+nesou fakturační předpis a engine `economy.periodicInvoicing` za ně
+vystavuje koncepty dokladů za splatná období. Prvním zdrojem jsou Zakázky.
 
 ```jsonc
-"workOrderInvoiceContributors": [
+"dependencies": ["economy.periodicInvoicing"],
+"periodicInvoicingSources": [
+    {"id": "workOrders", "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderInvoicingSource"}
+]
+```
+
+`id` je identifikátor bez teček (`[a-z][a-zA-Z0-9]*`) — jde do CLI
+(`periodic-invoicing-run --source=<id>`) a do klíče nálezu upozornění
+(`zdroj:id`); duplicitní id v modulu je chyba při načtení. `ConfigCompiler`
+registrace aktivních modulů složí do cfgItem
+`economy.periodicInvoicing.sources` (klíč = id, hodnota `class`); id
+deklarované ve dvou modulech i cfgItem téhož id z `config[]` je chyba
+kompilace. Instance staví `InvoicingSources::fromConfig` (neexistující
+třída, třída bez rozhraní nebo třída, která hlásí jiné id, =
+`LogicException`). Třída implementuje
+`Shipard\Module\Economy\PeriodicInvoicing\Source\PeriodicInvoicingSource`
+— kandidáti, normalizovaný záznam, druh, řádky předpisu, dimenze, tabulka
+období a její sloupec záznamu, viewer, sekce navigace a pojmenování záznamu;
+typicky dědí `AbstractPeriodicInvoicingSource` (settery `db` / `config` /
+`dsConfig`). Kontrakt záznamu a řádku předpisu, tvar tabulky období a postup
+„jak přidat zdroj“ jsou v README modulu.
+
+Modul zdroje se na engine napojuje třemi kroky: touto registrací, deklarací
+`recordActions` se třídami enginu nad svou tabulkou (níže) a zapojením
+`InvoicingDetailTab` ve svém vieweru. Běh, CLI, cron, upozornění a stránku
+nastavení má engine jednou pro všechny zdroje.
+
+### Pole `periodicInvoicingContributors`
+
+Přispěvatelé obsahu faktury periodické fakturace, společní pro všechny
+zdroje (#110 D7, D10, #175 D5, `docs/work-orders.md` §5.5): jiný modul
+doplní nebo upraví řádky faktury za období podle podkladů (první případ:
+přefakturace spotřeby). Zapíná se řádkem fakturačního předpisu
+s `contributor = id`; záznam bez takového řádku přispěvatele nevolá.
+
+```jsonc
+"periodicInvoicingContributors": [
     {
         "id": "energy.consumption",
         "class": "Shipard\\Module\\Economy\\Energy\\ConsumptionContributor",
@@ -871,19 +918,21 @@ takového řádku přispěvatele nevolá.
 ```
 
 `ConfigCompiler` registrace aktivních modulů složí do cfgItem
-`economy.workOrders.invoiceContributors` (klíč = id, `name` lokalizovaný,
-`class`); duplicitní id přes moduly je chyba kompilace. Z cfgItem bere
+`economy.periodicInvoicing.contributors` (klíč = id, `name` lokalizovaný,
+`class`); duplicitní id přes moduly i cfgItem téhož id z `config[]` je
+chyba kompilace. Z cfgItem bere
 formulář řádku předpisu nabídku pole *Přispěvatel obsahu* (bez registrace
 se pole neukáže), `WorkOrderRowDocument` ověřuje id a
 `InvoiceContributorRegistry::fromConfig` staví instance (neexistující
 třída nebo třída bez rozhraní = `LogicException`). Třída implementuje
-`Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributor`
+`Shipard\Module\Economy\PeriodicInvoicing\Contributor\InvoiceContributor`
 (`id()`, `contribute(ContributionContext): ContributionResult` — *Ready*
 s kanonickými řádky, které nahradí řádky přispěvatele, *Waiting* s důvodem,
 *Failed* se zprávou), typicky dědí `AbstractInvoiceContributor` (settery
 `db` / `config` / `dsConfig`). Běh (`InvoicingRunService`) přispěvatele
-volá nad rozpracovaným kanonickým dokladem před apply; v produkci zatím
-žádný registrovaný není.
+volá nad rozpracovaným kanonickým dokladem před apply; kontext
+(`ContributionContext`) nese id zdroje (`source`) a záznam (`record`).
+V produkci zatím žádný registrovaný není.
 
 ### Pole `overviewBlocks`
 
@@ -1091,6 +1140,56 @@ modulu skončí chybou.
 Datové sady tytéž klíče nenesou (`SetupExporter::SETTINGS_EXCLUDED`,
 [docs/datasets.md](datasets.md)); test parity hlídá, že konstanta odpovídá
 deklaracím modulů.
+
+### Pole `provisioners`
+
+Volitelné pole objektů `{class, order?}` (#174 D28): **výchozí data, bez
+kterých modul ve zdroji dat nejde používat** — typicky seedové druhy
+číselníku. Modul je zakládá sám; `ds-upgrade` žádný modul nejmenuje, takže
+stejně zakládá svá data jádro, doplněk i modul z dalšího kořene.
+
+```jsonc
+// modules/facility/buildings/module.jsonc — výchozí druhy smluv
+"provisioners": [
+    { "class": "Shipard\\Module\\Facility\\Buildings\\ContractKindsProvisioner" }
+]
+```
+
+Třída implementuje `Shipard\Core\Module\ModuleProvisioner`:
+
+```php
+public function provision(ModuleProvisionContext $context): array;
+// → ['contract kinds' => ['created' => 7, 'existing' => 0]]
+```
+
+`ModuleProvisionContext` nese spojení zdroje dat (`db`), jeho konfiguraci
+(`dsConfig`) a zkompilovanou konfiguraci modulů v jazyce zdroje dat
+(`config`; `null`, když kompilát nejde načíst — provisioner pak nic
+nezakládá odhadem). Návratová hodnota jsou počty po skupinách záznamů,
+klíč je anglický popisek do výpisu `ds-upgrade`.
+
+Pravidla:
+
+- **Běží vždy** — po synchronizaci schématu, i pod `skipProvisioning`
+  a po `ds-reset` (ten `ds-upgrade` volá). Proto sem nepatří nic, co se
+  u převáděného zdroje dat přenáší ze starého systému; referenční data
+  jádra, která `skipProvisioning` vypíná (jednotky, osnova, fiskální roky,
+  číselné řady), zůstávají v `DsUpgradeCommand`.
+- **Idempotence** — druhý běh nic nezaloží a nic nepřepíše. Existující
+  záznam se pozná podle stabilního klíče (`system_code`) v jakémkoli stavu;
+  archivovaný ani smazaný se nevrací a uživatelem upravený se nemění.
+- Jen **aktivní moduly** zdroje dat, v pořadí resolvovaných modulů
+  (závislost před závislým) a `order` v modulu (výchozí 500).
+- Třída leží v namespace svého modulu a jde vytvořit bez argumentů
+  konstruktoru; neznámý klíč položky nebo třída uvedená dvakrát je chyba
+  načtení modulu. Hlídá `ModuleProvisionerRules` nad stromem.
+- **Výjimka ukončí `ds-upgrade` chybou** se jménem modulu a třídy — na
+  rozdíl od rozšíření UI se nepřeskakuje, modul by zůstal bez dat, která
+  potřebuje. `ds-module enable` v tom případě nechává modul zapsaný
+  v `main.json`; po opravě stačí `ds-upgrade` znovu.
+
+Provisionery jádra z doby před tímto polem (druhy míst, AI funkce, pravidla
+předzpracování pošty…) zůstávají volané napevno z `DsUpgradeCommand`.
 
 ### Pole `settingsItems`
 
@@ -1471,7 +1570,7 @@ Při odebrání modulu z `modules`:
 
 ### Doplňky
 
-**Doplněk** je modul, který není součástí `install.base` a ve zdroji dat se zapíná — správa budovy, správa počítačové sítě (#170). Většina firem ho nepoužije, ale je obecný a veřejný, takže patří do hlavního repozitáře.
+**Doplněk** je modul, který není součástí `install.base` a ve zdroji dat se zapíná — správa budovy, správa počítačové sítě (#170). První doplněk v repozitáři je `facility.buildings` (Budovy, #174 — [README](../modules/facility/buildings/README.md)). Většina firem ho nepoužije, ale je obecný a veřejný, takže patří do hlavního repozitáře.
 
 **Umístění.** Doplněk leží v `modules/{skupina}/{modul}/` jako každý jiný modul, ve skupině podle své domény. Žádný podadresář `addons/` ani druhý kořen: ID je trvalé (tabulky, namespace, klíče konfigurace), zařazení ne — doplněk přejde do jádra a naopak změnou jednoho pole. Doplněk je vždy **jeden modul**.
 
@@ -1479,10 +1578,10 @@ Při odebrání modulu z `modules`:
 
 ```jsonc
 {
-    "id": "facility.core",
-    "name": "Facility management",
+    "id": "facility.buildings",
+    "name": "Buildings",
     "kind": "addon",
-    "dependencies": ["core.system", "base.persons"]
+    "dependencies": ["core.system", "core.attachments", "base.persons", "base.places"]
 }
 ```
 
@@ -1502,7 +1601,7 @@ shpd-ds ds-module disable <id>         # jen přímo zapnutý modul mimo install
 
 Příkaz zapíše `modules` v `config/main.json` a ve stejném procesu spustí `ds-upgrade` — jinak by `main.json` tvrdil aktivní modul bez tabulek a dispatcher periodických úloh, který aktivní moduly čte z `main.json`, by pouštěl jeho úlohy. Vypnutí nechává tabulky modulu v databázi (viz Deaktivace modulu). Stránka Doplňky v Nastavení, kde doplněk zapne admin zdroje dat, je cílový stav — zatím jen CLI.
 
-**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `workOrderInvoiceContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators`, akce jejího záznamu přes `recordActions` (#172) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
+**Jádro o doplňku neví.** Doplněk se napojuje jen přes body rozšíření — `extensions`, `documentEventHandlers`, `overviewBlocks`, `periodicInvoicingSources`, `periodicInvoicingContributors`, položky do existujících sekcí přes `navSection`, vlastní sekce přes `navSections` / `settingsSections`, vlastní příkazy CLI přes `commands` / `serverCommands`, vlastní úlohy cronu přes `cronJobs`, vlastní sekci `server.json` přes `serverConfig`, taby a štítky detailu cizí tabulky přes `detailExtensions`, záložku jejího formuláře přes `formTabs`, štítky řádku jejího seznamu přes `rowDecorators`, akce jejího záznamu přes `recordActions` (#172), výchozí data přes `provisioners` (#174 D28) a další pole z kapitoly 5. Příkaz i úlohu doplňku tak vidí jen zdroj dat, který ho má zapnutý — factory CLI ani dispatcher cronu se kvůli doplňku nemění. Stejně tak `ServerConfig`: nastavení doplňku na úrovni serveru čte třída doplňku ze své sekce, jádro pro ni getter nemá. Chybějící bod rozšíření je **změna jádra s vlastní issue**, řešená obecně, ne na míru jednomu doplňku. Formulář jádra proto sloupce doplňku nejmenuje; do formuláře a detailu cizí tabulky se doplněk napojuje celou vlastní záložkou — `formTabs` a `detailExtensions` (kapitola 5 → Pole `detailExtensions`, `formTabs` a `rowDecorators`, #172 D16–D19). Viewer ani formulář jádra se kvůli doplňku nemění a poskytovatel doplňku, který spadne, cizí detail, formulář ani seznam nerozbije.
 
 **Dokumentace doplňku** žije u modulu: `README.md` podle [documentation.md](documentation.md) a specifikace v `modules/{skupina}/{modul}/docs/` (vzor `modules/core/mail/docs/`) — do kořenového `docs/` patří jen obecná pravidla. Uživatelská dokumentace zůstává v `help/`, zadání v `tasks/`. Přehled všech modulů po druzích je v generovaném rozcestníku [`modules/README.md`](../modules/README.md) (`php scripts/modules-index.php`, `--check` běží v pre-commit hooku).
 

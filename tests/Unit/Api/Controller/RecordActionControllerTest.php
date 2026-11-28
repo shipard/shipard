@@ -596,6 +596,43 @@ final class RecordActionControllerTest extends TestCase
         $this->assertSame([1, true], [FixturePingAction::$executions[0]['userId'], FixturePingAction::$executions[0]['isAdmin']]);
     }
 
+    public function testDocumentServicesReachTheContextOnExecute(): void
+    {
+        // Akce, která zakládá doklady, skládá ukládací služby z kontextu
+        // (#175 U3): registr dokumentů, definice tabulek a dispatcher událostí.
+        $documents = new \Shipard\Core\Document\DocumentRegistry();
+        $dispatcher = new \Shipard\Core\Document\DocumentEventDispatcher();
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(self::RECORD);
+        $controller = new RecordActionController(
+            $this->uiExtensionsOf(),
+            $db,
+            $this->uiTables(),
+            null,
+            $this->uiDataSource(),
+            null,
+            'cs',
+            $documents,
+            $dispatcher,
+        );
+        $controller->run(self::UI_TABLE, 7, self::PING, self::admin(), self::json());
+
+        $context = FixturePingAction::$lastContext;
+        $this->assertNotNull($context);
+        $this->assertSame($documents, $context->documents);
+        $this->assertSame($dispatcher, $context->dispatcher);
+        $this->assertSame(array_keys($this->uiTables()), array_keys($context->tables));
+
+        // Bez nich (starší volající, detail vieweru) zůstávají prázdné.
+        FixturePingAction::$lastContext = null;
+        $this->controller()->run(self::UI_TABLE, 7, self::PING, self::admin(), self::json());
+        $context = FixturePingAction::$lastContext;
+        $this->assertNotNull($context);
+        $this->assertNull($context->documents);
+        $this->assertNull($context->dispatcher);
+        $this->assertNotSame([], $context->tables);
+    }
+
     /** Kopie definice tabulky s `adminOnly: true`. */
     private function adminOnlyTable(TableDefinition $table): TableDefinition
     {
