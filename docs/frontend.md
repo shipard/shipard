@@ -26,7 +26,7 @@ Shipard frontend je single-page aplikace (SPA) postavená na **Svelte 5**, kter�
 ### Cílové prohlížeče
 
 Chrome, Firefox, Edge a Safari (macOS i iPadOS) — poslední 2 roky. K tomu
-WKWebView v nativní aplikaci Shipardu (macOS 14, iPadOS 17; #177 D10, D14) —
+WKWebView v nativní aplikaci Shipardu (macOS 26, iPadOS 26 a iOS 26; #177 D10, D36) —
 aplikace z App Store může být starší než web, proto se obrazovky řídí
 capabilities mostu, ne verzí aplikace (viz [13.5 Nativní most](#135-nativní-most)).
 Žádná podpora IE nebo starších verzí.

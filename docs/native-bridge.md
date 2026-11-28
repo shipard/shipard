@@ -1,12 +1,12 @@
 # Nativní aplikace — kontrakt mostu a zařízení
 
-**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), na serveru zařízení, registrace a podepsaná volání (task 3), skládání ESC/POS (task 4a) a tiskové úlohy s tiskem z UI (task 4b); PIN a aplikace neimplementovány (#177); stav v [§10](#10-stav-implementace)
+**Status:** verze 1 — webová strana a simulace pro vývoj hotové (task 2), na serveru zařízení, registrace a podepsaná volání (task 3), skládání ESC/POS (task 4a) a tiskové úlohy s tiskem z UI (task 4b); aplikace rozpracovaná v repu `shipard-app` (task 5a), PIN neimplementován (#177); stav v [§10](#10-stav-implementace)
 **Verze:** 1 (2026-11-27) — viz [Historie změn](#11-historie-změn)
 **Implementace:** web `frontend/src/native/` (task 2); server `core.devices`
 (task 3 — `modules/core/devices/README.md`, endpointy
 `src/Api/Controller/DevicesController.php`), `core.prints` (tasky 4a a 4b —
 tiskové úlohy `src/Api/Controller/PrintJobsController.php`), PIN
-a zamčení (task 6); aplikace `shipard-app:apple/` (task 5)
+a zamčení (task 6); aplikace `shipard_app:apple/` (task 5)
 
 Zdroj pravdy pro obě strany: webová aplikace a server žijí v tomto repu,
 nativní aplikace v repu `shipard/shipard-app`. Změna kontraktu se zapisuje
@@ -14,7 +14,7 @@ sem **před** implementací klienta ([services.md](services.md) §12).
 
 ## 1. Přehled
 
-Nativní aplikace Shipardu (macOS a iPadOS) je okno s WKWebView, ve kterém
+Nativní aplikace Shipardu (macOS, iPadOS a iOS) je okno s WKWebView, ve kterém
 běží běžný Shipard, a k tomu device hub pro periferie — tiskárny účtenek
 a čtečky. Webová aplikace s nativní částí mluví přes most
 `window.shipardNative`. Nativní část navíc sama volá několik endpointů
@@ -74,7 +74,7 @@ Stránka mimo zdroj dat (vývojářský dashboard) dostane v `info`
 | Ve verzi 1 | Mimo verzi 1 |
 |---|---|
 | lokální cesta: tiskárna a čtečka dosažitelné ze zařízení, na kterém běží webová aplikace | vyzvedávání úloh hubem bez okna, Mac jako hub pro jiná zařízení |
-| macOS a iPadOS | Windows, Android |
+| macOS, iPadOS a iOS | Windows, Android |
 | výsledek tisku hlásí webová aplikace přes REST | kanál server → zařízení v reálném čase (realtime brána) |
 | zdroje dat na hostingu | zdroj dat mimo hosting s ručně zadanou adresou |
 
@@ -179,7 +179,7 @@ při startu a po `device.sync`.
   "apiVersion": 1,
   "app": { "version": "1.0.0", "build": "17" },
   "platform": "ipados",
-  "osVersion": "18.2",
+  "osVersion": "26.1",
   "dataSource": "https://firma.example.com/api/v1",
   "deviceId": "0b9f6c1e-52a4-4f0e-9a43-6f2d1c7e8a10",
   "keyStorage": "secureEnclave",
@@ -193,7 +193,7 @@ při startu a po `device.sync`.
 |---|---|
 | `apiVersion` | verze kontraktu (§2.4) |
 | `app.version`, `app.build` | verze a číslo sestavení aplikace — totéž, co okno O aplikaci |
-| `platform` | `macos` \| `ipados`; simulace pro vývoj hlásí `mock` (§9a) |
+| `platform` | `macos` \| `ipados` \| `ios` (iPhone); simulace pro vývoj hlásí `mock` (§9a) |
 | `osVersion` | verze operačního systému |
 | `dataSource` | adresa API zdroje dat aktuální stránky (§1, Zařízení a zdroje dat); `null` mimo zdroj dat |
 | `deviceId` | UUID zařízení pro tento zdroj dat; vzniká při první práci se zdrojem dat, po zneplatnění aplikace vytvoří nové; `null` mimo zdroj dat |
@@ -884,7 +884,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | `core.devices`, registrace, podepsaná volání, hlášení periferií | 3 — `tasks/native-devices-registration.md` | hotovo — `challenge`, `register`, `self`, `self/peripherals`; `self` vrací `users: []` (task 6) |
 | Skládání ESC/POS, katalog profilů tiskáren, účtenka prodejky | 4a — `tasks/native-escpos-render.md` | hotovo — `GET /_devices/printer-profiles`, `EscPosRenderer`, tisk `docs.cashRegister.receiptPos`, náhled s `FS .` a `ESC !` ([prints.md](prints.md) §13) |
 | Tiskové úlohy, směrování podle role, tisk z UI | 4b — `tasks/native-print-jobs.md` | hotovo — `POST /_print-jobs`, `GET /_print-jobs/{jobId}`, `POST …/result`, akce Tisk na účtenkovou tiskárnu, Zkušební tisk a Otevřít šuplík, přehled Tiskové úlohy ([prints.md](prints.md) kap. 14) |
-| Aplikace pro macOS a iPadOS (`shipard-app:apple/`) | 5 | neimplementováno |
+| Aplikace pro macOS, iPadOS a iOS (`shipard_app:apple/`) | 5 | rozpracováno — 5a `shipard_app:tasks/apple-phase1.md` (kostra, most, identita), 5b síťové tiskárny, 5c Bluetooth a čtečky |
 | Profily, zařazení, PIN, zamčení | 6 | neimplementováno |
 | `auth.external` — přihlášení přes systémový prohlížeč | 7 | neimplementováno |
 | Vydávání (App Store, notarizace, aktualizace) | 8 | neimplementováno |
@@ -902,6 +902,7 @@ Neznámý příkaz dá značku `unknown` s hex bajty a dekódování pokračuje.
 | 1 | 2026-11-27 | Volání zařízení mají vlastní limit požadavků (120 za minutu na `deviceId`, strop na IP adresu) — `RATE_LIMITED` u §7.2 doplněno. Verze beze změny. |
 | 1 | 2026-11-28 | Skládání ESC/POS na serveru hotové (task 4a, #177 U27–U35): profil tiskárny má nové pole `columnsSmall` (§6, přidání pole verzi nemění), katalog dvou profilů 42 / 56 a 32 / 42 znaků, záložní profil `escpos-58-cp852`, endpoint `GET /_devices/printer-profiles`; podmnožina náhledu rozšířená o `FS .` a `ESC !` (§9a). Verze beze změny. |
 | 1 | 2026-11-28 | Tiskové úlohy hotové (task 4b, #177 U36–U43): `POST /_print-jobs` má nové pole `kind` (`print` \| `test` \| `drawer`, výchozí `print`) a nepovinnou `role` (výchozí `receipt`), odpověď nese `warnings`; nový `GET /_print-jobs/{jobId}` pro Zkusit znovu (§5). Simulace: druhá tiskárna `mock-receipt-58`, `PRINTER_ERROR` u tiskárny ve stavu `error`, katalog profilů ze serveru (§9a). Přidání polí a endpointu verzi nemění. |
+| 1 | 2026-11-28 | Platforma `ios` (iPhone, #177 D41) — přidání hodnoty výčtu verzi nemění (§2.4). Před implementací klienta, verze beze změny. |
 
 ---
 
