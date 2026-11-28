@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Shipard\Command\DataSource;
 
 use Shipard\Api\PrintDefinitionLoader;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Prints\EscPos\EscPosConfigException;
+use Shipard\Core\Prints\EscPos\PrinterProfiles;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintDocument;
 use Shipard\Core\Prints\PrintFormat;
+use Shipard\Core\Prints\PrintFormatNotSupportedException;
 use Shipard\Core\Prints\PrintLanguageNotCompiledException;
 use Shipard\Core\Prints\PrintNotAvailableException;
 use Shipard\Core\Prints\PrintNotFoundException;
@@ -35,6 +39,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  * `--data=<PrintData.json>` přeskočí databázi i builder a renderuje hotová
  * data — vývoj šablon bez záznamu (#90 D28).
  *
+ * Tisk pro účtenkovou tiskárnu (`output: escpos`, #177 U35) má vlastní
+ * formáty: `--format=escpos --profile=<id> --output=<soubor>` zapíše bajty
+ * ESC/POS (bez `--profile` záložní profil s varováním), `--format=markup`
+ * vypíše výstup šablony účtenky. `pdf` a `html` z něj nejdou a naopak.
+ *
  * Měkká hlášení builderu (QR nevznikl) jdou na stderr, exit code zůstává 0.
  * Nenulový exit = neznámý tisk nebo záznam, tisk pro záznam není dostupný,
  * nebo PDF nevzniklo.
@@ -57,13 +66,14 @@ class PrintRunCommand extends Command
     protected function configure(): void
     {
         $this->setName('print-run')
-             ->setDescription('Spustí tisk nad záznamem: PrintData jako JSON na stdout, PDF do souboru (--format=pdf --output=<soubor>), nebo HTML do adresáře (--format=html --output=<adresář>)')
+             ->setDescription('Spustí tisk nad záznamem: PrintData jako JSON na stdout, PDF do souboru (--format=pdf --output=<soubor>), HTML do adresáře (--format=html --output=<adresář>), u tisku pro účtenkovou tiskárnu bajty ESC/POS (--format=escpos --profile=<id> --output=<soubor>) nebo výstup šablony (--format=markup)')
              ->addArgument('printId', InputArgument::REQUIRED, 'Id tisku (např. docs.invoicesOut.invoice)')
              ->addArgument('recordId', InputArgument::OPTIONAL, 'Id záznamu v tabulce tisku (s --data se nezadává)')
-             ->addOption('format', null, InputOption::VALUE_REQUIRED, 'Výstupní formát: json | pdf | html', 'json')
+             ->addOption('format', null, InputOption::VALUE_REQUIRED, 'Výstupní formát: json | pdf | html | escpos | markup', 'json')
              ->addOption('language', null, InputOption::VALUE_REQUIRED, 'Jazyk tisku (cs | en | sk | de); výchozí podle partnera dokladu a jeho země, s --data jazyk z dat')
-             ->addOption('output', null, InputOption::VALUE_REQUIRED, 'Cílový soubor (u pdf povinný; json bez něj na stdout), u html cílový adresář (povinný)')
-             ->addOption('data', null, InputOption::VALUE_REQUIRED, 'Soubor s hotovým PrintData (JSON) — render bez databáze a builderu; jen html | pdf');
+             ->addOption('output', null, InputOption::VALUE_REQUIRED, 'Cílový soubor (u pdf a escpos povinný; json a markup bez něj na stdout), u html cílový adresář (povinný)')
+             ->addOption('profile', null, InputOption::VALUE_REQUIRED, 'Id profilu tiskárny pro --format=escpos (escpos-80-cp852 | escpos-58-cp852); bez něj záložní profil')
+             ->addOption('data', null, InputOption::VALUE_REQUIRED, 'Soubor s hotovým PrintData (JSON) — render bez databáze a builderu; ne s json');
     }
 
     protected function getDataSourceDir(): string
@@ -94,7 +104,7 @@ class PrintRunCommand extends Command
         $formatRaw = (string) $input->getOption('format');
         $format    = PrintFormat::tryFrom($formatRaw);
         if ($format === null) {
-            $err->writeln("<error>Invalid --format '{$formatRaw}' (json | pdf | html)</error>");
+            $err->writeln("<error>Invalid --format '{$formatRaw}' (json | pdf | html | escpos | markup)</error>");
             return Command::INVALID;
         }
         $outputFile = $input->getOption('output');
@@ -105,6 +115,17 @@ class PrintRunCommand extends Command
         }
         if ($format === PrintFormat::Html && $outputFile === null) {
             $err->writeln('<error>--format=html requires --output=<directory></error>');
+            return Command::INVALID;
+        }
+        // Bajty pro tiskárnu do terminálu nepatří.
+        if ($format === PrintFormat::Escpos && $outputFile === null) {
+            $err->writeln('<error>--format=escpos requires --output=<file></error>');
+            return Command::INVALID;
+        }
+        $profileId = $input->getOption('profile');
+        $profileId = is_string($profileId) && $profileId !== '' ? $profileId : null;
+        if ($profileId !== null && $format !== PrintFormat::Escpos) {
+            $err->writeln('<error>--profile is used with --format=escpos only</error>');
             return Command::INVALID;
         }
         $language = $input->getOption('language');
@@ -120,7 +141,7 @@ class PrintRunCommand extends Command
                 return Command::INVALID;
             }
             if ($format === PrintFormat::Json) {
-                $err->writeln('<error>--data renders ready print data — use --format=html or --format=pdf</error>');
+                $err->writeln('<error>--data renders ready print data — use --format=html, pdf, escpos or markup</error>');
                 return Command::INVALID;
             }
             $json = @file_get_contents($dataFile);
@@ -164,11 +185,36 @@ class PrintRunCommand extends Command
             $format === PrintFormat::Pdf ? RenderClient::fromServerConfig($this->getServerConfig()) : null,
         );
 
-        $printId = (string) $input->getArgument('printId');
+        $printId    = (string) $input->getArgument('printId');
+        $definition = $registry->get($printId);
+        if ($definition !== null && !$format->fits($definition)) {
+            $err->writeln('<error>' . (new PrintFormatNotSupportedException($definition, $format))->getMessage() . '</error>');
+            return Command::INVALID;
+        }
+
+        // Profil tiskárny z katalogu zdroje dat; neznámý nebo neuvedený =
+        // záložní profil a varování (#177 U29).
+        $profile  = null;
+        $warnings = [];
+        if ($format === PrintFormat::Escpos) {
+            try {
+                $resolved = PrinterProfiles::fromConfig(
+                    ConfigRuntime::load($dsConfig->getDataSourceDir(), $dsConfig->getDefaultLanguage()),
+                )->get($profileId);
+            } catch (EscPosConfigException | \RuntimeException $e) {
+                $err->writeln('<error>' . $e->getMessage() . '</error>');
+                return Command::FAILURE;
+            }
+            $profile = $resolved['profile'];
+            if ($resolved['warning'] !== null) {
+                $warnings[] = $resolved['warning'];
+            }
+        }
+
         try {
             $result = $envelope !== null
-                ? $runner->renderData($printId, $envelope, $format, $language)
-                : $runner->run($printId, (int) $recordRaw, $format, $language);
+                ? $runner->renderData($printId, $envelope, $format, $language, $profile)
+                : $runner->run($printId, (int) $recordRaw, $format, $language, $profile);
         } catch (PrintNotFoundException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
             $err->writeln('Available prints: ' . implode(', ', array_map(
@@ -176,14 +222,14 @@ class PrintRunCommand extends Command
                 $registry->getAll(),
             )));
             return Command::INVALID;
-        } catch (\InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException | PrintFormatNotSupportedException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
             return Command::INVALID;
         } catch (PrintRecordNotFoundException | PrintNotAvailableException | PrintBuildException | PrintLanguageNotCompiledException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         } catch (PrintRenderException $e) {
-            $err->writeln("<error>PDF render failed ({$e->errorKind->value}): {$e->getMessage()}</error>");
+            $err->writeln("<error>Print render failed ({$e->errorKind->value}): {$e->getMessage()}</error>");
             return Command::FAILURE;
         }
 
@@ -194,12 +240,15 @@ class PrintRunCommand extends Command
                 return Command::FAILURE;
             }
         } else {
-            $body = $format === PrintFormat::Pdf
-                ? (string) $result->pdfContent
-                : (string) json_encode(
+            $body = match ($format) {
+                PrintFormat::Pdf    => (string) $result->pdfContent,
+                PrintFormat::Escpos => (string) $result->bytes,
+                PrintFormat::Markup => (string) $result->markup,
+                default             => (string) json_encode(
                     $result->printData,
                     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT,
-                ) . "\n";
+                ) . "\n",
+            };
 
             if ($outputFile !== null) {
                 if (@file_put_contents($outputFile, $body) === false) {
@@ -211,7 +260,7 @@ class PrintRunCommand extends Command
             }
         }
 
-        foreach ($result->printData->messages as $message) {
+        foreach ([...$result->printData->messages, ...$warnings, ...$result->warnings] as $message) {
             $err->writeln(sprintf(
                 '<comment>%s: %s (%s)</comment>',
                 ucfirst($message->severity->value),

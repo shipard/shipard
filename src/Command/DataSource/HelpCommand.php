@@ -97,7 +97,8 @@ class HelpCommand extends Command
         $output->writeln('<comment>Reports and prints:</comment>');
         $output->writeln('  <info>report-run</info>              Spustí report a vypíše ReportResult jako JSON na stdout; --param id=hodnota = parametr reportu; --format=xlsx|csv [--output=<soubor>] = export');
         $output->writeln('  <info>report-diff</info>             Porovná dva ReportResult JSON soubory (kontrolní diff)');
-        $output->writeln('  <info>print-run</info>               Spustí tisk nad záznamem: PrintData jako JSON na stdout; --format=pdf --output=<soubor> = PDF; --format=html --output=<adresář> = HTML pro vývoj šablon; --data=<PrintData.json> = render bez databáze; --language=cs|en|sk|de');
+        $output->writeln('  <info>print-run</info>               Spustí tisk nad záznamem: PrintData jako JSON na stdout; --format=pdf --output=<soubor> = PDF; --format=html --output=<adresář> = HTML pro vývoj šablon; --data=<PrintData.json> = render bez databáze; --language=cs|en|sk|de; tisk pro účtenkovou tiskárnu: --format=escpos --profile=<id> --output=<soubor> = bajty ESC/POS, --format=markup = výstup šablony');
+        $output->writeln('  <info>print-escpos-test</info>       Zkušební účtenka profilu tiskárny jako bajty ESC/POS: --profile=<id> --output=<soubor>');
         $output->writeln('');
         $output->writeln('<comment>Dataset:</comment>');
         $output->writeln('  <info>dataset-dump</info>            Export the whole DS into a portable dataset folder (--zip, --force)');

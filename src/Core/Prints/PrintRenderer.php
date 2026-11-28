@@ -32,6 +32,9 @@ final class PrintRenderer
     public const HEADER_TEMPLATE = 'header.html.twig';
     public const FOOTER_TEMPLATE = 'footer.html.twig';
 
+    /** Šablona tisku `output: escpos` — značky účtenky (#177 U31). */
+    public const ESCPOS_TEMPLATE = 'page.escpos.twig';
+
     private const ASSET_EXTENSIONS = ['css', 'png', 'jpg', 'jpeg', 'svg', 'webp', 'gif', 'woff', 'woff2', 'ttf', 'otf'];
 
     private const LOGO_MIME_TYPES = [
@@ -74,6 +77,21 @@ final class PrintRenderer
             );
         }
         return $result->pdfContent;
+    }
+
+    /**
+     * Výstup šablony účtenky — XML se značkami pro `EscPosRenderer`. Stejný
+     * sandbox, filtry a katalogy jako stránka do PDF; autoescape `html`
+     * (podle jména šablony) dává platné XML.
+     */
+    public function renderMarkup(PrintDefinition $definition, PrintData $data, PrintTranslator $translator): string
+    {
+        $context = $data->toArray();
+        // Logo účtenka netiskne; klíč zůstává kvůli `strict_variables`.
+        $context['branding']['logoDataUri'] = null;
+
+        return $this->twigFactory->create($translator)
+            ->render($definition->template . '/' . self::ESCPOS_TEMPLATE, $context);
     }
 
     public function renderDocument(PrintDefinition $definition, PrintData $data, PrintTranslator $translator): PrintDocument

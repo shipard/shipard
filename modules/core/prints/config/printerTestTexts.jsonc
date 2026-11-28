@@ -1,0 +1,44 @@
+{
+    // core.prints.printerTestTexts
+    //
+    // Popisky zkušební účtenky profilu tiskárny (#177 task 4a,
+    // PrinterTestReceipt). Plochý katalog `{<klíč>: {name}}`; holé `name` je
+    // anglická varianta a musí být znak po znaku shodné s fallbackem v PHP
+    // (hlídá PrinterTestReceiptTest).
+
+    "title": {
+        "name": "TEST RECEIPT",
+        "name:cs": "ZKUŠEBNÍ ÚČTENKA",
+        "name:en": "TEST RECEIPT"
+    },
+    "profile": {
+        "name": "Profile",
+        "name:cs": "Profil",
+        "name:en": "Profile"
+    },
+    "columns": {
+        "name": "Characters per line",
+        "name:cs": "Znaků na řádek",
+        "name:en": "Characters per line"
+    },
+    "dots": {
+        "name": "Dots per line",
+        "name:cs": "Bodů na řádek",
+        "name:en": "Dots per line"
+    },
+    "codePage": {
+        "name": "Code page",
+        "name:cs": "Kódová stránka",
+        "name:en": "Code page"
+    },
+    "features": {
+        "name": "Features",
+        "name:cs": "Funkce",
+        "name:en": "Features"
+    },
+    "noFeatures": {
+        "name": "none",
+        "name:cs": "žádné",
+        "name:en": "none"
+    }
+}

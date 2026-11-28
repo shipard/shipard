@@ -27,6 +27,14 @@ final class PrintDefinition
     /** Tisk ven z firmy (lze odeslat, musí být neměnný) vs. interní. */
     public const AUDIENCES = ['external', 'internal'];
 
+    /** Výstup tisku: stránka do PDF, nebo účtenka pro účtenkovou tiskárnu. */
+    public const OUTPUT_PDF    = 'pdf';
+    public const OUTPUT_ESCPOS = 'escpos';
+    public const OUTPUTS       = [self::OUTPUT_PDF, self::OUTPUT_ESCPOS];
+
+    /** Klíče deklarace, které u tisku `output: escpos` nedávají smysl. */
+    private const ESCPOS_FORBIDDEN_KEYS = ['paper', 'sendPurpose', 'recipientPerson', 'textSlots', 'textVariables'];
+
     /** Strany okraje stránky v `paper.margins`. */
     public const MARGIN_SIDES = ['top', 'right', 'bottom', 'left'];
 
@@ -57,6 +65,10 @@ final class PrintDefinition
      * @param list<array{path: string, filter: ?string}> $textVariables
      *        Vlastní proměnné tisku nad rámec sad. Obojí čte
      *        `PrintTextVariables::forPrint()`.
+     * @param string $output `pdf` (výchozí) — šablona `page.html.twig` do PDF;
+     *        `escpos` — šablona `page.escpos.twig` se značkami účtenky,
+     *        ze které `EscPosRenderer` složí bajty pro tiskárnu (#177 U35).
+     *        Tisk `escpos` nemá papír, odesílání ani uživatelské texty.
      */
     public function __construct(
         public readonly string $id,
@@ -79,7 +91,14 @@ final class PrintDefinition
         public readonly array $textSlots = [],
         public readonly array $textVariableSets = [],
         public readonly array $textVariables = [],
+        public readonly string $output = self::OUTPUT_PDF,
     ) {}
+
+    /** Tiskne se na účtenkovou tiskárnu (bajty ESC/POS), ne do PDF? */
+    public function isEscPos(): bool
+    {
+        return $this->output === self::OUTPUT_ESCPOS;
+    }
 
     /** Jde tisk odeslat e-mailem? Jen tisk ven s deklarovaným účelem (#90 D34). */
     public function isSendable(): bool
@@ -105,6 +124,22 @@ final class PrintDefinition
         $name = $data['name'] ?? null;
         if (!is_string($name) || $name === '') {
             throw new \InvalidArgumentException("Print '{$id}': missing 'name'");
+        }
+
+        $output = $data['output'] ?? self::OUTPUT_PDF;
+        if (!is_string($output) || !in_array($output, self::OUTPUTS, true)) {
+            throw new \InvalidArgumentException(
+                "Print '{$id}': 'output' must be one of " . implode('|', self::OUTPUTS),
+            );
+        }
+        if ($output === self::OUTPUT_ESCPOS) {
+            foreach (self::ESCPOS_FORBIDDEN_KEYS as $key) {
+                if (array_key_exists($key, $data)) {
+                    throw new \InvalidArgumentException(
+                        "Print '{$id}': '{$key}' is not allowed for prints with output 'escpos'",
+                    );
+                }
+            }
         }
 
         $table = $data['table'] ?? null;
@@ -335,6 +370,7 @@ final class PrintDefinition
             textSlots: $textSlots,
             textVariableSets: $textVariableSets,
             textVariables: $textVariables,
+            output: $output,
         );
     }
 

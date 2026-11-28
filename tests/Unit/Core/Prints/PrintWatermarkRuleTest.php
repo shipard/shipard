@@ -69,17 +69,22 @@ class PrintWatermarkRuleTest extends TestCase
                         $this->assertTrue($translator->has($key), "{$definition->id}: klíč '{$key}' v katalogu");
                         $text = $translator->t($key);
 
+                        // Stránka do PDF i účtenka (značky pro účtenkovou tiskárnu).
+                        $render = static fn (array $envelope): string => $definition->isEscPos()
+                            ? $renderer->renderMarkup($definition, PrintData::fromArray($envelope), $translator)
+                            : $renderer->renderDocument($definition, PrintData::fromArray($envelope), $translator)->html;
+
                         $envelope = $fixtures[$definition->id];
                         $envelope['record']['docState'] = $docState;
                         $envelope['meta']['watermark']  = null;
-                        $without = $renderer->renderDocument($definition, PrintData::fromArray($envelope), $translator);
+                        $without = $render($envelope);
 
                         $envelope['meta']['watermark'] = $text;
-                        $with = $renderer->renderDocument($definition, PrintData::fromArray($envelope), $translator);
+                        $with = $render($envelope);
 
                         $this->assertGreaterThan(
-                            substr_count($without->html, $text),
-                            substr_count($with->html, $text),
+                            substr_count($without, $text),
+                            substr_count($with, $text),
                             "{$definition->id}: layout nevykreslil vodoznak '{$text}' stavu {$docState}",
                         );
                         $checked++;

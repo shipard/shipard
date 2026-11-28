@@ -786,7 +786,7 @@ class PrintRunnerTest extends TestCase
             $runner->renderData('docs.invoicesOut.invoice', self::envelope(), PrintFormat::Json);
             $this->fail('InvalidArgumentException expected');
         } catch (\InvalidArgumentException $e) {
-            $this->assertStringContainsString('html or pdf', $e->getMessage());
+            $this->assertStringContainsString('cannot be rendered to json', $e->getMessage());
         }
 
         $this->expectException(PrintNotFoundException::class);

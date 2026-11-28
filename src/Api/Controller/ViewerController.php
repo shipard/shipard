@@ -331,7 +331,13 @@ class ViewerController
 
 		// Tisk (#90 D19): generický háček nad registrem tisků — viewer o něm
 		// neví, takže tisky dalších tabulek fungují bez zásahu do něj.
-		$recordPrints = $prints?->forRecord($def->table, $record) ?? [];
+		// Tisky pro účtenkovou tiskárnu (`output: escpos`, #177 U35) sem
+		// nepatří — PDF z nich nevznikne; vlastní akci dostanou s tiskovými
+		// úlohami.
+		$recordPrints = array_values(array_filter(
+			$prints?->forRecord($def->table, $record) ?? [],
+			static fn (PrintDefinition $d): bool => !$d->isEscPos(),
+		));
 		$printAction  = self::recordPrintAction('print', $recordPrints, $config);
 		if ($printAction !== null) {
 			$detail['actions'] = [...($detail['actions'] ?? []), $printAction];

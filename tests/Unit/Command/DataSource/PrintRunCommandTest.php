@@ -176,7 +176,7 @@ class PrintRunCommandTest extends TestCase
         // --data + json nedává smysl (json je default formát).
         [$exit, , $stderr] = $this->exec(['printId' => self::PRINT_ID, '--data' => $this->fixture]);
         $this->assertSame(Command::INVALID, $exit);
-        $this->assertStringContainsString('--format=html or --format=pdf', $stderr);
+        $this->assertStringContainsString('use --format=html, pdf, escpos or markup', $stderr);
 
         [$exit, , $stderr] = $this->exec([
             'printId' => self::PRINT_ID, 'recordId' => '5', '--data' => $this->fixture,
@@ -226,5 +226,42 @@ class PrintRunCommandTest extends TestCase
         $this->assertSame(Command::FAILURE, $exit);
         $this->assertStringContainsString('unconfigured', $stderr);
         $this->assertFileDoesNotExist($this->dsDir . '/x.pdf');
+    }
+
+    // ── tisk pro účtenkovou tiskárnu (#177 U35) ─────────────────────────────
+
+    public function testReceiptPrinterOptionsAreValidated(): void
+    {
+        $base = ['printId' => self::PRINT_ID, '--data' => $this->fixture];
+
+        // Bajty pro tiskárnu do terminálu nepatří.
+        [$exit, , $stderr] = $this->exec($base + ['--format' => 'escpos']);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('--format=escpos requires --output=<file>', $stderr);
+
+        [$exit, , $stderr] = $this->exec($base + ['--format' => 'html', '--output' => $this->dsDir . '/x', '--profile' => 'escpos-80-cp852']);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('--profile is used with --format=escpos only', $stderr);
+
+        [$exit, , $stderr] = $this->exec($base + ['--format' => 'zpl']);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('json | pdf | html | escpos | markup', $stderr);
+    }
+
+    public function testPrintToPdfHasNoReceiptPrinterFormats(): void
+    {
+        $out = $this->dsDir . '/receipt.bin';
+
+        foreach ([
+            ['--format' => 'escpos', '--output' => $out],
+            ['--format' => 'markup'],
+        ] as $options) {
+            [$exit, $stdout, $stderr] = $this->exec(['printId' => self::PRINT_ID, '--data' => $this->fixture] + $options);
+
+            $this->assertSame(Command::INVALID, $exit);
+            $this->assertStringContainsString("(output 'pdf') cannot be rendered to '{$options['--format']}'", $stderr);
+            $this->assertSame('', $stdout);
+            $this->assertFileDoesNotExist($out);
+        }
     }
 }

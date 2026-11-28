@@ -79,8 +79,11 @@ class PrintDeclarationsTest extends TestCase
                 PrintTemplatePaths::parse($definition->template)['module'],
                 "{$definition->id}: template belongs to the declaring module",
             );
+            // Tisk pro účtenkovou tiskárnu má šablonu se značkami účtenky (#177 U35).
             $this->assertFileExists(
-                $paths->directory($definition->template) . '/' . PrintRenderer::PAGE_TEMPLATE,
+                $paths->directory($definition->template) . '/' . ($definition->isEscPos()
+                    ? PrintRenderer::ESCPOS_TEMPLATE
+                    : PrintRenderer::PAGE_TEMPLATE),
                 "{$definition->id}: page template",
             );
         }

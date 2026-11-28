@@ -567,6 +567,59 @@ class PrintsApiTest extends TestCase
         $this->assertSame(['languages' => self::LANGUAGE_CODES], $detail['actions'][0]['target']);
     }
 
+    /** Tisk pro účtenkovou tiskárnu (`output: escpos`, #177 U35) nad stejným záznamem. */
+    private static function receiptDefinition(): PrintDefinition
+    {
+        return self::definition(['id' => 'test.prints.receipt', 'name' => 'Účtenka', 'output' => 'escpos', 'order' => 5]);
+    }
+
+    public function testDetailOffersOnlyPrintsToPdf(): void
+    {
+        // Akce Tisk dělá PDF — tisk pro účtenkovou tiskárnu do ní nepatří.
+        $detail = $this->detail(self::RECORD, self::registry(self::receiptDefinition(), self::definition()));
+
+        $this->assertCount(1, $detail['actions']);
+        $this->assertSame('button', $detail['actions'][0]['kind']);
+        $this->assertSame('test.prints.card', $detail['actions'][0]['target']['printId']);
+
+        $this->assertArrayNotHasKey(
+            'actions',
+            $this->detail(self::RECORD, self::registry(self::receiptDefinition())),
+        );
+    }
+
+    public function testRestDoesNotServeReceiptPrinterFormats(): void
+    {
+        $controller = $this->controller(definition: self::receiptDefinition());
+
+        // Bajty pro tiskárnu ani výstup šablony REST nenabízí — ani adminovi.
+        foreach (['escpos', 'markup'] as $format) {
+            self::assertError(
+                $controller->run('test.prints.receipt', 5, ['format' => $format], self::admin(), []),
+                400,
+                'BAD_REQUEST',
+            );
+        }
+        // PDF z tisku pro účtenkovou tiskárnu nevznikne (výchozí formát i výslovný).
+        self::assertError($controller->run('test.prints.receipt', 5, [], self::user(), []), 409, 'PRINT_FORMAT_UNSUPPORTED');
+        self::assertError(
+            $controller->run('test.prints.receipt', 5, ['format' => 'pdf'], self::user(), []),
+            409,
+            'PRINT_FORMAT_UNSUPPORTED',
+        );
+        // Data tisku pro admina jdou.
+        $this->assertSame(
+            200,
+            self::statusOf($controller->run('test.prints.receipt', 5, ['format' => 'json'], self::admin(), [])),
+        );
+        // Tisk do PDF formát `escpos` také nedá.
+        self::assertError(
+            $this->controller()->run('test.prints.card', 5, ['format' => 'escpos'], self::admin(), []),
+            400,
+            'BAD_REQUEST',
+        );
+    }
+
     public function testDetailHasNoPrintActionForDraftOtherKindOrWithoutRegistry(): void
     {
         $registry = self::registry(self::definition());

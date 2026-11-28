@@ -89,9 +89,19 @@ class PrintsController
 
         $formatRaw = $rawParams['format'] ?? PrintFormat::Pdf->value;
         $format    = is_string($formatRaw) ? PrintFormat::tryFrom($formatRaw) : null;
-        // `html` je nástroj pro vývoj šablon v CLI — REST ho nenabízí (#90 D28).
-        if ($format === null || $format === PrintFormat::Html) {
+        // `html` a `markup` jsou nástroje pro vývoj šablon v CLI — REST je
+        // nenabízí (#90 D28). Ani `escpos`: účtenka jde na tiskárnu tiskovou
+        // úlohou, ne stažením bajtů (#177 U35).
+        if ($format === null || $format === PrintFormat::Html || $format->isEscPos()) {
             return Response::error('BAD_REQUEST', "Parameter 'format' must be one of pdf|json", 400);
+        }
+        // Z tisku pro účtenkovou tiskárnu PDF nevznikne.
+        if (!$format->fits($definition)) {
+            return Response::error(
+                'PRINT_FORMAT_UNSUPPORTED',
+                "Print '{$printId}' is printed on a receipt printer, it has no PDF",
+                409,
+            );
         }
         if ($format === PrintFormat::Json && !$auth->isAdmin) {
             return Response::error('FORBIDDEN_ADMIN_ONLY', 'Print data in JSON are available to administrators only', 403);

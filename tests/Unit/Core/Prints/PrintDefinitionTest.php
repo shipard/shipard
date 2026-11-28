@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Core\Prints;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintFormat;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\Texts\PrintTextSlot;
 
@@ -31,6 +32,93 @@ class PrintDefinitionTest extends TestCase
             'paper'     => ['format' => 'A4', 'orientation' => 'portrait'],
             'order'     => 10,
         ];
+    }
+
+    /**
+     * Deklarace tisku pro účtenkovou tiskárnu (#177 U35) — bez papíru.
+     *
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
+    public static function receiptDeclaration(array $overrides = []): array
+    {
+        $declaration = self::declaration($overrides + [
+            'id'       => 'docs.cashRegister.receiptPos',
+            'name'     => 'Účtenka',
+            'filter'   => ['doc_type' => ['cashreg']],
+            'template' => '@docs.cashRegister/receiptPos',
+            'output'   => 'escpos',
+        ]);
+        if (!array_key_exists('paper', $overrides)) {
+            unset($declaration['paper']);
+        }
+        return $declaration;
+    }
+
+    // ── output (#177 U35) ───────────────────────────────────────────────────
+
+    public function testOutputDefaultsToPdf(): void
+    {
+        $def = PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut');
+
+        $this->assertSame('pdf', $def->output);
+        $this->assertFalse($def->isEscPos());
+        $this->assertSame('pdf', PrintDefinition::fromArray(self::declaration(['output' => 'pdf']), 'docs.invoicesOut')->output);
+    }
+
+    public function testReceiptPrinterOutputHasNoPaper(): void
+    {
+        $def = PrintDefinition::fromArray(
+            self::receiptDeclaration(['docStates' => [40, 30], 'watermarks' => ['30' => 'watermark.cancelled']]),
+            'docs.cashRegister',
+        );
+
+        $this->assertSame('escpos', $def->output);
+        $this->assertTrue($def->isEscPos());
+        $this->assertFalse($def->isSendable());
+        $this->assertSame([], $def->textSlots);
+        // Vodoznak (storno) účtenka nese — tiskne ho jako řádek.
+        $this->assertSame([30 => 'watermark.cancelled'], $def->watermarks);
+    }
+
+    /** @return array<string, array{array<string, mixed>, string}> */
+    public static function invalidReceiptDeclarations(): array
+    {
+        $notAllowed = "is not allowed for prints with output 'escpos'";
+        return [
+            'neznámý výstup'  => [['output' => 'zpl'], "'output' must be one of pdf|escpos"],
+            'výstup není text' => [['output' => 1], "'output' must be one of pdf|escpos"],
+            'papír'           => [['paper' => ['format' => 'A4']], "'paper' {$notAllowed}"],
+            'prázdný papír'   => [['paper' => []], "'paper' {$notAllowed}"],
+            'odesílání'       => [['sendPurpose' => 'invoices', 'recipientPerson' => 'partner'], "'sendPurpose' {$notAllowed}"],
+            'příjemce'        => [['recipientPerson' => 'partner'], "'recipientPerson' {$notAllowed}"],
+            'texty'           => [['textSlots' => ['header']], "'textSlots' {$notAllowed}"],
+            'prázdné texty'   => [['textSlots' => []], "'textSlots' {$notAllowed}"],
+            'proměnné textů'  => [['textVariables' => ['@docs.core/_layout']], "'textVariables' {$notAllowed}"],
+        ];
+    }
+
+    /** @param array<string, mixed> $overrides */
+    #[DataProvider('invalidReceiptDeclarations')]
+    public function testReceiptPrinterOutputRejectsKeysOfPdfPrints(array $overrides, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+
+        PrintDefinition::fromArray(self::receiptDeclaration($overrides), 'docs.cashRegister');
+    }
+
+    public function testFormatsFollowOutputOfThePrint(): void
+    {
+        $pdf     = PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut');
+        $receipt = PrintDefinition::fromArray(self::receiptDeclaration(), 'docs.cashRegister');
+
+        $fits = static fn (PrintDefinition $d): array => array_map(
+            static fn (PrintFormat $f): bool => $f->fits($d),
+            [PrintFormat::Json, PrintFormat::Pdf, PrintFormat::Html, PrintFormat::Escpos, PrintFormat::Markup],
+        );
+        $this->assertSame([true, true, true, false, false], $fits($pdf));
+        $this->assertSame([true, false, false, true, true], $fits($receipt));
     }
 
     // ── fromArray ───────────────────────────────────────────────────────────

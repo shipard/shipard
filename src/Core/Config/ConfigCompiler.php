@@ -37,7 +37,7 @@ class ConfigCompiler
     public const PRINTS_ITEM = 'core.prints.declarations';
 
     /** Klíče deklarace tisku, které jdou do `PRINTS_ITEM` (+ `name:<jazyk>`). */
-    private const PRINT_ITEM_KEYS = ['name', 'table', 'filter', 'textSlots', 'order'];
+    private const PRINT_ITEM_KEYS = ['name', 'table', 'filter', 'textSlots', 'order', 'output'];
 
     /**
      * cfgItem složený z `aiFunctions` aktivních modulů — AI funkce (#85 D36):

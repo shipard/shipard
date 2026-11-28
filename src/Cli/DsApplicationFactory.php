@@ -59,6 +59,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\ReportRunCommand());
         $app->add(new \Shipard\Command\DataSource\ReportDiffCommand());
         $app->add(new \Shipard\Command\DataSource\PrintRunCommand());
+        $app->add(new \Shipard\Command\DataSource\PrintEscposTestCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsHealthCommand());
         $app->add(new \Shipard\Command\DataSource\DsSecretsRotateCommand());

@@ -6,6 +6,12 @@ namespace Shipard\Core\Prints;
 
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Prints\EscPos\EscPosConfigException;
+use Shipard\Core\Prints\EscPos\EscPosDrivers;
+use Shipard\Core\Prints\EscPos\EscPosRenderer;
+use Shipard\Core\Prints\EscPos\PrinterProfile;
+use Shipard\Core\Prints\EscPos\PrinterProfiles;
+use Shipard\Core\Prints\EscPos\ReceiptMarkupException;
 use Shipard\Core\Prints\Texts\PrintTextProvider;
 use Shipard\Core\Prints\Texts\PrintTextRenderer;
 use Shipard\Core\Render\RenderErrorKind;
@@ -82,17 +88,26 @@ final class PrintRunner
      * @throws PrintLanguageNotCompiledException Zdroj dat nemá konfiguraci
      *         v jazyce tisku (→ 409).
      * @throws PrintBuildException Záznamu chybí data pro tisk (→ 409).
-     * @throws PrintRenderException PDF nevzniklo (→ 503 / 500).
+     * @throws PrintFormatNotSupportedException Formát nepatří k `output`
+     *         tisku (→ 409).
+     * @throws PrintRenderException PDF nebo účtenka nevznikly (→ 503 / 500).
+     *
+     * @param ?PrinterProfile $profile Profil tiskárny pro formát `escpos`;
+     *        bez něj se použije záložní profil katalogu a výstup nese varování.
      */
     public function run(
         string $printId,
         int $recordId,
         PrintFormat $format,
         ?string $language = null,
+        ?PrinterProfile $profile = null,
     ): PrintOutput {
         $definition = $this->registry->get($printId);
         if ($definition === null) {
             throw new PrintNotFoundException("Unknown print '{$printId}'");
+        }
+        if (!$format->fits($definition)) {
+            throw new PrintFormatNotSupportedException($definition, $format);
         }
         if ($this->db === null) {
             throw new \LogicException('PrintRunner without a database connection can only render ready print data');
@@ -182,7 +197,7 @@ final class PrintRunner
             $printData = $printData->withTexts($rendered->texts, $rendered->messages);
         }
 
-        return $this->output($definition, $printData, $translator, $format);
+        return $this->output($definition, $printData, $translator, $format, $profile);
     }
 
     /**
@@ -197,20 +212,28 @@ final class PrintRunner
      * @throws \InvalidArgumentException Obálka nemá očekávaný tvar, patří
      *         jinému tisku, je novější než builder, jazyk není podporovaný,
      *         nebo je vyžádaný formát `json`.
-     * @throws PrintRenderException PDF nevzniklo.
+     * @throws PrintFormatNotSupportedException Formát nepatří k `output` tisku.
+     * @throws PrintRenderException PDF nebo účtenka nevznikly.
+     *
+     * @param ?PrinterProfile $profile Profil tiskárny pro formát `escpos`
+     *        (viz `run()`).
      */
     public function renderData(
         string $printId,
         array $envelope,
         PrintFormat $format,
         ?string $language = null,
+        ?PrinterProfile $profile = null,
     ): PrintOutput {
         if ($format === PrintFormat::Json) {
-            throw new \InvalidArgumentException('Ready print data can be rendered to html or pdf only');
+            throw new \InvalidArgumentException('Ready print data cannot be rendered to json');
         }
         $definition = $this->registry->get($printId);
         if ($definition === null) {
             throw new PrintNotFoundException("Unknown print '{$printId}'");
+        }
+        if (!$format->fits($definition)) {
+            throw new PrintFormatNotSupportedException($definition, $format);
         }
         // Data jiného tisku by cizí šablona vykreslila špatně, nebo vůbec.
         $dataPrintId = $envelope['printId'] ?? null;
@@ -231,7 +254,7 @@ final class PrintRunner
         $translator = $this->catalogs?->translator($definition, $language)
             ?? new PrintTranslator([], $language);
 
-        return $this->output($definition, $printData, $translator, $format);
+        return $this->output($definition, $printData, $translator, $format, $profile);
     }
 
     private function output(
@@ -239,6 +262,7 @@ final class PrintRunner
         PrintData $printData,
         PrintTranslator $translator,
         PrintFormat $format,
+        ?PrinterProfile $profile = null,
     ): PrintOutput {
         if ($format === PrintFormat::Json) {
             return new PrintOutput($format, $printData);
@@ -246,6 +270,9 @@ final class PrintRunner
 
         if ($this->renderer === null) {
             throw new PrintRenderException(RenderErrorKind::Unconfigured, 'Print renderer is not available');
+        }
+        if ($format->isEscPos()) {
+            return $this->receipt($definition, $printData, $translator, $format, $profile);
         }
         if ($format === PrintFormat::Html) {
             return new PrintOutput(
@@ -258,6 +285,50 @@ final class PrintRunner
             $format,
             $printData,
             $this->renderer->renderPdf($definition, $printData, $translator),
+        );
+    }
+
+    /**
+     * Tisk na účtenkovou tiskárnu (#177 D26): šablona `page.escpos.twig`
+     * → značky účtenky → bajty ESC/POS podle profilu tiskárny. Ovladač
+     * a katalog profilů jsou v konfiguraci zdroje dat.
+     */
+    private function receipt(
+        PrintDefinition $definition,
+        PrintData $printData,
+        PrintTranslator $translator,
+        PrintFormat $format,
+        ?PrinterProfile $profile,
+    ): PrintOutput {
+        $markup = $this->renderer->renderMarkup($definition, $printData, $translator);
+        if ($format === PrintFormat::Markup) {
+            return new PrintOutput($format, $printData, markup: $markup);
+        }
+
+        $config   = ($this->configFactory)($printData->language);
+        $warnings = [];
+        try {
+            if ($profile === null) {
+                $fallback = PrinterProfiles::fromConfig($config)->get(null);
+                $profile  = $fallback['profile'];
+                if ($fallback['warning'] !== null) {
+                    $warnings[] = $fallback['warning'];
+                }
+            }
+            $receipt = (new EscPosRenderer(EscPosDrivers::fromConfig($config)))->render($markup, $profile);
+        } catch (ReceiptMarkupException $e) {
+            // Chyba šablony, ne tiskárny — vstup renderu je neplatný.
+            throw new PrintRenderException(RenderErrorKind::InvalidInput, "Print '{$definition->id}': " . $e->getMessage());
+        } catch (EscPosConfigException $e) {
+            throw new PrintRenderException(RenderErrorKind::Unconfigured, $e->getMessage());
+        }
+
+        return new PrintOutput(
+            $format,
+            $printData,
+            bytes: $receipt->bytes,
+            markup: $markup,
+            warnings: [...$warnings, ...$receipt->warnings],
         );
     }
 

@@ -72,6 +72,11 @@
         {
             "id": "core.prints.printerProfiles",
             "file": "config/printerProfiles.jsonc"
+        },
+        // Popisky zkušební účtenky profilu.
+        {
+            "id": "core.prints.printerTestTexts",
+            "file": "config/printerTestTexts.jsonc"
         }
     ],
 
